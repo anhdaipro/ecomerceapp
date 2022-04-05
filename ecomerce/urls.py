@@ -19,9 +19,31 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
+from django.conf.urls import url
+from django.views.static import serve
+from rest_framework.authtoken.views import obtain_auth_token
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('auth/', include('djoser.urls')),
+    path('auth/', include('djoser.urls.jwt')),
+    path('auth/', include('djoser.social.urls')),
+    path('oauth/', include('social_django.urls', namespace='social')),
+    path('password-reset',auth_views.PasswordResetView.as_view(
+             template_name='account/password_reset.html'),name='password_reset'),
+    path('password-reset/done',auth_views.PasswordResetDoneView.as_view(
+             template_name='account/password_reset_done.html'),name='password_reset_done'),
+    path('forgot_password/<uidb64>/<token>',auth_views.PasswordResetConfirmView.as_view(
+             template_name='account/password_reset_confirm.html'
+         ),name='password_reset_confirm'),
+    path('password-reset-complete',auth_views.PasswordResetCompleteView.as_view(
+             template_name='account/password_reset_complete.html'
+         ),name='password_reset_complete'),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if not settings.DEBUG:
+    urlpatterns += [re_path(r'^.*',
+                            TemplateView.as_view(template_name='index.html'))]
