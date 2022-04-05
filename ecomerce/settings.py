@@ -33,12 +33,15 @@ CORS_ALLOWED_ORIGINS = [
     'https://fast-sierra-08710.herokuapp.com',
 ]
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'social_django',
+    'rest_framework',
     'shop',
     'checkout',
     'category',
