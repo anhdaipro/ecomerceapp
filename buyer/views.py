@@ -1,4 +1,4 @@
-from django.shortcuts import render
+
 # Create your views here.
 from django.db.models import Q
 from django.conf import settings
@@ -38,7 +38,7 @@ import json
 import datetime
 from django.contrib.auth import authenticate,login,logout
 from rest_framework import status,viewsets,generics
-from account.models import User
+from django.contrib.auth.models import User
 
 import paypalrestsdk
 from paypalrestsdk import Sale
