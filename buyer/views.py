@@ -63,7 +63,7 @@ class HomeAPIView(APIView):
         'item_min':i.min_price(),'quantity_limit_flash_sale':i.quantity_limit_flash_sale} for i in flash_sale.product.all()] for flash_sale in list_flashsale]
         data={
             'a':list_items,
-            'time_start':flash_sale.from_valid,'time_end':flash_sale.to_valid
+            'list_flashsale':list_flashsale.values('from_valid','to_valid')
         }
         return Response(data)
 
