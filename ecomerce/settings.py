@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import os
+import dj_database_url
+import django_heroku
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -144,6 +146,9 @@ DATABASES = {
 }
 
 
+db_from_env = dj_database_url.config()
+DATABASES['default'].update(db_from_env)
+
 CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
@@ -218,7 +223,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-MEDIA_URL = '/media/'
+MEDIA_URL = '/file/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media_root')
 SITE_ID = 1
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
