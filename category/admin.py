@@ -12,7 +12,7 @@ class CategoryAdmin2(DraggableMPTTAdmin):
                     'related_products_count', 'related_products_cumulative_count')
     list_display_links = ('indented_title',)
     prepopulated_fields = {'slug': ('title',)}
-    actions = ['set_category']
+    actions = ['set_category','set_choice']
     def get_queryset(self, request):
         qs = super().get_queryset(request)
 
@@ -34,6 +34,8 @@ class CategoryAdmin2(DraggableMPTTAdmin):
     def set_category(self,request,queryset):
         for i in queryset:
             i.save()
+    def set_choice(self,request,queryset):
+        queryset.update(choice=True)
     def related_products_count(self, instance):
         return instance.products_count
     related_products_count.short_description = 'Related products (for this specific category)'
