@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_social_share',
     'buyer',
+    'city',
     'actionorder',
     'chat',
     'shipping',
