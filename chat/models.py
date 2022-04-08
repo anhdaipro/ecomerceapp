@@ -8,6 +8,8 @@ import uuid
 from mimetypes import guess_type
 import os
 from shop.models import *
+from checkout.models import *
+from cart.models import *
 # Create your models here.
 
 

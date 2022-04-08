@@ -19,15 +19,16 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.renderers import TemplateHTMLRenderer
 from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Min, Count, Avg,Sum
-from shops.models import *
+from shop.models import *
 from category.models import *
-from order.models import *
+from checkout.models import *
+from cart.models import *
 from notification.models import *
 from discount.models import *
-from chatapp.models import *
+from chat.models import *
 from city.models import *
-from product_detail.models import *
-from refund.models import *
+from itemdetail.models import *
+from actionorder.models import *
 
 from payment.models import *
 from ecomerce.custom_methods import IsAuthenticatedCustom
