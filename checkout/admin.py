@@ -3,6 +3,8 @@
 from django.contrib import admin
 from django.utils import timezone
 from .models import *
+
+
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['id','user','ref_code','shop','ordered','being_delivered',
     'canceled','received','refund_requested','refund_granted','shipping_address'
@@ -18,5 +20,7 @@ class OrderAdmin(admin.ModelAdmin):
 
     def set_order_being_delivered(self,request,queryset):
         queryset.update(being_delivered=True)
+class AddressAdmin(admin.ModelAdmin):
+    list_display  = ['id','user','name','address_type']
 admin.site.register(Order,OrderAdmin)
 admin.site.register(Address,AddressAdmin)
