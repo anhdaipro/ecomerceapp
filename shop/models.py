@@ -10,11 +10,9 @@ from django.contrib.auth.models import User
 from django.db.models.expressions import Col
 from category.models import Category
 from django.urls import reverse
-
 from django.utils import timezone
 from django.db.models import Max, Min, Count, Avg,Sum
 from seller.models import *
-
 import datetime
 import re
 import subprocess
