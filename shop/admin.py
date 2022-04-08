@@ -18,8 +18,6 @@ admin.site.register(Variation,VariationAdmin)
 admin.site.register(Color)
 admin.site.register(Size)
 admin.site.register(Buy_more_discount)
-admin.site.register(Comment,CommentAdmin)
 admin.site.register(Byproductcart)
-admin.site.register(IpModel)
 admin.site.register(UploadItem)
 
