@@ -15,8 +15,8 @@ class Image_home(models.Model):
 class Category(MPTTModel):
     parent = TreeForeignKey('self',blank=True, null=True ,related_name='children', on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
-    image=models.ImageField(blank=True,upload_to='category_images/')
-    
+    image=models.ImageField(blank=True,upload_to='category/')
+    display=models.BooleanField(default=False)
     image_home=models.ManyToManyField(Image_home,blank=True)
     slug = models.SlugField(max_length=100,null=True,blank=True)
     choice=models.BooleanField(default=False)
