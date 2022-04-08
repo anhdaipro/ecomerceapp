@@ -605,7 +605,7 @@ class CartAPIView(APIView):
             'count':count,
             'a':list_cart_item,
             'user_name':user.username,
-            'image':user.customer.image.url
+            'image':user.shop.image.url
             }
         return Response(data)
 
