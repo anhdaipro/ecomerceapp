@@ -148,7 +148,12 @@ DATABASES = {
 
 db_from_env = dj_database_url.config()
 DATABASES['default'].update(db_from_env)
-
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dupep1afe',
+    'API_KEY': '388461171177852',
+    'API_SECRET': 'B0lnwsh6IKX4CsEAZnQHL_Miqxs'
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
