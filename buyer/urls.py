@@ -26,11 +26,11 @@ from .views import (
     SearchitemAPIView,
     PurchaseAPIView,
     AddressAPIView,
+    UserIDView,
     ListThreadAPIView
 )
 
 urlpatterns = [
-    path('', include(router.urls)),
     path('user-id/', UserIDView.as_view()),
     path('buyer/forgot_password', ChangePasswordView.as_view()),
     path('products', HomeAPIView.as_view()),

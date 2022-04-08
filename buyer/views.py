@@ -28,14 +28,9 @@ from chat.models import *
 from city.models import *
 from itemdetail.models import *
 from actionorder.models import *
-
-from payment.models import *
-from ecomerce.custom_methods import IsAuthenticatedCustom
 from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
-from .serializers import (
-    ItemSerializer,CategorySerializer,Image_homeSerializer
-)
+from .serializers import ChangePasswordSerializer,UserSerializer
 from rest_framework_simplejwt.tokens import AccessToken
 import random
 import string
@@ -44,10 +39,9 @@ import datetime
 from django.contrib.auth import authenticate,login,logout
 from rest_framework import status,viewsets,generics
 from django.contrib.auth.models import User
-from .serializers import ChangePasswordSerializer,UserSerializer
+
 import paypalrestsdk
 from paypalrestsdk import Sale
-from refund.models import *
 paypalrestsdk.configure({
   'mode': 'sandbox', #sandbox or live
   'client_id': 'AY2deOMPkfo32qrQ_fKeXYeJkJlAGPh5N-9pdDFXISyUydAwgRKRPRGhiQF6aBnG68V6czG5JsulM2mX',
@@ -59,9 +53,7 @@ class UserIDView(APIView):
     def get(self, request, *args, **kwargs):
         return Response({'userID': user.id}, status=HTTP_200_OK)
 
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+
 
 class HomeAPIView(APIView):
     def get(self,request):

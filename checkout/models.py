@@ -109,6 +109,23 @@ ADDRESS_CHOICES = (
     ('B', 'Billing'),
     ('S', 'Shipping'),
 )
+
+PAYMENT_CHOICES = (
+   
+    ('P', 'PayPal'),
+   
+)
+class Payment(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    amount = models.FloatField()
+    payment_number=models.CharField(max_length=30,null=True)
+    order=models.ManyToManyField(Order,blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    paid=models.BooleanField(default=False)
+    payment_method = models.CharField(choices=PAYMENT_CHOICES,max_length=10,default='P')
+    def __str__(self):
+        return str(self.user)
+        
 class Address(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     name=models.CharField(max_length=100)
