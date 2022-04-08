@@ -20,7 +20,7 @@ class CancelOrder(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     reason = models.CharField(max_length=200,null=True)
 class Media_review(models.Model):
-    upload_by=models.ForeignKey(settings.AUTH_USER_MODEL,
+    upload_by=models.ForeignKey(User,
                              on_delete=models.CASCADE)
     file=models.FileField(null=True)
     duration=models.IntegerField(null=True)
@@ -38,7 +38,7 @@ class Media_review(models.Model):
         elif (type_tuple[0]).__contains__("video"):
             return "video"
 class ReView(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+    user = models.ForeignKey(User,
                              on_delete=models.CASCADE)
     orderitem = models.ForeignKey(to="cart.OrderItem", on_delete=models.CASCADE)
     media_upload=models.ManyToManyField(Media_review,blank=True)
@@ -64,12 +64,12 @@ class ReView(models.Model):
         return name
 
 class Report(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+    user = models.ForeignKey(User,
                              on_delete=models.CASCADE)
     review=models.ForeignKey(ReView,on_delete=models.CASCADE)
     reson=models.CharField(max_length=2000)
     created = models.DateTimeField(auto_now=True)
 class Reply(models.Model):
     review=models.ForeignKey(ReView,on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
     text=models.TextField(max_length=2000)

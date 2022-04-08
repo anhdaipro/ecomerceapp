@@ -45,7 +45,8 @@ urlpatterns = [
     path('<str:slug>',views.category, name='category'),
     path('bundle-deal/<int:id>',views.bundle_deal,name='promotion_combo'),
     path('addon-deal-cart-selection/<int:id>', views.deal_shock,name="deal_shock"),
-    path('api/v4/',include('buyer.urls'))
+    path('api/v4/',include('buyer.urls')),
+    path('api/v3/',include('seller.urls'))
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 if not settings.DEBUG:

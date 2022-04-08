@@ -1,3 +1,15 @@
 from django.test import TestCa
 # Create your tests here.
-list_category=["Women's Fashion","Men's Fashion","Beauty","Health","Fashion accessories","Household electrical appliances","Men's shoes","Phones & Accessories","Travel & Luggage","Women's Purse Bags","Women's shoes","Men's Wallet Bag","Clock","Audio equipments","Food & Beverage","Take care of the pet","Mother & Baby","Kids & babies fashion","Gaming & Console","Cameras & Flycam","Home & Life","Sports & Picnics","Stationery","Hobbies & Collects","Car","Motorcycles, motorbikes","Vouchers & Services","Not Allowed","Books & Magazines","Computers & Laptops","Deals Near You"]
+list_category=["SIM",
+
+"Tablet",
+
+"Telephone",
+
+"Smart wearables",
+
+"Accessory",
+
+"walkie talkie",
+
+"Other"]

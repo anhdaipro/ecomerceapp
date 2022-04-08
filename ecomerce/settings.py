@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'shop',
     'checkout',
+    'account',
     'category',
     'cart',
     'seller',

@@ -38,7 +38,7 @@ import json
 import datetime
 from django.contrib.auth import authenticate,login,logout
 from rest_framework import status,viewsets,generics
-from django.contrib.auth.models import User
+from account.models import User
 
 import paypalrestsdk
 from paypalrestsdk import Sale
@@ -605,7 +605,7 @@ class CartAPIView(APIView):
             'count':count,
             'a':list_cart_item,
             'user_name':user.username,
-            'image':user.shop.image.url
+            'image':user.shop.logo.url
             }
         return Response(data)
 
