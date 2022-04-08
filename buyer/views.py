@@ -57,13 +57,12 @@ class UserIDView(APIView):
 
 class HomeAPIView(APIView):
     def get(self,request):
-        flash_sale=Flash_sale.objects.all().last()
-        items=flash_sale.product.all()
-        list_items=[{'item_name':i.name,'item_image':i.media_upload.all()[0].upload_file(),'number_order':i.number_order(),
+        list_flashsale=Flash_sale.objects.filter(to_valid__gt=timezone.now(),from_valid__lt=timezone.now())
+        list_items=[[{'item_name':i.name,'item_image':i.media_upload.all()[0].upload_file(),'number_order':i.number_order(),
         'percent_discount':i.discount_flash_sale(),'item_id':i.id,'item_inventory':i.total_inventory(),'item_max':i.max_price(),'item_url':i.get_absolute_url(),
-        'item_min':i.min_price(),'quantity_limit_flash_sale':i.quantity_limit_flash_sale} for i in items]
+        'item_min':i.min_price(),'quantity_limit_flash_sale':i.quantity_limit_flash_sale} for i in flash_sale.product.all()] for flash_sale in list_flashsale]
         data={
-            'a':list_items,'hello':'jekkk','ff':'frrrr',
+            'a':list_items,
             'time_start':flash_sale.from_valid,'time_end':flash_sale.to_valid
         }
         return Response(data)
