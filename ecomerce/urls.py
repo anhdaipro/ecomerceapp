@@ -19,7 +19,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-
+from . import views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
@@ -42,6 +42,9 @@ urlpatterns = [
     path('password-reset-complete',auth_views.PasswordResetCompleteView.as_view(
              template_name='account/password_reset_complete.html'
          ),name='password_reset_complete'),
+    path('<str:slug>',views.category, name='category'),
+    path('bundle-deal/<int:id>',views.bundle_deal,name='promotion_combo'),
+    path('addon-deal-cart-selection/<int:id>', views.deal_shock,name="deal_shock"),
     path('api/v4/',include('buyer.urls'))
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
