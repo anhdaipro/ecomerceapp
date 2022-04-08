@@ -13,6 +13,9 @@ from django.urls import reverse
 from django.utils import timezone
 from django.db.models import Max, Min, Count, Avg,Sum
 from seller.models import *
+from actionorder.models import *
+from cart.models import *
+from shipping.models import *
 import datetime
 import re
 import subprocess
@@ -40,7 +43,23 @@ class Shop(models.Model):
     
     def __str__(self):
         return self.name
-      
+    def get_absolute_url(self):
+        return reverse("category", kwargs={"slug": self.slug})
+    def num_follow(self):
+        return self.followers.all().count()
+    def count_product(self):
+        return Item.objects.filter(shop=self).count()
+    def total_review(self):
+        return ReView.objects.filter(orderitem__shop=self).count()
+    def averge_review(self):
+        avg = 0
+        reviews = ReView.objects.filter(orderitem__shop=self).aggregate(
+            average=Avg('review_rating'))
+        if reviews["average"] is not None:
+            avg = float(reviews["average"])
+        return avg
+    def total_order(self):
+        return Order.objects.filter(shop=self,ordered=True).count()
 class Buy_more_discount(models.Model):
     from_quantity=models.IntegerField()
     to_quantity=models.IntegerField()
@@ -103,8 +122,6 @@ class Item(models.Model):
     def get_absolute_url(self):
         return reverse("category", kwargs={"slug": self.slug})
    
-    
-    
 class Color(models.Model):
     name=models.CharField(max_length=20)
     value=models.CharField(max_length=20)
