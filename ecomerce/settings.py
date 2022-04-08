@@ -32,7 +32,7 @@ ALLOWED_HOSTS = ['anhdai.herokuapp.com','localhost']
 
 # Application definition
 CORS_ALLOWED_ORIGINS = [
-    'https://fast-sierra-08710.herokuapp.com','http://localhost:3000'
+    'https://gentle-plains-88366.herokuapp.com','http://localhost:3000'
 ]
 INSTALLED_APPS = [
     'jazzmin',
