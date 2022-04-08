@@ -145,7 +145,6 @@ DATABASES = {
     }
 }
 
-
 db_from_env = dj_database_url.config()
 DATABASES['default'].update(db_from_env)
 CLOUDINARY_STORAGE = {
@@ -229,7 +228,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 MEDIA_URL = '/file/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media_root')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 SITE_ID = 1
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 STATIC_URL = '/static/'
