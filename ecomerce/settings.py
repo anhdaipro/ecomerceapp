@@ -143,9 +143,9 @@ SIMPLE_JWT = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'd1m97lbjh4krq5',
-        'USER': 'ypvaxjcsyuitgyr',
+        'USER': 'ypvaxjcsyuitgy',
         'PASSWORD': 'dbb96f2b6721b7b95ab02d037837d3a73515031c4150bda4050d40bd64e3f192',
         'HOST': 'ec2-34-197-84-74.compute-1.amazonaws.com',
         'PORT': '5432',

@@ -5,13 +5,10 @@ admin.site.register(Shop)
 class ItemAdmin(admin.ModelAdmin):
     list_display = ['id','name','shop']
 
-
 class VariationAdmin(admin.ModelAdmin):
     list_display = ['id','color','size','price','percent_discount','percent_discount_deal_shock','inventory','percent_discount_flash_sale']
 class CommentAdmin(admin.ModelAdmin):
     list_display=['user','comment','parent']
-
-
 
 admin.site.register(Item,ItemAdmin)
 admin.site.register(Variation,VariationAdmin)

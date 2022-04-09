@@ -1,5 +1,5 @@
 from django.db import models
-from account.models import User
+from django.contrib.auth.models import User
 # Create your models here.
 class Notify(models.Model):
     customer=models.ManyToManyField(User,blank=True)
