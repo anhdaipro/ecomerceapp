@@ -58,7 +58,7 @@ class Shop(models.Model):
     is_online=models.DateTimeField(auto_now=True)
     online=models.BooleanField(default=False)
     def __str__(self):
-        return self.name
+        return self.user
     def get_absolute_url(self):
         return reverse("category", kwargs={"slug": self.slug})
     def num_follow(self):
