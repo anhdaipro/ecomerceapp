@@ -27,7 +27,7 @@ from django.conf.urls import url
 from django.views.static import serve
 from rest_framework.authtoken.views import obtain_auth_token
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin', admin.site.urls),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
     path('auth/', include('djoser.social.urls')),
@@ -49,6 +49,3 @@ urlpatterns = [
     path('api/v3/',include('seller.urls'))
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-if not settings.DEBUG:
-    urlpatterns += [re_path(r'^.*',
-                            TemplateView.as_view(template_name='index.html'))]
