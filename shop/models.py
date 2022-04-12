@@ -162,7 +162,12 @@ class Item(models.Model):
         if color.exists():
             list_color=[{'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in color.distinct()]
         return list_color
-    
+    def get_list_color(self):
+        list_color=[]
+        color=Color.objects.filter(variation__item=self,variation__inventory__gt=0)
+        if color.exists():
+            list_color=[{'file':i.get.file(),'file_preview':None,'filetype':'image','id':i.id,'name':i.name,'value':i.value}for i in color.distinct()]
+        return list_color
     def get_count_deal(self):
         count_deal=0
         if Buy_with_shock_deal.objects.filter(byproduct=self,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
@@ -297,7 +302,9 @@ class Color(models.Model):
         return str(self.value)
     class Meta:
         ordering=['value']
-
+    def get_file(self):
+        if self.image and hasattr(self.image,'url'):
+            return self.image.url
 class Size(models.Model):
     name=models.CharField(max_length=20)
     value=models.CharField(max_length=20)

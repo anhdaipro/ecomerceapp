@@ -1742,12 +1742,13 @@ def update_item(request,id):
     list_category=Category.objects.filter(item=item).get_ancestors()
     list_color=Color.objects.filter(variation__item=item)
     detail_item=Detail_Item.objects.filter(item=item).values()
+    variations=Variation.objects.filter(item=item,size=None)
     list_variation=[{'value':color.value,'price':'','sku':'','inventory':'',
     'list_variation':[{'value':variation.size.value,'price':variation.price,
     'inventory':variation.inventory,'sku':variation.sku_classify} for variation in color.variation_set.all()]} for color in list_color]
-    if Variation.objects.filter(item=item,size=None).count()==0:
-        list_variation=[{'value':color.value,'price':color.variation.price,'sku':color.variation.sku_classify,'inventory':color.variation.inventory,
-        'list_variation':[]} for color in list_color]
+    if variations.count()==0:
+        list_variation=[{'value':variation.color.value,'price':variation.price,'sku':variation.sku_classify,'inventory':variation.inventory,
+        'list_variation':[]} for variation in variations]
     if request.method=="POST":
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
@@ -1981,7 +1982,7 @@ def update_item(request,id):
         'shipping_shop':shipping_shop.values(),
         'media_upload':[{'file':i.upload_file(),'image_preview':i.file_preview(),
         'duration':i.duration,'media_type':i.media_type(),
-        } for i in item.media_upload.all()],'list_size':item.get_size(),'list_color':item.get_color(),
+        } for i in item.media_upload.all()],'list_size':item.get_size(),'list_color':item.get_list_color(),
         'item_detail':detail_item,'list_variation':list_variation}
         return Response(data)
 @api_view(['GET', 'POST'])
