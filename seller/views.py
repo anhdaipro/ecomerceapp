@@ -1468,15 +1468,15 @@ def shipping(request):
     if request.method=="POST":
         id=request.POST.get('id')
         shipping=Shipping.objects.get(id=id)
-        if shipping in shop.shipping_unit.all():
-            shop.shipping_unit.add(shipping)
+        if shipping in shop.shipping.all():
+            shop.shipping.add(shipping)
         else:
-            shop.shipping_unit.add(shipping)
+            shop.shipping.add(shipping)
         data={'pb':'og'}
         return Response(data)
     else:
         list_shipping=Shipping.objects.all()
-        list_shipping_shop=shop.shipping_unit.all()
+        list_shipping_shop=shop.shipping.all()
         list_shipping=[{'id':shipping.id,'method':shipping.method,'shipping_unit':shipping.shipping_unit,'enable':True if shipping in list_shipping_shop else False} for shipping in list_shipping]
         data={'list_shipping':list_shipping.values(),'list_shipping_shop':list_shipping_shop.values()}
         return Response(data)
@@ -1729,7 +1729,7 @@ def add_item(request):
         return Response({'product':'ok'})
     else:
         list_category=Category.objects.all()
-        shipping_shop=shop.shipping_unit.all()
+        shipping_shop=shop.shipping.all()
         data={
             
             'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
@@ -1969,7 +1969,7 @@ def update_item(request,id):
         Variation.objects.bulk_create(list_variation)
         return Response({'product':'ok'})
     else:
-        shipping_shop=shop.shipping_unit.all()
+        shipping_shop=shop.shipping.all()
         shipping_item=item.shipping.all()
         
         list_category=item.category.get_ancestors(include_self=True)
