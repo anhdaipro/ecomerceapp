@@ -1476,7 +1476,8 @@ def shipping(request):
         return Response(data)
     else:
         list_shipping=Shipping.objects.all()
-        data={'list_shipping':list_shipping.values()}
+        list_shipping_shop=shop.shipping_unit.all()
+        data={'list_shipping':list_shipping.values(),'list_shipping_shop':list_shipping_shop.values()}
         return Response(data)
         
 @api_view(['GET', 'POST'])
