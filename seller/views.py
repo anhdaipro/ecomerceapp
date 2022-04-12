@@ -1539,6 +1539,7 @@ def add_item(request):
         user=User.objects.get(id=user_id)
         shop=Shop.objects.get(user=user)
         #item
+        category_id=request.POST.get('category_id')
         from_quantity=request.POST.getlist('from_quantity')
         to_quantity=request.POST.getlist('to_quantity')
         price_range=request.POST.getlist('price_range')
@@ -1554,7 +1555,6 @@ def add_item(request):
         ])
         
         name=request.POST.get('name')
-        category_id=request.POST.get('category_id')
         description = request.POST.get('description')
         item = Item.objects.create(shop = shop,name = name,category=category,description=description)
         slug=name + '.' + str(item.id)
@@ -1572,7 +1572,7 @@ def add_item(request):
         shipping=Shipping.objects.filter(method=shipping_method)
         list_upload=UploadItem.objects.filter(id__in=upload_id)
         item.media_upload.add(*list_upload)
-        item.shipping_choice.add(shipping)
+        item.shipping_choice.add(*shipping)
         detail_item=Detail_Item.objects.create(item=item)
         # clotes,jeans,pants,
         detail_item.brand_clothes=request.POST.get('brand_clothes')#skirt,dress
