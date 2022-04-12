@@ -1742,11 +1742,10 @@ def update_item(request,id):
     list_category=Category.objects.filter(item=item).get_ancestors()
     list_color=Color.objects.filter(variation__item=item)
     detail_item=Detail_Item.objects.filter(item=item).values()
-    variation=Variation.objects.filter(item=item,size=None)
     list_variation=[{'value':color.value,'price':'','sku':'','inventory':'',
     'list_variation':[{'value':variation.size.value,'price':variation.price,
     'inventory':variation.inventory,'sku':variation.sku_classify} for variation in color.variation_set.all()]} for color in list_color]
-    if variation.count()==0:
+    if Variation.objects.filter(item=item,size=None).count()==0:
         list_variation=[{'value':color.value,'price':color.variation.price,'sku':color.variation.sku_classify,'inventory':color.variation.inventory,
         'list_variation':[]} for color in list_color]
     if request.method=="POST":
