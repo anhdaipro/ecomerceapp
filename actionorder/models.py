@@ -1,5 +1,6 @@
 
-
+from cloudinary_storage.storage import VideoMediaCloudinaryStorage
+from cloudinary_storage.validators import validate_video
 from django.db import models
 from cart.models import *
 from checkout.models import *
@@ -22,7 +23,8 @@ class CancelOrder(models.Model):
 class Media_review(models.Model):
     upload_by=models.ForeignKey(User,
                              on_delete=models.CASCADE)
-    file=models.FileField(null=True)
+    file=models.FileField(null=True,storage=VideoMediaCloudinaryStorage(),
+                              validators=[validate_video])
     duration=models.IntegerField(null=True)
     file_preview=models.FileField(null=True)
     def upload_file(self):
