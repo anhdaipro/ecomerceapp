@@ -1739,6 +1739,10 @@ def add_item(request):
 @api_view(['GET', 'POST'])
 def update_item(request,id):
     item=Item.objects.get(id=id)
+    access_token_obj = AccessToken(token)
+    user_id=access_token_obj['user_id']
+    user=User.objects.get(id=user_id)
+    shop=Shop.objects.get(user=user)
     list_category=Category.objects.filter(item=item).get_ancestors()
     list_color=Color.objects.filter(variation__item=item)
     detail_item=Detail_Item.objects.filter(item=item).values()
@@ -1750,10 +1754,7 @@ def update_item(request,id):
         list_variation=[{'value':variation.color.value,'price':variation.price,'sku':variation.sku_classify,'inventory':variation.inventory,
         'list_variation':[]} for variation in variations]
     if request.method=="POST":
-        access_token_obj = AccessToken(token)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
-        shop=Shop.objects.get(user=user)
+        
         #item
         from_quantity=request.POST.getlist('from_quantity')
         to_quantity=request.POST.getlist('to_quantity')
