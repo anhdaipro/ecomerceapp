@@ -2,10 +2,10 @@ import json
 from channels.consumer import AsyncConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
-from chatapp.models import Thread,Message,UploadFile
+from chat.models import *
 User = get_user_model()
-from shops.models import *
-from order.models import *
+from shop.models import *
+from checkout.models import *
 from django.utils import timezone
 class ChatConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
@@ -26,7 +26,7 @@ class ChatConsumer(AsyncConsumer):
         	await self.update_user_status(user,True)
 
     async def websocket_receive(self, event):
-        print('receive', event)
+
         data = json.loads(event['text'])
         msg = data.get('message')
         sent_by_id = data.get('sent_by')
@@ -92,6 +92,7 @@ class ChatConsumer(AsyncConsumer):
         user = self.scope['user']
         if user.is_authenticated:
     	    await self.update_user_status(user,False)
+
     async def chat_message(self, event):
         print('chat_message', event)
         await self.send({
