@@ -1466,15 +1466,12 @@ def shipping(request):
     user=User.objects.get(id=user_id)
     shop=Shop.objects.get(user=user)
     if request.method=="POST":
-        shipping_remove_id=request.POST.get('shipping_remove_id')
-        shipping_add_id=request.POST.get('shipping_add_id')
-        shipping=Shipping.objects.all()
-        if shipping_add_id:
-            shipping=Shipping.objects.get(id=shipping_add_id)
+        id=request.POST.get('id')
+        shipping=Shipping.objects.get(id=id)
+        if shipping in shop.shipping_unit.all():
             shop.shipping_unit.add(shipping)
         else:
-            shipping=Shipping.objects.get(id=shipping_remove_id)
-            shop.shipping_unit.remove(shipping)
+            shop.shipping_unit.add(shipping)
         data={'pb':'og'}
         return Response(data)
     else:
