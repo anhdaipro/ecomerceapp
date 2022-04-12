@@ -1712,7 +1712,7 @@ def add_item(request):
         color_variation=[]
         for i,j in variant_list:
             size_variation.append(i),color_variation.append(j)
-        variantion_content=list(zip(size_variation,color_variation,price,inventory,sku))
+        variation_content=list(zip(size_variation,color_variation,price,inventory,sku))
         
         list_variation = [
             Variation(
@@ -1949,7 +1949,7 @@ def update_item(request,id):
         color_variation=[]
         for i,j in variant_list:
             size_variation.append(i),color_variation.append(j)
-        variantion_content=list(zip(size_variation,color_variation,price,inventory,sku))
+        variation_content=list(zip(size_variation,color_variation,price,inventory,sku))
         
         list_variation = [
             Variation(
