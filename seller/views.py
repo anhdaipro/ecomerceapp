@@ -1708,11 +1708,11 @@ def add_item(request):
             variant_list=list(itertools.product(none,none))
         
         # bulk_create() prohibited to prevent data loss due to unsaved related object 'color'. do chưa save từng thằng color
-        size_variant=[]
-        color_variant=[]
+        size_variation=[]
+        color_variation=[]
         for i,j in variant_list:
             size_variation.append(i),color_variation.append(j)
-        variantion_content=list(zip(size_variant,color_variant,price,inventory,sku))
+        variantion_content=list(zip(size_variation,color_variation,price,inventory,sku))
         
         list_variation = [
             Variation(
@@ -1945,11 +1945,11 @@ def update_item(request,id):
             variant_list=list(itertools.product(none,none))
         
         # bulk_create() prohibited to prevent data loss due to unsaved related object 'color'. do chưa save từng thằng color
-        size_variant=[]
-        color_variant=[]
+        size_variation=[]
+        color_variation=[]
         for i,j in variant_list:
             size_variation.append(i),color_variation.append(j)
-        variantion_content=list(zip(size_variant,color_variant,price,inventory,sku))
+        variantion_content=list(zip(size_variation,color_variation,price,inventory,sku))
         
         list_variation = [
             Variation(
