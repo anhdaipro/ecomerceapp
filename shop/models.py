@@ -126,7 +126,7 @@ class Item(models.Model):
     price_ship=models.FloatField(null=True,blank=True)
     is_active=models.BooleanField(default=False)
     view=models.ManyToManyField(IpModel,blank=True)
-    slug=models.CharField(unique=True,max_length=100)
+    slug=models.CharField(max_length=100)
     created=models.DateTimeField(auto_now=True)
     liked=models.ManyToManyField(User,blank=True)
     def __str__(self):

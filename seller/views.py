@@ -1557,7 +1557,7 @@ def add_item(request):
         name=request.POST.get('name')
         description = request.POST.get('description')
         item = Item.objects.create(shop = shop,name = name,category=category,description=description)
-        slug=name + '.' + str(item.id)
+        item.slug=name + '.' + str(item.id)
         upload_id=request.POST.getlist('upload_id')
         item.brand= request.POST.get('brand')
         item.weight=request.POST.get('weigth')
@@ -1668,7 +1668,7 @@ def add_item(request):
         size_value=request.POST.getlist('size_value')
         size=Size.objects.bulk_create([
             Size(
-                name=request.POST.get('classify2'),
+                name=request.POST.get('size_name'),
                 value=size_value[i])
             for i in range(len(size_value))
         ]
@@ -1685,7 +1685,7 @@ def add_item(request):
                     none_color[j]==color_image[i]       
         color=Color.objects.bulk_create([
             Color(
-            name=request.POST.get('classify1'),
+            name=request.POST.get('color_name'),
             value=color_value[i],
             image=none_color[i])
             for i in range(len(color_value)) 
