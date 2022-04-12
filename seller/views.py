@@ -1729,7 +1729,6 @@ def add_item(request):
         return Response({'product':'ok'})
     else:
         list_category=Category.objects.all()
-        shipping_shop=shop.shipping.all()
         data={
             
             'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
