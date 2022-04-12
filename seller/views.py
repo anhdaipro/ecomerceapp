@@ -1744,7 +1744,7 @@ def update_item(request,id):
     detail_item=Detail_Item.objects.filter(item=item).values()
     variation=Variation.objects.filter(item=item,size=None)
     list_variation=[{'value':color.value,'price':'','sku':'','inventory':'',
-    'list_variation':[{'value':variation.size.value,'price':variation.pruce,
+    'list_variation':[{'value':variation.size.value,'price':variation.price,
     'inventory':variation.inventory,'sku':variation.sku} for variation in color.variation_set.all()]} for color in list_color]
     if variation.count()==0:
         list_variation=[{'value':color.value,'price':color.variation.price,'sku':color.variation.sku,'inventory':color.variation.inventory,
