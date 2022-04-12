@@ -157,14 +157,9 @@ DATABASES['default'].update(db_from_env)
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dupep1afe',
     'API_KEY': '388461171177852',
-    'API_SECRET': 'B0lnwsh6IKX4CsEAZnQHL_Miqxs',
-    'STATIC_IMAGES_EXTENSIONS': ['jpg', 'jpe', 'jpeg', 'jpc', 'jp2', 'j2k', 'wdp', 'jxr',
-                                 'hdp', 'png', 'gif', 'webp', 'bmp', 'tif', 'tiff', 'ico'],
-    'STATIC_VIDEOS_EXTENSIONS': ['mp4', 'webm', 'flv', 'mov', 'ogv' ,'3gp' ,'3g2' ,'wmv' ,
-                                 'mpeg' ,'flv' ,'mkv' ,'avi'],
+    'API_SECRET': 'B0lnwsh6IKX4CsEAZnQHL_Miqxs'
 }
-
-STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
