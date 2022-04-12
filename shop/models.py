@@ -84,7 +84,7 @@ class Buy_more_discount(models.Model):
 class UploadItem(models.Model):
     upload_by=models.ForeignKey(Shop, on_delete=models.CASCADE)
     file=models.FileField(upload_to='item/',storage=RawMediaCloudinaryStorage())
-    image_preview=models.FileField(upload_to='item/',null=True)
+    image_preview=models.FileField(upload_to='item/',null=True,storage=RawMediaCloudinaryStorage())
     duration=models.FloatField(null=True)
     upload_date=models.DateTimeField(auto_now_add=True)
     def upload_file(self):
