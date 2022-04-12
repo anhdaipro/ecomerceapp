@@ -1729,6 +1729,7 @@ def add_item(request):
         return Response({'product':'ok'})
     else:
         list_category=Category.objects.all()
+        shipping_shop=shop.shipping_unit.all()
         data={
             
             'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
@@ -1968,10 +1969,15 @@ def update_item(request,id):
         Variation.objects.bulk_create(list_variation)
         return Response({'product':'ok'})
     else:
+        shipping_shop=shop.shipping_unit.all()
+        shipping_item=item.shipping.all()
+        
+        list_category=item.category.get_ancestors(include_self=True)
         data={
-        'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
+        'item_name':item.name,'id':item.id,'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
         'parent':category.getparent()} for category in list_category],
-        'item_name':item.name,'id':item.id,'category':item.category.get_full_category(),
+        'list_shipping_item':list({item['method']:item for item in shipping_item}.values()),
+        'shipping_shop':shipping_shop.values(),
         'media_upload':[{'file':i.upload_file(),'image_preview':i.file_preview(),
         'duration':i.duration,'media_type':i.media_type(),
         } for i in item.media_upload.all()],'size':item.get_size(),'color':item.get_color(),
