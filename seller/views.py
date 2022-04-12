@@ -1716,8 +1716,7 @@ def add_item(request):
         
         list_variation = [
             Variation(
-            shop=shop,
-            item=Item.objects.filter(shop=shop,name=name).last(),
+            item=item.,
             color=color,
             size=size,
             price=int(price),
@@ -1953,8 +1952,7 @@ def update_item(request,id):
         
         list_variation = [
             Variation(
-            shop=shop,
-            item=Item.objects.filter(shop=shop,name=name).last(),
+            item=item,
             color=color,
             size=size,
             price=int(price),
@@ -1968,19 +1966,21 @@ def update_item(request,id):
     else:
         shipping_shop=shop.shipping.all()
         shipping_item=item.shipping.all()
-        
-        list_category=item.category.get_ancestors(include_self=True)
+        list_category_choice=item.category.get_ancestors(include_self=True)
+        list_category=Category.objects.all()
         data={
-        'item_name':item.name,'id':item.id,'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
+        'item_info':{'name':item.name,'id':item.id, 'height':item.height,'length':item.length,'weight':item.weight,
+        'description':item.description,status:item.status,'sku_product':item.sku_product},
+        'list_category_choice':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
+        'parent':category.getparent()} for category in list_category_choice],
+        'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
         'parent':category.getparent()} for category in list_category],
         'list_shipping_item':list({item['method']:item for item in shipping_item}.values()),
         'shipping_shop':shipping_shop.values(),
         'media_upload':[{'file':i.upload_file(),'image_preview':i.file_preview(),
         'duration':i.duration,'media_type':i.media_type(),
-        } for i in item.media_upload.all()],'size':item.get_size(),'color':item.get_color(),
-        'description':item.description,'item_detail':detail_item,
-        'list_variation':list_variation,
-        'height':item.height,'length':item.length,'weight':item.weight}
+        } for i in item.media_upload.all()],'list_size':item.get_size(),'list_color':item.get_color(),
+        'item_detail':detail_item,'list_variation':list_variation}
         return Response(data)
 @api_view(['GET', 'POST'])
 def create_shop(request):
