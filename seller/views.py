@@ -1558,7 +1558,7 @@ def add_item(request):
         description = request.POST.get('description')
         item = Item.objects.create(shop = shop,name = name,category=category,description=description)
         item.slug=name + '.' + str(item.id)
-        upload_id=request.POST.getlist('upload_id')
+        file_id=request.POST.getlist('file_id')
         item.brand= request.POST.get('brand')
         item.weight=request.POST.get('weigth')
         item.height=request.POST.get('height')
@@ -1570,7 +1570,7 @@ def add_item(request):
             item.buy_more_discount.add(*list_buy_more)
         shipping_method=request.POST.get('method')
         shipping=Shipping.objects.filter(method=shipping_method)
-        list_upload=UploadItem.objects.filter(id__in=upload_id)
+        list_upload=UploadItem.objects.filter(id__in=file_id)
         item.media_upload.add(*list_upload)
         item.shipping_choice.add(*shipping)
         detail_item=Detail_Item.objects.create(item=item)
@@ -1774,7 +1774,7 @@ def update_item(request,id):
         description = request.POST.get('description')
         item = Item.objects.create(shop = shop,name = name,category=category,description=description,slug=name)
         item.slug=name + '.' + str(item.id)
-        upload_id=request.POST.getlist('upload_id')
+        file_id=request.POST.getlist('file_id')
         item.brand= request.POST.get('brand')
         item.weight=request.POST.get('weigth')
         item.height=request.POST.get('height')
@@ -1802,11 +1802,14 @@ def update_item(request,id):
         item.height=request.POST.get('height')
         item.length=request.POST.get('length')
         item.width=request.POST.get('width')
-        item.save()
+        
         #buy more
         
         shipping=Shipping.objects.filter(method=shipping_method)
-        
+        list_upload=UploadItem.objects.filter(id__in=file_id)
+        item.media_upload.add(*list_upload)
+        item.shipping_choice.add(*shipping)
+        item.save()
         #detail item
         # clotes,jeans,pants,
         detail_item.brand_clothes=request.POST.get('brand_clothes')#skirt,dress
