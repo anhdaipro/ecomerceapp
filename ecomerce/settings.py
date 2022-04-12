@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'cart',
     'seller',
     'discount',
+    'itemdetail',
     'corsheaders',
     'django_social_share',
     'buyer',
