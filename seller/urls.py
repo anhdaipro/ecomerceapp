@@ -8,7 +8,7 @@ urlpatterns = [
     path("product/update_image", views.update_image,name='update_image'),
     path("product/category", views.add_item,name="add_item"),
     path("product/delete", views.delete_product,name="delete_product"),
-    path("shipping/", views.shipping,name="shipping"),
+    path("shipping/list", views.shipping,name="shipping"),
     path("shipping/shop/list", views.get_shipping),
     path("create-shop/", views.create_shop,name="create_shop"),
     path("dashboard", views.my_dashboard,name="dashboard"),
