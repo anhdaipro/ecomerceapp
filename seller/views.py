@@ -1716,7 +1716,7 @@ def add_item(request):
         
         list_variation = [
             Variation(
-            item=item.,
+            item=item,
             color=color,
             size=size,
             price=int(price),
