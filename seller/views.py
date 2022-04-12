@@ -1460,6 +1460,10 @@ def detail_flashsale(request,id):
 
 @api_view(['GET', 'POST'])
 def shipping(request):
+    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+    access_token_obj = AccessToken(token)
+    user_id=access_token_obj['user_id']
+    user=User.objects.get(id=user_id)
     shop=Shop.objects.get(user=user)
     if request.method=="POST":
         shipping_remove_id=request.POST.get('shipping_remove_id')
@@ -1472,6 +1476,10 @@ def shipping(request):
             shipping=Shipping.objects.get(id=shipping_remove_id)
             shop.shipping_unit.remove(shipping)
         data={'pb':'og'}
+        return Response(data)
+    else:
+        list_shipping=Shipping.objects.all()
+        data={'list_shipping':list_shipping.values()}
         return Response(data)
         
 @api_view(['GET', 'POST'])
