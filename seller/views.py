@@ -1774,7 +1774,7 @@ def update_item(request,id):
         category_id=request.POST.get('category_id')
         description = request.POST.get('description')
         item = Item.objects.create(shop = shop,name = name,category=category,description=description)
-        slug=name + '.' + str(item.id)
+        item.slug=name + '.' + str(item.id)
         upload_id=request.POST.getlist('upload_id')
         item.brand= request.POST.get('brand')
         item.weight=request.POST.get('weigth')
@@ -1797,9 +1797,6 @@ def update_item(request,id):
             ])
         # item 
         shipping_method=request.POST.getlist('method')
-        item.name=request.POST.get('name')
-        item.description = request.POST.get('description')
-        item.cover_image=request.FILES.get('cover_image')
         item.brand= request.POST.get('brand')
         item.video=request.FILES.get('video')
         item.weight=request.POST.get('weigth')
