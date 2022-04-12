@@ -18,7 +18,7 @@ from channels.auth import AuthMiddlewareStack
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ecomerce.settings')
 
 application = ProtocolTypeRouter({
-    'http': get_asgi_application(),
+    'https': get_asgi_application(),
     'websocket': AuthMiddlewareStack(
         URLRouter(
             chatapp.routing.websocket_urlpatterns
