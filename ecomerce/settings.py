@@ -152,7 +152,9 @@ DATABASES = {
         'PORT': '5432',
     }
 }
-
+JWT_AUTH = {
+    'JWT_AUTH_COOKIE': 'JWT',     # the cookie will also be sent on WebSocket connections
+}
 db_from_env = dj_database_url.config()
 DATABASES['default'].update(db_from_env)
 CLOUDINARY_STORAGE = {
