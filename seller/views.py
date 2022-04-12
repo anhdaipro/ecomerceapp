@@ -1748,7 +1748,7 @@ def update_item(request,id):
     'inventory':variation.inventory,'sku':variation.sku_classify} for variation in color.variation_set.all()]} for color in list_color]
     if variation.count()==0:
         list_variation=[{'value':color.value,'price':color.variation.price,'sku':color.variation.sku_classify,'inventory':color.variation.inventory,
-    'list_variation':[]} for color in list_color]
+        'list_variation':[]} for color in list_color]
     if request.method=="POST":
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
