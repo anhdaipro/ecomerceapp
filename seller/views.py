@@ -1568,10 +1568,11 @@ def add_item(request):
         if len(from_quantity)>0:
             list_buy_more=Buy_more_discount.objects.all().order_by('-id')[:len(from_quantity)]
             item.buy_more_discount.add(*list_buy_more)
-        shipping_method=request.POST.getlist('method')
+        shipping_method=request.POST.get('method')
         shipping=Shipping.objects.filter(method=shipping_method)
         list_upload=UploadItem.objects.filter(id__in=upload_id)
         item.media_upload.add(*list_upload)
+        item.shipping_choice.add(shipping)
         detail_item=Detail_Item.objects.create(item=item)
         # clotes,jeans,pants,
         detail_item.brand_clothes=request.POST.get('brand_clothes')#skirt,dress
