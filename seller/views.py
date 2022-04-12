@@ -1739,6 +1739,7 @@ def add_item(request):
 @api_view(['GET', 'POST'])
 def update_item(request,id):
     item=Item.objects.get(id=id)
+    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
     access_token_obj = AccessToken(token)
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id)
