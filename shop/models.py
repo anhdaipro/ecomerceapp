@@ -1,6 +1,6 @@
 from django.db import models
 from cloudinary_storage.storage import VideoMediaCloudinaryStorage
-from cloudinary_storage.validators import validate_video
+from cloudinary_storage.storage import RawMediaCloudinaryStorage
 # Create your models here.
 from django.db import models
 from django.db.models import  Q
@@ -83,8 +83,7 @@ class Buy_more_discount(models.Model):
         return str(self.id)
 class UploadItem(models.Model):
     upload_by=models.ForeignKey(Shop, on_delete=models.CASCADE)
-    file=models.FileField(upload_to='item/',storage=VideoMediaCloudinaryStorage(),
-                              validators=[validate_video])
+    file=models.FileField(upload_to='item/',storage=RawMediaCloudinaryStorage())
     image_preview=models.FileField(upload_to='item/',null=True)
     duration=models.FloatField(null=True)
     upload_date=models.DateTimeField(auto_now_add=True)
