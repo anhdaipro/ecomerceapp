@@ -1773,7 +1773,7 @@ def update_item(request,id):
         name=request.POST.get('name')
         category_id=request.POST.get('category_id')
         description = request.POST.get('description')
-        item = Item.objects.create(shop = shop,name = name,category=category,description=description)
+        item = Item.objects.create(shop = shop,name = name,category=category,description=description,slug=name)
         item.slug=name + '.' + str(item.id)
         upload_id=request.POST.getlist('upload_id')
         item.brand= request.POST.get('brand')
