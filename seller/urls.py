@@ -1,8 +1,9 @@
 from django.urls import path
 from . import views
-
+from .views import ListvoucherAPI
 urlpatterns = [
     path("product/", views.product,name='product'),
+    path("vouchers/list", ListvoucherAPI.as_view()),
     path("product/list", views.get_product,name='get_product'),
     path("product/<int:id>", views.update_item,name='update_item'),
     path("product/update_image", views.update_image,name='update_image'),

@@ -34,9 +34,15 @@ from bulk_update.helper import bulk_update
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models.functions import ExtractYear, ExtractMonth,ExtractHour,ExtractHour,ExtractDay,TruncDay,TruncHour,TruncMonth
 from rest_framework.decorators import api_view
-from rest_framework.views import APIView
+from rest_framework.views import APIView,ListAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from .serializers import VoucherSerializer
+class ListvoucherAPI(ListAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = VoucherSerializer
+    queryset = Vocher.objects.all()
+    
 @api_view(['GET', 'POST'])
 def index(request):
     shop=Shop.objects.get(user=user)
@@ -1675,15 +1681,15 @@ def add_item(request):
             for i in range(len(size_value))
         ]
         )
-        
+        none_color=[None for i in range(len(color_value))]
         #color
         color_value=request.POST.getlist('color_value')
         color_image=request.FILES.getlist('color_image')
-        none_color=[None for i in range(len(color_value))]
+        
         for j in range(len(none_color)):
             for i in range(len(color_image)):
                 if i==j:
-                    none_color[j]==color_image[i]       
+                    none_color[j]=color_image[i]       
         color=Color.objects.bulk_create([
             Color(
             name=request.POST.get('color_name'),
@@ -1914,7 +1920,7 @@ def update_item(request,id):
         for j in range(len(none_color)):
             for i in range(len(color_image)):
                 if i==j:
-                    none_color[j]==color_image[i]     
+                    none_color[j]=color_image[i]     
 
         color=Color.objects.bulk_create([
             Color(
