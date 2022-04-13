@@ -48,35 +48,55 @@ class ListvoucherAPI(ListAPIView):
     
     serializer_class = VoucherSerializer
     def get_queryset(self):
-        shop=Shop.objects.filter(user=request.user)
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+        access_token_obj = AccessToken(token)
+        user_id=access_token_obj['user_id']
+        user=User.objects.get(id=user_id)
+        shop=Shop.objects.filter(user=user)
         return Vocher.objects.filter(shop=shop)
 
 class ListcomboAPI(ListAPIView):
     
     serializer_class = ComboSerializer
     def get_queryset(self):
-        shop=Shop.objects.filter(user=request.user)
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+        access_token_obj = AccessToken(token)
+        user_id=access_token_obj['user_id']
+        user=User.objects.get(id=user_id)
+        shop=Shop.objects.filter(user=user)
         return Promotion_combo.objects.filter(shop=shop)
 
 class ListdealshockAPI(ListAPIView):
     
     serializer_class = DealsockSerializer
     def get_queryset(self):
-        shop=Shop.objects.filter(user=request.user)
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+        access_token_obj = AccessToken(token)
+        user_id=access_token_obj['user_id']
+        user=User.objects.get(id=user_id)
+        shop=Shop.objects.filter(user=user)
         return Buy_with_shock_deal.objects.filter(shop=shop)
 
 class ListprogramAPI(ListAPIView):
     
     serializer_class = ProgramSerializer
     def get_queryset(self):
-        shop=Shop.objects.filter(user=request.user)
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+        access_token_obj = AccessToken(token)
+        user_id=access_token_obj['user_id']
+        user=User.objects.get(id=user_id)
+        shop=Shop.objects.filter(user=user)
         return Shop_program.objects.filter(shop=shop)
 
 class ListflashsaleAPI(ListAPIView):
     
     serializer_class = FlashsaleSerializer
     def get_queryset(self):
-        shop=Shop.objects.filter(user=request.user)
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+        access_token_obj = AccessToken(token)
+        user_id=access_token_obj['user_id']
+        user=User.objects.get(id=user_id)
+        shop=Shop.objects.filter(user=user)
         return Flashsale.objects.filter(shop=shop)
     
 @api_view(['GET', 'POST'])
