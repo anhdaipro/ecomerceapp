@@ -11,6 +11,7 @@ class VoucherSerializer(serializers.ModelSerializer):
         fields = ['code_type','name_of_the_discount_program','code','valid_from','valid_to',
                 'amount','percent','maximum_usage','number_used','count_product']
         read_only_fields = ['code_type']
+        extra_kwargs = {'name_of_the_discount_program': {'write_only': True}}
     def get_number_used(self,obj):
         return Order.objects.filter(vocher=obj,received=True).count()
     def get_count_product(self,obj):
