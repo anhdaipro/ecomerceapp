@@ -1971,7 +1971,7 @@ def update_item(request,id):
         return Response({'product':'ok'})
     else:
         shipping_shop=shop.shipping.all()
-        shipping_item=list(item.shipping_choice.all())
+        shipping_item=item.shipping_choice.all()
         list_category_choice=item.category.get_ancestors(include_self=True)
         list_category=Category.objects.all()
         data={
@@ -1981,7 +1981,7 @@ def update_item(request,id):
         'parent':category.getparent()} for category in list_category_choice],
         'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
         'parent':category.getparent()} for category in list_category],
-        'list_shipping_item':list({shipping['method']:shipping for shipping in shipping_item}.values()),
+        'list_shipping_item':[{'method':shipping.method} for shipping in shipping_item],
        
         'shipping_shop':shipping_shop.values(),
         'media_upload':[{'file':i.upload_file(),'image_preview':i.file_preview(),
