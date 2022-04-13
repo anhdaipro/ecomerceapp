@@ -1971,7 +1971,7 @@ def update_item(request,id):
         return Response({'product':'ok'})
     else:
         shipping_shop=shop.shipping.all()
-        shipping_item=item.shipping_choice.all()
+        shipping_item=list(item.shipping_choice.all())
         list_category_choice=item.category.get_ancestors(include_self=True)
         list_category=Category.objects.all()
         data={
