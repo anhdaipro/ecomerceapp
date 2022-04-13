@@ -48,6 +48,7 @@ class ListvoucherAPI(ListAPIView):
     
     serializer_class = VoucherSerializer
     def get_queryset(self):
+        request = self.request
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
@@ -59,6 +60,7 @@ class ListcomboAPI(ListAPIView):
     
     serializer_class = ComboSerializer
     def get_queryset(self):
+        request = self.request
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
@@ -70,6 +72,7 @@ class ListdealshockAPI(ListAPIView):
     
     serializer_class = DealsockSerializer
     def get_queryset(self):
+        request = self.request
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
@@ -81,6 +84,7 @@ class ListprogramAPI(ListAPIView):
     
     serializer_class = ProgramSerializer
     def get_queryset(self):
+        request = self.request
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
@@ -92,6 +96,7 @@ class ListflashsaleAPI(ListAPIView):
     
     serializer_class = FlashsaleSerializer
     def get_queryset(self):
+        request = self.request
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
