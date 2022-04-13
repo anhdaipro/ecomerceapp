@@ -1968,7 +1968,7 @@ def update_item(request,id):
         list_variation=[{'value':color.value,'price':'','sku':'','inventory':'',
         'list_variation':[{'value':variation.size.value,'price':variation.price,
         'inventory':variation.inventory,'sku':variation.sku_classify} for variation in color.variation_set.all()]} for color in list_color]
-        if variations.count()==0:
+        if variations.exists():
             list_variation=[{'value':variation.color.value,'price':variation.price,'sku':variation.sku_classify,'inventory':variation.inventory,
             'list_variation':[]} for variation in variations]
         shipping_shop=shop.shipping.all()
