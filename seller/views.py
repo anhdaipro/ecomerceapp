@@ -1559,6 +1559,7 @@ def add_item(request):
         item = Item.objects.create(shop = shop,name = name,category=category,description=description)
         item.slug=name + '.' + str(item.id)
         file_id=request.POST.getlist('file_id')
+        file_id_remove=request.POST.getlist('file_id_remove')
         item.brand= request.POST.get('brand')
         item.weight=request.POST.get('weigth')
         item.height=request.POST.get('height')
@@ -1571,6 +1572,7 @@ def add_item(request):
         shipping_method=request.POST.get('method')
         shipping=Shipping.objects.filter(method=shipping_method)
         list_upload=UploadItem.objects.filter(id__in=file_id)
+        UploadItem.objects.filter(id__in=file_id_reomve).delete()
         item.media_upload.add(*list_upload)
         item.shipping_choice.add(*shipping)
         detail_item=Detail_Item.objects.create(item=item)
@@ -1744,7 +1746,6 @@ def update_item(request,id):
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id)
     shop=Shop.objects.get(user=user)
-    list_category=Category.objects.filter(item=item).get_ancestors()
     list_color=Color.objects.filter(variation__item=item)
     detail_item=Detail_Item.objects.filter(item=item).values()
     variations=Variation.objects.filter(item=item,size=None)
@@ -1777,6 +1778,7 @@ def update_item(request,id):
         item = Item.objects.create(shop = shop,name = name,category=category,description=description,slug=name)
         item.slug=name + '.' + str(item.id)
         file_id=request.POST.getlist('file_id')
+        file_id_remove=request.POST.getlist('file_id_reomve')
         item.brand= request.POST.get('brand')
         item.weight=request.POST.get('weigth')
         item.height=request.POST.get('height')
@@ -1809,6 +1811,7 @@ def update_item(request,id):
         
         shipping=Shipping.objects.filter(method=shipping_method)
         list_upload=UploadItem.objects.filter(id__in=file_id)
+        UploadItem.objects.filter(id__in=file_id_reomve).delete()
         item.media_upload.add(*list_upload)
         item.shipping_choice.add(*shipping)
         item.save()
@@ -1912,8 +1915,7 @@ def update_item(request,id):
                 name=request.POST.get('size_name'),
                 value=size_value[i])
             for i in range(len(size_value))
-        ]
-        )
+        ])
         
         #color
         color_value=request.POST.getlist('color_value')
@@ -1933,7 +1935,6 @@ def update_item(request,id):
         ])
 
         none=[None]
-
         list_color=Color.objects.all().order_by('-id')[:len(color_value)]
         list_size=Size.objects.all().order_by('-id')[:len(size_value)]
         price=request.POST.getlist('price')
@@ -1970,7 +1971,7 @@ def update_item(request,id):
         return Response({'product':'ok'})
     else:
         shipping_shop=shop.shipping.all()
-        shipping_item=item.shipping.all()
+        shipping_item=item.shipping_choice.all()
         list_category_choice=item.category.get_ancestors(include_self=True)
         list_category=Category.objects.all()
         data={
