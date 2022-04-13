@@ -1981,7 +1981,8 @@ def update_item(request,id):
         'parent':category.getparent()} for category in list_category_choice],
         'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
         'parent':category.getparent()} for category in list_category],
-        'list_shipping_item':list({item['method']:item for item in shipping_item}.values()),
+        'list_shipping_item':list({shipping['method']:shipping for shipping in shipping_item}.values()),
+       
         'shipping_shop':shipping_shop.values(),
         'media_upload':[{'file':i.upload_file(),'image_preview':i.file_preview(),
         'duration':i.duration,'media_type':i.media_type(),
