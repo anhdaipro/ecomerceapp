@@ -42,11 +42,42 @@ from rest_framework.generics import (
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
-from .serializers import VoucherSerializer
+from .serializers import VoucherSerializer,ComboSerializer,ProgramSerializer,DealsockSerializer,FlashsaleSerializer
+
 class ListvoucherAPI(ListAPIView):
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated, )
     serializer_class = VoucherSerializer
-    queryset = Vocher.objects.all()
+    def get_queryset(self):
+        shop=Shop.objects.filter(user=request.user)
+        return Vocher.objects.filter(shop=shop)
+
+class ListcomboAPI(ListAPIView):
+    permission_classes = (IsAuthenticated, )
+    serializer_class = ComboSerializer
+    def get_queryset(self):
+        shop=Shop.objects.filter(user=request.user)
+        return Promotion_combo.objects.filter(shop=shop)
+
+class ListdealshockAPI(ListAPIView):
+    permission_classes = (IsAuthenticated, )
+    serializer_class = DealsockSerializer
+    def get_queryset(self):
+        shop=Shop.objects.filter(user=request.user)
+        return Buy_with_shock_deal.objects.filter(shop=shop)
+
+class ListprogramAPI(ListAPIView):
+    permission_classes = (IsAuthenticated, )
+    serializer_class = ProgramSerializer
+    def get_queryset(self):
+        shop=Shop.objects.filter(user=request.user)
+        return Shop_program.objects.filter(shop=shop)
+
+class ListflashsaleAPI(ListAPIView):
+    permission_classes = (IsAuthenticated, )
+    serializer_class = FlashsaleSerializer
+    def get_queryset(self):
+        shop=Shop.objects.filter(user=request.user)
+        return Flashsale.objects.filter(shop=shop)
     
 @api_view(['GET', 'POST'])
 def index(request):
