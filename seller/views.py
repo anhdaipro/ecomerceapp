@@ -1561,7 +1561,7 @@ def add_item(request):
         file_id=request.POST.getlist('file_id')
         file_id_remove=request.POST.getlist('file_id_remove')
         item.brand= request.POST.get('brand')
-        item.weight=request.POST.get('weigth')
+        item.weight=request.POST.get('weight')
         item.height=request.POST.get('height')
         item.length=request.POST.get('length')
         item.width=request.POST.get('width')
@@ -1746,8 +1746,6 @@ def update_item(request,id):
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id)
     shop=Shop.objects.get(user=user)
-    list_color=Color.objects.filter(variation__item=item).distinct()
-    detail_item=Detail_Item.objects.filter(item=item).values()
     
     if request.method=="POST":
         #item
@@ -1773,7 +1771,7 @@ def update_item(request,id):
         file_id=request.POST.getlist('file_id')
         file_id_remove=request.POST.getlist('file_id_reomve')
         item.brand= request.POST.get('brand')
-        item.weight=request.POST.get('weigth')
+        item.weight=request.POST.get('weight')
         item.height=request.POST.get('height')
         item.length=request.POST.get('length')
         item.width=request.POST.get('width')
@@ -1963,6 +1961,8 @@ def update_item(request,id):
         Variation.objects.bulk_create(list_variation)
         return Response({'product':'ok'})
     else:
+        list_color=Color.objects.filter(variation__item=item).distinct()
+        detail_item=Detail_Item.objects.filter(item=item).values()
         buymore=item.buy_more_discount.all()
         variations=Variation.objects.filter(item=item,size=None)
         list_variation=[{'value':color.value,'price':'','sku':'','inventory':'',
@@ -1970,7 +1970,7 @@ def update_item(request,id):
         'inventory':variation.inventory,'sku':variation.sku_classify} for variation in color.variation_set.all()]} for color in list_color]
         if variations.count()==0:
             list_variation=[{'value':variation.color.value,'price':variation.price,'sku':variation.sku_classify,'inventory':variation.inventory,
-        'list_variation':[]} for variation in variations]
+            'list_variation':[]} for variation in variations]
         shipping_shop=shop.shipping.all()
         shipping_item=item.shipping_choice.all()
         list_category_choice=item.category.get_ancestors(include_self=True)
