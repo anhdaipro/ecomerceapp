@@ -1985,7 +1985,7 @@ def update_item(request,id):
        
         'shipping_shop':shipping_shop.values(),
         'media_upload':[{'file':i.upload_file(),'file_preview':i.file_preview(),
-        'duration':i.duration,'media_type':i.media_type(),'id':file.id
+        'duration':i.duration,'filetype':i.media_type(),'id':file.id
         } for i in item.media_upload.all()],'list_size':item.get_size(),'list_color':item.get_list_color(),
         'item_detail':detail_item,'list_variation':list_variation}
         return Response(data)
