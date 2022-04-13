@@ -10,7 +10,7 @@ from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate,login,logout
 
 def category(request,slug):
-    return render(request,'store/category.html')
+    return render(request,'index.html')
 def product(request,slug):
     recently_viewed_products = None
     if 'recently_viewed' in request.session:
@@ -27,12 +27,12 @@ def product(request,slug):
         request.session['recently_viewed'] = [slug]
 
     request.session.modified = True
-    return render(request,'store/product.html')
+    return render(request,'product.html')
 
 def bundle_deal(request,id):
-    return render(request,'store/promotion_combo.html')
+    return render(request,'promotion_combo.html')
 def deal_shock(request,id):
-    return render(request,'order/deal_shock.html')
+    return render(request,'deal_shock.html')
 def sendEmail(request, order):
     mail_subject = 'Thank you for your order!'
     message = render_to_string('order/order_recieved_email.html', {
