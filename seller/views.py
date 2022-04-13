@@ -1680,9 +1680,8 @@ def add_item(request):
         color_value=request.POST.getlist('color_value')
         color_image=request.FILES.getlist('color_image')
         none_color=[None for i in range(len(color_value))]
-
-        for i in range(len(color_image)):
-            for j in range(len(none_color)):
+        for j in range(len(none_color)):
+            for i in range(len(color_image)):
                 if i==j:
                     none_color[j]==color_image[i]       
         color=Color.objects.bulk_create([
@@ -1912,11 +1911,11 @@ def update_item(request,id):
         color_value=request.POST.getlist('color_value')
         color_image=request.FILES.getlist('color_image')
         none_color=[None for i in range(len(color_value))]
-
-        for i in range(len(color_image)):
-            for j in range(len(none_color)):
+        for j in range(len(none_color)):
+            for i in range(len(color_image)):
                 if i==j:
-                    none_color[j]==color_image[i]       
+                    none_color[j]==color_image[i]     
+
         color=Color.objects.bulk_create([
             Color(
             name=request.POST.get('color_name'),
