@@ -166,7 +166,7 @@ class Item(models.Model):
         list_color=[]
         color=Color.objects.filter(variation__item=self)
         if color.exists():
-            list_color=[{'file':i.get_file(),'file_preview':None,'filetype':'image','id':i.id,'name':i.name,'value':i.value}for i in color.distinct()]
+            list_color=[{'file':i.get_file(),'file_preview':None,'filetype':'image','id':i.id,'name':i.name,'value':i.value} for i in color.distinct()]
         return list_color
     def get_count_deal(self):
         count_deal=0
