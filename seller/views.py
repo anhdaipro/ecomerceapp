@@ -53,7 +53,7 @@ class ListvoucherAPI(ListAPIView):
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
-        shop=Shop.objects.filter(user=user)
+        shop=Shop.objects.get(user=user)
         return Vocher.objects.filter(shop=shop)
 
 class ListcomboAPI(ListAPIView):
@@ -65,7 +65,7 @@ class ListcomboAPI(ListAPIView):
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
-        shop=Shop.objects.filter(user=user)
+        shop=Shop.objects.get(user=user)
         return Promotion_combo.objects.filter(shop=shop)
 
 class ListdealshockAPI(ListAPIView):
@@ -77,7 +77,7 @@ class ListdealshockAPI(ListAPIView):
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
-        shop=Shop.objects.filter(user=user)
+        shop=Shop.objects.get(user=user)
         return Buy_with_shock_deal.objects.filter(shop=shop)
 
 class ListprogramAPI(ListAPIView):
@@ -89,7 +89,7 @@ class ListprogramAPI(ListAPIView):
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
-        shop=Shop.objects.filter(user=user)
+        shop=Shop.objects.get(user=user)
         return Shop_program.objects.filter(shop=shop)
 
 class ListflashsaleAPI(ListAPIView):
@@ -101,7 +101,7 @@ class ListflashsaleAPI(ListAPIView):
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
-        shop=Shop.objects.filter(user=user)
+        shop=Shop.objects.get(user=user)
         return Flashsale.objects.filter(shop=shop)
     
 @api_view(['GET', 'POST'])
