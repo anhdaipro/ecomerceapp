@@ -9,7 +9,7 @@ class VoucherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vocher
         fields = ['id','code_type','name_of_the_discount_program','code','valid_from','valid_to',
-                'amount','percent','maximum_usage','number_used','count_product']
+                'amount','percent','maximum_usage','number_used','count_product','discount_type']
         read_only_fields = ['code_type']
     def get_number_used(self,obj):
         return Order.objects.filter(vocher=obj,received=True).count()
