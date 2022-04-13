@@ -1756,7 +1756,6 @@ def update_item(request,id):
         list_variation=[{'value':variation.color.value,'price':variation.price,'sku':variation.sku_classify,'inventory':variation.inventory,
         'list_variation':[]} for variation in variations]
     if request.method=="POST":
-        
         #item
         from_quantity=request.POST.getlist('from_quantity')
         to_quantity=request.POST.getlist('to_quantity')
@@ -1982,10 +1981,9 @@ def update_item(request,id):
         'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
         'parent':category.getparent()} for category in list_category],
         'list_shipping_item':[{'method':shipping.method} for shipping in shipping_item],
-       
         'shipping_shop':shipping_shop.values(),
         'media_upload':[{'file':i.upload_file(),'file_preview':i.file_preview(),
-        'duration':i.duration,'filetype':i.media_type(),'id':file.id
+        'duration':i.duration,'filetype':i.media_type(),'id':i.id
         } for i in item.media_upload.all()],'list_size':item.get_size(),'list_color':item.get_list_color(),
         'item_detail':detail_item,'list_variation':list_variation}
         return Response(data)
