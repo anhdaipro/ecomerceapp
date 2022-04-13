@@ -1976,7 +1976,7 @@ def update_item(request,id):
         list_category=Category.objects.all()
         data={
         'item_info':{'name':item.name,'id':item.id, 'height':item.height,'length':item.length,'weight':item.weight,
-        'description':item.description,status:item.status,'sku_product':item.sku_product},
+        'description':item.description,'status':item.status,'sku_product':item.sku_product},
         'list_category_choice':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
         'parent':category.getparent()} for category in list_category_choice],
         'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
