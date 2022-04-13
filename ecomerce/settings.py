@@ -263,10 +263,11 @@ DJOSER = {
     'ACTIVATION_URL': 'activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SOCIAL_AUTH_TOKEN_STRATEGY': 'djoser.social.token.jwt.TokenStrategy',
+    'SOCIAL_AUTH_LOGIN_REDIRECT_URL' : 'http://localhost:3000',
     'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['https://anhdai.herokuapp.com/google', 'https://anhdai.herokuapp.com/facebook'],
     
 }
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://localhost:3000'
+
 SOCIAL_AUTH_FACEBOOK_EXTRA_DATA = [
     ('name', 'name'),
     ('email', 'email'),
