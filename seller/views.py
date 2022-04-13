@@ -1746,7 +1746,7 @@ def update_item(request,id):
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id)
     shop=Shop.objects.get(user=user)
-    list_color=Color.objects.filter(variation__item=item)
+    list_color=Color.objects.filter(variation__item=item).distinct()
     detail_item=Detail_Item.objects.filter(item=item).values()
     variations=Variation.objects.filter(item=item,size=None)
     list_variation=[{'value':color.value,'price':'','sku':'','inventory':'',
