@@ -2,6 +2,7 @@ from rest_framework import serializers
 from shop.models import *
 from cart.models import *
 from category.models import *
+from myweb.models import *
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
 from rest_framework.authtoken.models import Token
