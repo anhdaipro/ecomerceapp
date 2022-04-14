@@ -330,11 +330,56 @@ class Variation(models.Model):
         return str(self.item)
     def get_absolute_url(self):
         return reverse("deal_shock", kwargs={"id": self.id})
-    
+    def update_percent(self):
+        count_program=Shop_program.objects.filter(product=self.item,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).count()
+        if count_program==0:
+            self.percent_discount=0
+    def save(self, *args, **kwargs):
+        self.update_percent()        
+        super(Variation, self).save(*args, **kwargs)
+    def discount_price_deal_shock(self):
+        discount=0
+        if self.percent_discount_deal_shock>0:
+            discount= self.price*self.percent_discount_deal_shock/100
+        return discount
+    def total_discount(self):
+        discount=0
+        if self.percent_discount and self.item.count_program_valid() > 0:
+            discount= self.price*(self.percent_discount)/100
+        return discount
+    class Meta:
+        ordering=['color']
+    def number_order(self):
+        number_order=0
+        order=Order.objects.filter(items__product=self,received=True).aggregate(count=Count('id'))
+        if order['count'] is not None:
+            number_order += int(order['count'])
+        return number_order
+    def get_size(self):
+        size=''
+        if Size.objects.filter(variation=self).exists():
+            size=Size.objects.filter(variation=self).last().value
+        return size
+    def get_color(self):
+        color=''
+        if Color.objects.filter(variation=self).exists():
+            color=Color.objects.filter(variation=self).last().value
+        return color
     
     
 class Byproductcart(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     byproduct=models.ForeignKey(Variation,on_delete=models.CASCADE,null=True)
     quantity=models.IntegerField()
+    def discount_deal_by(self):
+        return self.quantity * self.byproduct.discount_price_deal_shock()
+    def price_by(self):
+        return self.quantity*self.byproduct.price
+    def discount_by(self):
+        total_discount=0
+        if self.byproduct.item.count_program_valid()>0:
+            total_discount=self.quantity*self.byproduct.price*(self.byproduct.percent_discount/100)
+        return total_discount
+    def total_price(self):
+        return self.price_by()-self.discount_deal_by()-self.discount_by()
    

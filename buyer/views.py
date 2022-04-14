@@ -595,8 +595,7 @@ class CartAPIView(APIView):
         cart_item=OrderItem.objects.filter(ordered=False,user=user)[0:5]
         cart_items=OrderItem.objects.filter(ordered=False,user=user)
         count=cart_items.count()
-        list_cart_item=[{'item_info':order_item.product.item.item_info(),
-                'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
+        list_cart_item=[{'item_info':order_item.product.item.item_info(),'id':order_item.id,                'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
                 'item_url':order_item.product.item.get_absolute_url(),
                 'price':order_item.product.price-order_item.product.total_discount(),
                 'shock_deal_type':order_item.product.item.shock_deal_type(),
@@ -829,10 +828,11 @@ class AddToCartAPIView(APIView):
                 order_item.save()
                 return Response({'eross':'over quantity'})
             else:
-                data={'exist':'existeds',
+                data={'item_info':order_item.product.item.item_info(),'id':order_item.id,                'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
                 'item_url':order_item.product.item.get_absolute_url(),
-                'item_info':order_item.product.item.item_info(),
-                'total_price':order_item.total_price_orderitem()
+                'price':order_item.product.price-order_item.product.total_discount(),
+                'shock_deal_type':order_item.product.item.shock_deal_type(),
+                'promotion':order_item.product.item.get_promotion(),
                 }
                 return Response(data)
         except Exception:
@@ -844,9 +844,11 @@ class AddToCartAPIView(APIView):
                 shop=item.shop,
                 )
             data={
+                'item_info':order_item.product.item.item_info(),'id':order_item.id,                'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
                 'item_url':order_item.product.item.get_absolute_url(),
-                'item_info':order_item.product.item.item_info(),
-                'total_price':order_item.total_price_orderitem()
+                'price':order_item.product.price-order_item.product.total_discount(),
+                'shock_deal_type':order_item.product.item.shock_deal_type(),
+                'promotion':order_item.product.item.get_promotion(),
                 }
             return Response(data)
 
