@@ -1742,10 +1742,11 @@ def add_item(request):
             for i in range(len(size_value))
         ]
         )
-        none_color=[None for i in range(len(color_value))]
+
         #color
         color_value=request.POST.getlist('color_value')
         color_image=request.FILES.getlist('color_image')
+        none_color=[None for i in range(len(color_value))]
         
         for j in range(len(none_color)):
             for i in range(len(color_image)):
