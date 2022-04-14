@@ -52,13 +52,7 @@ class Vocher(models.Model):
     created=models.DateTimeField(auto_now=True)
     
 
-class Shop_program(models.Model):
-    shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
-    name_program=models.CharField(max_length=100)
-    product=models.ManyToManyField(to='shop.Item',blank=True)
-    valid_from=models.DateTimeField(null=True)
-    valid_to=models.DateTimeField(null=True)
-    created=models.DateTimeField(auto_now=True)
+
 
 combo_type_choices=(
 ('1','percentage discount'),

@@ -25,14 +25,14 @@ class ComboSerializer(serializers.ModelSerializer):
     def get_list_product(self,obj):
         return [{'image':item.media_upload.all()[0].upload_file()} for item in obj.product.all()]
        
-class ProgramSerializer(serializers.ModelSerializer):
+'''class ProgramSerializer(serializers.ModelSerializer):
     list_product=serializers.SerializerMethodField()
     class Meta:
         model = Shop_program
         fields = ['id','name_program','valid_from','valid_to','list_product']
 
     def get_list_product(self,obj):
-        return [{'image':item.media_upload.all()[0].upload_file()} for item in obj.product.all()]
+        return [{'image':item.media_upload.all()[0].upload_file()} for item in obj.product.all()]'''
 
 class DealsockSerializer(serializers.ModelSerializer):
     list_mainproduct=serializers.SerializerMethodField()

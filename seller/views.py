@@ -42,7 +42,7 @@ from rest_framework.generics import (
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
-from .serializers import VoucherSerializer,ComboSerializer,ProgramSerializer,DealsockSerializer,FlashsaleSerializer
+from .serializers import VoucherSerializer,ComboSerializer,DealsockSerializer,FlashsaleSerializer
 
 class ListvoucherAPI(ListAPIView):
     
@@ -80,17 +80,7 @@ class ListdealshockAPI(ListAPIView):
         shop=Shop.objects.get(user=user)
         return Buy_with_shock_deal.objects.filter(shop=shop)
 
-class ListprogramAPI(ListAPIView):
-    
-    serializer_class = ProgramSerializer
-    def get_queryset(self):
-        request = self.request
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
-        shop=Shop.objects.get(user=user)
-        return Shop_program.objects.filter(shop=shop)
+
 
 class ListflashsaleAPI(ListAPIView):
     
