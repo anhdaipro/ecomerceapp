@@ -13,9 +13,9 @@ from account.models import *
 from shop.models import *
 from shipping.models import *
 from category.models import *
-from checkout.models import *
-from discount.models import *
-from cart.models import *
+#from checkout.models import *
+#from discount.models import *
+#from cart.models import *
 from django.db.models import FloatField
 from django.db.models import Max, Min, Count, Avg,Sum,F,Value as V
 from django.contrib.auth import authenticate,login,logout
@@ -42,9 +42,9 @@ from rest_framework.generics import (
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
-from .serializers import VoucherSerializer,ComboSerializer,DealsockSerializer,FlashsaleSerializer
+#from .serializers import VoucherSerializer,ComboSerializer,DealsockSerializer,FlashsaleSerializer
 
-class ListvoucherAPI(ListAPIView):
+'''class ListvoucherAPI(ListAPIView):
     
     serializer_class = VoucherSerializer
     def get_queryset(self):
@@ -92,7 +92,7 @@ class ListflashsaleAPI(ListAPIView):
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         shop=Shop.objects.get(user=user)
-        return Flashsale.objects.filter(shop=shop)
+        return Flashsale.objects.filter(shop=shop)'''
     
 @api_view(['GET', 'POST'])
 def index(request):

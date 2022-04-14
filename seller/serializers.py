@@ -1,5 +1,5 @@
-from discount.models import *
-from checkout.models import *
+#from discount.models import *
+#from checkout.models import *
 from shop.models import *
 from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer
@@ -32,7 +32,7 @@ class ComboSerializer(serializers.ModelSerializer):
         fields = ['id','name_program','valid_from','valid_to','list_product']
 
     def get_list_product(self,obj):
-        return [{'image':item.media_upload.all()[0].upload_file()} for item in obj.product.all()]'''
+        return [{'image':item.media_upload.all()[0].upload_file()} for item in obj.product.all()]
 
 class DealsockSerializer(serializers.ModelSerializer):
     list_mainproduct=serializers.SerializerMethodField()
