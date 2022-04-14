@@ -12,50 +12,50 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RemoveField(
             model_name='buy_with_shock_deal',
-            name='valid_from',
+            name='from_valid',
         ),
         migrations.RemoveField(
             model_name='buy_with_shock_deal',
-            name='valid_to',
+            name='to_valid',
         ),
         migrations.RemoveField(
             model_name='flash_sale',
-            name='valid_from',
+            name='from_valid',
         ),
         migrations.RemoveField(
             model_name='flash_sale',
-            name='valid_to',
+            name='to_valid',
         ),
         migrations.RemoveField(
             model_name='follower_offer',
-            name='valid_from',
+            name='from_valid',
         ),
         migrations.RemoveField(
             model_name='follower_offer',
-            name='valid_to',
+            name='to_valid',
         ),
         migrations.RemoveField(
             model_name='promotion_combo',
-            name='valid_from',
+            name='from_valid',
         ),
         migrations.RemoveField(
             model_name='promotion_combo',
-            name='valid_to',
+            name='to_valid',
         ),
         migrations.RemoveField(
             model_name='shop_award',
-            name='valid_from',
+            name='from_valid',
         ),
         migrations.RemoveField(
             model_name='shop_award',
-            name='valid_to',
+            name='to_valid',
         ),
         migrations.RemoveField(
             model_name='shop_program',
-            name='valid_from',
+            name='from_valid',
         ),
         migrations.RemoveField(
             model_name='shop_program',
-            name='valid_to',
+            name='to_valid',
         ),
     ]
