@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'city',
     'actionorder',
     'chat',
+    'myweb',
     'shipping',
     'channels',
     'mptt',
