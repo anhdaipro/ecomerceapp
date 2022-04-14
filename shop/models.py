@@ -116,7 +116,7 @@ class Item(models.Model):
     quantity_limit_flash_sale=models.IntegerField(null=True)
     sku_product=models.CharField(max_length=20,null=True)
     status=models.CharField(max_length=20,choices=status_choice,default='1')
-    pre_order=models.CharField(max_length=10,null=True)
+    pre_order=models.CharField(max_length=20,null=True)
     weight=models.IntegerField(null=True)
     height=models.IntegerField(null=True)
     width=models.IntegerField(null=True)
