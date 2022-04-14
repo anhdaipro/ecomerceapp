@@ -53,8 +53,6 @@ class Shop_program(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
     name_program=models.CharField(max_length=100)
     product=models.ManyToManyField(to='shop.Item',blank=True)
-    valid_from=models.DateTimeField(null=True)
-    valid_to=models.DateTimeField(null=True)
     created=models.DateTimeField(auto_now=True)
 
 combo_type_choices=(
@@ -66,8 +64,6 @@ class Promotion_combo(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
     promotion_combo_name=models.CharField(max_length=100)
     product=models.ManyToManyField(to='shop.Item',blank=True)
-    valid_from=models.DateTimeField()
-    valid_to=models.DateTimeField()
     combo_type=models.CharField(max_length=100,choices=combo_type_choices)
     discount_percent=models.IntegerField(null=True,blank=True)
     discount_price=models.IntegerField(default=0,null=True,blank=True)
@@ -89,8 +85,6 @@ class Buy_with_shock_deal(models.Model):
     program_name_buy_with_shock_deal=models.CharField(max_length=100)
     main_product=models.ManyToManyField(to='shop.Item',related_name='main_product',blank=True)
     byproduct=models.ManyToManyField(to='shop.Item',related_name='byproduct',blank=True)
-    valid_from=models.DateTimeField()
-    valid_to=models.DateTimeField()
     limited_product_bundles=models.IntegerField(null=True)
     minimum_price_to_receive_gift=models.IntegerField(default=0,null=True)
     number_gift=models.IntegerField(default=0,null=True)
@@ -98,16 +92,12 @@ class Buy_with_shock_deal(models.Model):
 class Flash_sale(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
     product=models.ManyToManyField(to='shop.Item',blank=True)
-    valid_from=models.DateTimeField()
-    valid_to=models.DateTimeField()
     created=models.DateTimeField(auto_now=True)
 
 class Follower_offer(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
     user=models.ManyToManyField(User,blank=True)
     offer_name=models.CharField(max_length=100)
-    valid_from=models.DateTimeField()
-    valid_to=models.DateTimeField()
     type_offer=models.CharField(max_length=100,default='Voucher')
     discount_type=models.CharField(max_length=15,choices=type_offer_choice,null=True)
     amount = models.FloatField(null=True,blank=True)
@@ -122,8 +112,6 @@ class Shop_award(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
     user=models.ManyToManyField(User,blank=True)
     game_name=models.CharField(max_length=100)
-    valid_from=models.DateTimeField()
-    valid_to=models.DateTimeField()
     type_voucher=models.CharField(max_length=100,default='Offer')
     discount_type=models.CharField(max_length=15,choices=type_offer_choice,null=True)
     amount = models.FloatField(null=True,blank=True)
