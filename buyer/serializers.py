@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from shop.models import *
+from cart.models import *
 from category.models import *
 from myweb.models import *
 from django.contrib.auth.models import User
@@ -105,3 +106,21 @@ class VariationSerializer(serializers.ModelSerializer):
     def get_item(self, obj):
         return ItemSerializer(obj.item).data
 
+class OrderItemSerializer(serializers.ModelSerializer):
+    item = serializers.SerializerMethodField()
+    final_price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderItem
+        fields = (
+            'id',
+            'item_name',
+            'quantity',
+            'final_price'
+        )
+
+    def get_item(self, obj):
+        return ItemSerializer(obj.item).data
+
+    def get_final_price(self, obj):
+        return obj.get_final_price()

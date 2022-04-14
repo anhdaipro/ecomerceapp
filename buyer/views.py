@@ -21,12 +21,14 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Min, Count, Avg,Sum
 from shop.models import *
 from category.models import *
-
+from checkout.models import *
+from cart.models import *
 from discount.models import *
+from chat.models import *
 from city.models import *
 from myweb.models import *
 from itemdetail.models import *
-
+from actionorder.models import *
 from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
 from .serializers import ChangePasswordSerializer,UserSerializer
