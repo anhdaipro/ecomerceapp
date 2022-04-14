@@ -23,8 +23,7 @@ class Migration(migrations.Migration):
                 ('name_of_the_discount_program', models.CharField(max_length=100)),
                 ('code', models.CharField(max_length=5)),
                 ('active', models.BooleanField(default=False)),
-                ('valid_from', models.DateTimeField()),
-                ('valid_to', models.DateTimeField()),
+                
                 ('discount_type', models.CharField(choices=[('1', 'Percent'), ('2', 'Money')], max_length=15, null=True)),
                 ('amount', models.FloatField(null=True)),
                 ('percent', models.FloatField(null=True)),
@@ -44,8 +43,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name_program', models.CharField(max_length=100)),
-                ('valid_from', models.DateTimeField(null=True)),
-                ('valid_to', models.DateTimeField(null=True)),
+                
                 ('created', models.DateTimeField(auto_now=True)),
                 ('product', models.ManyToManyField(blank=True, to='shop.Item')),
                 ('shop', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='shop.shop')),
@@ -56,8 +54,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('game_name', models.CharField(max_length=100)),
-                ('valid_from', models.DateTimeField()),
-                ('valid_to', models.DateTimeField()),
+                
                 ('type_voucher', models.CharField(default='Offer', max_length=100)),
                 ('discount_type', models.CharField(choices=[('1', 'Percent'), ('2', 'Money')], max_length=15, null=True)),
                 ('amount', models.FloatField(blank=True, null=True)),
@@ -73,8 +70,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('promotion_combo_name', models.CharField(max_length=100)),
-                ('valid_from', models.DateTimeField()),
-                ('valid_to', models.DateTimeField()),
+                
                 ('combo_type', models.CharField(choices=[('1', 'percentage discount'), ('2', 'discount by amount'), ('3', 'special sale')], max_length=100)),
                 ('discount_percent', models.IntegerField(blank=True, null=True)),
                 ('discount_price', models.IntegerField(blank=True, default=0, null=True)),
@@ -91,8 +87,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('offer_name', models.CharField(max_length=100)),
-                ('valid_from', models.DateTimeField()),
-                ('valid_to', models.DateTimeField()),
+               
                 ('type_offer', models.CharField(default='Voucher', max_length=100)),
                 ('discount_type', models.CharField(choices=[('1', 'Percent'), ('2', 'Money')], max_length=15, null=True)),
                 ('amount', models.FloatField(blank=True, null=True)),
@@ -110,8 +105,7 @@ class Migration(migrations.Migration):
             name='Flash_sale',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('valid_from', models.DateTimeField()),
-                ('valid_to', models.DateTimeField()),
+                
                 ('created', models.DateTimeField(auto_now=True)),
                 ('product', models.ManyToManyField(blank=True, to='shop.Item')),
                 ('shop', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='shop.shop')),
