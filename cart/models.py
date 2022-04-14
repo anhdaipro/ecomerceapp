@@ -21,9 +21,7 @@ class OrderItem(models.Model):
     shop=models.ForeignKey(to="shop.Shop",on_delete=models.CASCADE,related_name='shop_order')
     product=models.ForeignKey(to="shop.Variation", on_delete=models.CASCADE)
     byproduct=models.ManyToManyField(to="shop.Byproductcart",blank=True)
-    deal_shock=models.ForeignKey(to="discount.Buy_with_shock_deal",on_delete=models.SET_NULL, blank=True, null=True)
-    promotion_combo=models.ForeignKey(to="discount.Promotion_combo",on_delete=models.SET_NULL, blank=True, null=True)
-    flash_sale=models.ForeignKey(to="discount.Flash_sale",on_delete=models.SET_NULL, blank=True, null=True)
+    
     quantity=models.SmallIntegerField()
     updated_at = models.DateField(auto_now=True) 
     ordered=models.BooleanField(default=False)
