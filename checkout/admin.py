@@ -24,4 +24,4 @@ class CartAdmin(admin.ModelAdmin):
     list_display  = ['id','user','product','quantity',]
 
 admin.site.register(Order,OrderAdmin)
-admin.site.register(Address,AddressAdmin)
+admin.site.register(Address)
