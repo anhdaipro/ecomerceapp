@@ -35,7 +35,7 @@ def deal_shock(request,id):
     return render(request,'deal_shock.html')
 def sendEmail(request, order):
     mail_subject = 'Thank you for your order!'
-    message = render_to_string('order/order_recieved_email.html', {
+    message = render_to_string('order_recieved_email.html', {
         'user': request.user,
         'order': order
     })
