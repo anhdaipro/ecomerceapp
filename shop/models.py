@@ -11,7 +11,6 @@ from category.models import Category
 from django.urls import reverse
 from django.utils import timezone
 from django.db.models import Max, Min, Count, Avg,Sum
-from seller.models import *
 from actionorder.models import *
 from cart.models import *
 from promotions.models import *
