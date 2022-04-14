@@ -53,8 +53,8 @@ class Shop_program(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
     name_program=models.CharField(max_length=100)
     product=models.ManyToManyField(to='shop.Item',blank=True)
-    from_valid=models.DateTimeField(null=True)
-    to_valid=models.DateTimeField(null=True)
+    valid_from=models.DateTimeField(null=True)
+    valid_to=models.DateTimeField(null=True)
     created=models.DateTimeField(auto_now=True)
 
 combo_type_choices=(
@@ -66,8 +66,8 @@ class Promotion_combo(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
     promotion_combo_name=models.CharField(max_length=100)
     product=models.ManyToManyField(to='shop.Item',blank=True)
-    from_valid=models.DateTimeField()
-    to_valid=models.DateTimeField()
+    valid_from=models.DateTimeField()
+    valid_to=models.DateTimeField()
     combo_type=models.CharField(max_length=100,choices=combo_type_choices)
     discount_percent=models.IntegerField(null=True,blank=True)
     discount_price=models.IntegerField(default=0,null=True,blank=True)
