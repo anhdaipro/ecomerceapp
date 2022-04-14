@@ -14,7 +14,7 @@ from shop.models import *
 from shipping.models import *
 from category.models import *
 from checkout.models import *
-from discount.models import *
+from promotions.models import *
 from cart.models import *
 from django.db.models import FloatField
 from django.db.models import Max, Min, Count, Avg,Sum,F,Value as V
@@ -1126,7 +1126,7 @@ def new_program(request):
             for variation in list_variation:
                 for i in range(len(percent_discount)):
                     if i==list(variation_byproduct).index(variation):
-                        variation.percent_discount_deal_shock=percent_discount[i]
+                        variation.percent_discount=percent_discount[i]
                         variation.number_of_promotional_products=number_of_promotional_products[i]
             bulk_update(variation_byproduct)
             for item in list_products:
@@ -1241,7 +1241,7 @@ def detail_program(request,id):
             for variation in list_variation:
                 for i in range(len(percent_discount)):
                     if i==list(variation_byproduct).index(variation):
-                        variation.percent_discount_deal_shock=percent_discount[i]
+                        variation.percent_discount=percent_discount[i]
                         variation.number_of_promotional_products=number_of_promotional_products[i]
             bulk_update(variation_byproduct)
             for item in list_products:

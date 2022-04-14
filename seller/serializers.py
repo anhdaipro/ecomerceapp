@@ -1,4 +1,4 @@
-from discount.models import *
+from promotions.models import *
 from checkout.models import *
 from shop.models import *
 from rest_framework import serializers

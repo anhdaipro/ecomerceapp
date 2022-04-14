@@ -23,7 +23,7 @@ from shop.models import *
 from category.models import *
 from checkout.models import *
 from cart.models import *
-from discount.models import *
+from promotions.models import *
 from chat.models import *
 from city.models import *
 from myweb.models import *
