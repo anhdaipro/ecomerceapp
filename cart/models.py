@@ -42,7 +42,7 @@ class OrderItem(models.Model):
 
     def discount_deal(self):
         discount_deal=0
-        if self.deal_shock and self.deal_shock.to_valid>timezone.now():
+        if self.deal_shock and self.deal_shock.valid_to>timezone.now():
             for byproduct in self.byproduct.all():
                 discount_deal+=byproduct.discount_deal_by()
         return discount_deal
@@ -52,7 +52,7 @@ class OrderItem(models.Model):
         discount_price=self.product.price
         if self.product.percent_discount and self.product.item.count_program_valid()>0:
             discount_price=self.product.price*(100-self.product.percent_discount)/100
-        if self.promotion_combo and self.promotion_combo.to_valid>timezone.now():
+        if self.promotion_combo and self.promotion_combo.valid_to>timezone.now():
             quantity_in=self.quantity//self.promotion_combo.quantity_to_reduced
             quantity_valid=quantity_in*self.promotion_combo.quantity_to_reduced
             if self.promotion_combo.combo_type=='1':
@@ -66,7 +66,7 @@ class OrderItem(models.Model):
         total_discount=0
         if self.product.percent_discount and self.product.item.count_program_valid()>0:
             total_discount+=self.quantity*self.product.price*(self.product.percent_discount/100)
-        if self.deal_shock and self.deal_shock.to_valid>timezone.now():
+        if self.deal_shock and self.deal_shock.valid_to>timezone.now():
             for byproduct in self.byproduct.all():
                 if byproduct.byproduct.item.count_program_valid()>0:
                     total_discount+=byproduct.discount_by()
@@ -86,7 +86,7 @@ class OrderItem(models.Model):
     def total_price_orderitem(self):
         total=0
         total+=self.quantity*self.product.price
-        if self.deal_shock and self.deal_shock.to_valid>timezone.now():
+        if self.deal_shock and self.deal_shock.valid_to>timezone.now():
             for byproduct in self.byproduct.all():
                 total+=byproduct.price_by()
         return total

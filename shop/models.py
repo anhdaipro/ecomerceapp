@@ -170,15 +170,15 @@ class Item(models.Model):
         return list_color
     def get_count_deal(self):
         count_deal=0
-        if Buy_with_shock_deal.objects.filter(byproduct=self,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
-            deal_valid=Buy_with_shock_deal.objects.filter(byproduct=self,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).first()
+        if Buy_with_shock_deal.objects.filter(byproduct=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
+            deal_valid=Buy_with_shock_deal.objects.filter(byproduct=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).first()
             if self in deal_valid.byproduct.all():
                 count_deal=Variation.objects.filter(item=self,percent_discount_deal_shock__gt=0).count()
         return count_deal
     def deal_valid(self):
         count_deal=0
-        if Buy_with_shock_deal.objects.filter(main_product=self,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
-            count_deal=Buy_with_shock_deal.objects.filter(main_product=self,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).count()
+        if Buy_with_shock_deal.objects.filter(main_product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
+            count_deal=Buy_with_shock_deal.objects.filter(main_product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).count()
         return count_deal
     def get_color_deal(self):
         list_color=[]
@@ -256,12 +256,12 @@ class Item(models.Model):
             voucher=Vocher.objects.filter(product=self,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
         return voucher
     def shock_deal_type(self):
-        if Buy_with_shock_deal.objects.filter(main_product=self,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
-            return Buy_with_shock_deal.objects.filter(main_product=self,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).last().shock_deal_type
+        if Buy_with_shock_deal.objects.filter(main_product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
+            return Buy_with_shock_deal.objects.filter(main_product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).last().shock_deal_type
     def shipping(self):
         return Shipping.objects.all().last()
     def count_program_valid(self):
-        return Shop_program.objects.filter(product=self,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).count()
+        return Shop_program.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).count()
     def item_info(self):
         info_item={}
         info_item['item_name']=self.name
@@ -269,8 +269,8 @@ class Item(models.Model):
         return info_item
     def get_promotion(self):
         promotion_combo={}
-        if Promotion_combo.objects.filter(product=self,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
-            promotion_first=Promotion_combo.objects.filter(product=self,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).first()
+        if Promotion_combo.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
+            promotion_first=Promotion_combo.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).first()
             promotion_combo['combo_type']=promotion_first.combo_type
             promotion_combo['id']=promotion_first.id
             promotion_combo['quantity_to_reduced']=promotion_first.quantity_to_reduced

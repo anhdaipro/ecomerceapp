@@ -20,7 +20,7 @@ class ComboSerializer(serializers.ModelSerializer):
     list_product=serializers.SerializerMethodField()
     class Meta:
         model = Promotion_combo
-        fields = ['id','promotion_combo_name','from_valid','to_valid','combo_type','list_product',
+        fields = ['id','promotion_combo_name','valid_from','valid_to','combo_type','list_product',
             'discount_percent','discount_price','price_special_sale','quantity_to_reduced']
     def get_list_product(self,obj):
         return [{'image':item.media_upload.all()[0].upload_file()} for item in obj.product.all()]

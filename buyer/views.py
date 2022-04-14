@@ -58,13 +58,13 @@ class UserIDView(APIView):
 
 class HomeAPIView(APIView):
     def get(self,request):
-        list_flashsale=Flash_sale.objects.filter(to_valid__gt=timezone.now(),from_valid__lt=timezone.now())
+        list_flashsale=Flash_sale.objects.filter(valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
         list_items=[[{'item_name':i.name,'item_image':i.media_upload.all()[0].upload_file(),'number_order':i.number_order(),
         'percent_discount':i.discount_flash_sale(),'item_id':i.id,'item_inventory':i.total_inventory(),'item_max':i.max_price(),'item_url':i.get_absolute_url(),
         'item_min':i.min_price(),'quantity_limit_flash_sale':i.quantity_limit_flash_sale} for i in flash_sale.product.all()] for flash_sale in list_flashsale]
         data={
             'a':list_items,
-            'list_flashsale':list_flashsale.values('from_valid','to_valid')
+            'list_flashsale':list_flashsale.values('valid_from','valid_to')
         }
         return Response(data)
 
@@ -160,9 +160,9 @@ class DetailAPIView(APIView):
             item=Item.objects.get(slug=slug)
             items=Item.objects.filter(shop=item.shop)
             vouchers=Vocher.objects.filter(product=item,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
-            deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
-            promotion_combo=Promotion_combo.objects.filter(product=item,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
-            flash_sale=Flash_sale.objects.filter(product=item,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+            deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+            promotion_combo=Promotion_combo.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+            flash_sale=Flash_sale.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
             order=Order.objects.filter(items__product__item=item,received=True)
             reviews=ReView.objects.filter(orderitem__product__item=item).distinct()
             variation=Variation.objects.filter(item=item).distinct()
@@ -210,9 +210,9 @@ class DetailAPIView(APIView):
         else:
             shop=Shop.objects.get(slug=slug)
             list_voucher=Vocher.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
-            deal_shock=Buy_with_shock_deal.objects.filter(shop=shop,to_valid__gt=timezone.now(),from_valid__lte=timezone.now())
+            deal_shock=Buy_with_shock_deal.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
             main_product=Item.objects.filter(main_product__in=deal_shock)
-            promotion_combo=Promotion_combo.objects.filter(shop=shop,to_valid__gt=timezone.now(),from_valid__lte=timezone.now())
+            promotion_combo=Promotion_combo.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
             item_combo=Item.objects.filter(promotion_combo__in=promotion_combo)
             items=Item.objects.filter(shop=shop)
             category_children=Category.objects.filter(item__shop=shop).distinct()
@@ -1221,7 +1221,7 @@ class DealShockAPIView(APIView):
                 'quantity':byproduct.quantity,'size_value':byproduct.byproduct.get_size(),'item_info':byproduct.byproduct.item.item_info(),
                 'discount_price':byproduct.byproduct.total_discount(),'byproduct_id':byproduct.id})
         item=Item.objects.get(variation=variation)
-        shock_deal=Buy_with_shock_deal.objects.get(main_product=item,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        shock_deal=Buy_with_shock_deal.objects.get(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         byproducts=shock_deal.byproduct.all()
         for item in byproducts:
             if item.get_count_deal()>0:

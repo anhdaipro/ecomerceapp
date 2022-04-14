@@ -352,7 +352,7 @@ def voucher(request):
             name_of_the_discount_program=name_of_the_discount_program,
             code = code,
             valid_from=valid_from,
-             valid_to=valid_to,
+            valid_to=valid_to,
             discount_type= discount_type,#loại giảm giá
             amount = amount,
             percent = percent,
@@ -552,8 +552,8 @@ def shop_award(request):
         shop_award,created=Shop_award.objects.get_or_create(
             shop=shop,
             game_name=request.POST.get("game_name"),
-            from_valid=request.POST.get("valid_from"),
-            to_valid=request.POST.get("valid_to"),
+            valid_from=request.POST.get("valid_from"),
+            valid_to=request.POST.get("valid_to"),
             discount_type= request.POST.get("discount_type"),#loại giảm giá
             amount = request.POST.get("amount"),
             percent = request.POST.get("percent"),
@@ -596,7 +596,7 @@ def new_combo(request):
     shop=Shop.objects.get(user=user)
     promotion_combo=Promotion_combo.objects.filter(shop=shop).last()
     shipping =Shipping.objects.filter(shop=shop).last()
-    items=Item.objects.filter(shop=shop).filter(Q(promotion_combo=None)| Q(promotion_combo=promotion_combo) | (Q(promotion_combo__to_valid__lt=datetime.datetime.now()) & Q(promotion_combo__isnull=False))).distinct().order_by('-id')
+    items=Item.objects.filter(shop=shop).filter(Q(promotion_combo=None)| Q(promotion_combo=promotion_combo) | (Q(promotion_combo__valid_to__lt=datetime.datetime.now()) & Q(promotion_combo__isnull=False))).distinct().order_by('-id')
     order=request.GET.get('order')
     price=request.GET.get('price')
     sort=request.GET.get('sort')
@@ -613,12 +613,12 @@ def new_combo(request):
         page_no=request.POST.get('page_no')
         preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
         item_choice=Item.objects.filter(id__in=item_id).order_by(preserved)
-        Variation.objects.filter(item__promotion_combo__to_valid__lt=datetime.datetime.now()-datetime.timedelta(seconds=10)).update(percent_discount_flash_sale=0)
+        Variation.objects.filter(item__promotion_combo__valid_to__lt=datetime.datetime.now()-datetime.timedelta(seconds=10)).update(percent_discount_flash_sale=0)
         promotion_combo,created=Promotion_combo.objects.get_or_create(
             shop=shop,
             promotion_combo_name=request.POST.get('promotion_combo_name'),
-            from_valid=request.POST.get('valid_from'),
-            to_valid=request.POST.get('valid_to'),
+            valid_from=request.POST.get('valid_from'),
+            valid_to=request.POST.get('valid_to'),
             combo_type=request.POST.get('combo_type'),
             discount_percent=request.POST.get('discount_percent'),
             discount_price=request.POST.get('discount_price'),
@@ -694,7 +694,7 @@ def detail_combo(request,id):
     shop=Shop.objects.get(user=user)
     promotion_combo=Promotion_combo.objects.get(id=id)
     shipping =Shipping.objects.filter(shop=shop).last()
-    items=Item.objects.filter(shop=shop).filter(Q(promotion_combo=None)| Q(promotion_combo=promotion_combo) | (Q(promotion_combo__to_valid__lt=datetime.datetime.now()) & Q(promotion_combo__isnull=False))).distinct().order_by('-id')
+    items=Item.objects.filter(shop=shop).filter(Q(promotion_combo=None)| Q(promotion_combo=promotion_combo) | (Q(promotion_combo__valid_to__lt=datetime.datetime.now()) & Q(promotion_combo__isnull=False))).distinct().order_by('-id')
     order=request.GET.get('order')
     price=request.GET.get('price')
     sort=request.GET.get('sort')
@@ -709,8 +709,8 @@ def detail_combo(request,id):
         item_choice=Item.objects.filter(id__in=item_id).order_by(preserved)
         promotion.product.set([None])
         promotion_combo.promotion_combo_name=request.POST.get('promotion_combo_name')
-        promotion_combo.from_valid=request.POST.get('valid_from')
-        promotion_combo.to_valid=request.POST.get('valid_to')
+        promotion_combo.valid_from=request.POST.get('valid_from')
+        promotion_combo.valid_to=request.POST.get('valid_to')
         promotion_combo.combo_type=request.POST.get('combo_type')
         promotion_combo.discount_percent=request.POST.get('discount_percent')
         promotion_combo.discount_price=request.POST.get('discount_price')
@@ -771,8 +771,8 @@ def detail_combo(request,id):
             return Response(data)
         else:
             data={'promotion_combo':{'promotion_combo_name':promotion_combo.promotion_combo_name,
-            'from_valid':promotion_combo.from_valid,
-            'to_valid':promotion_combo.to_valid,
+            'valid_from':promotion_combo.valid_from,
+            'valid_to':promotion_combo.valid_to,
             'combo_type':promotion_combo.combo_type,
             'discount_percent':promotion_combo.discount_percent,'discount_price':promotion_combo.discount_price,
             'price_special_sale':promotion_combo.price_special_sale,'limit_order':promotion_combo.limit_order,
@@ -790,15 +790,15 @@ def new_deal(request):
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id)
     shop=Shop.objects.get(user=user)
-    deal_expire=Buy_with_shock_deal.objects.filter(shop=shop,to_valid__lt=timezone.now())
+    deal_expire=Buy_with_shock_deal.objects.filter(shop=shop,valid_to__lt=timezone.now())
     if request.method=="POST":
         Variation.objects.filter(item__byproduct__in=deal_expire).update(percent_discount_deal_shock=0,limited_product_bundles=0)
         deal_shock,created=Buy_with_shock_deal.objects.get_or_create(
         shop=shop,
         shock_deal_type=request.POST.get('shock_deal_type'),
         program_name_buy_with_shock_deal=request.POST.get('program_name_buy_with_shock_deal'),
-        from_valid=request.POST.get('from_valid'),
-        to_valid=request.POST.get('to_valid'),
+        valid_from=request.POST.get('valid_from'),
+        valid_to=request.POST.get('valid_to'),
         limited_product_bundles=request.POST.get('limited_product_bundles'),
         minimum_price_to_receive_gift=request.POST.get('minimum_price_to_receive_gift'),
         number_gift=request.POST.get('number_gift'),
@@ -818,7 +818,7 @@ def deal_shock(request,id):
     shipping =Shipping.objects.filter(shop=shop).last()
     form=VocherForm()
     deal_shock=Buy_with_shock_deal.objects.get(id=id)
-    items=Item.objects.filter(shop=shop).filter(Q(main_product=None) | (Q(main_product__to_valid__lt=datetime.datetime.now()) & Q(main_product__isnull=False))).distinct().order_by('-id')
+    items=Item.objects.filter(shop=shop).filter(Q(main_product=None) | (Q(main_product__valid_to__lt=datetime.datetime.now()) & Q(main_product__isnull=False))).distinct().order_by('-id')
     item_id=request.GET.getlist('item_id')
     item_id_off=request.GET.getlist('item_id_off')
     item_id_add=request.GET.getlist('item_id_add')
@@ -844,14 +844,14 @@ def deal_shock(request,id):
         if edit:
             deal_shock=Buy_with_shock_deal.objects.filter(shop=shop).last()
             deal_shock.program_name_buy_with_shock_deal=request.POST.get('program_name_buy_with_shock_deal')
-            deal_shock.from_valid=request.POST.get('from_valid')
-            deal_shock.to_valid=request.POST.get('to_valid')
+            deal_shock.valid_from=request.POST.get('valid_from')
+            deal_shock.valid_to=request.POST.get('valid_to')
             deal_shock.limited_product_bundles=request.POST.get('limited_product_bundles')
             deal_shock.minimum_price_to_receive_gift=request.POST.get('minimum_price_to_receive_gift')
             deal_shock.number_gift=request.POST.get('number_gift')
             deal_shock.save()
-            data={'shock_deal_type':deal_shock.shock_deal_type,'deal_id':deal_shock.id,'from_valid':deal_shock.from_valid,
-            'to_valid':deal_shock.to_valid,'program_name_buy_with_shock_deal':deal_shock.program_name_buy_with_shock_deal,
+            data={'shock_deal_type':deal_shock.shock_deal_type,'deal_id':deal_shock.id,'valid_from':deal_shock.valid_from,
+            'valid_to':deal_shock.valid_to,'program_name_buy_with_shock_deal':deal_shock.program_name_buy_with_shock_deal,
             'limited_product_bundles':deal_shock.limited_product_bundles,
             'minimum_price_to_receive_gift':deal_shock.minimum_price_to_receive_gift,
             'number_gift':deal_shock.number_gift}
@@ -936,7 +936,7 @@ def deal_shock(request,id):
             data={'a':list_item_main}
             return Response(data)
         elif change:
-            data={'valid_to':deal_shock.to_valid,'valid_from':deal_shock.from_valid,
+            data={'valid_to':deal_shock.valid_to,'valid_from':deal_shock.valid_from,
             'name':deal_shock.program_name_buy_with_shock_deal,'shock_deal_type':deal_shock.shock_deal_type,
             'limited_product_bundles':deal_shock.limited_product_bundles,
             'minimum_price_to_receive_gift':deal_shock.minimum_price_to_receive_gift,
@@ -1060,8 +1060,8 @@ def deal_shock(request,id):
             data={'a':list_item_main}
             return Response(data)
         else:
-            data={'deal_shock':{'shock_deal_type':deal_shock.shock_deal_type,'deal_id':deal_shock.id,'from_valid':deal_shock.from_valid,
-            'to_valid':deal_shock.to_valid,'program_name_buy_with_shock_deal':deal_shock.program_name_buy_with_shock_deal,
+            data={'deal_shock':{'shock_deal_type':deal_shock.shock_deal_type,'deal_id':deal_shock.id,'valid_from':deal_shock.valid_from,
+            'valid_to':deal_shock.valid_to,'program_name_buy_with_shock_deal':deal_shock.program_name_buy_with_shock_deal,
             'limited_product_bundles':deal_shock.limited_product_bundles,
             'minimum_price_to_receive_gift':deal_shock.minimum_price_to_receive_gift,
             'number_gift':deal_shock.number_gift},'byproduct_choice':[{'item_id':item.id,'item_name':item.name,
@@ -1083,9 +1083,9 @@ def new_program(request):
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id)
     shop=Shop.objects.get(user=user)
-    program_expire=Shop_program.objects.filter(shop=shop,to_valid__lt=timezone.now())
+    program_expire=Shop_program.objects.filter(shop=shop,valid_to__lt=timezone.now())
     shipping =Shipping.objects.filter(shop=shop).last()
-    items=Item.objects.filter(shop=shop).filter(Q(shop_program=None) | (Q(shop_program__to_valid__lt=datetime.datetime.now()) & Q(shop_program__isnull=False))).distinct()
+    items=Item.objects.filter(shop=shop).filter(Q(shop_program=None) | (Q(shop_program__valid_to__lt=datetime.datetime.now()) & Q(shop_program__isnull=False))).distinct()
     order=request.GET.get('order')
     price=request.GET.get('price')
     sort=request.GET.get('sort')
@@ -1118,8 +1118,8 @@ def new_program(request):
         else:
             shop_program,created=Shop_program.objects.get_or_create(
                 name_program=name_program,
-                from_valid=valid_from,
-                to_valid=valid_to,
+                valid_from=valid_from,
+                valid_to=valid_to,
                 shop=shop,
                 )
             shop_program.product.add(*list_products)
@@ -1201,7 +1201,7 @@ def detail_program(request,id):
     shop=Shop.objects.get(user=user)
     shipping =Shipping.objects.filter(shop=shop).last()
     shop_program=Shop_program.objects.get(id=id)
-    items=Item.objects.filter(shop=shop).filter(Q(shop_program=None)|Q(shop_program=shop_program) | (Q(shop_program__to_valid__lt=datetime.datetime.now()) & Q(shop_program__isnull=False)))
+    items=Item.objects.filter(shop=shop).filter(Q(shop_program=None)|Q(shop_program=shop_program) | (Q(shop_program__valid_to__lt=datetime.datetime.now()) & Q(shop_program__isnull=False)))
     order=request.GET.get('order')
     price=request.GET.get('price')
     sort=request.GET.get('sort')
@@ -1234,8 +1234,8 @@ def detail_program(request,id):
         else:
             shop_program.product.set([None])
             shop_program.name_program=name_program
-            shop_program.from_valid=valid_from
-            shop_program.to_valid=valid_to
+            shop_program.valid_from=valid_from
+            shop_program.valid_to=valid_to
             shop_program.save()
             shop_program.product.add(*list_products)
             for variation in list_variation:
@@ -1301,8 +1301,8 @@ def detail_program(request,id):
             data={'c':list_item_main}
             return Response(data)
         else:
-            data={'program':{'from_valid':shop_program.from_valid,'name_program':shop_program.name_program,
-            'to_valid':shop_program.to_valid},'list_product':[{'item_id':item.id,'item_name':item.name,
+            data={'program':{'valid_from':shop_program.valid_from,'name_program':shop_program.name_program,
+            'valid_to':shop_program.valid_to},'list_product':[{'item_id':item.id,'item_name':item.name,
             'limit_order':item.quantity_limit,
             'item_image':item.media_upload.all()[0].upload_file(),'check':False,
             'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
@@ -1327,8 +1327,8 @@ def new_flashsale(request):
     item=request.GET.get('item')
     title=request.GET.get('title')
     shipping =Shipping.objects.filter(shop=shop).last()
-    flash_sale_expire=Flash_sale.objects.filter(shop=shop,to_valid__lt=timezone.now())
-    items=Item.objects.filter(shop=shop).filter(Q(flash_sale=None) | (Q(flash_sale__to_valid__lt=datetime.datetime.now()) & Q(flash_sale__isnull=False))).distinct()
+    flash_sale_expire=Flash_sale.objects.filter(shop=shop,valid_to__lt=timezone.now())
+    items=Item.objects.filter(shop=shop).filter(Q(flash_sale=None) | (Q(flash_sale__valid_to__lt=datetime.datetime.now()) & Q(flash_sale__isnull=False))).distinct()
     q=request.GET.get('q')
     if request.method=="POST":
         item_id=request.POST.getlist('item_id')
@@ -1347,12 +1347,12 @@ def new_flashsale(request):
             Variation.objects.filter(item__flash_sale__in=flash_sale_expire).update(percent_discount_flash_sale=0,quantity_flash_sale_products=0)
             flash_sale,created=Flash_sale.objects.get_or_create(
                 shop=shop,
-                from_valid=request.POST.get('from_valid'),
-                to_valid=request.POST.get('to_valid'),
+                valid_from=request.POST.get('valid_from'),
+                valid_to=request.POST.get('valid_to'),
                 )
             flash_sale.product.add(*items)
             variation=Variation.objects.filter(item__in=items)
-            Variation.objects.filter(item__flash_sale__to_valid__lt=datetime.datetime.now()-datetime.timedelta(seconds=10)).update(percent_discount_flash_sale=0)
+            Variation.objects.filter(item__flash_sale__valid_to__lt=datetime.datetime.now()-datetime.timedelta(seconds=10)).update(percent_discount_flash_sale=0)
             list_item=[{'item_name':i.name,'item_image':i.media_upload.all()[0].upload_file(),'id':i.id
                 } for i in items]
             data={'flash_sale_id':flash_sale.id ,'a':list_item,'b':list(variation.values('price','inventory','color__value','size__value','item__id','id'))}
@@ -1423,7 +1423,7 @@ def detail_flashsale(request,id):
     title=request.GET.get('title')
     flash_sale=Flash_sale.objects.get(id=id)
     shipping =Shipping.objects.filter(shop=shop).last()
-    items=Item.objects.filter(shop=shop).filter(Q(flash_sale=None)| Q(flash_sale=flash_sale) | (Q(flash_sale__to_valid__lt=datetime.datetime.now()) & Q(flash_sale__isnull=False))).distinct()
+    items=Item.objects.filter(shop=shop).filter(Q(flash_sale=None)| Q(flash_sale=flash_sale) | (Q(flash_sale__valid_to__lt=datetime.datetime.now()) & Q(flash_sale__isnull=False))).distinct()
     q=request.GET.get('q')
     if request.method=="POST":
         item_id=request.POST.getlist('item_id')
@@ -1459,8 +1459,8 @@ def detail_flashsale(request,id):
             data={'a':'a'}
             return Response(data)
         else:
-            flash_sale.from_valid=request.POST.get('from_valid')
-            flash_sale.to_valid=request.POST.get('to_valid')
+            flash_sale.valid_from=request.POST.get('valid_from')
+            flash_sale.valid_to=request.POST.get('valid_to')
             flash_sale.save()
             data={'a':'a'}
             return Response(data)
@@ -1514,7 +1514,7 @@ def detail_flashsale(request,id):
             return Response(data)
         else:
             data={
-                'flashsale':{'from_valid':flash_sale.from_valid,'to_valid':flash_sale.to_valid},
+                'flashsale':{'valid_from':flash_sale.valid_from,'valid_to':flash_sale.valid_to},
                 'list_product':[{'item_id':item.id,'item_name':item.name,
                 'item_image':item.media_upload.all()[0].upload_file(),'check':False,
                 'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
