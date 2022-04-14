@@ -1,4 +1,4 @@
-from promotions.models import *
+from discount.models import *
 from django.shortcuts import render,redirect
 from shop.models import *
 from cart.models import *

@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.db.models import  Q
 from django.urls import reverse
-from promotions.models import *
+from discount.models import *
 import datetime
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -24,9 +24,9 @@ class OrderItem(models.Model):
     shop=models.ForeignKey(to="shop.Shop",on_delete=models.CASCADE,related_name='shop_order')
     product=models.ForeignKey(to="shop.Variation", on_delete=models.CASCADE)
     byproduct=models.ManyToManyField(to="shop.Byproductcart",blank=True)
-    deal_shock=models.ForeignKey(to="promotions.Buy_with_shock_deal",on_delete=models.SET_NULL, blank=True, null=True)
-    promotion_combo=models.ForeignKey(to="promotions.Promotion_combo",on_delete=models.SET_NULL, blank=True, null=True)
-    flash_sale=models.ForeignKey(to="promotions.Flash_sale",on_delete=models.SET_NULL, blank=True, null=True)
+    deal_shock=models.ForeignKey(to="discount.Buy_with_shock_deal",on_delete=models.SET_NULL, blank=True, null=True)
+    promotion_combo=models.ForeignKey(to="discount.Promotion_combo",on_delete=models.SET_NULL, blank=True, null=True)
+    flash_sale=models.ForeignKey(to="discount.Flash_sale",on_delete=models.SET_NULL, blank=True, null=True)
     quantity=models.SmallIntegerField()
     updated_at = models.DateField(auto_now=True) 
     ordered=models.BooleanField(default=False)

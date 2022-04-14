@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'category',
     'cart',
     'seller',
+    'discount',
     'itemdetail',
     'corsheaders',
     'django_social_share',
@@ -61,7 +62,7 @@ INSTALLED_APPS = [
     'chat',
     'myweb',
     'shipping',
-    'promotions',
+    
     'channels',
     'mptt',
     'djoser',
