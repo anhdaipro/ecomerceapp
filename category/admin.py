@@ -44,4 +44,4 @@ class CategoryAdmin2(DraggableMPTTAdmin):
         return instance.products_cumulative_count
     related_products_cumulative_count.short_description = 'Related products (in tree)'   
 admin.site.register(Category,CategoryAdmin2)
-admin.site.register(Image_home)
+admin.site.register(Image_category)

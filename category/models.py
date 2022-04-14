@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.urls import reverse
 
 import re
-class Image_home(models.Model):
+class Image_category(models.Model):
     image=models.ImageField(upload_to='category/')
     url_field=models.URLField(max_length=200)
 class Category(MPTTModel):
@@ -17,7 +17,7 @@ class Category(MPTTModel):
     title = models.CharField(max_length=100)
     image=models.ImageField(blank=True,upload_to='category/')
     display=models.BooleanField(default=False)
-    image_home=models.ManyToManyField(Image_home,blank=True)
+    image_category=models.ManyToManyField(Image_category,blank=True)
     slug = models.SlugField(max_length=100,null=True,blank=True)
     choice=models.BooleanField(default=False)
     def __str__(self):
