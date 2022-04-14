@@ -1,13 +1,13 @@
 from django.urls import path
 from . import views
-#from .views import ListvoucherAPI,ListcomboAPI,ListdealshockAPI,ListflashsaleAPI
+from .views import ListvoucherAPI,ListcomboAPI,ListdealshockAPI,ListprogramAPI,ListflashsaleAPI
 urlpatterns = [
     path("product/", views.product,name='product'),
-    #path("vouchers/list", ListvoucherAPI.as_view()),
-    #path("bundle/list", ListcomboAPI.as_view()),
-    #path("add-on-deal/list", ListdealshockAPI.as_view()),
-    #path("list/discount", ListprogramAPI.as_view()),
-    #path("shop-flash-sale/list", ListflashsaleAPI.as_view()),
+    path("vouchers/list", ListvoucherAPI.as_view()),
+    path("bundle/list", ListcomboAPI.as_view()),
+    path("add-on-deal/list", ListdealshockAPI.as_view()),
+    path("list/discount", ListprogramAPI.as_view()),
+    path("shop-flash-sale/list", ListflashsaleAPI.as_view()),
     path("product/list", views.get_product,name='get_product'),
     path("product/<int:id>", views.update_item,name='update_item'),
     path("product/update_image", views.update_image,name='update_image'),

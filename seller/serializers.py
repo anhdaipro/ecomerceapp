@@ -1,5 +1,5 @@
-#from discount.models import *
-#from checkout.models import *
+from promotions.models import *
+from checkout.models import *
 from shop.models import *
 from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer
@@ -25,7 +25,7 @@ class ComboSerializer(serializers.ModelSerializer):
     def get_list_product(self,obj):
         return [{'image':item.media_upload.all()[0].upload_file()} for item in obj.product.all()]
        
-'''class ProgramSerializer(serializers.ModelSerializer):
+class ProgramSerializer(serializers.ModelSerializer):
     list_product=serializers.SerializerMethodField()
     class Meta:
         model = Shop_program

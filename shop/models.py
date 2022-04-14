@@ -1,10 +1,8 @@
 from django.db import models
-from cloudinary_storage.storage import VideoMediaCloudinaryStorage
 from cloudinary_storage.storage import RawMediaCloudinaryStorage
 # Create your models here.
 from django.db import models
 from django.db.models import  Q
-# Create your models here.
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
@@ -14,8 +12,9 @@ from django.urls import reverse
 from django.utils import timezone
 from django.db.models import Max, Min, Count, Avg,Sum
 from seller.models import *
-#from actionorder.models import *
-#from cart.models import *
+from actionorder.models import *
+from cart.models import *
+from promotions.models import *
 from shipping.models import *
 import datetime
 import re

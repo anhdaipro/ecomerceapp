@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from shop.models import *
+from cart.models import *
 from category.models import *
-from myweb.models import *
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
 from rest_framework.authtoken.models import Token
@@ -105,7 +105,7 @@ class VariationSerializer(serializers.ModelSerializer):
     def get_item(self, obj):
         return ItemSerializer(obj.item).data
 
-'''class OrderItemSerializer(serializers.ModelSerializer):
+class OrderItemSerializer(serializers.ModelSerializer):
     item = serializers.SerializerMethodField()
     final_price = serializers.SerializerMethodField()
 
@@ -122,4 +122,4 @@ class VariationSerializer(serializers.ModelSerializer):
         return ItemSerializer(obj.item).data
 
     def get_final_price(self, obj):
-        return obj.get_final_price()'''
+        return obj.get_final_price()
