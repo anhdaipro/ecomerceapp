@@ -107,7 +107,7 @@ status_choice=(
 )
 class Item(models.Model):
     category=models.ForeignKey(Category,on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=120)
     brand=models.TextField(max_length=200)
     shop=models.ForeignKey(Shop,on_delete=models.CASCADE)
     media_upload=models.ManyToManyField(UploadItem,blank=True)
