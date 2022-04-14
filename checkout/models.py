@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db.models import  Q
 from django.urls import reverse
 from actionorder.models import *
-from promotions.models import *
+from discount.models import *
 import datetime
 from django.utils import timezone
 from cart.models import *
@@ -31,7 +31,7 @@ class Order(models.Model):
     shipping=models.ForeignKey(to='shipping.Shipping',on_delete=models.SET_NULL,null=True,blank=True)
     shipping_address = models.ForeignKey(
     'Address', related_name='shipping_address', on_delete=models.SET_NULL, blank=True, null=True)
-    vocher=models.ForeignKey(to='promotions.Vocher',on_delete=models.SET_NULL,null=True,blank=True)
+    vocher=models.ForeignKey(to='discount.Vocher',on_delete=models.SET_NULL,null=True,blank=True)
     being_delivered = models.BooleanField(default=False)
     accepted=models.BooleanField(default=False)
     received = models.BooleanField(default=False)

@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'category',
     'cart',
     'seller',
-    'promotions',
+    'discount',
     'itemdetail',
     'corsheaders',
     'django_social_share',

@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.db.models import Max, Min, Count, Avg,Sum
 from actionorder.models import *
 from cart.models import *
-from promotions.models import *
+from discount.models import *
 from shipping.models import *
 import datetime
 import re
