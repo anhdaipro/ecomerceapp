@@ -1,5 +1,5 @@
 from django.contrib import admin
-
+from .models import *
 # Register your models here.
 from django.contrib import admin
 from django.utils import timezone
@@ -22,10 +22,6 @@ class OrderAdmin(admin.ModelAdmin):
         queryset.update(being_delivered=True)
 class CartAdmin(admin.ModelAdmin):
     list_display  = ['id','user','product','quantity',]
-
-
-
-    
 
 admin.site.register(Order,OrderAdmin)
 admin.site.register(Address,AddressAdmin)
