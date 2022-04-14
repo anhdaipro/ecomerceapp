@@ -12,62 +12,62 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RenameField(
             model_name='buy_with_shock_deal',
-            old_name='valid_from',
+            old_name='from_valid',
             new_name='valid_from',
         ),
         migrations.RenameField(
             model_name='buy_with_shock_deal',
-            old_name='valid_to',
+            old_name='to_valid',
             new_name='valid_to',
         ),
         migrations.RenameField(
             model_name='flash_sale',
-            old_name='valid_from',
+            old_name='from_valid',
             new_name='valid_from',
         ),
         migrations.RenameField(
             model_name='flash_sale',
-            old_name='valid_to',
+            old_name='to_valid',
             new_name='valid_to',
         ),
         migrations.RenameField(
             model_name='follower_offer',
-            old_name='valid_from',
+            old_name='from_valid',
             new_name='valid_from',
         ),
         migrations.RenameField(
             model_name='follower_offer',
-            old_name='valid_to',
+            old_name='to_valid',
             new_name='valid_to',
         ),
         migrations.RenameField(
             model_name='promotion_combo',
-            old_name='valid_from',
+            old_name='from_valid',
             new_name='valid_from',
         ),
         migrations.RenameField(
             model_name='promotion_combo',
-            old_name='valid_to',
+            old_name='to_valid',
             new_name='valid_to',
         ),
         migrations.RenameField(
             model_name='shop_award',
-            old_name='valid_from',
+            old_name='from_valid',
             new_name='valid_from',
         ),
         migrations.RenameField(
             model_name='shop_award',
-            old_name='valid_to',
+            old_name='to_valid',
             new_name='valid_to',
         ),
         migrations.RenameField(
             model_name='shop_program',
-            old_name='valid_from',
+            old_name='from_valid',
             new_name='valid_from',
         ),
         migrations.RenameField(
             model_name='shop_program',
-            old_name='valid_to',
+            old_name='to_valid',
             new_name='valid_to',
         ),
     ]
