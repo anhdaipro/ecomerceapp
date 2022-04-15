@@ -1031,6 +1031,7 @@ class AddressAPIView(APIView):
         name=request.POST.get('name')
         address_choice=request.POST.get('address_choice')
         address_detail=request.POST.get('address')
+        address_type=request.POST.get('address_type')
         default=request.POST.get('default')
         id=request.POST.get('id')
         update=request.POST.get('update')
@@ -1045,7 +1046,7 @@ class AddressAPIView(APIView):
                 address.name=name
                 address.phone_number=phone_number
                 address.city=city
-                address.address_type='S'
+                address.address_type=address_type
                 address.address=address_detail
                 address.town=town
                 address.district=district
@@ -1073,7 +1074,7 @@ class AddressAPIView(APIView):
                 city=city,
                 town=town,
                 district=district,
-                address_type='S',
+                address_type=address_type,
                 address=address_detail
             )
             if address.default==True:
