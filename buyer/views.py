@@ -241,8 +241,8 @@ class DetailAPIView(APIView):
             count_follow=Shop.objects.filter(followers=shop.user).count()
             data={'shop_logo':shop.logo.url,'shop_url':shop.get_absolute_url(),'count_followings': count_follow,
                 'shop_name':shop.name,'shop':'shop','shop_user':shop.user.id,'created':shop.create_at,
-                'online':shop.user.customer.online,'num_followers':shop.num_follow(),'slug':shop.slug,
-                'is_online':shop.user.customer.is_online,'count_product':shop.count_product(),
+                'online':shop.user.shop.online,'num_followers':shop.num_follow(),'slug':shop.slug,
+                'is_online':shop.user.shop.is_online,'count_product':shop.count_product(),
                 'total_review':shop.total_review(),'averge_review':shop.averge_review(),
                 'promotion_combo':[{'combo_type':promotion.combo_type,
                 'quantity_to_reduced':promotion.quantity_to_reduced,'limit_order':promotion.quantity_to_reduced,
@@ -291,9 +291,9 @@ class DetailAPIView(APIView):
         else:
             follow=True
             shop.followers.add(user)
-        data={'num_followers':shop.num_follow(),'follow':follow,'online':shop.user.customer.online,
+        data={'num_followers':shop.num_follow(),'follow':follow,'online':shop.user.shop.online,
         'num_followers':shop.num_follow(),'count_followings': count_follow,
-        'is_online':shop.user.customer.is_online,'count_product':shop.count_product(),
+        'is_online':shop.user.shop.is_online,'count_product':shop.count_product(),
         'total_review':shop.total_review(),'averge_review':shop.averge_review()}
         return Response(data)
 
@@ -414,8 +414,8 @@ class ProductInfoAPIVIew(APIView):
             elif shop:
                 data={'shop_logo':item.shop.logo.url,'shop_url':item.shop.get_absolute_url(),
                 'shop_name':item.shop.name,
-                'online':item.shop.user.customer.online,'num_follow':item.shop.num_follow(),
-                'is_online':item.shop.user.customer.is_online,'count_product':item.shop.count_product(),
+                'online':item.shop.user.shop.online,'num_follow':item.shop.num_follow(),
+                'is_online':item.shop.user.shop.is_online,'count_product':item.shop.count_product(),
                 'total_order':item.shop.total_order()}
                 return Response(data)
             
@@ -1017,7 +1017,7 @@ class AddressAPIView(APIView):
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         addresses = Address.objects.filter(user=user)
-        data={'a':list(addresses.values()),'user':{'image':user.customer.image.url,'name':user.username}}
+        data={'a':list(addresses.values()),'user':{'image':user.shop.image.url,'name':user.username}}
         return Response(data)
     def post(self, request, *args, **kwargs):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
@@ -1607,10 +1607,10 @@ class ProfileAPIView(APIView):
             shop_logo=Shop.objects.filter(user=user).first().logo.url
             count_product=Shop.objects.filter(user=user).first().count_product()
         data={
-            'username':user.username,'name':user.customer.name,'email':user.email,'user_id':user.id,
-            'phone_number':user.customer.phone_number,'date_of_birth':user.customer.date_of_birth,
-            'image':user.customer.image.url,'shop_name':shop_name,'shop_logo':shop_logo,
-            'gender':user.customer.get_gender_display(),'user_id':user.id,'count_product':count_product,
+            'username':user.username,'name':user.shop.name,'email':user.email,'user_id':user.id,
+            'phone_number':user.shop.phone_number,'date_of_birth':user.shop.date_of_birth,
+            'image':user.shop.image.url,'shop_name':shop_name,'shop_logo':shop_logo,
+            'gender':user.shop.get_gender_display(),'user_id':user.id,'count_product':count_product,
             }
         return Response(data)
         
@@ -1621,7 +1621,7 @@ def get_address(request):
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id)
     addresses = Address.objects.filter(user=user)
-    data={'a':list(addresses.values()),'user':{'image':user.customer.image.url,'name':user.username}}
+    data={'a':list(addresses.values()),'user':{'image':user.shop.image.url,'name':user.username}}
     return Response(data)
 
 class PurchaseAPIView(APIView):
@@ -1682,7 +1682,7 @@ class PurchaseAPIView(APIView):
                 'id':order_item.id
                 } for order_item in order.items.all()]} for order in orders]
             data={
-                'user':{'image':user.customer.image.url,'name':user.username,'user_id':user.id},
+                'user':{'image':user.shop.image.url,'name':user.username,'user_id':user.id},
                 'a':list_order,'count_order':count_order,
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]
                 }
@@ -1710,7 +1710,7 @@ class PurchaseAPIView(APIView):
                 if i==j:
                     list_duration[i]=float(duration[j])
         total_xu=request.POST.get('total_xu')
-        customer=Customer.objects.get(user=user)
+        shop=shop.objects.get(user=user)
         orderitem_id=request.POST.getlist('orderitem_id')
         orderitem=OrderItem.objects.filter(id__in=orderitem_id)
         review_rating=request.POST.getlist('review_rating')
@@ -1793,8 +1793,8 @@ class PurchaseAPIView(APIView):
             }
             return Response(data)
         else:
-            customer.xu=total_xu
-            customer.save()
+            shop.xu=total_xu
+            shop.save()
             list_media=Media_review.objects.bulk_create(
                 [Media_review(
                     upload_by=user,
