@@ -1806,13 +1806,13 @@ def add_item(request):
 
 @api_view(['GET', 'POST'])
 def update_item(request,id):
-    item=Item.objects.get(id=id)
+    
     token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
     access_token_obj = AccessToken(token)
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id)
     shop=Shop.objects.get(user=user)
-    
+    item=Item.objects.get(id=id,shop=shop)
     if request.method=="POST":
         #item
         from_quantity=request.POST.getlist('from_quantity')
@@ -2041,6 +2041,7 @@ def update_item(request,id):
         shipping_item=item.shipping_choice.all()
         list_category_choice=item.category.get_ancestors(include_self=True)
         list_category=Category.objects.all()
+        method=[{'method':i.method} for i in shipping_item]
         data={
         'buymore':buymore.values(),
         'item_info':{'name':item.name,'id':item.id, 'height':item.height,'length':item.length,'weight':item.weight,
@@ -2049,7 +2050,7 @@ def update_item(request,id):
         'parent':category.getparent()} for category in list_category_choice],
         'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
         'parent':category.getparent()} for category in list_category],
-        'list_shipping_item':[{'method':shipping.method} for shipping in shipping_item],
+        'list_shipping_item':list({item['method']:item for item in method}.values()),
         'shipping_shop':shipping_shop.values(),
         'media_upload':[{'file':i.upload_file(),'file_preview':i.file_preview(),
         'duration':i.duration,'filetype':i.media_type(),'id':i.id
