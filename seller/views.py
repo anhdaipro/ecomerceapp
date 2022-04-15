@@ -1874,6 +1874,7 @@ def update_item(request,id):
         item.save()
         #detail item
         # clotes,jeans,pants,
+        detail_item=Detail_Item.objects.get(item=item)
         detail_item.brand_clothes=request.POST.get('brand_clothes')#skirt,dress
         detail_item.material=request.POST.get('material_clothes')#skirt
         detail_item.pants_length=request.POST.get('pants_length')#,dress
@@ -2012,7 +2013,8 @@ def update_item(request,id):
         for i,j in variant_list:
             size_variation.append(i),color_variation.append(j)
         variation_content=list(zip(size_variation,color_variation,price,inventory,sku))
-        
+        variation_id_remove=request.POST.getlist('variation_id_remove')
+        Variation.objects.filter(id__in=variation_id_remove).delete()
         list_variation = [
             Variation(
             item=item,
@@ -2025,6 +2027,8 @@ def update_item(request,id):
             for size,color,price,inventory,sku in variation_content
         ]
         Variation.objects.bulk_create(list_variation)
+        Size.objects.filter(variation=None).delete()
+        Color.objects.filter(variation=None).delete()
         return Response({'product':'ok'})
     else:
         list_color=Color.objects.filter(variation__item=item).distinct()
@@ -2032,10 +2036,10 @@ def update_item(request,id):
         buymore=item.buy_more_discount.all()
         variations=Variation.objects.filter(item=item,size=None)
         list_variation=[{'value':color.value,'price':'','sku':'','inventory':'',
-        'list_variation':[{'value':variation.size.value,'price':variation.price,
+        'list_variation':[{'value':variation.size.value,'price':variation.price,'id':variation.id,
         'inventory':variation.inventory,'sku':variation.sku_classify} for variation in color.variation_set.all()]} for color in list_color]
         if variations.exists():
-            list_variation=[{'value':variation.color.value,'price':variation.price,'sku':variation.sku_classify,'inventory':variation.inventory,
+            list_variation=[{'id':variation.id,'value':variation.color.value,'price':variation.price,'sku':variation.sku_classify,'inventory':variation.inventory,
             'list_variation':[]} for variation in variations]
         shipping_shop=shop.shipping.all()
         shipping_item=item.shipping_choice.all()
