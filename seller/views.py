@@ -2061,34 +2061,26 @@ def update_item(request,id):
         } for i in item.media_upload.all()],'list_size':item.get_size(),'list_color':item.get_list_color(),
         'item_detail':detail_item,'list_variation':list_variation}
         return Response(data)
+
 @api_view(['GET', 'POST'])
 def create_shop(request):
+    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+    access_token_obj = AccessToken(token)
+    user_id=access_token_obj['user_id']
+    user=User.objects.get(id=user_id)
     if request.method == "POST":
-        try:
-            shop=Shop.objects.get(user=user)
-            form=ShopForm(request.POST,request.FILES,instance=shop)
-            form.save()
-            messages.info(request,'ok')
-            return redirect('/')
-        except Exception:
-            form=ShopForm(request.POST)
-            if form.is_valid():
-                form.save()
-                usr = random.randint(1, 99999999)
-                shop=Shop.objects.create(
-                user=user,
-                name=form.cleaned_data.get('name'),
-                description = form.cleaned_data.get('description'),
-                address=form.cleaned_data.get('address'),
-                city=form.cleaned_data.get('city'),
-                logo = form.cleaned_data.get('logo'),
-                slug=re.sub('[,./\ ]', "-",name) + str(usr)
-                )
+        shop=Shop.objects.get(user=user)
+        shop.name=request.POST.get('name')
+        shop.phone_number = request.POST.get('phone_number')
+        shop.slug=name
+        shop.save()
+        data={'ok':'ok'}
+        return Response(data)
+    else:
+        address=Address.objects.filter(user=user,address_type='B')
+        data={'address':address.values()}
+        return Response(data)
                 
-                messages.success(request,'ok')
-                return redirect('/')
-            else:
-                return redirect('/')
     
 import calendar
 import pandas as pd
