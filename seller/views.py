@@ -1623,7 +1623,7 @@ def add_item(request):
         name=request.POST.get('name')
         description = request.POST.get('description')
         item = Item.objects.create(shop = shop,name = name,category=category,description=description)
-        item.slug=name + '.' + str(item.id)
+        item.slug=re.sub('[,./\&]', "-",name) +  str(item.id)
         file_id=request.POST.getlist('file_id')
         file_id_remove=request.POST.getlist('file_id_remove')
         item.brand= request.POST.get('brand')
