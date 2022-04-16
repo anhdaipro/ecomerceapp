@@ -32,7 +32,7 @@ ALLOWED_HOSTS = ['anhdai.herokuapp.com','localhost']
 
 # Application definition
 CORS_ALLOWED_ORIGINS = [
-    'https://gentle-plains-88366.herokuapp.com','http://localhost:3000'
+    'https://gentle-plains-88366.herokuapp.com','http://localhost:3000',"http://127.0.0.1:3000"
 ]
 INSTALLED_APPS = [
     'jazzmin',
@@ -264,7 +264,7 @@ DJOSER = {
     'ACTIVATION_URL': 'activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SOCIAL_AUTH_TOKEN_STRATEGY': 'djoser.social.token.jwt.TokenStrategy',
-    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:3000/google', 'http://localhost:3000/facebook'],
+    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:3000/google', 'http://localhost:3000/facebook','http://127.0.0.1:3000/google','http://127.0.0.1:3000/login'],
     'SERIALIZERS': {
         'user_create': 'buyer.serializers.UserCreateSerializer',
         'user': 'buyer.serializers.UserCreateSerializer',
@@ -284,7 +284,7 @@ SOCIAL_AUTH_INSTAGRAM_SECRET = 'a4cf3da5523f9e8be0b02f091ce7a7f9'  # Client Secr
 SOCIAL_AUTH_INSTAGRAM_EXTRA_DATA = [
     ('user', 'user'),
 ]
-SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['username']
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['first_name', 'last_name']
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '487987454497-pgoqpfq7s8tp7icr8c3c7pqm7mvmulbp.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'ev9_gghaFDWSRrvXNE8hGYea'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'openid']
