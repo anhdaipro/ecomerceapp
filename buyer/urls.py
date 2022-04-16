@@ -27,10 +27,12 @@ from .views import (
     PurchaseAPIView,
     AddressAPIView,
     UserIDView,
-    ListThreadAPIView
+    ListThreadAPIView,
+    RegisterView
 )
 
 urlpatterns = [
+    path('register', RegisterView.as_view()),
     path('user-id/', UserIDView.as_view()),
     path('buyer/forgot_password', ChangePasswordView.as_view()),
     path('products', HomeAPIView.as_view()),

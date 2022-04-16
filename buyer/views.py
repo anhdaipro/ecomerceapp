@@ -31,7 +31,7 @@ from itemdetail.models import *
 from actionorder.models import *
 from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
-from .serializers import ChangePasswordSerializer
+from .serializers import ChangePasswordSerializer,UserSerializer
 from rest_framework_simplejwt.tokens import AccessToken
 import random
 import string
@@ -55,7 +55,12 @@ class UserIDView(APIView):
         return Response({'userID': user.id}, status=HTTP_200_OK)
 
 
-
+class RegisterView(APIView):
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 class HomeAPIView(APIView):
     def get(self,request):
         list_flashsale=Flash_sale.objects.filter(valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
