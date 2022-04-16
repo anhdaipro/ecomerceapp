@@ -291,7 +291,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['https://www.googleapis.com/auth/userinfo.ema
 
 SOCIAL_AUTH_FACEBOOK_KEY = '914137032576861'
 SOCIAL_AUTH_FACEBOOK_SECRET = '89c40307a3301f00e395ba7d567b51b2'
-SOCIAL_AUTH_FACEBOOK_SCOPE = ['daip6690@gmail.com']
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['daipham952@gmail.com']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
     'fields': 'email, first_name, last_name'
 }
