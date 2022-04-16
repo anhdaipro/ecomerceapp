@@ -4,11 +4,10 @@ from cart.models import *
 from category.models import *
 from myweb.models import *
 from djoser.serializers import UserCreateSerializer
-import os
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
 from rest_framework.authtoken.models import Token
-from . import google,facebook
+
 class UserCreateSerializer(UserCreateSerializer):
     class Meta(UserCreateSerializer.Meta):
         model = User
