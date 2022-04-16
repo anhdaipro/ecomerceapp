@@ -103,7 +103,16 @@ class ListflashsaleAPI(ListAPIView):
         user=User.objects.get(id=user_id)
         shop=Shop.objects.get(user=user)
         return Flashsale.objects.filter(shop=shop)
-    
+
+
+@api_view(['GET', 'POST'])
+def infoseller(request):
+    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+    access_token_obj = AccessToken(token)
+    user_id=access_token_obj['user_id']
+    user=User.objects.get(id=user_id)
+    data={'name':user.username,'image':user.shop.get_image()}
+    return Response(data)
 @api_view(['GET', 'POST'])
 def index(request):
     shop=Shop.objects.get(user=user)

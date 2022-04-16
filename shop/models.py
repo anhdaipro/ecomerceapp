@@ -58,6 +58,9 @@ class Shop(models.Model):
     online=models.BooleanField(default=False)
     def __str__(self):
         return str(self.user)
+    def get_image(self):
+        if self.logo and hasattr(self.logo,'url'):
+            return self.logo.url
     def get_absolute_url(self):
         return reverse("category", kwargs={"slug": self.slug})
     def num_follow(self):

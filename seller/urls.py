@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 from .views import ListvoucherAPI,ListcomboAPI,ListdealshockAPI,ListprogramAPI,ListflashsaleAPI
 urlpatterns = [
+    
+    path("infoseller", views.infoseller),
     path("product/", views.product,name='product'),
     path("vouchers/list", ListvoucherAPI.as_view()),
     path("bundle/list", ListcomboAPI.as_view()),
