@@ -2072,13 +2072,14 @@ def create_shop(request):
         shop=Shop.objects.get(user=user)
         shop.name=request.POST.get('name')
         shop.phone_number = request.POST.get('phone_number')
+        shop.city = request.POST.get('city')
         shop.slug=name
         shop.save()
         data={'ok':'ok'}
         return Response(data)
     else:
         address=Address.objects.filter(user=user,address_type='B')
-        data={'address':address.values()}
+        data={'address':address.values(),'info':{'name':user.shop.name,'phone_number':user.shop.phone_number}}
         return Response(data)
                 
     
