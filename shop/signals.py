@@ -5,7 +5,7 @@ from .models import *
 @receiver(post_save, sender=User)
 def create_user_shop(sender, instance, created, **kwargs):
 	if created:
-		Shop.objects.create(user=instance,name=instance.username)
+		Shop.objects.create(user=instance)
 @receiver(post_save, sender=User)
 def save_user_shop(sender, instance, **kwargs):
 	instance.shop.save()
