@@ -4,7 +4,10 @@ from .models import *
 admin.site.register(Shop)
 class ItemAdmin(admin.ModelAdmin):
     list_display = ['id','name','shop']
-
+    actions = ['set_category']
+    def set_category(self,request,queryset):
+        for i in queryset:
+            i.save()
 class VariationAdmin(admin.ModelAdmin):
     list_display = ['id','color','size','price','percent_discount','percent_discount_deal_shock','inventory','percent_discount_flash_sale']
 class CommentAdmin(admin.ModelAdmin):
