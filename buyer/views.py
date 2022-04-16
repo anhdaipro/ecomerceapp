@@ -31,7 +31,7 @@ from itemdetail.models import *
 from actionorder.models import *
 from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
-from .serializers import ChangePasswordSerializer,UserSerializer
+from .serializers import ChangePasswordSerializer
 from rest_framework_simplejwt.tokens import AccessToken
 import random
 import string
