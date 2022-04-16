@@ -1,14 +1,16 @@
 from django.test import TestCa
+Category.objects.create(title=name,parent_id=55)
 City.objects.bulk_create([City(level=city['level'],maqh=city['maqh'],name=city['name']) for city in list_city])
 # Create your tests here.
-list_category=["Shirt",
+list_category=["Shampoo",
 
-"polo shirt",
+"Hair dye",
 
-"T-shirt",
+"Hair care products",
 
-"Three holes shirt",
+"Conditioner",
 
+"Hair styling products",
 "Other"]
 
 list_category=["Backpack",
