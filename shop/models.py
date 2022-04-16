@@ -139,7 +139,7 @@ class Item(models.Model):
     def  get_absolute_id(self):
         return reverse("vendor:update_item", kwargs={"id": self.id})
     def update_result(self):
-        Item.objects.all().update(slug=re.sub('[,./\ & ]', "-",self.name) + '.' + str(self.id))
+        Item.objects.all().update(slug=re.sub('---', "-",self.name) + '.' + str(self.id))
         # At this point obj.val is still 1, but the value in the database
         # was updated to 2. The object's updated value needs to be reloaded
         # from the database.
