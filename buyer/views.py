@@ -60,9 +60,7 @@ class HomeAPIView(APIView):
     def get(self,request):
         list_flashsale=Flash_sale.objects.filter(valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
         list_items=Item.objects.filter(flash_sale__in=list_flashsale).distinct()
-        list_items=[[{'item_name':i.name,'item_image':i.media_upload.all()[0].upload_file(),'number_order':i.number_order(),
-        'percent_discount':i.discount_flash_sale(),'item_id':i.id,'item_inventory':i.total_inventory(),'item_max':i.max_price(),'item_url':i.get_absolute_url(),
-        'item_min':i.min_price(),'quantity_limit_flash_sale':i.quantity_limit_flash_sale} for i in flash_sale.product.all()] for flash_sale in list_flashsale]
+       
         data={
             'a':[{'item_name':i.name,'item_image':i.media_upload.all()[0].upload_file(),'number_order':i.number_order(),
             'percent_discount':i.discount_flash_sale(),'item_id':i.id,'item_inventory':i.total_inventory(),'item_max':i.max_price(),'item_url':i.get_absolute_url(),
