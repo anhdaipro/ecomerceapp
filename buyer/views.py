@@ -67,19 +67,31 @@ class LoginView(APIView):
     def post(self, request):
         username = request.data['username']
         password = request.data['password']
-        user = User.objects.filter(username=username).first()
-        if user is None:
-            raise AuthenticationFailed('User not found!')
+        token=request.data['token']
+        if token:
+            token = Token.objects.get(token=token)
+            user=token.user
+            user = User.objects.filter(username=username).first()
+            refresh = RefreshToken.for_user(user)
+            data = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+            return Response(data)
+        else:
+            if user is None:
+                raise AuthenticationFailed('User not found!')
+        
+            if not user.check_password(password):
+                raise AuthenticationFailed('Incorrect password!')
+            refresh = RefreshToken.for_user(user)
+            data = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+            return Response(data)
 
-        if not user.check_password(password):
-            raise AuthenticationFailed('Incorrect password!')
-
-        refresh = RefreshToken.for_user(user)
-        data = {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }
-        return Response(data)
+        
 
 
 class LogoutView(APIView):
