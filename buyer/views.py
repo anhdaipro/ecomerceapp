@@ -94,9 +94,6 @@ class LoginView(APIView):
             }
             return Response(data)
 
-        
-
-
 class LogoutView(APIView):
     def post(self, request):
         response = Response()
@@ -909,10 +906,7 @@ class AddToCartAPIView(APIView):
 
 class CartItemAPIView(APIView):
     def get(self,request):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user = request.user
         list_order_item=OrderItem.objects.filter(user=user,ordered=False).order_by('-id')
         shops=Shop.objects.filter(shop_order__in=list_order_item).distinct()
         data={
