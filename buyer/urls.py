@@ -28,13 +28,13 @@ from .views import (
     AddressAPIView,
     UserIDView,
     ListThreadAPIView,
-    RegisterView, LoginView,  LogoutView
+    RegisterView, LoginAPIView,  LogoutView
     
 )
 
 urlpatterns = [
     path('register', RegisterView.as_view()),
-    path('login', LoginView.as_view()),
+    path('login', LoginAPIView.as_view()),
     
     path('logout', LogoutView.as_view()),
     path('user-id/', UserIDView.as_view()),

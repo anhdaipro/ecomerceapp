@@ -3,11 +3,12 @@ from shop.models import *
 from cart.models import *
 from category.models import *
 from myweb.models import *
+from django.contrib import auth
 from djoser.serializers import UserCreateSerializer
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
 from rest_framework.authtoken.models import Token
-
+from rest_framework.exceptions import AuthenticationFailed
 class UserCreateSerializer(UserCreateSerializer):
     class Meta(UserCreateSerializer.Meta):
         model = User
@@ -28,6 +29,41 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+class LoginSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(max_length=255, min_length=3)
+    password = serializers.CharField(
+        max_length=68, min_length=6, write_only=True)
+    username = serializers.CharField(
+        max_length=255, min_length=3)
+    tokens = serializers.SerializerMethodField()
+    def get_tokens(self, obj):
+        user = User.objects.get(email=obj['email'])
+
+        return {
+            'refresh': user.tokens()['refresh'],
+            'access': user.tokens()['access']
+        }
+
+    class Meta:
+        model = User
+        fields = ['email', 'password', 'username', 'tokens']
+
+    def validate(self, attrs):
+        username = attrs.get('username', '')
+        password = attrs.get('password', '')
+        user = auth.authenticate(username=username, password=password)
+        if not user:
+            raise AuthenticationFailed('Invalid credentials, try again')
+        if not user.is_active:
+            raise AuthenticationFailed('Account disabled, contact admin')
+        
+        return {
+            'email': user.email,
+            'username': user.username,
+            'tokens': user.tokens
+        }
+
+        return super().validate(attrs)
 class CategorySerializer(serializers.ModelSerializer):
     image=serializers.SerializerMethodField()
     class Meta:
