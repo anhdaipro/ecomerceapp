@@ -35,6 +35,7 @@ from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
 from .serializers import ChangePasswordSerializer,UserSerializer
 from rest_framework_simplejwt.tokens import AccessToken
+from oauth2_provider.models import AccessToken, Application
 import random
 import string
 import json
@@ -69,9 +70,9 @@ class LoginView(APIView):
         password = request.data['password']
         token=request.data['token']
         if token:
-            token = Token.objects.get(key=token)
-            id=token.user_id
-            user = User.objects.get(id=id)
+            token = AccessToken.objects(token=token)
+            
+            user = token.user
             refresh = RefreshToken.for_user(user)
             data = {
                 'refresh': str(refresh),
