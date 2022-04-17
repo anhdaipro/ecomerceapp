@@ -31,7 +31,7 @@ from itemdetail.models import *
 from actionorder.models import *
 from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
-from .serializers import ChangePasswordSerializer,UserSerializer
+from .serializers import ChangePasswordSerializer,UserSerializer,LoginSerializer
 from rest_framework_simplejwt.tokens import AccessToken
 import random
 import string
@@ -61,33 +61,13 @@ class RegisterView(APIView):
         serializer.save()
         return Response(serializer.data)
 
-class LoginView(APIView):
+class LoginAPIView(generics.GenericAPIView):
+    serializer_class = LoginSerializer
+
     def post(self, request):
-        username = request.data['username']
-        password = request.data['password']
-        user = User.objects.filter(username=username).first()
-        if user is None:
-            raise AuthenticationFailed('User not found!')
-
-        if not user.check_password(password):
-            raise AuthenticationFailed('Incorrect password!')
-
-        payload = {
-            'id': user.id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
-            'iat': datetime.datetime.utcnow()
-        }
-
-        token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
-
-        response = Response()
-
-        response.set_cookie(key='jwt', value=token, httponly=True)
-        response.data = {
-            'jwt': token
-        }
-        return response
-
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class LogoutView(APIView):
     def post(self, request):
