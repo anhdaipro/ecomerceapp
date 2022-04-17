@@ -72,8 +72,7 @@ class LoginView(APIView):
         token=request.POST.get('token')
         if token:
             token = AccessToken.objects.get(token=token)
-            
-            user = token.user
+            user = authenticate(request, username=token.user.username, password=token.user.password)
             refresh = RefreshToken.for_user(user)
             data = {
                 'refresh': str(refresh),
@@ -81,12 +80,13 @@ class LoginView(APIView):
             }
             return Response(data)
         else:
-            user = User.objects.filter(username=username).first()
+            user = authenticate(request, username=username, password=password)
             if user is None:
                 raise AuthenticationFailed('User not found!')
-        
+
             if not user.check_password(password):
                 raise AuthenticationFailed('Incorrect password!')
+            
             refresh = RefreshToken.for_user(user)
             data = {
                 'refresh': str(refresh),
