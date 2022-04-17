@@ -264,7 +264,7 @@ DJOSER = {
     'ACTIVATION_URL': 'activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SOCIAL_AUTH_TOKEN_STRATEGY': 'djoser.social.token.jwt.TokenStrategy',
-    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:3000/google', 'http://localhost:3000/facebook','http://127.0.0.1:3000/google','http://127.0.0.1:3000'],
+    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:3000/google','https://gentle-plains-88366.herokuapp.com','https://gentle-plains-88366.herokuapp.com/google', 'http://localhost:3000/facebook','http://localhost:3000'],
     'SERIALIZERS': {
         'user_create': 'buyer.serializers.UserCreateSerializer',
         'user': 'buyer.serializers.UserCreateSerializer',
