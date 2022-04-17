@@ -17,6 +17,7 @@ from django.core.paginator import Paginator
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework_simplejwt.backends import TokenBackend
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.renderers import TemplateHTMLRenderer
 from django.contrib.auth.decorators import login_required
@@ -58,14 +59,14 @@ class UserIDView(APIView):
         return Response({'userID': user.id}, status=HTTP_200_OK)
 
 class RegisterView(APIView):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
 
 class LoginView(APIView):
-    def post(self, request,*args, **kwargs):
+    def post(self, request,):
         username = request.POST.get('username')
         password = request.POST.get('password')
         token=request.POST.get('token')
@@ -247,7 +248,7 @@ class DetailAPIView(APIView):
             
             if token:
                 if not jwt.ExpiredSignatureError:
-                    access_token_obj = AccessToken(token)
+                    access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
                     user_id=access_token_obj['user_id']
                     user=User.objects.get(id=user_id)
                     like=False
@@ -331,7 +332,7 @@ class DetailAPIView(APIView):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         shop_name=request.POST.get('shop_name')
         shop=Shop.objects.get(name=shop_name)
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         follow=False
@@ -520,7 +521,7 @@ class ProductInfoAPIVIew(APIView):
                 return Response(data)
     def post(self, request, *args, **kwargs):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         item_id=request.POST.get('item_id')
         user=User.objects.get(id=user_id)
@@ -628,7 +629,7 @@ class ItemAPIView(APIView):
 def save_voucher(request):
     if request.method=="POST":
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         voucher_id=request.POST.get('voucher_id')
@@ -643,7 +644,7 @@ class CartAPIView(APIView):
         user = User.objects.get(user=request.user)
         if not jwt.ExpiredSignatureError or user.exists():
             if not jwt.ExpiredSignatureError:
-                access_token_obj = AccessToken(token)
+                access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
                 user_id=access_token_obj['user_id']
                 user=User.objects.get(id=user_id)
             cart_item=OrderItem.objects.filter(ordered=False,user=user)[0:5]
@@ -691,7 +692,7 @@ class UpdateCartAPIView(APIView):
         return Response(data)
     def post(self, request,price=0,total=0,count_orderitem=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0,*args, **kwargs):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         item_id=request.POST.get('item_id')
@@ -779,7 +780,7 @@ class AddToCardBatchAPIView(APIView):
         return Response(data)
     def post(self, request, *args, **kwargs):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         variation_id_choice=request.POST.get('variation_id_chocie')
@@ -860,7 +861,7 @@ class AddToCartAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         id=request.POST.get('id')
@@ -909,7 +910,7 @@ class AddToCartAPIView(APIView):
 class CartItemAPIView(APIView):
     def get(self,request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         list_order_item=OrderItem.objects.filter(user=user,ordered=False).order_by('-id')
@@ -945,7 +946,7 @@ class CartItemAPIView(APIView):
         return Response(data,status=status.HTTP_200_OK)
     def post(self, request,count_orderitem=0,price=0,total=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0, *args, **kwargs):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         byproduct_id_delete=request.POST.get('byproduct_id_delete')
@@ -1042,7 +1043,7 @@ class CartItemAPIView(APIView):
 class OrderAPIView(APIView):
     def get(self,request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         order_check = Order.objects.filter(user=user, ordered=False).exclude(items=None)
@@ -1067,7 +1068,7 @@ def get_city(request):
 class AddressAPIView(APIView):
     def get(self,request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         addresses = Address.objects.filter(user=user)
@@ -1075,7 +1076,7 @@ class AddressAPIView(APIView):
         return Response(data)
     def post(self, request, *args, **kwargs):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         city=request.POST.get('city')
@@ -1142,7 +1143,7 @@ class AddressAPIView(APIView):
 class CheckoutAPIView(APIView):
     def get(self,request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         address=Address.objects.filter(user=user,default=True)
@@ -1175,7 +1176,7 @@ class CheckoutAPIView(APIView):
         return Response(data)
     def post(self, request, *args, **kwargs):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         id=request.POST.get('id')
@@ -1212,7 +1213,7 @@ class CheckoutAPIView(APIView):
 @api_view(['GET', 'POST'])
 def payment_complete(request): 
     token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
+    access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id) 
     if request.method=="POST":
@@ -1253,7 +1254,7 @@ def payment_complete(request):
 class DealShockAPIView(APIView):
     def get(self,request,id):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         variation=Variation.objects.get(id=id)
@@ -1330,7 +1331,7 @@ class PromotionAPIView(APIView):
 class MessageAPIView(APIView):
     def get(self,request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
@@ -1345,7 +1346,7 @@ class MessageAPIView(APIView):
 class ListThreadAPIView(APIView):
     def get(self,request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         thread_id=request.GET.get('thread_id')
@@ -1439,7 +1440,7 @@ class ListThreadAPIView(APIView):
             return Response(data)
     def post(self, request, *args, **kwargs):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         participants=request.POST.getlist('participants')
@@ -1535,7 +1536,7 @@ class ThreadAPIView(APIView):
             return Response(data)
     def post(self, request, *args, **kwargs):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         item=Item.objects.all()
@@ -1591,7 +1592,7 @@ class ThreadAPIView(APIView):
 @api_view(['GET', 'POST'])
 def upload_file(request):
     token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
+    access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id)
     if request.method=="POST":
@@ -1651,7 +1652,7 @@ def update_message(request):
 class ProfileAPIView(APIView):
     def get(self,request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         shop_name=None
@@ -1672,7 +1673,7 @@ class ProfileAPIView(APIView):
 @api_view(['GET', 'POST'])
 def get_address(request):
     token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
+    access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id)
     addresses = Address.objects.filter(user=user)
@@ -1685,7 +1686,7 @@ class PurchaseAPIView(APIView):
         from_item=0
         offset=request.GET.get('offset')
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
@@ -1744,7 +1745,7 @@ class PurchaseAPIView(APIView):
             return Response(data)
     def post(self,request,*args, **kwargs):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
+        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         review_id=request.POST.getlist('review_id')
