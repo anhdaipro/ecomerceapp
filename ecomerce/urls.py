@@ -27,12 +27,11 @@ from django.conf.urls import url
 from django.views.static import serve
 from rest_framework.authtoken.views import obtain_auth_token
 from django.views.generic import TemplateView
+from .views import GoogleLogin
 urlpatterns = [
     path('admin', admin.site.urls),
-    path('auth/', include('djoser.urls')),
-    path('auth/', include('djoser.urls.jwt')),
-    path('auth/', include('djoser.social.urls')),
-    
+    path('dj-rest-auth/', include('dj_rest_auth.urls'),
+    path('dj-rest-auth/google/', GoogleLogin.as_view(), name='google_login')),
     path('password-reset',auth_views.PasswordResetView.as_view(
              template_name='account/password_reset.html'),name='password_reset'),
     path('password-reset/done',auth_views.PasswordResetDoneView.as_view(
