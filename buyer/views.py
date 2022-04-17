@@ -31,7 +31,7 @@ from itemdetail.models import *
 from actionorder.models import *
 from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
-from .serializers import ChangePasswordSerializer,UserSerializer,LoginSerializer
+from .serializers import ChangePasswordSerializer,UserSerializer
 from rest_framework_simplejwt.tokens import AccessToken
 import random
 import string
@@ -61,13 +61,23 @@ class RegisterView(APIView):
         serializer.save()
         return Response(serializer.data)
 
-class LoginAPIView(generics.GenericAPIView):
-    serializer_class = LoginSerializer
-
+class LoginView(APIView):
     def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        username = request.data['username']
+        password = request.data['password']
+        user = User.objects.filter(username=username).first()
+        if user is None:
+            raise AuthenticationFailed('User not found!')
+
+        if not user.check_password(password):
+            raise AuthenticationFailed('Incorrect password!')
+
+        response.data = {
+            'refresh': user.tokens()['refresh'],
+            'access': user.tokens()['access']
+        }
+        return response
+
 
 class LogoutView(APIView):
     def post(self, request):
@@ -104,7 +114,7 @@ class DetailAPIView(APIView):
         category=Category.objects.filter(slug=slug)
         item=Item.objects.filter(slug=slug)
         shop=Shop.objects.filter(slug=slug)
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         page_no=1
         page = request.GET.get('page')
         sort_price=request.GET.get('price_sort')
@@ -301,7 +311,7 @@ class DetailAPIView(APIView):
                     'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
     def post(self, request, *args, **kwargs):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         shop_name=request.POST.get('shop_name')
         shop=Shop.objects.get(name=shop_name)
         access_token_obj = AccessToken(token)
@@ -492,7 +502,7 @@ class ProductInfoAPIVIew(APIView):
                         }
                 return Response(data)
     def post(self, request, *args, **kwargs):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         item_id=request.POST.get('item_id')
@@ -600,7 +610,7 @@ class ItemAPIView(APIView):
 @api_view(['GET', 'POST'])
 def save_voucher(request):
     if request.method=="POST":
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -612,7 +622,7 @@ def save_voucher(request):
 
 class CartAPIView(APIView):
     def get(self,request):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -660,7 +670,7 @@ class UpdateCartAPIView(APIView):
         }
         return Response(data)
     def post(self, request,price=0,total=0,count_orderitem=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0,*args, **kwargs):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -748,7 +758,7 @@ class AddToCardBatchAPIView(APIView):
             data.update({'byproduct_id':byproduct_id})
         return Response(data)
     def post(self, request, *args, **kwargs):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -829,7 +839,7 @@ class AddToCartAPIView(APIView):
         return Response(data)
 
     def post(self, request, *args, **kwargs):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -878,7 +888,7 @@ class AddToCartAPIView(APIView):
 
 class CartItemAPIView(APIView):
     def get(self,request):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -914,7 +924,7 @@ class CartItemAPIView(APIView):
         }
         return Response(data,status=status.HTTP_200_OK)
     def post(self, request,count_orderitem=0,price=0,total=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0, *args, **kwargs):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -1011,7 +1021,7 @@ class CartItemAPIView(APIView):
 
 class OrderAPIView(APIView):
     def get(self,request):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -1036,7 +1046,7 @@ def get_city(request):
 
 class AddressAPIView(APIView):
     def get(self,request):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -1044,7 +1054,7 @@ class AddressAPIView(APIView):
         data={'a':list(addresses.values()),'user':{'image':user.shop.image.url,'name':user.username}}
         return Response(data)
     def post(self, request, *args, **kwargs):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -1111,7 +1121,7 @@ class AddressAPIView(APIView):
 
 class CheckoutAPIView(APIView):
     def get(self,request):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -1144,7 +1154,7 @@ class CheckoutAPIView(APIView):
         }
         return Response(data)
     def post(self, request, *args, **kwargs):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -1181,7 +1191,7 @@ class CheckoutAPIView(APIView):
 
 @api_view(['GET', 'POST'])
 def payment_complete(request): 
-    token = request.COOKIES.get('jwt')
+    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
     access_token_obj = AccessToken(token)
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id) 
@@ -1222,7 +1232,7 @@ def payment_complete(request):
 
 class DealShockAPIView(APIView):
     def get(self,request,id):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -1299,7 +1309,7 @@ class PromotionAPIView(APIView):
 
 class MessageAPIView(APIView):
     def get(self,request):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -1314,7 +1324,7 @@ class MessageAPIView(APIView):
 
 class ListThreadAPIView(APIView):
     def get(self,request):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -1408,7 +1418,7 @@ class ListThreadAPIView(APIView):
             }
             return Response(data)
     def post(self, request, *args, **kwargs):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -1504,7 +1514,7 @@ class ThreadAPIView(APIView):
             }
             return Response(data)
     def post(self, request, *args, **kwargs):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -1560,7 +1570,7 @@ class ThreadAPIView(APIView):
 
 @api_view(['GET', 'POST'])
 def upload_file(request):
-    token = request.COOKIES.get('jwt')
+    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
     access_token_obj = AccessToken(token)
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id)
@@ -1620,7 +1630,7 @@ def update_message(request):
 
 class ProfileAPIView(APIView):
     def get(self,request):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -1641,7 +1651,7 @@ class ProfileAPIView(APIView):
         
 @api_view(['GET', 'POST'])
 def get_address(request):
-    token = request.COOKIES.get('jwt')
+    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
     access_token_obj = AccessToken(token)
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id)
@@ -1654,7 +1664,7 @@ class PurchaseAPIView(APIView):
         limit=5
         from_item=0
         offset=request.GET.get('offset')
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
@@ -1713,7 +1723,7 @@ class PurchaseAPIView(APIView):
                 }
             return Response(data)
     def post(self,request,*args, **kwargs):
-        token = request.COOKIES.get('jwt')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         access_token_obj = AccessToken(token)
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
