@@ -122,14 +122,19 @@ AUTHENTICATION_BACKENDS = (
 )
 REST_USE_JWT = True
 REST_FRAMEWORK = {
-    
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated'
+    ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  
         'drf_social_oauth2.authentication.SocialAuthentication',
     )
 }
-
+REST_AUTH_SERIALIZERS = {
+    'LOGIN_SERIALIZER': 'buyer.serializers.LoginSerializer',
+    'USER_DETAILS_SERIALIZER': 'user_profile.serializers.UserSerializer',
+}
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
