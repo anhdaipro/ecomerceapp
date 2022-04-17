@@ -89,7 +89,6 @@ class LoginView(APIView):
         }
         return response
 class UserView(APIView):
-    
     def get(self, request):
         token = request.COOKIES.get('jwt')
 
@@ -265,7 +264,7 @@ class DetailAPIView(APIView):
                 data.update({'user':user_id,'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
-        else:
+        elif shop.exists():
             shop=Shop.objects.get(slug=slug)
             list_voucher=Vocher.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
             deal_shock=Buy_with_shock_deal.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
