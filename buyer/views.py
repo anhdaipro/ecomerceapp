@@ -36,7 +36,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 import random
 import string
 import json
-import datetime
+import datetime,jwt
 from django.contrib.auth import authenticate,login,logout
 from rest_framework import status,viewsets,generics
 from django.contrib.auth.models import User
@@ -53,7 +53,6 @@ def create_ref_code():
 class UserIDView(APIView):
     def get(self, request, *args, **kwargs):
         return Response({'userID': user.id}, status=HTTP_200_OK)
-
 
 class RegisterView(APIView):
     def post(self, request):
@@ -88,21 +87,7 @@ class LoginView(APIView):
             'jwt': token
         }
         return response
-class UserView(APIView):
-    def get(self, request):
-        token = request.COOKIES.get('jwt')
 
-        if not token:
-            raise AuthenticationFailed('Unauthenticated!')
-
-        try:
-            payload = jwt.decode(token, 'secret', algorithm=['HS256'])
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Unauthenticated!')
-
-        user = User.objects.filter(id=payload['id']).first()
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
 
 class LogoutView(APIView):
     def post(self, request):
