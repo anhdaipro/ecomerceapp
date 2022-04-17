@@ -133,7 +133,9 @@ REST_FRAMEWORK = {
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     )
 }
-
+REST_USE_JWT = True
+JWT_AUTH_COOKIE = 'my-app-auth'
+JWT_AUTH_REFRESH_COOKIE = 'my-refresh-token'
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
@@ -259,7 +261,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 MEDIA_URL = '/file/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-SITE_ID = 1
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
@@ -284,11 +285,9 @@ SOCIAL_AUTH_INSTAGRAM_SECRET = 'a4cf3da5523f9e8be0b02f091ce7a7f9'  # Client Secr
 SOCIAL_AUTH_INSTAGRAM_EXTRA_DATA = [
     ('user', 'user'),
 ]
-SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['first_name', 'last_name']
+
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '487987454497-pgoqpfq7s8tp7icr8c3c7pqm7mvmulbp.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'ev9_gghaFDWSRrvXNE8hGYea'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'openid']
-
 SOCIAL_AUTH_FACEBOOK_KEY = '914137032576861'
 SOCIAL_AUTH_FACEBOOK_SECRET = '89c40307a3301f00e395ba7d567b51b2'
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['daipham952@gmail.com']
