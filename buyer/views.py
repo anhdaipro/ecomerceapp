@@ -24,6 +24,7 @@ from category.models import *
 from checkout.models import *
 from cart.models import *
 from discount.models import *
+import jwt, datetime
 from chat.models import *
 from city.models import *
 from myweb.models import *
@@ -36,7 +37,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 import random
 import string
 import json
-import datetime
+
 from django.contrib.auth import authenticate,login,logout
 from rest_framework import status,viewsets,generics
 from django.contrib.auth.models import User
@@ -255,7 +256,7 @@ class DetailAPIView(APIView):
             
             if token:
                 if not jwt.ExpiredSignatureError:
-                    access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+                    access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
                     user_id=access_token_obj['user_id']
                     user=User.objects.get(id=user_id)
                     like=False
@@ -324,21 +325,22 @@ class DetailAPIView(APIView):
                 'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price()} for i in main_product],
                 'total_order':shop.total_order(),'list_category_child':[{'title':category.title,'id':category.id,'url':category.get_absolute_url()} for category in category_children]}
             if token:
-                access_token_obj = AccessToken(token,verify=True)
-                user_id=access_token_obj['user_id']
-                user=User.objects.get(id=user_id)
-                follow=False
-                if user in shop.followers.all():
-                    follow=True
-                threads = Thread.objects.filter(participants=user).order_by('timestamp')
-                data.update({'user':user_id,'follow':follow,
-                'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
+                if not jwt.ExpiredSignatureError:
+                    access_token_obj = access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
+                    user_id=access_token_obj['user_id']
+                    user=User.objects.get(id=user_id)
+                    follow=False
+                    if user in shop.followers.all():
+                        follow=True
+                    threads = Thread.objects.filter(participants=user).order_by('timestamp')
+                    data.update({'user':user_id,'follow':follow,
+                    'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
     def post(self, request, *args, **kwargs):
         token = request.COOKIES.get('jwt')
         shop_name=request.POST.get('shop_name')
         shop=Shop.objects.get(name=shop_name)
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         follow=False
@@ -527,7 +529,7 @@ class ProductInfoAPIVIew(APIView):
                 return Response(data)
     def post(self, request, *args, **kwargs):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         item_id=request.POST.get('item_id')
         user=User.objects.get(id=user_id)
@@ -635,7 +637,7 @@ class ItemAPIView(APIView):
 def save_voucher(request):
     if request.method=="POST":
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         voucher_id=request.POST.get('voucher_id')
@@ -647,7 +649,7 @@ def save_voucher(request):
 class CartAPIView(APIView):
     def get(self,request):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         cart_item=OrderItem.objects.filter(ordered=False,user=user)[0:5]
@@ -695,7 +697,7 @@ class UpdateCartAPIView(APIView):
         return Response(data)
     def post(self, request,price=0,total=0,count_orderitem=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0,*args, **kwargs):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         item_id=request.POST.get('item_id')
@@ -783,7 +785,7 @@ class AddToCardBatchAPIView(APIView):
         return Response(data)
     def post(self, request, *args, **kwargs):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         variation_id_choice=request.POST.get('variation_id_chocie')
@@ -864,7 +866,7 @@ class AddToCartAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         id=request.POST.get('id')
@@ -913,7 +915,7 @@ class AddToCartAPIView(APIView):
 class CartItemAPIView(APIView):
     def get(self,request):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         list_order_item=OrderItem.objects.filter(user=user,ordered=False).order_by('-id')
@@ -949,7 +951,7 @@ class CartItemAPIView(APIView):
         return Response(data,status=status.HTTP_200_OK)
     def post(self, request,count_orderitem=0,price=0,total=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0, *args, **kwargs):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         byproduct_id_delete=request.POST.get('byproduct_id_delete')
@@ -1046,7 +1048,7 @@ class CartItemAPIView(APIView):
 class OrderAPIView(APIView):
     def get(self,request):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         order_check = Order.objects.filter(user=user, ordered=False).exclude(items=None)
@@ -1071,7 +1073,7 @@ def get_city(request):
 class AddressAPIView(APIView):
     def get(self,request):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         addresses = Address.objects.filter(user=user)
@@ -1079,7 +1081,7 @@ class AddressAPIView(APIView):
         return Response(data)
     def post(self, request, *args, **kwargs):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         city=request.POST.get('city')
@@ -1146,7 +1148,7 @@ class AddressAPIView(APIView):
 class CheckoutAPIView(APIView):
     def get(self,request):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         address=Address.objects.filter(user=user,default=True)
@@ -1179,7 +1181,7 @@ class CheckoutAPIView(APIView):
         return Response(data)
     def post(self, request, *args, **kwargs):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         id=request.POST.get('id')
@@ -1216,7 +1218,7 @@ class CheckoutAPIView(APIView):
 @api_view(['GET', 'POST'])
 def payment_complete(request): 
     token = request.COOKIES.get('jwt')
-    access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+    access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id) 
     if request.method=="POST":
@@ -1257,7 +1259,7 @@ def payment_complete(request):
 class DealShockAPIView(APIView):
     def get(self,request,id):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         variation=Variation.objects.get(id=id)
@@ -1334,7 +1336,7 @@ class PromotionAPIView(APIView):
 class MessageAPIView(APIView):
     def get(self,request):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
@@ -1349,7 +1351,7 @@ class MessageAPIView(APIView):
 class ListThreadAPIView(APIView):
     def get(self,request):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         thread_id=request.GET.get('thread_id')
@@ -1443,7 +1445,7 @@ class ListThreadAPIView(APIView):
             return Response(data)
     def post(self, request, *args, **kwargs):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         participants=request.POST.getlist('participants')
@@ -1539,7 +1541,7 @@ class ThreadAPIView(APIView):
             return Response(data)
     def post(self, request, *args, **kwargs):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         item=Item.objects.all()
@@ -1595,7 +1597,7 @@ class ThreadAPIView(APIView):
 @api_view(['GET', 'POST'])
 def upload_file(request):
     token = request.COOKIES.get('jwt')
-    access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+    access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id)
     if request.method=="POST":
@@ -1655,7 +1657,7 @@ def update_message(request):
 class ProfileAPIView(APIView):
     def get(self,request):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         shop_name=None
@@ -1676,7 +1678,7 @@ class ProfileAPIView(APIView):
 @api_view(['GET', 'POST'])
 def get_address(request):
     token = request.COOKIES.get('jwt')
-    access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+    access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
     user_id=access_token_obj['user_id']
     user=User.objects.get(id=user_id)
     addresses = Address.objects.filter(user=user)
@@ -1689,7 +1691,7 @@ class PurchaseAPIView(APIView):
         from_item=0
         offset=request.GET.get('offset')
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
@@ -1748,7 +1750,7 @@ class PurchaseAPIView(APIView):
             return Response(data)
     def post(self,request,*args, **kwargs):
         token = request.COOKIES.get('jwt')
-        access_token_obj =wt.decode(token, "secret", algorithms=["HS256"])
+        access_token_obj =jwt.decode(token, "secret", algorithms=["HS256"])
         user_id=access_token_obj['user_id']
         user=User.objects.get(id=user_id)
         review_id=request.POST.getlist('review_id')
