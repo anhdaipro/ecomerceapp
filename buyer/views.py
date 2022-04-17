@@ -78,7 +78,7 @@ class LoginView(APIView):
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         }
-        return response(data)
+        return Response(data)
 
 
 class LogoutView(APIView):
