@@ -43,7 +43,7 @@ import datetime,jwt
 from django.contrib.auth import authenticate,login,logout
 from rest_framework import status,viewsets,generics
 from django.contrib.auth.models import User
-
+from rest_framework.exceptions import AuthenticationFailed
 import paypalrestsdk
 from paypalrestsdk import Sale
 paypalrestsdk.configure({
@@ -65,10 +65,10 @@ class RegisterView(APIView):
         return Response(serializer.data)
 
 class LoginView(APIView):
-    def post(self, request):
-        username = request.POST.get['username']
-        password = request.data['password']
-        token=request.data['token']
+    def post(self, request,*args, **kwargs):
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        token=request.POST.get('token')
         if token:
             token = AccessToken.objects.get(token=token)
             
