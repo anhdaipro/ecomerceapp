@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     'social_django',
+    'oauth2_provider',
+    'drf_social_oauth2',
     'rest_framework',
     'shop',
     'checkout',
@@ -66,11 +68,8 @@ INSTALLED_APPS = [
     'channels',
     'mptt',
     'rest_framework_simplejwt',
-    'rest_framework.authtoken',
     'rest_framework_simplejwt.token_blacklist',
-    'allauth',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
+    
     
     
 ]
@@ -89,10 +88,8 @@ MIDDLEWARE = [
    
     
 ]
-SITE_ID = 2
 
 ROOT_URLCONF = 'ecomerce.urls'
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -117,10 +114,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ecomerce.wsgi.application'
 ASGI_APPLICATION = "ecomerce.routing.application"
 AUTHENTICATION_BACKENDS = (
-    'social_core.backends.facebook.FacebookOAuth2',
-    'social_core.backends.twitter.TwitterOAuth',
-    'social_core.backends.instagram.InstagramOAuth2',
     'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.facebook.FacebookAppOAuth2',
+    'social_core.backends.facebook.FacebookOAuth2',
+    'drf_social_oauth2.backends.DjangoOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -130,12 +127,11 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  
+        'drf_social_oauth2.authentication.SocialAuthentication',
     )
 }
-REST_USE_JWT = True
-JWT_AUTH_COOKIE = 'my-app-auth'
-JWT_AUTH_REFRESH_COOKIE = 'my-refresh-token'
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
@@ -285,9 +281,13 @@ SOCIAL_AUTH_INSTAGRAM_SECRET = 'a4cf3da5523f9e8be0b02f091ce7a7f9'  # Client Secr
 SOCIAL_AUTH_INSTAGRAM_EXTRA_DATA = [
     ('user', 'user'),
 ]
-
+SOCIAL_AUTH_USER_FIELDS=['email','first_name','username','password']
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '487987454497-pgoqpfq7s8tp7icr8c3c7pqm7mvmulbp.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'ev9_gghaFDWSRrvXNE8hGYea'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+   'https://www.googleapis.com/auth/userinfo.email',
+   'https://www.googleapis.com/auth/userinfo.profile',
+]
 SOCIAL_AUTH_FACEBOOK_KEY = '914137032576861'
 SOCIAL_AUTH_FACEBOOK_SECRET = '89c40307a3301f00e395ba7d567b51b2'
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['daipham952@gmail.com']
