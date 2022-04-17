@@ -69,7 +69,7 @@ class LoginView(APIView):
         password = request.data['password']
         token=request.data['token']
         if token:
-            token = Token.objects.get(token=token)
+            token = Token.objects.get(key=token)
             user=token.user
             user = User.objects.filter(username=username).first()
             refresh = RefreshToken.for_user(user)
