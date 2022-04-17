@@ -66,9 +66,9 @@ class RegisterView(APIView):
 
 class LoginView(APIView):
     def post(self, request):
-        username = request.data['username']
-        password = request.data['password']
-        token=request.data['token']
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        token=request.POST.get('token')
         if token:
             token = AccessToken.objects.get(token=token)
             
