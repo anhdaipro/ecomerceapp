@@ -70,8 +70,8 @@ class LoginView(APIView):
         token=request.data['token']
         if token:
             token = Token.objects.get(key=token)
-            user=token.user
-            user = User.objects.filter(username=username).first()
+            id=token.user_id
+            user = User.objects.get(id=id)
             refresh = RefreshToken.for_user(user)
             data = {
                 'refresh': str(refresh),
@@ -79,6 +79,7 @@ class LoginView(APIView):
             }
             return Response(data)
         else:
+            user = User.objects.filter(username=username).first()
             if user is None:
                 raise AuthenticationFailed('User not found!')
         
