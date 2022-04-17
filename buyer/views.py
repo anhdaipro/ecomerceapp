@@ -255,15 +255,15 @@ class DetailAPIView(APIView):
             
             if token:
                 if not jwt.ExpiredSignatureError:
-                access_token_obj = AccessToken(token)
-                user_id=access_token_obj['user_id']
-                user=User.objects.get(id=user_id)
-                like=False
-                if user in item.liked.all():
-                    like=True
-                threads = Thread.objects.filter(participants=user).order_by('timestamp')
-                data.update({'user':user_id,'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
-                'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
+                    access_token_obj = AccessToken(token)
+                    user_id=access_token_obj['user_id']
+                    user=User.objects.get(id=user_id)
+                    like=False
+                    if user in item.liked.all():
+                        like=True
+                    threads = Thread.objects.filter(participants=user).order_by('timestamp')
+                    data.update({'user':user_id,'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
+                    'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
         elif shop.exists():
             shop=Shop.objects.get(slug=slug)
