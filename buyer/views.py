@@ -254,7 +254,7 @@ class DetailAPIView(APIView):
             }
             
             if token:
-                if not jwt.ExpiredSignatureError
+                if not jwt.ExpiredSignatureError:
                 access_token_obj = AccessToken(token)
                 user_id=access_token_obj['user_id']
                 user=User.objects.get(id=user_id)
@@ -324,15 +324,16 @@ class DetailAPIView(APIView):
                 'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price()} for i in main_product],
                 'total_order':shop.total_order(),'list_category_child':[{'title':category.title,'id':category.id,'url':category.get_absolute_url()} for category in category_children]}
             if token:
-                access_token_obj = AccessToken(token,verify=True)
-                user_id=access_token_obj['user_id']
-                user=User.objects.get(id=user_id)
-                follow=False
-                if user in shop.followers.all():
-                    follow=True
-                threads = Thread.objects.filter(participants=user).order_by('timestamp')
-                data.update({'user':user_id,'follow':follow,
-                'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
+                if not jwt.ExpiredSignatureError:
+                    access_token_obj = AccessToken(token,verify=True)
+                    user_id=access_token_obj['user_id']
+                    user=User.objects.get(id=user_id)
+                    follow=False
+                    if user in shop.followers.all():
+                        follow=True
+                    threads = Thread.objects.filter(participants=user).order_by('timestamp')
+                    data.update({'user':user_id,'follow':follow,
+                    'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
     def post(self, request, *args, **kwargs):
         token = request.COOKIES.get('jwt')
