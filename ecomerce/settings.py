@@ -227,6 +227,7 @@ USE_TZ = True
 DATE_INPUT_FORMATS=[
     '%m/%d/%Y'
 ]
+CORS_ALLOW_CREDENTIALS = True
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
