@@ -10,6 +10,7 @@ from rest_framework.generics import (
     ListAPIView, RetrieveAPIView, CreateAPIView,
     UpdateAPIView, DestroyAPIView
 )
+from rest_framework_simplejwt.tokens import RefreshToken
 from drf_multiple_model.views import ObjectMultipleModelAPIView
 from django.core.paginator import Paginator
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -72,19 +73,10 @@ class LoginView(APIView):
         if not user.check_password(password):
             raise AuthenticationFailed('Incorrect password!')
 
-        payload = {
-            'id': user.id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
-            'iat': datetime.datetime.utcnow()
-        }
-
-        token = jwt.encode(payload, 'secret', algorithm='HS256')
-
-        response = Response()
-
-        response.set_cookie(key='jwt', value=token, httponly=True)
+        refresh = RefreshToken.for_user(user)
         response.data = {
-            'jwt': token
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
         }
         return response
 
