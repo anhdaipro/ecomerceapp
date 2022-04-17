@@ -132,10 +132,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     )
 }
-REST_AUTH_SERIALIZERS = {
-    'LOGIN_SERIALIZER': 'buyer.serializers.LoginSerializer',
-    'USER_DETAILS_SERIALIZER': 'user_profile.serializers.UserSerializer',
-}
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
