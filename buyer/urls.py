@@ -68,5 +68,5 @@ urlpatterns = [
     path('update_address',AddressAPIView.as_view()),
     path('get_city',views.get_city),
     path('get_address',views.get_address),
-    path('login',views.login_view)
+    
 ]
