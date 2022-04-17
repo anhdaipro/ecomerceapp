@@ -74,11 +74,11 @@ class LoginView(APIView):
             raise AuthenticationFailed('Incorrect password!')
 
         refresh = RefreshToken.for_user(user)
-        response.data = {
+        data = {
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         }
-        return response
+        return response(data)
 
 
 class LogoutView(APIView):
