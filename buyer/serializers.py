@@ -56,20 +56,12 @@ class LoginSerializer(serializers.ModelSerializer):
         filtered_user_by_email = User.objects.filter(email=email)
         user = auth.authenticate(email=email, password=password)
 
-        if not user:
-            raise AuthenticationFailed('Invalid credentials, try again')
-        if not user.is_active:
-            raise AuthenticationFailed('Account disabled, contact admin')
-        if not user.is_verified:
-            raise AuthenticationFailed('Email is not verified')
-
         return {
             'email': user.email,
             'username': user.username,
             'tokens': user.tokens
         }
 
-        return super().validate(attrs)
 class CategorySerializer(serializers.ModelSerializer):
     image=serializers.SerializerMethodField()
     class Meta:
