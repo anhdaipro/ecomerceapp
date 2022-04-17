@@ -638,7 +638,7 @@ def save_voucher(request):
 class CartAPIView(APIView):
     def get(self,request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        user = User.objects.get(user=request.user)
+        user=request.user
         if not jwt.ExpiredSignatureError or user.exists():
             if not jwt.ExpiredSignatureError:
                 access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
