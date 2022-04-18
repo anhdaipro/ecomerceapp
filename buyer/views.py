@@ -67,6 +67,7 @@ class RegisterView(APIView):
         return Response(serializer.data)
 
 class Sendotp(APIView):
+    permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
         phone=request.POST.get('phone')
         profile=Profile.objects.filter(phone=phone)
