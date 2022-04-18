@@ -8,7 +8,7 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from rest_framework.generics import (
     ListAPIView, RetrieveAPIView, CreateAPIView,
-    UpdateAPIView, DestroyAPIView
+    UpdateAPIView, DestroyAPIView,GenericAPIView,
 )
 from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -34,7 +34,7 @@ from itemdetail.models import *
 from actionorder.models import *
 from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
-from .serializers import ChangePasswordSerializer,UserSerializer
+from .serializers import ChangePasswordSerializer,UserSerializer,SMSPinSerializer,SMSPinSerializer,SMSVerificationSerializer
 from rest_framework_simplejwt.tokens import AccessToken
 from oauth2_provider.models import AccessToken, Application
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -66,6 +66,47 @@ class RegisterView(APIView):
         serializer.save()
         return Response(serializer.data)
 
+class ResendSMSAPIView(GenericAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = SMSVerificationSerializer
+    allowed_methods = ("POST",)
+
+    def resend_or_create(self):
+        phone = self.request.data.get("phone")
+        send_new = self.request.data.get("new")
+        sms_verification = None
+
+        user = User.objects.filter(profile__phone_number=phone).first()
+
+        if not send_new:
+            sms_verification = (
+                SMSVerification.objects.filter(user=user, verified=False)
+                .order_by("-created")
+                .first()
+            )
+
+        if sms_verification is None:
+            sms_verification = SMSVerification.objects.create(user=user, phone=phone)
+
+        return sms_verification.send_confirmation()
+
+    def post(self, request, *args, **kwargs):
+        success = self.resend_or_create()
+
+        return Response(dict(success=success), status=status.HTTP_200_OK)
+class VerifySMSView(APIView):
+    permission_classes = (AllowAny,)
+    allowed_methods = ("POST", "OPTIONS", "HEAD")
+    def get_serializer(self, *args, **kwargs):
+        return SMSPinSerializer(*args, **kwargs)
+    def post(self, request, pk):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        pin = int(request.data.get("pin"))
+        # TODO get user SMSVerification instead of below confirmation variable
+        confirmation = get_object_or_404(SMSVerification, pk=pk)
+        confirmation.confirm(pin=pin)
+        return Response("Your Phone Number Is Verfied.", status=status.HTTP_200_OK)
 class LoginView(APIView):
     permission_classes = (AllowAny,)
     def post(self, request,):
@@ -1017,8 +1058,8 @@ class CartItemAPIView(APIView):
         return Response(data)
 
 class OrderAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
     def get(self,request):
-        permission_classes = (IsAuthenticated,)
         user=request.user
         order_check = Order.objects.filter(user=user, ordered=False).exclude(items=None)
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
@@ -1040,6 +1081,7 @@ def get_city(request):
     return Response(data)
 
 class AddressAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
         addresses = Address.objects.filter(user=user)
@@ -1112,6 +1154,7 @@ class AddressAPIView(APIView):
             return Response(data)
 
 class CheckoutAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
         address=Address.objects.filter(user=user,default=True)
@@ -1220,6 +1263,7 @@ def payment_complete(request):
         return Response({'amount':amount})  
 
 class DealShockAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
     def get(self,request,id):
         user=request.user
         variation=Variation.objects.get(id=id)
@@ -1275,6 +1319,7 @@ class DealShockAPIView(APIView):
         return Response(data)
 
 class PromotionAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
     def get(self,request,id):
         promotion=Promotion_combo.objects.get(id=id)
         items=promotion.product.all()
@@ -1294,6 +1339,7 @@ class PromotionAPIView(APIView):
         return Response(data)
 
 class MessageAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
@@ -1306,6 +1352,7 @@ class MessageAPIView(APIView):
         return Response(data)
 
 class ListThreadAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
         thread_id=request.GET.get('thread_id')
@@ -1472,6 +1519,7 @@ class ListThreadAPIView(APIView):
             return Response(data)
 
 class ThreadAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
     def get(self,request):
         thread_id=request.GET.get('thread_id')
         if thread_id:
@@ -1603,6 +1651,7 @@ def update_message(request):
         return Response(data)
 
 class ProfileAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
         shop_name=None
@@ -1628,6 +1677,7 @@ def get_address(request):
     return Response(data)
 
 class PurchaseAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
     def get(self,request):
         limit=5
         from_item=0

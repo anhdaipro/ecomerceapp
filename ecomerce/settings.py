@@ -15,6 +15,7 @@ from datetime import timedelta
 import os
 import dj_database_url
 import django_heroku
+from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -188,6 +189,16 @@ CACHES = {
         }
     }
 
+# Cache settings 
+CACHE_MIDDLEWARE_ALIAS = 'default'
+CACHE_MIDDLEWARE_SECONDS = 3600   # this number equal 1h
+CACHE_MIDDLEWARE_KEY_PREFIX = ''
+# Number of minutes of inactivity before a user is marked offline
+USER_ONLINE_TIMEOUT = 10
+
+# Number of seconds that we will keep track of inactive users for before 
+# their last seen is removed from the cache
+USER_LASTSEEN_TIMEOUT = 60 * 60 * 24 * 7
 CHANNEL_LAYERS = {
      "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -246,6 +257,7 @@ USE_TZ = True
 DATE_INPUT_FORMATS=[
     '%m/%d/%Y'
 ]
+
 CORS_ALLOW_CREDENTIALS = True
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 # Static files (CSS, JavaScript, Images)
@@ -296,7 +308,11 @@ SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
     'fields': 'email, first_name, last_name'
 }
-
+TWILIO_ACCOUNT_SID = 'AC83b7af492331fa5456ac45e9204f3e8b'
+TWILIO_AUTH_TOKEN = '74330bb213bcb5454686f2267bd93b0c'
+TWILIO_FROM_NUMBER = '+19844099428'
+PHONENUMBER_DEFAULT_REGION = 'EG'
+PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'

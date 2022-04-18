@@ -28,6 +28,7 @@ from .views import (
     AddressAPIView,
     UserIDView,
     ListThreadAPIView,
+    SMSPinSerializer,SMSPinSerializer,
     RegisterView, LoginView,  LogoutView
     
 )
@@ -35,7 +36,8 @@ from .views import (
 urlpatterns = [
     path('register', RegisterView.as_view()),
     path('login', LoginView.as_view()),
-    
+    path("verify-sms/<int:pk>/", views.VerifySMSView.as_view()),
+    path("resend-sms/", views.ResendSMSAPIView.as_view()),
     path('logout', LogoutView.as_view()),
     path('user-id/', UserIDView.as_view()),
     path('buyer/forgot_password', ChangePasswordView.as_view()),
