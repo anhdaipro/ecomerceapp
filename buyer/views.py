@@ -66,56 +66,54 @@ class RegisterView(APIView):
         serializer.save()
         return Response(serializer.data)
 
-class ResendSMSAPIView(GenericAPIView):
-    permission_classes = (AllowAny,)
-    serializer_class = SMSVerificationSerializer
-    allowed_methods = ("POST",)
-
-    def resend_or_create(self):
-        phone = self.request.data.get("phone")
-        send_new = self.request.data.get("new")
-        sms_verification = None
-
-        user = User.objects.filter(profile__phone_number=phone).first()
-
-        if not send_new:
-            sms_verification = (
-                SMSVerification.objects.filter(user=user, verified=False)
-                .order_by("-created")
-                .first()
-            )
-
-        if sms_verification is None:
-            sms_verification = SMSVerification.objects.create(user=user, phone=phone)
-
-        return sms_verification.send_confirmation()
-
+class Sendotp(APIView):
     def post(self, request, *args, **kwargs):
-        success = self.resend_or_create()
+        phone=request.POST.get('phone')
+        profile=Profile.objects.filter(phone=phone)
+        usr_otp = random.randint(100000, 999999)
+        data={}
+        if profile.exists():
+            otp=SMSVerification.objects.create(pin=usr_otp,profile=profile.first())
+            data.update({'id':otp.id})
+        else:
+            otp=SMSVerification.objects.create(pin=usr_otp,phone=phone)
+            data.update({'id':otp.id})
+        return Response(data)
 
-        return Response(dict(success=success), status=status.HTTP_200_OK)
+
+        
 class VerifySMSView(APIView):
     permission_classes = (AllowAny,)
-    allowed_methods = ("POST", "OPTIONS", "HEAD")
-    def get_serializer(self, *args, **kwargs):
-        return SMSPinSerializer(*args, **kwargs)
-    def post(self, request, pk):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        pin = int(request.data.get("pin"))
-        # TODO get user SMSVerification instead of below confirmation variable
-        confirmation = get_object_or_404(SMSVerification, pk=pk)
-        confirmation.confirm(pin=pin)
-        return Response("Your Phone Number Is Verfied.", status=status.HTTP_200_OK)
+    def post(self, request):
+        id=request.POST.get('id')
+        pin = int(request.POST.get("pin"))
+        otp=Otp.objects.get(id=id)
+        if otp.pin==pin:
+            if otp.profile:
+                return Response({'verify':True,'user_id':user_id})
+            else:
+                return Response({'verify':True})
+        else:
+            return Response({'verify':False})
+
 class LoginView(APIView):
     permission_classes = (AllowAny,)
     def post(self, request,):
         username = request.POST.get('username')
         password = request.POST.get('password')
         token=request.POST.get('token')
+        user_id=request.POST.get('user_id')
         if token:
             token = AccessToken.objects.get(token=token)
             user = token.user
+            refresh = RefreshToken.for_user(user)
+            data = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+            return Response(data)
+        elif user_id:
+            user=User.objects.get(id=user_id)
             refresh = RefreshToken.for_user(user)
             data = {
                 'refresh': str(refresh),
@@ -145,6 +143,7 @@ class LogoutView(APIView):
             'message': 'success'
         }
         return response
+
 class HomeAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
