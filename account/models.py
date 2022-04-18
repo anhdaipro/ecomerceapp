@@ -12,11 +12,12 @@ from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 class Profile(models.Model):
-    user = models.OneToOneField(User , on_delete=models.CASCADE)
+    user = models.OneToOneField(User , on_delete=models.CASCADE,null=True)
     auth_token = models.CharField(max_length=100 )
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     phone_number = models.CharField(max_length=50,null=True)
+    image=models.ImageField(upload_to='shop/',default='v1649469077/file/shop/3fb459e3449905545701b418e8220334_tn_jbplnr.png')
     def __str__(self):
         return "%s" % self.user.username
 
@@ -41,11 +42,10 @@ class UserOTP(models.Model):
     otp = models.SmallIntegerField()
 
 class SMSVerification(models.Model):
-    user = models.OneToOneField(User, related_name="sms", on_delete=models.CASCADE)
     verified = models.BooleanField(default=False)
     pin = RandomPinField(length=6)
     sent = models.BooleanField(default=False)
-    phone = models.CharField(max_length=50)
+    profile = models.ForeignKey(Profile, on_delete = models.CASCADE,null=True)
 
     def send_confirmation(self):
 
@@ -64,7 +64,7 @@ class SMSVerification(models.Model):
                 )
                 twilio_client.messages.create(
                     body="Your forgeter activation code is %s" % self.pin,
-                    to=str(self.user.profile.phone_number),
+                    to=str(self.profile.phone_number),
                     from_=settings.TWILIO_FROM_NUMBER,
                 )
                 self.sent = True
@@ -83,7 +83,6 @@ class SMSVerification(models.Model):
             raise NotAcceptable("your Pin is wrong, or this phone is verified before.")
 
         return self.verified
-
 
 @receiver(post_save, sender=Profile)
 def send_sms_verification(sender, instance, *args, **kwargs):
