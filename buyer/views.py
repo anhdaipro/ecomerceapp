@@ -1,5 +1,6 @@
 
 # Create your views here.
+from twilio.rest import Client
 from django.db.models import Q
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -54,6 +55,10 @@ paypalrestsdk.configure({
   'client_id': 'AY2deOMPkfo32qrQ_fKeXYeJkJlAGPh5N-9pdDFXISyUydAwgRKRPRGhiQF6aBnG68V6czG5JsulM2mX',
   'client_secret': 'EJBIHj3VRi77Xq3DXsQCxyo0qPN7UFB2RHQZ3DOXLmvgNf1fXWC5YkKTmUrIjH-jaKMSYBrH4-9RjiHA' })
 
+account_sid = settings.TWILIO_ACCOUNT_SID
+auth_token = settings.TWILIO_AUTH_TOKEN
+client = Client(account_sid, auth_token)
+
 def create_ref_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=14))
 class UserIDView(APIView):
@@ -71,28 +76,37 @@ class Sendotp(APIView):
     permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
         phone=request.POST.get('phone')
-        profile=Profile.objects.filter(phone=phone)
+        login=request.POST.get('login')
         usr_otp = random.randint(100000, 999999)
-        data={}
-        if profile.exists():
-            otp=SMSVerification.objects.create(pin=usr_otp,profile=profile.first())
-            data.update({'id':otp.id})
+        otp=SMSVerification.objects.create(pin=usr_otp,phone=phone)
+        if login: 
+            message = client.messages.create(
+                body=f"DE DANG NHAP TAI KHOAN VUI LONG NHAP MA XAC THUC {self.pin}. Có hiệu lực trong 15 phút",
+                from_=settings.TWILIO_FROM_NUMBER,
+                to=str(phone)
+            )
         else:
-            otp=SMSVerification.objects.create(pin=usr_otp,phone=phone)
-            data.update({'id':otp.id})
+            message = client.messages.create(
+                body=f"DE DANG KY TAI KHOAN VUI LONG NHAP MA XAC THUC {self.pin}. Có hiệu lực trong 15 phút",
+                from_=settings.TWILIO_FROM_NUMBER,
+                to=str(phone)
+            )
+        data={'id':otp.id}
         return Response(data)
 
-
-        
 class VerifySMSView(APIView):
     permission_classes = (AllowAny,)
     def post(self, request):
         id=request.POST.get('id')
         pin = int(request.POST.get("pin"))
+        phone=request.POST.get('phone')
         otp=Otp.objects.get(id=id)
+        profile=Profile.objects.filter(phone=phone)
         if otp.pin==pin:
-            if otp.profile:
-                return Response({'verify':True,'user_id':user_id})
+            otp.verified=True
+            otp.save()
+            if profile.exists():
+                return Response({'verify':True,'user_id':profile.first().user.id})
             else:
                 return Response({'verify':True})
         else:
