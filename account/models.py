@@ -60,8 +60,8 @@ class OTP(models.Model):
                 to='+84347285910'
             )
         else:
-            account_sid = 'AC33b4e34a7e5c7ea0d6c9528b349d9cc8'
-            auth_token = 'be23ba82eb617c3d17a3839ae0829c82'
+            account_sid = settings.TWILIO_ACCOUNT_SID,
+            auth_token = settings.TWILIO_AUTH_TOKEN,
             client = Client(account_sid, auth_token)
 
             message = client.messages.create(
@@ -78,62 +78,15 @@ class SMSVerification(models.Model):
     sent = models.BooleanField(default=False)
     profile = models.ForeignKey(Profile, on_delete = models.CASCADE,null=True)
 
-    def send_confirmation(self):
-
-        logging.debug("Sending PIN %s to phone %s" % (self.pin, self.phone))
-
-        if all(
-            [
-                settings.TWILIO_ACCOUNT_SID,
-                settings.TWILIO_AUTH_TOKEN,
-                settings.TWILIO_FROM_NUMBER,
-            ]
-        ):
-            try:
-                twilio_client = Client(
-                    settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN
-                )
-                twilio_client.messages.create(
-                    body="Your forgeter activation code is %s" % self.pin,
-                    to='+84347285910',
-                    from_=settings.TWILIO_FROM_NUMBER,
-                )
-                self.sent = True
-                self.save()
-                return True
-            except TwilioRestException as e:
-                logging.error(e)
-        else:
-            logging.warning("Twilio credentials are not set")
-
-    def confirm(self, pin):
-        if pin == self.pin and self.verified == False:
-            self.verified = True
-            self.save()
-        else:
-            raise NotAcceptable("your Pin is wrong, or this phone is verified before.")
-
-        return self.verified
-
-@receiver(post_save, sender=Profile)
-def send_sms_verification(sender, instance, *args, **kwargs):
-    try:
-        sms = instance.user.sms
-        if sms:
-            pin = sms.pin
-            sms.delete()
-            verification = SMSVerification.objects.create(
-                user=instance.user,
-                phone=instance.user.profile.phone_number,
-                sent=True,
-                verified=True,
-                pin=pin,
-            )
-    except:
-        if instance.user.profile.phone_number:
-            verification = SMSVerification.objects.create(
-                user=instance.user, phone=instance.user.profile.phone_number
-            )
-            # TODO Remove send confirm from here and make view for it.
-            
+    def save(self, *args, **kwargs):
+        account_sid = settings.TWILIO_ACCOUNT_SID
+        auth_token = settings.TWILIO_AUTH_TOKEN
+        client = Client(account_sid, auth_token)
+        message = client.messages.create(
+            body=f"Ma xac minh la {self.pin}",
+            from_=settings.TWILIO_FROM_NUMBER,
+            to=str(self.profile.phone_number)
+        )
+        print(message.sid)
+        return super().save(*args, **kwargs)
 
