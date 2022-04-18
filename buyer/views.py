@@ -74,7 +74,7 @@ class LoginView(APIView):
         token=request.POST.get('token')
         if token:
             token = AccessToken.objects.get(token=token)
-            user = authenticate(request, username=token.user.username, password=token.user.password)
+            user = token.user
             refresh = RefreshToken.for_user(user)
             data = {
                 'refresh': str(refresh),
