@@ -16,7 +16,7 @@ class Profile(models.Model):
     auth_token = models.CharField(max_length=100 )
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    phone_number = models.CharField(max_length=50,null=True)
+    phone_number = models.CharField(max_length=50)
     image=models.ImageField(upload_to='shop/',default='v1649469077/file/shop/3fb459e3449905545701b418e8220334_tn_jbplnr.png')
     def __str__(self):
         return "%s" % self.user.username
