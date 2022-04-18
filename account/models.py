@@ -43,16 +43,16 @@ class SMSVerification(models.Model):
     sent = models.BooleanField(default=False)
     profile = models.ForeignKey(Profile, on_delete = models.CASCADE,null=True)
     phone = models.CharField(max_length=100,null=True)
-    time_st=models.DateTimeField(auto_now_add=True,null=True)
+    time_st=models.DateTimeField(auto_now_add=True)
     def save(self, *args, **kwargs):
-        if self.profile:
+        if self.profile!=None:
             account_sid = settings.TWILIO_ACCOUNT_SID
             auth_token = settings.TWILIO_AUTH_TOKEN
             client = Client(account_sid, auth_token)
             message = client.messages.create(
                 body=f"DE DANG NHAP TAI KHOAN VUI LONG NHAP MA XAC THUC {self.pin}. Có hiệu lực trong 15 phút",
                 from_=settings.TWILIO_FROM_NUMBER,
-                to=str(self.profile.phone_number)
+                to=str(self.profile.phone)
             )
         else:
             account_sid = settings.TWILIO_ACCOUNT_SID
