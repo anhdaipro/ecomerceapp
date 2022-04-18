@@ -106,7 +106,7 @@ class VerifySMSView(APIView):
             otp.verified=True
             otp.save()
             if profile.exists():
-                return Response({'verify':True,'user_id':profile.first().user.id})
+                return Response({'verify':True,'image':profile.image.url,'username':profile.user.username,'user_id':profile.first().user.id})
             else:
                 return Response({'verify':True})
         else:
