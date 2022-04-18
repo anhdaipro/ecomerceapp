@@ -37,6 +37,7 @@ from bulk_update.helper import bulk_update
 from .serializers import ChangePasswordSerializer,UserSerializer
 from rest_framework_simplejwt.tokens import AccessToken
 from oauth2_provider.models import AccessToken, Application
+from rest_framework.permissions import AllowAny, IsAuthenticated
 import random
 import string
 import json
@@ -66,6 +67,7 @@ class RegisterView(APIView):
         return Response(serializer.data)
 
 class LoginView(APIView):
+    permission_classes = (AllowAny,)
     def post(self, request,):
         username = request.POST.get('username')
         password = request.POST.get('password')
