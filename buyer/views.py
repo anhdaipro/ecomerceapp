@@ -641,27 +641,23 @@ class CartAPIView(APIView):
     def get(self,request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         user=request.user
-        if not jwt.ExpiredSignatureError or user.exists():
-            if not jwt.ExpiredSignatureError:
-                access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-                user_id=access_token_obj['user_id']
-                user=User.objects.get(id=user_id)
-            cart_item=OrderItem.objects.filter(ordered=False,user=user)[0:5]
-            cart_items=OrderItem.objects.filter(ordered=False,user=user)
-            count=cart_items.count()
-            list_cart_item=[{'item_info':order_item.product.item.item_info(),'id':order_item.id,                'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
+        
+        cart_item=OrderItem.objects.filter(ordered=False,user=user)[0:5]
+        cart_items=OrderItem.objects.filter(ordered=False,user=user)
+        count=cart_items.count()
+        list_cart_item=[{'item_info':order_item.product.item.item_info(),'id':order_item.id,                'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
                 'item_url':order_item.product.item.get_absolute_url(),
                 'price':order_item.product.price-order_item.product.total_discount(),
                 'shock_deal_type':order_item.product.item.shock_deal_type(),
                 'promotion':order_item.product.item.get_promotion(),
                 } for order_item in cart_item]
-            data={
+        data={
                 'count':count,
                 'a':list_cart_item,
                 'user_name':user.username,
                 'image':user.shop.logo.url
                 }
-            return Response(data)
+        return Response(data)
 
 class UpdateCartAPIView(APIView):
     def get(self,request):
@@ -1326,10 +1322,7 @@ class PromotionAPIView(APIView):
 
 class MessageAPIView(APIView):
     def get(self,request):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
         data = {'user':{'username':user.username,'user_id':user.id},
             'threads':[{
