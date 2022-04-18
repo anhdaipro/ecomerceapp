@@ -30,7 +30,7 @@ from discount.models import *
 from chat.models import *
 from city.models import *
 from myweb.models import *
-import account.models from *
+from account.models import *
 from itemdetail.models import *
 from actionorder.models import *
 from rest_framework.decorators import api_view
