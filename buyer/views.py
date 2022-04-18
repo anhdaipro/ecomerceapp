@@ -898,7 +898,7 @@ class AddToCartAPIView(APIView):
             return Response(data)
 
 class CartItemAPIView(APIView):
-    permission_classes = (IsAuthenticated)
+    permission_classes = (IsAuthenticated,)
     def get(self,request):
         user = request.user
         list_order_item=OrderItem.objects.filter(user=user,ordered=False).order_by('-id')
@@ -933,10 +933,7 @@ class CartItemAPIView(APIView):
         }
         return Response(data,status=status.HTTP_200_OK)
     def post(self, request,count_orderitem=0,price=0,total=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0, *args, **kwargs):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         byproduct_id_delete=request.POST.get('byproduct_id_delete')
         byproduct_id=request.POST.get('byproduct_id')
         orderitem_id=request.POST.get('orderitem_id')
@@ -1030,10 +1027,8 @@ class CartItemAPIView(APIView):
 
 class OrderAPIView(APIView):
     def get(self,request):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        permission_classes = (IsAuthenticated,)
+        user=request.user
         order_check = Order.objects.filter(user=user, ordered=False).exclude(items=None)
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
         data={
