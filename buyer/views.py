@@ -81,13 +81,13 @@ class Sendotp(APIView):
         otp=SMSVerification.objects.create(pin=usr_otp,phone=phone)
         if login: 
             message = client.messages.create(
-                body=f"DE DANG NHAP TAI KHOAN VUI LONG NHAP MA XAC THUC {self.pin}. Có hiệu lực trong 15 phút",
+                body=f"DE DANG NHAP TAI KHOAN VUI LONG NHAP MA XAC THUC {otp.pin}. Có hiệu lực trong 15 phút",
                 from_=settings.TWILIO_FROM_NUMBER,
                 to=str(phone)
             )
         else:
             message = client.messages.create(
-                body=f"DE DANG KY TAI KHOAN VUI LONG NHAP MA XAC THUC {self.pin}. Có hiệu lực trong 15 phút",
+                body=f"DE DANG KY TAI KHOAN VUI LONG NHAP MA XAC THUC {otp.pin}. Có hiệu lực trong 15 phút",
                 from_=settings.TWILIO_FROM_NUMBER,
                 to=str(phone)
             )
@@ -100,7 +100,7 @@ class VerifySMSView(APIView):
         id=request.POST.get('id')
         pin = int(request.POST.get("pin"))
         phone=request.POST.get('phone')
-        otp=Otp.objects.get(id=id)
+        otp=SMSVerification.objects.get(id=id)
         profile=Profile.objects.filter(phone=phone)
         if otp.pin==pin:
             otp.verified=True
