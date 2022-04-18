@@ -17,7 +17,7 @@ class Profile(models.Model):
     auth_token = models.CharField(max_length=100 )
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    phone_number = PhoneNumberField(null=True)
+    phone = PhoneNumberField(null=True)
     image=models.ImageField(upload_to='shop/',default='v1649469077/file/shop/3fb459e3449905545701b418e8220334_tn_jbplnr.png')
     def __str__(self):
         return "%s" % self.user.username
@@ -43,7 +43,7 @@ class SMSVerification(models.Model):
     sent = models.BooleanField(default=False)
     profile = models.ForeignKey(Profile, on_delete = models.CASCADE,null=True)
     phone = models.CharField(max_length=100,null=True)
-    time_st=models.DateTimeField(auto_now=True,null=True)
+    time_st=models.DateTimeField(auto_now_add=True,null=True)
     def save(self, *args, **kwargs):
         if self.profile:
             account_sid = settings.TWILIO_ACCOUNT_SID
