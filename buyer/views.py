@@ -131,7 +131,7 @@ class DetailAPIView(APIView):
         category=Category.objects.filter(slug=slug)
         item=Item.objects.filter(slug=slug)
         shop=Shop.objects.filter(slug=slug)
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+        shop_user=Shop.objects.filter(user=request.user)
         page_no=1
         page = request.GET.get('page')
         sort_price=request.GET.get('price_sort')
@@ -244,18 +244,14 @@ class DetailAPIView(APIView):
                 'url_shop':review.user.shop.get_absolute_url()
                 } for review in reviews] 
             }
-            
-            if token:
-                if not jwt.ExpiredSignatureError:
-                    access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-                    user_id=access_token_obj['user_id']
-                    user=User.objects.get(id=user_id)
-                    like=False
-                    if user in item.liked.all():
-                        like=True
-                    threads = Thread.objects.filter(participants=user).order_by('timestamp')
-                    data.update({'user':user_id,'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
-                    'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
+            if shop_user.exists():
+                user=request.user
+                like=False
+                if user in item.liked.all():
+                    like=True
+                threads = Thread.objects.filter(participants=user).order_by('timestamp')
+                data.update({'user':user_id,'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
+                'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
         elif shop.exists():
             shop=Shop.objects.get(slug=slug)
@@ -315,25 +311,19 @@ class DetailAPIView(APIView):
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
                 'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price()} for i in main_product],
                 'total_order':shop.total_order(),'list_category_child':[{'title':category.title,'id':category.id,'url':category.get_absolute_url()} for category in category_children]}
-            if token:
-                if not jwt.ExpiredSignatureError:
-                    access_token_obj = AccessToken(token,verify=True)
-                    user_id=access_token_obj['user_id']
-                    user=User.objects.get(id=user_id)
-                    follow=False
-                    if user in shop.followers.all():
-                        follow=True
-                    threads = Thread.objects.filter(participants=user).order_by('timestamp')
-                    data.update({'user':user_id,'follow':follow,
-                    'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
+            if shop_user().exists():
+                user=User.objects.get(id=user_id)
+                follow=False
+                if user in shop.followers.all():
+                    follow=True
+                threads = Thread.objects.filter(participants=user).order_by('timestamp')
+                data.update({'user':user_id,'follow':follow,
+                'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
     def post(self, request, *args, **kwargs):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         shop_name=request.POST.get('shop_name')
         shop=Shop.objects.get(name=shop_name)
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         follow=False
         count_follow=Shop.objects.filter(followers=shop.user).count()
         if user in shop.followers.all():
@@ -639,9 +629,7 @@ def save_voucher(request):
 
 class CartAPIView(APIView):
     def get(self,request):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         user=request.user
-        
         cart_item=OrderItem.objects.filter(ordered=False,user=user)[0:5]
         cart_items=OrderItem.objects.filter(ordered=False,user=user)
         count=cart_items.count()
