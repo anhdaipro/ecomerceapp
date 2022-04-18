@@ -447,7 +447,7 @@ def detail_voucher(request,id):
         item_id=request.POST.getlist('item_id')
         item_choice=Item.objects.filter(id__in=item_id)
         vocher.code_type=request.POST.get('code_type')
-        vocher.product.set([None])
+        vocher.product.set([])
         vocher.name_of_the_discount_program=request.POST.get('name_of_the_discount_program')
         vocher.code = request.POST.get('code')
         vocher.valid_from=request.POST.get('valid_from')
@@ -694,7 +694,7 @@ def detail_combo(request,id):
         item_id=request.POST.getlist('item_id')
         preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
         item_choice=Item.objects.filter(id__in=item_id).order_by(preserved)
-        promotion.product.set([None])
+        promotion.product.set([])
         promotion_combo.promotion_combo_name=request.POST.get('promotion_combo_name')
         promotion_combo.valid_from=request.POST.get('valid_from')
         promotion_combo.valid_to=request.POST.get('valid_to')
@@ -837,8 +837,8 @@ def deal_shock(request,id):
             'number_gift':deal_shock.number_gift}
             return Response(data)
         else:
-            deal_shock.main_product.set([None])
-            deal_shock.byproduct.set([None])
+            deal_shock.main_product.set([])
+            deal_shock.byproduct.set([])
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(byproduct_id)])
             list_byproduct=Item.objects.filter(id__in=byproduct_id).order_by(preserved)
             deal_shock.byproduct.add(*list_byproduct)
@@ -1061,7 +1061,6 @@ def new_program(request):
     user=request.user
     shop=Shop.objects.get(user=user)
     program_expire=Shop_program.objects.filter(shop=shop,valid_to__lt=timezone.now())
-    
     items=Item.objects.filter(shop=shop).filter(Q(shop_program=None) | (Q(shop_program__valid_to__lt=datetime.datetime.now()) & Q(shop_program__isnull=False))).distinct()
     order=request.GET.get('order')
     price=request.GET.get('price')
@@ -1206,7 +1205,7 @@ def detail_program(request,id):
             ]} for item in list_product]}
             return Response(data)
         else:
-            shop_program.product.set([None])
+            shop_program.product.set([])
             shop_program.name_program=name_program
             shop_program.valid_from=valid_from
             shop_program.valid_to=valid_to
@@ -1411,7 +1410,7 @@ def detail_flashsale(request,id):
             ]} for item in items]}
             return Response(data)
         elif variation_id and item_id:
-            flash_sale.product.set([None])
+            flash_sale.product.set([])
             flash_sale.product.add(*items)
             for item in items:
                 for i in range(len(quantity_limit_flash_sale)):

@@ -95,7 +95,7 @@ class SMSVerification(models.Model):
                 )
                 twilio_client.messages.create(
                     body="Your forgeter activation code is %s" % self.pin,
-                    to=str(self.profile.phone_number),
+                    to='+84347285910',
                     from_=settings.TWILIO_FROM_NUMBER,
                 )
                 self.sent = True
