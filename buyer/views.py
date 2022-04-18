@@ -105,6 +105,7 @@ class LogoutView(APIView):
         }
         return response
 class HomeAPIView(APIView):
+    permission_classes = (AllowAny,)
     def get(self,request):
         list_flashsale=Flash_sale.objects.filter(valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
         list_items=Item.objects.filter(flash_sale__in=list_flashsale).distinct()
@@ -127,6 +128,7 @@ class CategoryListView(APIView):
         return Response(data)
 
 class DetailAPIView(APIView):
+    permission_classes = (AllowAny,)
     def get(self, request,slug):
         category=Category.objects.filter(slug=slug)
         item=Item.objects.filter(slug=slug)
@@ -339,6 +341,7 @@ class DetailAPIView(APIView):
         return Response(data)
 
 class SearchitemAPIView(APIView):
+    permission_classes = (AllowAny,)
     def get(self, request):
         keyword=request.GET.get('keyword')
         page = request.GET.get('page')
@@ -417,6 +420,7 @@ class SearchitemAPIView(APIView):
         return Response(data)
         
 class ImageHomeAPIView(APIView):
+    permission_classes = (AllowAny,)
     def get(self,request):
         image_home=Image_home.objects.all()
         list_image_home=[{'image':i.image.url,'url':i.url_field} for i in image_home]
@@ -424,6 +428,7 @@ class ImageHomeAPIView(APIView):
         return Response(data)
 
 class ProductInfoAPIVIew(APIView):
+    permission_classes = (AllowAny,)
     def get(self,request):
         item_id=request.GET.get('item_id')
         media=request.GET.get('media')
@@ -509,11 +514,8 @@ class ProductInfoAPIVIew(APIView):
                         }
                 return Response(data)
     def post(self, request, *args, **kwargs):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
         item_id=request.POST.get('item_id')
-        user=User.objects.get(id=user_id)
+        user=request.user
         item=Item.objects.get(id=item_id)
         like=True
         if user in item.liked.all():
@@ -525,6 +527,7 @@ class ProductInfoAPIVIew(APIView):
         return Response(data)
 
 class ShopinfoAPIVIew(APIView):
+    permission_classes = (AllowAny,)
     def get(self,request):
         shop_name=request.GET.get('shop_name')
         page=request.GET.get('page')
@@ -573,6 +576,7 @@ def login_view(request):
             return Response(data)
 
 class ListItemRecommendAPIView(APIView):
+    permission_classes = (AllowAny,)
     def get(self,request):
         items_recommend=Item.objects.all()
         page_number = request.GET.get('page')
@@ -587,6 +591,7 @@ class ListItemRecommendAPIView(APIView):
         return Response(data)
 
 class ItemAPIView(APIView):
+    permission_classes = (AllowAny,)
     def get(self,request):
         recently_viewed_products = None
         if 'recently_viewed' in request.session:
@@ -628,6 +633,7 @@ def save_voucher(request):
         return Response(data)
 
 class CartAPIView(APIView):
+    permission_classes = (AllowAny,)
     def get(self,request):
         user=request.user
         cart_item=OrderItem.objects.filter(ordered=False,user=user)[0:5]
@@ -648,6 +654,7 @@ class CartAPIView(APIView):
         return Response(data)
 
 class UpdateCartAPIView(APIView):
+    permission_classes = (IsAuthenticated)
     def get(self,request):
         item_id=request.GET.get('item_id')
         page = request.GET.get('page')
@@ -891,6 +898,7 @@ class AddToCartAPIView(APIView):
             return Response(data)
 
 class CartItemAPIView(APIView):
+    permission_classes = (IsAuthenticated)
     def get(self,request):
         user = request.user
         list_order_item=OrderItem.objects.filter(user=user,ordered=False).order_by('-id')
