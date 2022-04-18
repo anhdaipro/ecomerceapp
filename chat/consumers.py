@@ -172,7 +172,7 @@ class ChatConsumer(AsyncConsumer):
         return count
     @database_sync_to_async
     def update_user_status (self, user, status):
-        return Customer.objects.filter(user_id=user.pk).update(online=status,is_online=timezone.now())
+        return Shop.objects.filter(user_id=user.pk).update(online=status,is_online=timezone.now())
 
     
                                 
