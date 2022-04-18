@@ -1,4 +1,3 @@
-
 from django.contrib.auth import login
 import itertools
 import re
@@ -45,7 +44,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from .serializers import VoucherSerializer,ComboSerializer,ProgramSerializer,DealsockSerializer,FlashsaleSerializer
 
 class ListvoucherAPI(ListAPIView):
-    
+    permission_classes = (IsAuthenticated,)
     serializer_class = VoucherSerializer
     def get_queryset(self):
         request = self.request
@@ -57,7 +56,7 @@ class ListvoucherAPI(ListAPIView):
         return Vocher.objects.filter(shop=shop)
 
 class ListcomboAPI(ListAPIView):
-    
+    permission_classes = (IsAuthenticated,)
     serializer_class = ComboSerializer
     def get_queryset(self):
         request = self.request
@@ -69,7 +68,7 @@ class ListcomboAPI(ListAPIView):
         return Promotion_combo.objects.filter(shop=shop)
 
 class ListdealshockAPI(ListAPIView):
-    
+    permission_classes = (IsAuthenticated,)
     serializer_class = DealsockSerializer
     def get_queryset(self):
         request = self.request
@@ -81,40 +80,32 @@ class ListdealshockAPI(ListAPIView):
         return Buy_with_shock_deal.objects.filter(shop=shop)
 
 class ListprogramAPI(ListAPIView):
-    
+    permission_classes = (IsAuthenticated,)
     serializer_class = ProgramSerializer
     def get_queryset(self):
         request = self.request
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         shop=Shop.objects.get(user=user)
         return Shop_program.objects.filter(shop=shop)
 
 class ListflashsaleAPI(ListAPIView):
-    
+    permission_classes = (IsAuthenticated,)
     serializer_class = FlashsaleSerializer
     def get_queryset(self):
         request = self.request
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = AccessToken(token)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         shop=Shop.objects.get(user=user)
         return Flashsale.objects.filter(shop=shop)
 
 
 @api_view(['GET', 'POST'])
 def infoseller(request):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     data={'name':user.username,'image':user.shop.get_image()}
     return Response(data)
 @api_view(['GET', 'POST'])
 def index(request):
+    user=request.user
     shop=Shop.objects.get(user=user)
     current_date=datetime.datetime.now()
     orders = Order.objects.filter(shop=shop,ordered=True,received=True)
@@ -154,6 +145,7 @@ def index(request):
     
 @api_view(['GET', 'POST'])
 def product(request):
+    user=request.user
     shop=Shop.objects.get(user=user)
     product=Item.objects.filter(shop=shop)
     item_id=request.GET.get('item_id')
@@ -249,10 +241,7 @@ def product(request):
 
 @api_view(['GET', 'POST'])
 def get_product(request):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     shop=Shop.objects.get(user=user)
     page=1
     pagesize=12
@@ -297,6 +286,7 @@ def get_product(request):
        
 @api_view(['GET', 'POST'])
 def delete_product(request):
+    user=request.user
     shop=Shop.objects.get(user=user)
     if request.method=="POST":
         item_id=request.POST.getlist('item_id')
@@ -320,10 +310,7 @@ def delete_product(request):
 
 @api_view(['GET', 'POST'])
 def voucher(request):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     shop=Shop.objects.get(user=user)
     items=Item.objects.filter(shop=shop).order_by('-id')
     
@@ -443,10 +430,7 @@ def voucher(request):
 
 @api_view(['GET', 'POST'])
 def detail_voucher(request,id):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     shop=Shop.objects.get(user=user)
     items=Item.objects.filter(shop=shop).order_by('-id')
     
@@ -598,10 +582,7 @@ def follower_offer(request):
 
 @api_view(['GET', 'POST'])
 def new_combo(request):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     shop=Shop.objects.get(user=user)
     promotion_combo=Promotion_combo.objects.filter(shop=shop).last()
     
@@ -696,10 +677,7 @@ def new_combo(request):
 
 @api_view(['GET', 'POST'])
 def detail_combo(request,id):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     shop=Shop.objects.get(user=user)
     promotion_combo=Promotion_combo.objects.get(id=id)
     
@@ -794,10 +772,7 @@ def detail_combo(request,id):
 
 @api_view(['GET', 'POST'])
 def new_deal(request):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     shop=Shop.objects.get(user=user)
     deal_expire=Buy_with_shock_deal.objects.filter(shop=shop,valid_to__lt=timezone.now())
     if request.method=="POST":
@@ -819,10 +794,7 @@ def new_deal(request):
     
 @api_view(['GET', 'POST'])
 def deal_shock(request,id):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     shop=Shop.objects.get(user=user)
     
     deal_shock=Buy_with_shock_deal.objects.get(id=id)
@@ -1086,10 +1058,7 @@ def deal_shock(request,id):
       
 @api_view(['GET', 'POST'])
 def new_program(request):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     shop=Shop.objects.get(user=user)
     program_expire=Shop_program.objects.filter(shop=shop,valid_to__lt=timezone.now())
     
@@ -1202,10 +1171,7 @@ def new_program(request):
 
 @api_view(['GET', 'POST'])
 def detail_program(request,id):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     shop=Shop.objects.get(user=user)
     
     shop_program=Shop_program.objects.get(id=id)
@@ -1322,10 +1288,7 @@ def detail_program(request,id):
        
 @api_view(['GET', 'POST'])
 def new_flashsale(request):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     shop=Shop.objects.get(user=user)
     order=request.GET.get('order')
     price=request.GET.get('price')
@@ -1416,10 +1379,7 @@ def new_flashsale(request):
 
 @api_view(['GET', 'POST'])
 def detail_flashsale(request,id):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     shop=Shop.objects.get(user=user)
     items=Item.objects.filter(shop=shop)
     order=request.GET.get('order')
@@ -1535,10 +1495,7 @@ def detail_flashsale(request,id):
 
 @api_view(['GET', 'POST'])
 def shipping(request):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     shop=Shop.objects.get(user=user)
     if request.method=="POST":
         id=request.POST.get('id')
@@ -1558,10 +1515,7 @@ def shipping(request):
         
 @api_view(['GET', 'POST'])
 def get_shipping(request):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     shop=Shop.objects.get(user=user)
     shipping_shop=shop.shipping.all()
     data={'shipping_shop':[{'id':i.id,'method':i.method,'unit':i.shipping_unit} for i in shipping_shop]}
@@ -1569,10 +1523,7 @@ def get_shipping(request):
 
 @api_view(['GET', 'POST'])
 def update_image(request):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     shop=Shop.objects.get(user=user)
     if request.method=="POST":
         id=request.POST.get('id')
@@ -1816,10 +1767,7 @@ def add_item(request):
 @api_view(['GET', 'POST'])
 def update_item(request,id):
     
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     shop=Shop.objects.get(user=user)
     item=Item.objects.get(id=id,shop=shop)
     if request.method=="POST":
@@ -2073,10 +2021,7 @@ def update_item(request,id):
 
 @api_view(['GET', 'POST'])
 def create_shop(request):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = AccessToken(token)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     if request.method == "POST":
         shop=Shop.objects.get(user=user)
         shop.name=request.POST.get('name')

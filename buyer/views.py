@@ -680,11 +680,8 @@ class UpdateCartAPIView(APIView):
             for i in page_obj]
         }
         return Response(data)
-    def post(self, request,price=0,total=0,count_orderitem=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0,*args, **kwargs):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+    def post(self, request,price=0,total=0,count_orderitem=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0,*args, **kwargs):  
+        user=request.user
         item_id=request.POST.get('item_id')
         orderitem_id=request.POST.get('orderitem_id')
         color_id=request.POST.get('color_id')
@@ -769,10 +766,7 @@ class AddToCardBatchAPIView(APIView):
             data.update({'byproduct_id':byproduct_id})
         return Response(data)
     def post(self, request, *args, **kwargs):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         variation_id_choice=request.POST.get('variation_id_chocie')
         quantity_product=request.POST.get('quantity_product')
         item_id=request.POST.get('item_id')
@@ -850,10 +844,7 @@ class AddToCartAPIView(APIView):
         return Response(data)
 
     def post(self, request, *args, **kwargs):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         id=request.POST.get('id')
         item_id=request.POST.get('item_id')
         quantity=request.POST.get('quantity')
@@ -1050,10 +1041,7 @@ def get_city(request):
 
 class AddressAPIView(APIView):
     def get(self,request):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         addresses = Address.objects.filter(user=user)
         data={'a':list(addresses.values()),'user':{'image':user.shop.image.url,'name':user.username}}
         return Response(data)
@@ -1125,10 +1113,7 @@ class AddressAPIView(APIView):
 
 class CheckoutAPIView(APIView):
     def get(self,request):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         address=Address.objects.filter(user=user,default=True)
         orders = Order.objects.filter(user=user, ordered=False).exclude(items=None)
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
@@ -1236,10 +1221,7 @@ def payment_complete(request):
 
 class DealShockAPIView(APIView):
     def get(self,request,id):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         variation=Variation.objects.get(id=id)
         quantity=1
         orderitem_id=0
@@ -1325,10 +1307,7 @@ class MessageAPIView(APIView):
 
 class ListThreadAPIView(APIView):
     def get(self,request):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         thread_id=request.GET.get('thread_id')
         offset=request.GET.get('offset')
         shop_name=request.GET.get('shop_name')
@@ -1515,10 +1494,7 @@ class ThreadAPIView(APIView):
             }
             return Response(data)
     def post(self, request, *args, **kwargs):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         item=Item.objects.all()
         count=item.count()
         sender=user
@@ -1571,10 +1547,7 @@ class ThreadAPIView(APIView):
 
 @api_view(['GET', 'POST'])
 def upload_file(request):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     if request.method=="POST":
         file_id=request.POST.get('file_id')
         file=request.FILES.getlist('file')
@@ -1631,10 +1604,7 @@ def update_message(request):
 
 class ProfileAPIView(APIView):
     def get(self,request):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         shop_name=None
         shop_logo=None
         count_product=0
@@ -1652,10 +1622,7 @@ class ProfileAPIView(APIView):
         
 @api_view(['GET', 'POST'])
 def get_address(request):
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id)
+    user=request.user
     addresses = Address.objects.filter(user=user)
     data={'a':list(addresses.values()),'user':{'image':user.shop.image.url,'name':user.username}}
     return Response(data)
@@ -1665,10 +1632,7 @@ class PurchaseAPIView(APIView):
         limit=5
         from_item=0
         offset=request.GET.get('offset')
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
         order_id=request.GET.get('id')
         review=request.GET.get('review')
@@ -1724,10 +1688,7 @@ class PurchaseAPIView(APIView):
                 }
             return Response(data)
     def post(self,request,*args, **kwargs):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         review_id=request.POST.getlist('review_id')
         file=request.FILES.getlist('file_choice')
         reason=request.POST.get('reason')
@@ -1894,7 +1855,6 @@ class ChangePasswordView(generics.UpdateAPIView):
             }
 
             return Response(response)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 def get_client_ip(request):
