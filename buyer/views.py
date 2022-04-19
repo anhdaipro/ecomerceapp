@@ -113,6 +113,7 @@ class VerifySMSView(APIView):
             return Response({'verify':False})
 
 class LoginView(APIView):
+    permission_classes = (AllowAny,)
     def post(self, request,):
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -188,7 +189,6 @@ class DetailAPIView(APIView):
         category=Category.objects.filter(slug=slug)
         item=Item.objects.filter(slug=slug)
         shop=Shop.objects.filter(slug=slug)
-        shop_user=Shop.objects.filter(user=request.user)
         page_no=1
         page = request.GET.get('page')
         sort_price=request.GET.get('price_sort')
@@ -301,6 +301,7 @@ class DetailAPIView(APIView):
                 'url_shop':review.user.shop.get_absolute_url()
                 } for review in reviews] 
             }
+            shop_user=Shop.objects.filter(user=request.user)
             if shop_user.exists():
                 user=request.user
                 like=False
@@ -311,6 +312,7 @@ class DetailAPIView(APIView):
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
         elif shop.exists():
+            shop_user=Shop.objects.filter(user=request.user)
             shop=Shop.objects.get(slug=slug)
             list_voucher=Vocher.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
             deal_shock=Buy_with_shock_deal.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
@@ -377,7 +379,24 @@ class DetailAPIView(APIView):
                 data.update({'user':user_id,'follow':follow,
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
-    
+    def post(self, request, *args, **kwargs):
+        shop_name=request.POST.get('shop_name')
+        shop=Shop.objects.get(name=shop_name)
+        user=request.user
+        follow=False
+        count_follow=Shop.objects.filter(followers=shop.user).count()
+        if user in shop.followers.all():
+            follow=False
+            shop.followers.remove(user)
+        else:
+            follow=True
+            shop.followers.add(user)
+        data={'num_followers':shop.num_follow(),'follow':follow,'online':shop.user.shop.online,
+        'num_followers':shop.num_follow(),'count_followings': count_follow,
+        'is_online':shop.user.shop.is_online,'count_product':shop.count_product(),
+        'total_review':shop.total_review(),'averge_review':shop.averge_review()}
+        return Response(data)
+
 class SearchitemAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request):
