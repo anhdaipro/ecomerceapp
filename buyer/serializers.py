@@ -14,19 +14,29 @@ class UserCreateSerializer(UserCreateSerializer):
     class Meta(UserCreateSerializer.Meta):
         model = User
         fields = ('id', 'email', 'username', 'password')
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Profile
+        fields = ('phone',)
+
 class UserSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer(required=True)
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'password']
+        fields = ['id', 'username', 'email', 'password','profile']
         extra_kwargs = {
             'password': {'write_only': True}
         }
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
+        profile_data=validated_data.pop('profile', None)
         instance = self.Meta.model(**validated_data)
         if password is not None:
             instance.set_password(password)
+            Profile.objects.create(user = instance,**profile_data)
+
         instance.save()
         return instance
 
