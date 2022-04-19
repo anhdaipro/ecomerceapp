@@ -35,7 +35,7 @@ class UserSerializer(serializers.ModelSerializer):
         instance = self.Meta.model(**validated_data)
         if password is not None:
             instance.set_password(password)
-            Profile.objects.create(user = instance,phone=profile_data['phone'])
+            Profile.objects.create(user = instance,**profile_data)
 
         instance.save()
         return instance
