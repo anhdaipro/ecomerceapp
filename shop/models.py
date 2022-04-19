@@ -31,7 +31,6 @@ class Shop(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE,related_name='shop')
     name = models.CharField(max_length=100,null=True)
     description = models.CharField(max_length=255,null=True)
-    logo = models.ImageField(upload_to='shop/',null=True)
     create_at=models.DateTimeField(auto_now=True)
     shipping=models.ManyToManyField(to="shipping.Shipping",blank=True)
     shop_type=models.CharField(max_length=25,choices=shop_type,null=True)
@@ -39,23 +38,7 @@ class Shop(models.Model):
     view=models.ManyToManyField(IpModel,blank=True)
     slug=models.SlugField(null=True)
     image_cover=models.ImageField(upload_to='shop/',null=True)
-    USER_TYPE=(
-        ('C','Customer'),
-        ('S','Seller')
-    )
-    GENDER_CHOICE=(
-        ('MALE','MALE'),
-        ('FEMALE','FEMALE'),
-        ('ORTHER','ORTHER')
-    )
-    user_type=models.CharField(max_length=10,choices=USER_TYPE,blank=True)
-    gender=models.CharField(max_length=10,choices=GENDER_CHOICE,blank=True)
-    phone_number=models.CharField(max_length=200)
     city=models.CharField(max_length=200,null=True)
-    date_of_birth=models.DateField(null=True,blank=True)
-    xu=models.IntegerField(default=0,null=True)
-    is_online=models.DateTimeField(auto_now=True)
-    online=models.BooleanField(default=False)
     def __str__(self):
         return str(self.user)
     def get_image(self):

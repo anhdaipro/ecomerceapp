@@ -6,6 +6,7 @@ from randompinfield import RandomPinField
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 from django.conf import settings
+from django.utils import timezone
 from django.core.cache import cache
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
@@ -18,7 +19,22 @@ class Profile(models.Model):
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     phone = PhoneNumberField(null=True)
-    image=models.ImageField(upload_to='shop/',default='v1649469077/file/shop/3fb459e3449905545701b418e8220334_tn_jbplnr.png')
+    image=models.ImageField(default='no_user_c5clxa')
+    USER_TYPE=(
+        ('C','Customer'),
+        ('S','Seller')
+    )
+    GENDER_CHOICE=(
+        ('MALE','MALE'),
+        ('FEMALE','FEMALE'),
+        ('ORTHER','ORTHER')
+    )
+    user_type=models.CharField(max_length=10,choices=USER_TYPE,blank=True)
+    gender=models.CharField(max_length=10,choices=GENDER_CHOICE,blank=True)
+    date_of_birth=models.DateField(null=True,blank=True)
+    xu=models.IntegerField(default=0,null=True)
+    is_online=models.DateTimeField(auto_now=True)
+    online=models.BooleanField(default=False)
     def __str__(self):
         return "%s" % self.user.username
 
@@ -31,17 +47,20 @@ class Profile(models.Model):
         if self.last_seen:
             now = datetime.now(timezone.utc)
             if now > self.last_seen + timedelta(minutes=settings.USER_ONLINE_TIMEOUT):
+                self.online=True
+                self.save()
                 return False
+
             else:
                 return True
         else:
+            self.online=True
+            self.save()
             return False
 
 class SMSVerification(models.Model):
     verified = models.BooleanField(default=False)
     pin = RandomPinField(length=6)
-    sent = models.BooleanField(default=False)
-    profile = models.ForeignKey(Profile, on_delete = models.CASCADE,null=True)
     phone = models.CharField(max_length=100,null=True)
-    time_st=models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
 
