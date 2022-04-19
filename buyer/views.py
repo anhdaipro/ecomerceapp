@@ -723,7 +723,7 @@ class CartAPIView(APIView):
         return Response(data)
 
 class UpdateCartAPIView(APIView):
-    permission_classes = (IsAuthenticated)
+    permission_classes = (IsAuthenticated,)
     def get(self,request):
         item_id=request.GET.get('item_id')
         page = request.GET.get('page')
