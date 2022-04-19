@@ -21,10 +21,10 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('phone',)
 
 class UserSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer(required=True)
+    phone = ProfileSerializer()
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'password','profile']
+        fields = ['id', 'username', 'email', 'password','phone']
         extra_kwargs = {
             'password': {'write_only': True}
         }
