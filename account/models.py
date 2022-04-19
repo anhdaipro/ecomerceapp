@@ -19,7 +19,7 @@ class Profile(models.Model):
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     phone = PhoneNumberField(null=True)
-    image=models.ImageField(default='no_user_c5clxa')
+    image=models.ImageField(upload_to="profile/",default='no_user_c5clxa')
     USER_TYPE=(
         ('C','Customer'),
         ('S','Seller')
