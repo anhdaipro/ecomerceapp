@@ -26,7 +26,7 @@ from .views import (
     SearchitemAPIView,
     PurchaseAPIView,
     AddressAPIView,
-    UserView,
+    UserIDView,
     ListThreadAPIView,
     Sendotp,VerifySMSView,
     RegisterView, LoginView,  LogoutView
@@ -39,7 +39,7 @@ urlpatterns = [
     path("verify-sms", views.VerifySMSView.as_view()),
     path("resend-sms", views.Sendotp.as_view()),
     path('logout', LogoutView.as_view()),
-    path('user-id/', UserView.as_view()),
+    path('user-id/', UserIDView.as_view()),
     path('buyer/forgot_password', ChangePasswordView.as_view()),
     path('products', HomeAPIView.as_view()),
     path('product/recommend', ListItemRecommendAPIView.as_view()),

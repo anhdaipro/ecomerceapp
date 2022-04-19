@@ -61,22 +61,9 @@ client = Client(account_sid, auth_token)
 
 def create_ref_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=14))
-class UserView(APIView):
-    
-    def get(self, request):
-        token = request.COOKIES.get('jwt')
-
-        if not token:
-            raise AuthenticationFailed('Unauthenticated!')
-
-        try:
-            payload = jwt.decode(token, 'secret', algorithm=['HS256'])
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Unauthenticated!')
-
-        user = User.objects.filter(id=payload['id']).first()
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
+class UserIDView(APIView):
+    def get(self, request, *args, **kwargs):
+        return Response({'userID': user.id}, status=HTTP_200_OK)
 
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
@@ -126,6 +113,7 @@ class VerifySMSView(APIView):
             return Response({'verify':False})
 
 class LoginView(APIView):
+    permission_classes = (AllowAny,)
     def post(self, request,):
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -722,7 +710,7 @@ class CartAPIView(APIView):
         return Response(data)
 
 class UpdateCartAPIView(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated)
     def get(self,request):
         item_id=request.GET.get('item_id')
         page = request.GET.get('page')
