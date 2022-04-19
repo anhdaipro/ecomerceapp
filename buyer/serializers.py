@@ -21,21 +21,21 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('phone',)
 
 class UserSerializer(serializers.ModelSerializer):
-    phone = ProfileSerializer()
+    profile = ProfileSerializer()
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'password','phone']
+        fields = ['id', 'username', 'email', 'password','profile']
         extra_kwargs = {
             'password': {'write_only': True}
         }
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
-        profile_data=validated_data.pop('phone', None)
+        profile_data = validated_data.pop('profile', None)  
         instance = self.Meta.model(**validated_data)
         if password is not None:
             instance.set_password(password)
-            Profile.objects.create(user = instance,**profile_data)
+            Profile.objects.create(user = instance,phone=profile_data['phone'])
 
         instance.save()
         return instance
