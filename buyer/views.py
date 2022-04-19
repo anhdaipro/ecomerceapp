@@ -113,7 +113,6 @@ class VerifySMSView(APIView):
             return Response({'verify':False})
 
 class LoginView(APIView):
-    permission_classes = (AllowAny,)
     def post(self, request,):
         username = request.POST.get('username')
         password = request.POST.get('password')
