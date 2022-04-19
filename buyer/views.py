@@ -378,24 +378,7 @@ class DetailAPIView(APIView):
                 data.update({'user':user_id,'follow':follow,
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
-    def post(self, request, *args, **kwargs):
-        shop_name=request.POST.get('shop_name')
-        shop=Shop.objects.get(name=shop_name)
-        user=request.user
-        follow=False
-        count_follow=Shop.objects.filter(followers=shop.user).count()
-        if user in shop.followers.all():
-            follow=False
-            shop.followers.remove(user)
-        else:
-            follow=True
-            shop.followers.add(user)
-        data={'num_followers':shop.num_follow(),'follow':follow,'online':shop.user.shop.online,
-        'num_followers':shop.num_follow(),'count_followings': count_follow,
-        'is_online':shop.user.shop.is_online,'count_product':shop.count_product(),
-        'total_review':shop.total_review(),'averge_review':shop.averge_review()}
-        return Response(data)
-
+    
 class SearchitemAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request):
