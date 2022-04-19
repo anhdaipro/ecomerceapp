@@ -31,7 +31,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
-        profile_data=validated_data.pop('profile', None)
+        profile_data=validated_data.pop('phone', None)
         instance = self.Meta.model(**validated_data)
         if password is not None:
             instance.set_password(password)
