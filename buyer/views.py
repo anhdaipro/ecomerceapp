@@ -61,9 +61,22 @@ client = Client(account_sid, auth_token)
 
 def create_ref_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=14))
-class UserIDView(APIView):
-    def get(self, request, *args, **kwargs):
-        return Response({'userID': user.id}, status=HTTP_200_OK)
+class UserView(APIView):
+    
+    def get(self, request):
+        token = request.COOKIES.get('jwt')
+
+        if not token:
+            raise AuthenticationFailed('Unauthenticated!')
+
+        try:
+            payload = jwt.decode(token, 'secret', algorithm=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Unauthenticated!')
+
+        user = User.objects.filter(id=payload['id']).first()
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
 
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
