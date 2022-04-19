@@ -88,6 +88,7 @@ class RegisterView(APIView):
 class Sendotp(APIView):
     permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
+        if jwt.Ra
         phone=request.POST.get('phone')
         login=request.POST.get('login')
         usr_otp = random.randint(100000, 999999)
@@ -314,14 +315,13 @@ class DetailAPIView(APIView):
                 'url_shop':review.user.shop.get_absolute_url()
                 } for review in reviews] 
             }
-            shop_user=Shop.objects.filter(user=request.user)
-            if shop_user.exists():
+            if not jwt.ExpiredSignatureError:
                 user=request.user
                 like=False
                 if user in item.liked.all():
                     like=True
                 threads = Thread.objects.filter(participants=user).order_by('timestamp')
-                data.update({'user':user_id,'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
+                data.update({'user':user.id,'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
         elif shop.exists():
@@ -383,7 +383,7 @@ class DetailAPIView(APIView):
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
                 'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price()} for i in main_product],
                 'total_order':shop.total_order(),'list_category_child':[{'title':category.title,'id':category.id,'url':category.get_absolute_url()} for category in category_children]}
-            if shop_user().exists():
+            if not jwt.ExpiredSignatureError:
                 user=User.objects.get(id=user_id)
                 follow=False
                 if user in shop.followers.all():
