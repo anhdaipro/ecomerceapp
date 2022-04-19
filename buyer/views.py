@@ -66,6 +66,7 @@ class UserIDView(APIView):
         return Response({'userID': user.id}, status=HTTP_200_OK)
 
 class RegisterView(APIView):
+    permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
