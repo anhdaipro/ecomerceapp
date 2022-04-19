@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'channels',
     'notification',
     'mptt',
+    
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     
