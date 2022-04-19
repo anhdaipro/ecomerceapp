@@ -88,7 +88,6 @@ class RegisterView(APIView):
 class Sendotp(APIView):
     permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
-        if jwt.Ra
         phone=request.POST.get('phone')
         login=request.POST.get('login')
         usr_otp = random.randint(100000, 999999)
