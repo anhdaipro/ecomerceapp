@@ -86,7 +86,6 @@ class RegisterView(APIView):
         return Response(serializer.data)
 
 class Sendotp(APIView):
-    permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
         phone=request.POST.get('phone')
         login=request.POST.get('login')
@@ -108,7 +107,6 @@ class Sendotp(APIView):
         return Response(data)
 
 class VerifySMSView(APIView):
-    permission_classes = (AllowAny,)
     def post(self, request):
         id=request.POST.get('id')
         pin = int(request.POST.get("pin"))
@@ -126,7 +124,6 @@ class VerifySMSView(APIView):
             return Response({'verify':False})
 
 class LoginView(APIView):
-    permission_classes = (AllowAny,)
     def post(self, request,):
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -174,7 +171,6 @@ class LogoutView(APIView):
         return response
 
 class HomeAPIView(APIView):
-    permission_classes = (AllowAny,)
     def get(self,request):
         list_flashsale=Flash_sale.objects.filter(valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
         list_items=Item.objects.filter(flash_sale__in=list_flashsale).distinct()
@@ -188,7 +184,6 @@ class HomeAPIView(APIView):
         return Response(data)
 
 class CategoryListView(APIView):
-    permission_classes = (AllowAny,)
     def get(self,request):
         category_parent=Category.objects.all().order_by('id')
         list_category_parent=[{'title':i.title,'image':i.image.url,'url':i.get_absolute_url()} for i in category_parent if i.image]
@@ -197,7 +192,6 @@ class CategoryListView(APIView):
         return Response(data)
 
 class DetailAPIView(APIView):
-    permission_classes = (AllowAny,)
     def get(self, request,slug):
         category=Category.objects.filter(slug=slug)
         item=Item.objects.filter(slug=slug)
