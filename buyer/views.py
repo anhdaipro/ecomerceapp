@@ -35,6 +35,7 @@ from account.models import *
 from itemdetail.models import *
 from actionorder.models import *
 from rest_framework.decorators import api_view
+from rest_framework_simplejwt.backends import TokenBackend
 from bulk_update.helper import bulk_update
 from .serializers import ChangePasswordSerializer,UserSerializer,SMSPinSerializer,SMSPinSerializer,SMSVerificationSerializer,CategorySerializer
 from rest_framework_simplejwt.tokens import AccessToken
@@ -67,11 +68,10 @@ class UserView(APIView):
         if not token:
             raise AuthenticationFailed('Unauthenticated!')
         try:
-            access_token_obj = AccessToken(token)
+            access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Unauthenticated!')
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         serializer = UserSerializer(user)
         return Response(serializer.data)
 class RegisterView(APIView):
