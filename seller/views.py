@@ -1548,7 +1548,7 @@ def update_image(request):
             return Response(data)
 
 @api_view(['GET', 'POST'])
-def add_item(request)
+def add_item(request):
     if request.method=='POST':
         user=request.user
         shop=Shop.objects.get(user=user)
