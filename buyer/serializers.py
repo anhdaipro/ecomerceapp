@@ -73,17 +73,12 @@ class LoginSerializer(serializers.ModelSerializer):
         }
 
 class CategorySerializer(serializers.ModelSerializer):
-    image=serializers.SerializerMethodField()
     class Meta:
         model=Category
         fields=(
-            'id',
-            'slug',
             'title',
-            'image',
         )
-    def get_image(self,obj):
-        return obj.get_image()
+
 class ChangePasswordSerializer(serializers.Serializer):
     model = User
     old_password = serializers.CharField(required=True)
