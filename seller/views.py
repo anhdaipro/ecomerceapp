@@ -101,7 +101,8 @@ class ListflashsaleAPI(ListAPIView):
 @api_view(['GET', 'POST'])
 def infoseller(request):
     user=request.user
-    data={'name':user.username,'image':user.profile.image.url}
+    profile=Profile.objects.get(user=user)
+    data={'name':user.username,'image':profile.image.url}
     return Response(data)
 @api_view(['GET', 'POST'])
 def index(request):

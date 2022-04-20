@@ -717,6 +717,7 @@ class CartAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
         user=request.user
+        profile=Profile.objects.get(user=user)
         cart_item=OrderItem.objects.filter(ordered=False,user=user)[0:5]
         cart_items=OrderItem.objects.filter(ordered=False,user=user)
         count=cart_items.count()
@@ -730,7 +731,7 @@ class CartAPIView(APIView):
                 'count':count,
                 'a':list_cart_item,
                 'user_name':user.username,
-                'image':user.profile.image.url
+                'image':profile.image.url
                 }
         return Response(data)
 
