@@ -934,9 +934,10 @@ class AddToCartAPIView(APIView):
         item_id=request.POST.get('item_id')
         quantity=request.POST.get('quantity')
         item=Item.objects.get(id=item_id)
-        product=Variation.objects.get(item_id=item_id)
         if id:
             product=Variation.objects.get(id=id)
+        else:
+            product=Variation.objects.get(item_id=item_id)
         try:
             order_item=OrderItem.objects.get(
                 product=product,
@@ -949,7 +950,7 @@ class AddToCartAPIView(APIView):
             if order_item.quantity>order_item.product.inventory:
                 order_item.quantity-=int(quantity)
                 order_item.save()
-                return Response({'eross':'over quantity'})
+                return Response({'erorr':'over quantity'})
             else:
                 data={'item_info':order_item.product.item.item_info(),'id':order_item.id,                'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
                 'item_url':order_item.product.item.get_absolute_url(),
