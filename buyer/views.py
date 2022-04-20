@@ -63,7 +63,7 @@ client = Client(account_sid, auth_token)
 def create_ref_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=14))
 class UserView(APIView):
-    def post(self, request):
+    def get(self, request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         if not token:
             raise AuthenticationFailed('Unauthenticated!')
