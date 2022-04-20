@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.staticfiles',
     'django.contrib.sites',
     'cloudinary_storage',
     'cloudinary',
@@ -261,13 +262,16 @@ DATE_INPUT_FORMATS=[
 
 CORS_ALLOW_CREDENTIALS = True
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 MEDIA_URL = '/file/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 SOCIAL_AUTH_RAISE_EXCEPTIONS = False
