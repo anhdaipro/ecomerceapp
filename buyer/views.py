@@ -68,7 +68,7 @@ class UserView(APIView):
         if not token:
             raise AuthenticationFailed('Unauthenticated!')
         try:
-            access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
+            user=request.user
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Unauthenticated!')
         user=request.user
