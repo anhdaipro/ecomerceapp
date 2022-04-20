@@ -702,7 +702,7 @@ def save_voucher(request):
         data={'ok':'ok'}
         return Response(data)
 
-api_view(['GET', 'POST'])
+@api_view(['GET', 'POST'])
 def update_image(request):
     if request.method=="POST":
         file=request.FILES.getlist('file')
