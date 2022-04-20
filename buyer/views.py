@@ -934,7 +934,9 @@ class AddToCartAPIView(APIView):
         item_id=request.POST.get('item_id')
         quantity=request.POST.get('quantity')
         item=Item.objects.get(id=item_id)
-        product=Variation.objects.get(id=id)
+        product=Variation.objects.get(item_id=item_id)
+        if id:
+            product=Variation.objects.get(id=id)
         try:
             order_item=OrderItem.objects.get(
                 product=product,
