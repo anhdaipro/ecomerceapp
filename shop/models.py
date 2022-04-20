@@ -285,10 +285,7 @@ class Item(models.Model):
             list_media.append(media_file)
         return list_media
     def get_media_cover(self):
-        media_file=None
-        for media in self.media_upload.all():
-            if media.typefile=='image':
-                media_file=media.upload_file()   
+        media_file=[media for media in self.media_upload.all() if media.media_type()=='image'][0].upload_file()    
         return media_file
 class Color(models.Model):
     name=models.CharField(max_length=20)
