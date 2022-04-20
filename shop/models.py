@@ -284,6 +284,12 @@ class Item(models.Model):
             media_file['duration']=media.duration
             list_media.append(media_file)
         return list_media
+    def get_media_cover(self):
+        media_file=None
+        for media in self.media_upload.all():
+            if media.typefile=='image':
+                media_file=media.upload_file()   
+        return media_file
 class Color(models.Model):
     name=models.CharField(max_length=20)
     value=models.CharField(max_length=20)
