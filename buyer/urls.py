@@ -36,6 +36,7 @@ from .views import (
 urlpatterns = [
     path('register', RegisterView.as_view()),
     path('login', LoginView.as_view()),
+    path('update', views.update_image),
     path("verify-sms", views.VerifySMSView.as_view()),
     path("resend-sms", views.Sendotp.as_view()),
     path('logout', LogoutView.as_view()),

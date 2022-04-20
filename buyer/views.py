@@ -689,6 +689,7 @@ class ItemAPIView(APIView):
         return Response(data)
 
 @api_view(['GET', 'POST'])
+
 def save_voucher(request):
     if request.method=="POST":
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
@@ -701,6 +702,17 @@ def save_voucher(request):
         data={'ok':'ok'}
         return Response(data)
 
+api_view(['GET', 'POST'])
+def update_image(request):
+    if request.method=="POST":
+        file=request.FILES.getlist('file')
+        Image_category.objects.bulk_create(
+            [Image_category(
+                image=i,
+                url_field='http://localhost:8000/kids-babies-fashion-cat'
+            ) for i in file]
+        )
+        return Response({'ok':'ok'})
 class CartAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
