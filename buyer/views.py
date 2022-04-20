@@ -67,10 +67,11 @@ class UserView(APIView):
         if not token:
             raise AuthenticationFailed('Unauthenticated!')
         try:
-            payload = jwt.decode(token, 'secret', algorithm=['HS256'])
+            access_token_obj = AccessToken(token)
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Unauthenticated!')
-        user = User.objects.filter(id=payload['id']).first()
+        user_id=access_token_obj['user_id']
+        user=User.objects.get(id=user_id)
         serializer = UserSerializer(user)
         return Response(serializer.data)
 class RegisterView(APIView):
