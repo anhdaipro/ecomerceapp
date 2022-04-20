@@ -126,7 +126,7 @@ AUTHENTICATION_BACKENDS = (
 REST_USE_JWT = True
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated'
+        'rest_framework.permissions.AllowAny'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -310,7 +310,7 @@ SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
     'fields': 'email, first_name, last_name'
 }
-TWILIO_ACCOUNT_SID = 'AC83b7af492331fa5456ac45e9204f3e8b'
+TWILIO_ACCOUNT_SID = 'AC83b7af492331fa5456ac45e9204f3e8b' 
 TWILIO_AUTH_TOKEN = 'a20f8febf2783ff16bba4a959cc96cca'
 TWILIO_FROM_NUMBER = '+19844099428'
 PHONENUMBER_DEFAULT_REGION = 'EG'
