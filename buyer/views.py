@@ -426,7 +426,7 @@ class SearchitemAPIView(APIView):
         shop=request.GET.get('shop')
         if keyword:
             list_items = Item.objects.filter(Q(name__icontains=keyword) | Q(
-            name__in=keyword))
+            name__in=keyword)|Q(category__title=keyword))
             items = Item.objects.filter(Q(name__icontains=keyword) | Q(
             name__in=keyword))
             category_choice=Category.objects.filter(item__in=list_items).distinct()
