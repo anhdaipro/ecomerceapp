@@ -36,7 +36,7 @@ from itemdetail.models import *
 from actionorder.models import *
 from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
-from .serializers import ChangePasswordSerializer,UserSerializer,SMSPinSerializer,SMSPinSerializer,SMSVerificationSerializer
+from .serializers import ChangePasswordSerializer,UserSerializer,SMSPinSerializer,SMSPinSerializer,SMSVerificationSerializer,CategorySerializer
 from rest_framework_simplejwt.tokens import AccessToken
 from oauth2_provider.models import AccessToken, Application
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -713,6 +713,12 @@ def update_image(request):
             ) for i in file]
         )
         return Response({'ok':'ok'})
+class Category_home(ListAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = CategorySerializer
+    def get_queryset(self):
+        return Category.objects.exclude(item=None)[:8]
+    
 class CartAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):

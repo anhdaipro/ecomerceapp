@@ -33,6 +33,7 @@ class CategoryAdmin2(DraggableMPTTAdmin):
         return qs
     def set_category(self,request,queryset):
         for i in queryset:
+            i.slug=re.sub('---', "-",i.name) + '.' + str(i.id)
             i.save()
     def set_choice(self,request,queryset):
         queryset.update(choice=True)

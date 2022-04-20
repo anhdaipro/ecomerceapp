@@ -20,6 +20,7 @@ from .views import (
     DealShockAPIView,
     PromotionAPIView,
     CheckoutAPIView,
+    Category_home,
     CartAPIView,
     OrderAPIView,
     AddToCartAPIView,
@@ -36,6 +37,7 @@ from .views import (
 urlpatterns = [
     path('register', RegisterView.as_view()),
     path('login', LoginView.as_view()),
+    path('category/home',Category_home.as_view()),
     path('update/image', views.update_image),
     path("verify-sms", views.VerifySMSView.as_view()),
     path("resend-sms", views.Sendotp.as_view()),
