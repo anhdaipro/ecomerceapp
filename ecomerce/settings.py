@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
     'django.contrib.sites',
     'cloudinary_storage',
     'cloudinary',
@@ -262,19 +261,13 @@ DATE_INPUT_FORMATS=[
 
 CORS_ALLOW_CREDENTIALS = True
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 MEDIA_URL = '/file/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 SOCIAL_AUTH_RAISE_EXCEPTIONS = False
@@ -310,9 +303,9 @@ SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
     'fields': 'email, first_name, last_name'
 }
-TWILIO_ACCOUNT_SID = 'AC83b7af492331fa5456ac45e9204f3e8b' 
-TWILIO_AUTH_TOKEN = 'a20f8febf2783ff16bba4a959cc96cca'
-TWILIO_FROM_NUMBER = '+19844099428'
+TWILIO_ACCOUNT_SID = 'AC695dfbfddb01446b4cbeb65ad87072ad' 
+TWILIO_AUTH_TOKEN = '560cfd26afc562f47a62370f64fc7ec0'
+TWILIO_FROM_NUMBER = '+12393995768'
 PHONENUMBER_DEFAULT_REGION = 'EG'
 PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
