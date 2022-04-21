@@ -44,7 +44,7 @@ urlpatterns = [
     path("resend-sms", views.Sendotp.as_view()),
     path('logout', LogoutView.as_view()),
     path('user-id/', UserView.as_view()),
-    path('/change/password/', ChangePasswordView.as_view()),
+    path('change/password/', ChangePasswordView.as_view()),
     path('products', HomeAPIView.as_view()),
     path('product/recommend', ListItemRecommendAPIView.as_view()),
     path('imagehome', ImageHomeAPIView.as_view()),
