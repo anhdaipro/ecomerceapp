@@ -1930,6 +1930,7 @@ class PurchaseAPIView(APIView):
             data={'review':'review'}
             return Response(data)
 
+
 class ChangePasswordView(generics.UpdateAPIView):
     """
     An endpoint for changing password.
