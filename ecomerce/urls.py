@@ -32,16 +32,7 @@ urlpatterns = [
     path('admin', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('api-auth/', include('drf_social_oauth2.urls',namespace='drf')),
-    path('password-reset',auth_views.PasswordResetView.as_view(
-             template_name='account/password_reset.html'),name='password_reset'),
-    path('password-reset/done',auth_views.PasswordResetDoneView.as_view(
-             template_name='account/password_reset_done.html'),name='password_reset_done'),
-    path('forgot_password/<uidb64>/<token>',auth_views.PasswordResetConfirmView.as_view(
-             template_name='account/password_reset_confirm.html'
-         ),name='password_reset_confirm'),
-    path('password-reset-complete',auth_views.PasswordResetCompleteView.as_view(
-             template_name='account/password_reset_complete.html'
-         ),name='password_reset_complete'),
+    path('api/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
     path('<str:slug>',views.category, name='category'),
     path('bundle-deal/<int:id>',views.bundle_deal,name='promotion_combo'),
     path('addon-deal-cart-selection/<int:id>', views.deal_shock,name="deal_shock"),

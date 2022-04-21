@@ -1724,7 +1724,7 @@ class ProfileAPIView(APIView):
 def get_address(request):
     user=request.user
     addresses = Address.objects.filter(user=user)
-    data={'a':list(addresses.values()),'user':{'image':user.shop.image.url,'name':user.username}}
+    data={'a':list(addresses.values()),'user':{'image':user.profile.image.url,'name':user.username}}
     return Response(data)
 
 class PurchaseAPIView(APIView):
@@ -1783,7 +1783,7 @@ class PurchaseAPIView(APIView):
                 'id':order_item.id
                 } for order_item in order.items.all()]} for order in orders]
             data={
-                'user':{'image':user.shop.image.url,'name':user.username,'user_id':user.id},
+                'user':{'image':user.profile.image.url,'name':user.username,'user_id':user.id},
                 'a':list_order,'count_order':count_order,
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]
                 }

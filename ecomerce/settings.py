@@ -69,7 +69,7 @@ INSTALLED_APPS = [
     'channels',
     'notification',
     'mptt',
-    
+    'django_rest_passwordreset',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     
