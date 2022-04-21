@@ -96,7 +96,7 @@ def infoseller(request):
     data={'name':user.username,'image':profile.image.url}
     return Response(data)
 @api_view(['GET', 'POST'])
-def index(request):
+def homeseller(request):
     user=request.user
     shop=Shop.objects.get(user=user)
     current_date=datetime.datetime.now()
@@ -113,25 +113,24 @@ def index(request):
     sum_hour=[0 for i in range(current_date.hour+1)]
     count_hour=[0 for i in range(current_date.hour+1)]
     for i in total_amount_day:
-                total_amount_days.append(i['sum'])
-                hour_number.append(i['day'].strftime("%d %I %p"))
-                for j in hour:
-                    if i['day'].strftime("%I %p") ==datetime.time(j).strftime('%I %p'):
-                        hour[j]=int(i['day'].strftime("%H"))
-                        sum_hour[j]=round((i['sum']),1)
+        total_amount_days.append(i['sum'])
+        hour_number.append(i['day'].strftime("%d %I %p"))
+        for j in hour:
+            if i['day'].strftime("%I %p") ==datetime.time(j).strftime('%I %p'):
+                hour[j]=int(i['day'].strftime("%H"))
+                sum_hour[j]=round((i['sum']),1)
         
     for i in total_order_day:
-                total_order_days.append(i['count'])
-                hour_number.append(i['day'].strftime("%I %p"))
-                for j in hour:
-                    if i['day'].strftime("%I %p") ==datetime.time(j).strftime('%I %p'):
-                        hour[j]=int(i['day'].strftime("%H"))
-                        count_hour[j]=int(i['count'])
+        total_order_days.append(i['count'])
+        hour_number.append(i['day'].strftime("%I %p"))
+        for j in hour:
+            if i['day'].strftime("%I %p") ==datetime.time(j).strftime('%I %p'):
+                hour[j]=int(i['day'].strftime("%H"))
+                count_hour[j]=int(i['count'])
     current_date.strftime('%d')
     hours=[datetime.time(i).strftime('%H:00') for i in hour] 
     data={
-    'hours':hours,'sum_hour':sum_hour,'count_hour':count_hour,'current_date':current_date, 
-    'shop_name':shop.name,'logo':shop.logo.url
+    'hours':hours,'sum':sum_hour,'count':count_hour
     }
     return Response(data)
     

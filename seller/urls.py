@@ -31,5 +31,5 @@ urlpatterns = [
     path("flashsale/<int:id>", views.detail_flashsale),
     path("new_deal", views.new_deal),
     path('deal_shock/<int:id>',views.deal_shock,name="item_deal_shock"),
-    
+    path("home/seller", views.homeseller),
 ]
