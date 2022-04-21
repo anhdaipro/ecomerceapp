@@ -208,7 +208,7 @@ CHANNEL_LAYERS = {
         },
     },
 }
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 MIDDLEWARE_CLASSES=[
     'user.middleware.ActiveUserMiddleware',
     
@@ -325,7 +325,7 @@ TWILIO_FROM_NUMBER = '+12393995768'
 PHONENUMBER_DEFAULT_REGION = 'EG'
 PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
