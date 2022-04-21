@@ -15,8 +15,10 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 class Profile(models.Model):
     user = models.OneToOneField(User , on_delete=models.CASCADE,null=True)
+    name=models.CharField(max_length=100,null=True )
     auth_token = models.CharField(max_length=100 )
     is_verified = models.BooleanField(default=False)
+    username_edit=models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     phone = PhoneNumberField(null=True)
     image=models.ImageField(upload_to="profile/",default='no_user_mn2igp')

@@ -1685,17 +1685,15 @@ class ProfileAPIView(APIView):
     def get(self,request):
         user=request.user
         shop_name=None
-        shop_logo=None
         count_product=0
         if Shop.objects.filter(user=user).exists():
             shop_name=Shop.objects.filter(user=user).first().name
-            shop_logo=Shop.objects.filter(user=user).first().logo.url
             count_product=Shop.objects.filter(user=user).first().count_product()
         data={
-            'username':user.username,'name':user.shop.name,'email':user.email,'user_id':user.id,
-            'phone_number':user.shop.phone_number,'date_of_birth':user.shop.date_of_birth,
-            'image':user.shop.image.url,'shop_name':shop_name,'shop_logo':shop_logo,
-            'gender':user.shop.get_gender_display(),'user_id':user.id,'count_product':count_product,
+            'username':user.username,'name':user.shop.name,'email':user.email,
+            'phone_number':user.profile.phone_number,'date_of_birth':user.profile.date_of_birth,
+            'image':user.profile.image.url,'shop_name':shop_name,
+            'gender':user.profile.gender,'user_id':user.id,'count_product':count_product,
             }
         return Response(data)
         
