@@ -1714,12 +1714,13 @@ class ProfileAPIView(APIView):
         shop.name=shop_name
         profile.image=image
         profile.gender=gender
-        profile.image=image
+        if image:
+            profile.image=image
         profile.phone=phone
         profile.date_of_birth=date_of_birth
         profile.save()
         shop.save()
-        return Respon({'ol':'ooo'})
+        return Respone({'ol':'ooo'})
 @api_view(['GET', 'POST'])
 def get_address(request):
     user=request.user
