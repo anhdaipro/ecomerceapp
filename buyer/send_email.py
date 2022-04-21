@@ -6,7 +6,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 
-url = "http://localhost:2000/"
+url = "http://localhost:3000/"
 
 @shared_task(bind=True, max_retries=20)
 def send_register_mail(self, user, key):

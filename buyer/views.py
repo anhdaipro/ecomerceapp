@@ -11,6 +11,7 @@ from rest_framework.generics import (
     ListAPIView, RetrieveAPIView, CreateAPIView,
     UpdateAPIView, DestroyAPIView,GenericAPIView,
 )
+from rest_auth.serializers import PasswordResetConfirmSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_multiple_model.views import ObjectMultipleModelAPIView
@@ -49,6 +50,11 @@ from django.contrib.auth.models import User
 from rest_framework.exceptions import AuthenticationFailed
 import paypalrestsdk
 from paypalrestsdk import Sale
+from django.utils.decorators import method_decorator
+from django.views.decorators.debug import sensitive_post_parameters
+sensitive_post_parameters_m = method_decorator(
+    sensitive_post_parameters("password1", "password2")
+)
 paypalrestsdk.configure({
   'mode': 'sandbox', #sandbox or live
   'client_id': 'AY2deOMPkfo32qrQ_fKeXYeJkJlAGPh5N-9pdDFXISyUydAwgRKRPRGhiQF6aBnG68V6czG5JsulM2mX',
@@ -1930,6 +1936,34 @@ class PurchaseAPIView(APIView):
             data={'review':'review'}
             return Response(data)
 
+class PasswordResetView(APIView):
+    def post(self, request, *args, **kwargs):
+
+        email = request.data.get("email", None)
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise NotAcceptable(_("Please enter a valid email."))
+        send_reset_password_email.delay(user)
+        return Response(
+            {"detail": _("Password reset e-mail has been sent.")},
+            status=status.HTTP_200_OK,
+        )
+
+
+class PasswordResetConfirmView(GenericAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = PasswordResetConfirmSerializer
+
+    @sensitive_post_parameters_m
+    def dispatch(self, *args, **kwargs):
+        return super(PasswordResetConfirmView, self).dispatch(*args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"detail": _("Password has been reset with the new password.")})
 
 class ChangePasswordView(generics.UpdateAPIView):
     """
