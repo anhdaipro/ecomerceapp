@@ -1720,7 +1720,7 @@ class ProfileAPIView(APIView):
         profile.date_of_birth=date_of_birth
         profile.save()
         shop.save()
-        return Respone({'ol':'ooo'})
+        return Response({'ol':'ooo'})
 @api_view(['GET', 'POST'])
 def get_address(request):
     user=request.user
