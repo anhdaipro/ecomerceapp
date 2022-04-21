@@ -1127,7 +1127,7 @@ class AddressAPIView(APIView):
     def get(self,request):
         user=request.user
         addresses = Address.objects.filter(user=user)
-        data={'a':list(addresses.values()),'user':{'image':user.shop.image.url,'name':user.username}}
+        data={'a':list(addresses.values()),'user':{'image':user.profile.image.url,'name':user.username}}
         return Response(data)
     def post(self, request, *args, **kwargs):
         user=request.user
