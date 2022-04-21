@@ -31,6 +31,7 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path('admin', admin.site.urls),
     path('auth/', include('djoser.urls')),
+    path('auth/', include('djoser.urls.jwt')),
     path('api-auth/', include('drf_social_oauth2.urls',namespace='drf')),
     path('<str:slug>',views.category, name='category'),
     path('bundle-deal/<int:id>',views.bundle_deal,name='promotion_combo'),
