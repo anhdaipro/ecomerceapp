@@ -59,7 +59,6 @@ INSTALLED_APPS = [
     'discount',
     'itemdetail',
     'corsheaders',
-    'django_social_share',
     'buyer',
     'city',
     'actionorder',
@@ -69,7 +68,7 @@ INSTALLED_APPS = [
     'channels',
     'notification',
     'mptt',
-    'django_rest_passwordreset',
+    'djoser',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     

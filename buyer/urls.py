@@ -13,7 +13,6 @@ from .views import (
     ProfileAPIView,
     ImageHomeAPIView,
     ListItemRecommendAPIView,
-    ChangePasswordView,
     ProductInfoAPIVIew,
     CartItemAPIView,
     UpdateCartAPIView,
