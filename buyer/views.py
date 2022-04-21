@@ -18,7 +18,6 @@ from django.core.paginator import Paginator
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.backends import TokenBackend
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.renderers import TemplateHTMLRenderer
 from django.contrib.auth.decorators import login_required
@@ -35,7 +34,6 @@ from account.models import *
 from itemdetail.models import *
 from actionorder.models import *
 from rest_framework.decorators import api_view
-from rest_framework_simplejwt.backends import TokenBackend
 from bulk_update.helper import bulk_update
 from .serializers import ChangePasswordSerializer,UserSerializer,SMSPinSerializer,SMSPinSerializer,SMSVerificationSerializer,CategorySerializer
 from rest_framework_simplejwt.tokens import AccessToken
@@ -689,10 +687,7 @@ class ItemAPIView(APIView):
 
 def save_voucher(request):
     if request.method=="POST":
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         voucher_id=request.POST.get('voucher_id')
         voucher=Vocher.objects.get(id=voucher_id)
         voucher.user.add(user)
@@ -1230,10 +1225,7 @@ class CheckoutAPIView(APIView):
         }
         return Response(data)
     def post(self, request, *args, **kwargs):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         id=request.POST.get('id')
         address=Address.objects.get(id=id)
         payment_option=request.POST.get('payment_choice')
@@ -1267,10 +1259,7 @@ class CheckoutAPIView(APIView):
 
 @api_view(['GET', 'POST'])
 def payment_complete(request): 
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-    user_id=access_token_obj['user_id']
-    user=User.objects.get(id=user_id) 
+    user=request.user
     if request.method=="POST":
         pay_id=request.POST.get('payID')
         payment=Payment.objects.filter(paid=False,user=user).last()
@@ -1489,10 +1478,7 @@ class ListThreadAPIView(APIView):
             }
             return Response(data)
     def post(self, request, *args, **kwargs):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        access_token_obj = TokenBackend(algorithm='HS256').decode(token,verify=True)
-        user_id=access_token_obj['user_id']
-        user=User.objects.get(id=user_id)
+        user=request.user
         participants=request.POST.getlist('participants')
         thread_id=request.POST.get('thread_id')
         group_name=request.POST.get('group_name')
