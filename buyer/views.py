@@ -1691,12 +1691,21 @@ class ProfileAPIView(APIView):
             count_product=Shop.objects.filter(user=user).first().count_product()
         data={
             'username':user.username,'name':user.shop.name,'email':user.email,
-            'phone_number':user.profile.phone_number,'date_of_birth':user.profile.date_of_birth,
+            'phone':user.profile.phone,'date_of_birth':user.profile.date_of_birth,
             'image':user.profile.image.url,'shop_name':shop_name,
             'gender':user.profile.gender,'user_id':user.id,'count_product':count_product,
             }
         return Response(data)
-        
+    def post(self,request):
+        shop_name=request.POST.get('shop_name')
+        image=request.FILES.get('file')
+        username=request.POST.get('username')
+        gender=request.POST.get('gender')
+        name=request.POST.get('name')
+        email=request.POST.get('email')
+        phone=request.POST.get('phone')
+        date_of_birth=request.POST.get('date_of_birth')
+
 @api_view(['GET', 'POST'])
 def get_address(request):
     user=request.user
