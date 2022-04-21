@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import logging
+import datetime
 # Create your models here.
 from randompinfield import RandomPinField
 from twilio.rest import Client
@@ -21,7 +22,7 @@ class Profile(models.Model):
     username_edit=models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     phone = PhoneNumberField(null=True)
-    image=models.ImageField(upload_to="profile/",default='no_user_mn2igp')
+    image=models.ImageField(upload_to="profile/",default='no_user_c5clxa')
     USER_TYPE=(
         ('C','Customer'),
         ('S','Seller')
@@ -33,7 +34,7 @@ class Profile(models.Model):
     )
     user_type=models.CharField(max_length=10,choices=USER_TYPE,blank=True)
     gender=models.CharField(max_length=10,choices=GENDER_CHOICE,blank=True)
-    date_of_birth=models.DateField(null=True,default=timezone.now())
+    date_of_birth=models.DateField(null=True,default=datetime.datetime.now())
     xu=models.IntegerField(default=0,null=True)
     is_online=models.DateTimeField(auto_now=True)
     online=models.BooleanField(default=False)
