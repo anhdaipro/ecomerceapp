@@ -1714,7 +1714,7 @@ class ProfileAPIView(APIView):
         shop.name=shop_name
         profile.image=image
         profile.gender=gender
-        if image:
+        if image !=None:
             profile.image=image
         profile.phone=phone
         profile.date_of_birth=date_of_birth
