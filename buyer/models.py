@@ -14,7 +14,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
 
     send_mail(
         # title:
-        "Password Reset for {sender.username}".format(title="Some website title"),
+        "Password Reset for {instance.username}".format(title="Some website title"),
         # message:
         email_plaintext_message,
         # from:
