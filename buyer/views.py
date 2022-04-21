@@ -1705,7 +1705,21 @@ class ProfileAPIView(APIView):
         email=request.POST.get('email')
         phone=request.POST.get('phone')
         date_of_birth=request.POST.get('date_of_birth')
-
+        user=request.user
+        profile=Profile.objects.get(user=user)
+        shop=Shop.objects.get(user=user)
+        user.username=username
+        user.email=email
+        user.save()
+        shop.name=shop_name
+        profile.image=image
+        profile.gender=gender
+        profile.image=image
+        profile.phone=phone
+        profile.date_of_birth=date_of_birth
+        profile.save()
+        shop.save()
+        return Respon({'ol':'ooo'})
 @api_view(['GET', 'POST'])
 def get_address(request):
     user=request.user
