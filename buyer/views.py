@@ -3,7 +3,8 @@
 from twilio.rest import Client
 from django.db.models import Q
 from django.conf import settings
-from django.core.mail import send_mail
+
+from django.core.mail import EmailMessage
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.sites.shortcuts import get_current_site
@@ -2000,13 +2001,10 @@ class PasswordResetView(APIView):
             absurl+"?redirect_url="+redirect_url
         data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Reset your passsword'}
-        send_mail(
-				"Welcome to AnhDai's Shop - Verify Your Email",
-				email_body,
-				settings.EMAIL_HOST_USER,
-				[user.email],
-				fail_silently = False
-				)
+        
+        email = EmailMessage(
+            subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+        email.send()
         return Response(
             {"detail": "Password reset e-mail has been sent."},
             status=status.HTTP_200_OK,
