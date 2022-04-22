@@ -32,8 +32,7 @@ def send_register_mail(self, user, key):
         raise self.retry(exc=e, countdown=25200)
 
 
-@shared_task(bind=True, max_retries=20)
-def send_reset_password_email(self, user):
+def send_reset_password_email(user):
     body = """
     hello %s,
     reset url : %sretypepassword/%s/%s
@@ -50,7 +49,6 @@ def send_reset_password_email(self, user):
         return "Email Is Sent"
     except Exception as e:
         print("Email not sent ", e)
-        raise self.retry(exc=e, countdown=25200)
 
 
 def send_email(body, subject, recipients, body_type="plain"):
