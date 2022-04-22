@@ -1267,14 +1267,15 @@ class CheckoutAPIView(APIView):
                     products=Variation.objects.get(orderitem=item.id)
                     products.inventory -= item.quantity
                     products.save()
-                order_sucsses_email(order,user)
+                if user.email!=None:
+                    order_sucsses_email(order,user)
             bulk_update(orders)
 
             data={'a':'a'}
             return Response(data)
-def order_sucsses_email(order,user):
+def order_sucsses_email(order,user,email):
     mail_subject = 'Thiết lập lại mật khẩu đăng nhập Anh dai!'
-    message = render_to_string('reset_password.html', {
+    message = render_to_string('order_receive_email.html', {
         'user': user,
         'order':order,
     })
