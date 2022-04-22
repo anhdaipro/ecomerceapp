@@ -1273,6 +1273,14 @@ class CheckoutAPIView(APIView):
             data={'a':'a'}
             return Response(data)
 def order_sucsses_email(order,user):
+    mail_subject = 'Thiết lập lại mật khẩu đăng nhập Anh dai!'
+    message = render_to_string('reset_password.html', {
+        'user': user,
+        'order':order,
+    })
+    to_email = email
+    send_email = EmailMessage(mail_subject, message, to=[to_email])
+    send_email.send()
 
 class OrderinfoAPIView(APIView):
     permission_classes = (IsAuthenticated)
@@ -2003,7 +2011,7 @@ class PasswordResetView(APIView):
             status=status.HTTP_200_OK,
         )
 
-def sendEmail(absurl,user):
+def sendEmail(email,absurl,user):
     mail_subject = 'Thiết lập lại mật khẩu đăng nhập Anh dai!'
     message = render_to_string('reset_password.html', {
         'user': user,
