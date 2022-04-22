@@ -2002,7 +2002,9 @@ class PasswordResetView(APIView):
         data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Reset your passsword'}
         
-        Util.send_email(data)
+        email = EmailMessage(
+            subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+        email.send()
         return Response(
             {"detail": "Password reset e-mail has been sent."},
             status=status.HTTP_200_OK,
