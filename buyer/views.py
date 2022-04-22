@@ -1283,7 +1283,7 @@ class OrderinfoAPIView(APIView):
             exist=True
         data={'exist':exist,
         'district':address.district,'town':address.town,
-        'order':'name':address.name,'phone_number':address.phone_number,'city':address.city,'address':address.address,
+        'name':address.name,'phone_number':address.phone_number,'city':address.city,'address':address.address,
         'received':order.received,'canceled':order.canceled,'accepted':order.accepted,'amount':order.total_final_order(),
         'being_delivered':order.being_delivered,
         'shop':order.shop.name,'discount_voucher':order.discount_voucher(),
