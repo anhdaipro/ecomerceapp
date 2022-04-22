@@ -43,7 +43,7 @@ class Order(models.Model):
     def __str__(self):
         return str(self.ref_code)
     def get_absolute_url(self):
-        return reverse("app_user:order", kwargs={"id": self.id})
+        return reverse("order", kwargs={"id": self.id})
 
     def get_voucher(self):
         id_voucher=None

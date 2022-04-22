@@ -3,6 +3,7 @@
 from twilio.rest import Client
 from django.db.models import Q
 from django.conf import settings
+from django.core.mail import send_mail
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.sites.shortcuts import get_current_site
@@ -101,13 +102,13 @@ class Sendotp(APIView):
         otp=SMSVerification.objects.create(pin=usr_otp,phone=phone)
         if login: 
             message = client.messages.create(
-                body=f"DE DANG NHAP TAI KHOAN VUI LONG NHAP MA XAC THUC {otp.pin}. Có hiệu lực trong 15 phút",
+                body=f"DE DANG NHAP TAI KHOAN VUI LONG NHAP MA XAC THUC {otp.pin}. Co hieu luc trong 15 phut. Khong chia se max nay voi nguoi khac",
                 from_=settings.TWILIO_FROM_NUMBER,
                 to=str(phone)
             )
         else:
             message = client.messages.create(
-                body=f"DE DANG KY TAI KHOAN VUI LONG NHAP MA XAC THUC {otp.pin}. Có hiệu lực trong 15 phút",
+                body=f"DE DANG KY TAI KHOAN VUI LONG NHAP MA XAC THUC {otp.pin}. Co hieu luc trong 15 phut. Khong chia se max nay voi nguoi khac",
                 from_=settings.TWILIO_FROM_NUMBER,
                 to=str(phone)
             )
@@ -1111,7 +1112,7 @@ class CartItemAPIView(APIView):
             }
         return Response(data)
 
-class OrderAPIView(APIView):
+class ListorderAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
@@ -1269,6 +1270,43 @@ class CheckoutAPIView(APIView):
             data={'a':'a'}
             return Response(data)
 
+class OrderinfoAPIView(APIView):
+    permission_classes = (IsAuthenticated)
+    def get(self,request,id):
+        user=request.user
+        order=Order.objects.get(id=id)
+        shop=order.shop.user
+        threads = Thread.objects.filter(participants=user).order_by('timestamp')
+        list_user=[thread.participants.all() for thread in threads]
+        exist=False
+        if shop in list_user:
+            exist=True
+        data={'exist':exist,
+        'district':address.district,'town':address.town,
+        'order':'name':address.name,'phone_number':address.phone_number,'city':address.city,'address':address.address,
+        'received':order.received,'canceled':order.canceled,'accepted':order.accepted,'amount':order.total_final_order(),
+        'being_delivered':order.being_delivered,
+        'shop':order.shop.name,'discount_voucher':order.discount_voucher(),
+        'total':order.total_price_order(),'total_final':order.total_final_order(),
+        'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),
+        'discount_promotion':order.discount_promotion(),'total_discount':order.total_discount_order(),
+        'order_item':[{'item_info':order_item.product.item.item_info(),'item_url':order_item.product.item.get_absolute_url(),
+        'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
+        'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
+        'byproduct':[{
+            'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
+            'price':byproduct.byproduct.price,
+            'item_image':byproduct.byproduct.item.media_upload.all()[0].upload_file(),
+            'item_info':byproduct.byproduct.item.item_info(),
+            'quantity':byproduct.quantity,'item_url':byproduct.byproduct.item.get_absolute_url(),
+            'count_program_valid':byproduct.byproduct.item.count_program_valid(),
+            'total_price':byproduct.total_price(),
+             } for byproduct in order_item.byproduct.all()],
+        'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
+        'price':order_item.product.price,
+        'total_price':order_item.total_discount_orderitem()
+        } for order_item in order.items.all()]}
+        return Response(data)
 @api_view(['GET', 'POST'])
 def payment_complete(request): 
     user=request.user
@@ -1785,7 +1823,7 @@ class PurchaseAPIView(APIView):
             orders = Order.objects.filter(ordered=True,user=user).order_by('-id')[from_item:to_item]
             list_order=[{'shop_name':order.shop.name,'shop_user':order.shop.user.id,'received':order.received,'canceled':order.canceled,
                 'being_delivered':order.being_delivered,'shop_url':order.shop.get_absolute_url(),'id':order.id,
-                'order_url':order.get_absolute_url(),'accepted':order.accepted,'amount':order.total_final_order(),
+                'accepted':order.accepted,'amount':order.total_final_order(),
                 'received_date':order.received_date,'review':order.count_review(),
                 'order_item':[{
                 'item_image':order_item.product.item.media_upload.all()[0].upload_file(),'item_url':order_item.product.item.get_absolute_url(),

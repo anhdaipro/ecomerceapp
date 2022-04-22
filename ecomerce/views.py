@@ -33,6 +33,8 @@ def bundle_deal(request,id):
     return render(request,'promotion_combo.html')
 def deal_shock(request,id):
     return render(request,'deal_shock.html')
+def order(request,id):
+    return render(request,'order.html')
 def sendEmail(request, order):
     mail_subject = 'Thank you for your order!'
     message = render_to_string('order_recieved_email.html', {
