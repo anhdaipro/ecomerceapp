@@ -3,7 +3,7 @@
 from twilio.rest import Client
 from django.db.models import Q
 from django.conf import settings
-
+from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
@@ -2006,7 +2006,7 @@ class PasswordResetView(APIView):
         )
 
 def sendEmail(request,email,absurl,user):
-    mail_subject = 'Thank you for your order!'
+    mail_subject = 'Thiết lập lại mật khẩu đăng nhập Anh dai!'
     message = render_to_string('reset_password.html', {
         'mail': mail,
         'user': user,
