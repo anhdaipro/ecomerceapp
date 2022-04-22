@@ -38,8 +38,7 @@ def send_reset_password_email(user):
     reset url : %sretypepassword/%s/%s
     """ % (
         user.username,
-        url,
-        default_token_generator.make_token(user),
+        url
     )
     subject = "Reset password Mail"
     recipients = [user.email]
