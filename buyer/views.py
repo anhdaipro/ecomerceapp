@@ -83,7 +83,7 @@ class UserView(APIView):
             user=request.user
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Unauthenticated!')
-        
+        user=request.user
         serializer = UserSerializer(user)
         return Response(serializer.data)
 class RegisterView(APIView):
@@ -160,37 +160,23 @@ class LoginView(APIView):
             }
             return Response(data)
         
-        else:  
+        else:
             user = authenticate(request, username=username, password=password)
             if email:
                 user = authenticate(request, email=username, password=password)
-            token = RefreshToken.for_user(user).access_token
-            absurl = 'http://localhost:3000/verify/email-link?q='+token
-            email_body =f"Xin chao {user.username}, \nAi đó đang cố gắng truy cập Tài khoản của bạn.\nNếu Bạn đang thực hiện đăng nhập, vui lòng xác nhận theo link duoi day (hiệu lực trong vòng 15 phút). \n{absurl}"
-            data = {'email_body': email_body, 'to_email': user.email,
-                'email_subject': f"Cảnh báo bảo mật Tài khoản"}
-            send_email = EmailMessage(
-                subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
-            send_email.send()
             if user is None:
                 raise AuthenticationFailed('User not found!')
+
             if not user.check_password(password):
                 raise AuthenticationFailed('Incorrect password!')
+            
+            refresh = RefreshToken.for_user(user)
             data = {
-               'sendemail':True
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
             }
             return Response(data)
 
-class VerifyEmail(APIView):
-    def get(self, request):
-        token = request.GET.get('token')
-        try:
-            user = request.user
-            return Response({'email': 'Successfully activated','token':token}, status=status.HTTP_200_OK)
-        except jwt.ExpiredSignatureError as identifier:
-            return Response({'error': 'Activation Expired'}, status=status.HTTP_400_BAD_REQUEST)
-        except jwt.exceptions.DecodeError as identifier:
-            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 class LogoutView(APIView):
     def post(self, request):
         response = Response()

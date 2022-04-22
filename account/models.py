@@ -22,7 +22,7 @@ class Profile(models.Model):
     username_edit=models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     phone = PhoneNumberField(null=True)
-    image=models.ImageField(default='no_user_c5clxa.png')
+    image=models.ImageField(upload_to="profile/",default='no_user_c5clxa.png')
     USER_TYPE=(
         ('C','Customer'),
         ('S','Seller')
@@ -65,3 +65,12 @@ class SMSVerification(models.Model):
     phone = models.CharField(max_length=100,null=True)
     created = models.DateTimeField(auto_now_add=True)
 
+class Verifylink(models.Model):
+    code=models.CharField(max_length=10)
+    user=models.ForeignKey(User, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+
+class Verifyemail(models.Model):
+    token=models.CharField(max_length=50)
+    user=models.ForeignKey(User, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
