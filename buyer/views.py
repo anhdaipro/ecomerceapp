@@ -1996,7 +1996,7 @@ class PasswordResetView(APIView):
         relativeLink = reverse(
             'password-reset-confirm', kwargs={'uidb64': uidb64, 'token': token})
         redirect_url = request.data.get('redirect_url', '')
-        absurl = 'http://'+current_site + relativeLink
+        absurl = 'http://localhost:3000/' + relativeLink
         email_body = 'Hello, \n Use link below to reset your password  \n' + \
             absurl+"?redirect_url="+redirect_url
         data = {'email_body': email_body, 'to_email': user.email,
