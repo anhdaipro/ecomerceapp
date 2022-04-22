@@ -39,7 +39,6 @@ def send_reset_password_email(user):
     """ % (
         user.username,
         url,
-        urlsafe_base64_encode(force_bytes(user.pk)).decode(),
         default_token_generator.make_token(user),
     )
     subject = "Reset password Mail"
