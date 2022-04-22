@@ -40,7 +40,7 @@ from .serializers import ChangePasswordSerializer,UserSerializer,SMSPinSerialize
 from rest_framework_simplejwt.tokens import AccessToken
 from oauth2_provider.models import AccessToken, Application
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .send_mail import send_register_mail, send_reset_password_email
+from .send_email import send_register_mail, send_reset_password_email
 import random
 import string
 import json

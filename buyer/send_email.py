@@ -60,7 +60,7 @@ def send_email(body, subject, recipients, body_type="plain"):
         getattr(settings, "EMAIL_HOST_USER", None),
         getattr(settings, "EMAIL_HOST_PASSWORD", None),
     )
-    sender = "thomas@dokkanz.com"
+    sender = "daipham952@gmail.com"
     msg = MIMEText(body, body_type)
     msg["subject"] = subject
     msg["From"] = sender
