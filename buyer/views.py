@@ -6,13 +6,13 @@ from django.conf import settings
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.sites.shortcuts import get_current_site
-from django.utils.encoding import force_bytes
-from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
+from django.utils.encoding import force_bytes,smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
+from .utils import Util
 from rest_framework.generics import (
     ListAPIView, RetrieveAPIView, CreateAPIView,
     UpdateAPIView, DestroyAPIView,GenericAPIView,
@@ -26,7 +26,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
-from rest_framework.renderers import TemplateHTMLRenderer
 from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Min, Count, Avg,Sum
 from shop.models import *
