@@ -31,7 +31,7 @@ from .views import (
     PurchaseAPIView,
     AddressAPIView,
     UserView,
-    VerifyEmail,
+    
     ListThreadAPIView,
     Sendotp,VerifySMSView,
     RegisterView, LoginView,  LogoutView 
@@ -47,7 +47,7 @@ urlpatterns = [
         views.SetNewPasswordAPIView.as_view(),
         name="password-reset-confirm",
     ),
-    path('verify/email-link',VerifyEmail.as_view()),
+    
     path('register', RegisterView.as_view()),
     path('login', LoginView.as_view()),
     path('category/home',Category_home.as_view()),
