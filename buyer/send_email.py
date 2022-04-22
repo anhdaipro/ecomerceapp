@@ -32,14 +32,15 @@ def send_register_mail(self, user, key):
         raise self.retry(exc=e, countdown=25200)
 
 
-def send_reset_password_email(self, user):
+@shared_task(bind=True, max_retries=20)
+def send_reset_password_email(user):
     body = """
     hello %s,
     reset url : %sretypepassword/%s/%s
     """ % (
         user.username,
         url,
-        urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+        urlsafe_base64_encode(force_bytes(user.pk)),
         default_token_generator.make_token(user),
     )
     subject = "Reset password Mail"
@@ -49,7 +50,6 @@ def send_reset_password_email(self, user):
         return "Email Is Sent"
     except Exception as e:
         print("Email not sent ", e)
-
 
 def send_email(body, subject, recipients, body_type="plain"):
     session = smtplib.SMTP("smtp.gmail.com", getattr(settings, "EMAIL_PORT", None))
