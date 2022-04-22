@@ -173,18 +173,16 @@ class LoginView(APIView):
                 send_email = EmailMessage(
                     subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
                 send_email.send()
-            if user is None:
-                raise AuthenticationFailed('User not found!')
-
-            if not user.check_password(password):
-                raise AuthenticationFailed('Incorrect password!')
+                refresh = RefreshToken.for_user(user)
+                data = {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }
+                return Response(data)
+            else:
+                raise AuthenticationFailed('Username or Incorrect password!')
             
-            refresh = RefreshToken.for_user(user)
-            data = {
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            }
-            return Response(data)
+            
 
 class LogoutView(APIView):
     def post(self, request):
