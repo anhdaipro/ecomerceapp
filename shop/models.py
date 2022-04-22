@@ -325,7 +325,7 @@ class Variation(models.Model):
     def get_absolute_url(self):
         return reverse("deal_shock", kwargs={"id": self.id})
     def update_percent(self):
-        count_program=Shop_program.objects.filter(product=self.item,to_valid__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).count()
+        count_program=Shop_program.objects.filter(product=self.item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).count()
         if count_program==0:
             self.percent_discount=0
     def save(self, *args, **kwargs):
