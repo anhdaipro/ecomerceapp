@@ -166,13 +166,13 @@ class LoginView(APIView):
                 user = authenticate(request, email=email, password=password)
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
             token = default_token_generator.make_token(user)
-            absurl = 'http://localhost:3000/forgot_password/' +uidb64+ '/'+token+'?email='+email
+            absurl = 'http://localhost:3000/forgot_password/' +uidb64+ '/'+token+'?email='+user.email
             email_body =f"Xin chao {user.username}, \nAi đó đang cố gắng truy cập Tài khoản của bạn.\nNếu Bạn đang thực hiện đăng nhập, vui lòng xác nhận TẠI ĐÂY (hiệu lực trong vòng 10 phút). \n{absurl}"
             data = {'email_body': email_body, 'to_email': user.email,
                 'email_subject': f"Cảnh báo bảo mật Tài khoản"}
-            email = EmailMessage(
+            send_email = EmailMessage(
                 subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
-            email.send()
+            send_email.send()
             if user is None:
                 raise AuthenticationFailed('User not found!')
 
