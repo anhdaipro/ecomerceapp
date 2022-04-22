@@ -46,7 +46,7 @@ class Profile(models.Model):
         return cache.get(f"seen_{self.user.username}")
 
     @property
-    def online(self):
+    def get_online(self):
         if self.last_seen:
             now = datetime.now(timezone.utc)
             if now > self.last_seen + timedelta(minutes=settings.USER_ONLINE_TIMEOUT):
