@@ -1999,7 +1999,7 @@ class PasswordResetView(APIView):
 
         absurl = 'http://localhost:3000/forgot_password/' +uidb64+ '/'+token+'?email='+email
     
-        email_body =f"Hello {user.username}, \nChúng tôi nhận được yêu cầu thiết lập lại mật khẩu cho tài khoản Shopee của bạn.\nNhấn tại đây để thiết lập mật khẩu mới cho tài khoản Shopee của bạn. \n Use link below to reset your password  \n' + \{absurl}"
+        email_body =f"Xin chao {user.username}, \nChúng tôi nhận được yêu cầu thiết lập lại mật khẩu cho tài khoản Anhdai của bạn.\nNhấn tại đây để thiết lập mật khẩu mới cho tài khoản Anhdai của bạn. \n{absurl}"
         data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': f"Thiết lập lại mật khẩu đăng nhập {user.username}"}
         
