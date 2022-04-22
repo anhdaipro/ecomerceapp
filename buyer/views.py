@@ -1945,7 +1945,7 @@ class PasswordResetView(APIView):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             raise NotAcceptable(_("Please enter a valid email."))
-        send_reset_password_email.delay(user)
+        send_reset_password_email(user)
         return Response(
             {"detail": _("Password reset e-mail has been sent.")},
             status=status.HTTP_200_OK,
