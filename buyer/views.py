@@ -1962,7 +1962,13 @@ class PasswordResetView(APIView):
             absurl+"?redirect_url="+redirect_url
         data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Reset your passsword'}
-        Util.send_email(data)
+        send_mail(
+				"Welcome to AnhDai's Shop - Verify Your Email",
+				email_body,
+				settings.EMAIL_HOST_USER,
+				[user.email],
+				fail_silently = False
+				)
         return Response(
             {"detail": "Password reset e-mail has been sent."},
             status=status.HTTP_200_OK,
