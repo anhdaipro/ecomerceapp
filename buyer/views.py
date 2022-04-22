@@ -160,9 +160,10 @@ class LoginView(APIView):
             }
             return Response(data)
         
-        else:
+        else:  
             user = authenticate(request, username=username, password=password)
-            user = authenticate(request, email=username, password=password)
+            if email:
+                user = authenticate(request, email=username, password=password)
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
             token = default_token_generator.make_token(user)
             absurl = 'http://localhost:3000/forgot_password/' +uidb64+ '/'+token+'?email='+user.email
