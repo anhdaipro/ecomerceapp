@@ -142,6 +142,7 @@ class LoginView(APIView):
         email = request.POST.get('email')
         token=request.POST.get('token')
         user_id=request.POST.get('user_id')
+         users=User.objects.filter(Q(username=username, password=password)|Q(email=username, password=password))
         if token:
             token = AccessToken.objects.get(token=token)
             user = token.user
@@ -159,20 +160,19 @@ class LoginView(APIView):
                 'access': str(refresh.access_token),
             }
             return Response(data)
-        
+       
         else:
-            user = authenticate(request, username=username, password=password)
-            if email:
-                user = authenticate(request, email=email, password=password)
-            uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
-            token = default_token_generator.make_token(user)
-            absurl = 'http://localhost:3000/forgot_password/' +uidb64+ '/'+token+'?email='+user.email
-            email_body =f"Xin chao {user.username}, \nAi đó đang cố gắng truy cập Tài khoản của bạn.\nNếu Bạn đang thực hiện đăng nhập, vui lòng xác nhận TẠI ĐÂY (hiệu lực trong vòng 10 phút). \n{absurl}"
-            data = {'email_body': email_body, 'to_email': user.email,
-                'email_subject': f"Cảnh báo bảo mật Tài khoản"}
-            send_email = EmailMessage(
-                subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
-            send_email.send()
+            if users.exists(): 
+                user=users.first()  
+                uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
+                token = default_token_generator.make_token(user)
+                absurl = 'http://localhost:3000/forgot_password/' +uidb64+ '/'+token+'?email='+user.email
+                email_body =f"Xin chao {user.username}, \nAi đó đang cố gắng truy cập Tài khoản của bạn.\nNếu Bạn đang thực hiện đăng nhập, vui lòng xác nhận TẠI ĐÂY (hiệu lực trong vòng 10 phút). \n{absurl}"
+                data = {'email_body': email_body, 'to_email': user.email,
+                    'email_subject': f"Cảnh báo bảo mật Tài khoản"}
+                send_email = EmailMessage(
+                    subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+                send_email.send()
             if user is None:
                 raise AuthenticationFailed('User not found!')
 
