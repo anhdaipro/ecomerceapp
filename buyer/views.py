@@ -1996,20 +1996,25 @@ class PasswordResetView(APIView):
             raise NotAcceptable(_("Please enter a valid email."))
         uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
         token = default_token_generator.make_token(user)
+
         absurl = 'http://localhost:3000/forgot_password/' +uidb64+ '/'+token+'?email='+email
-        email_body = 'Hello, \n Use link below to reset your password  \n' + \
-            absurl
-        data = {'email_body': email_body, 'to_email': user.email,
-                    'email_subject': 'Reset your passsword'}
         
-        email = EmailMessage(
-            subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
-        email.send()
+        sendEmail(self.request,email,absurl,user,uidb64,token)
         return Response(
             {"detail": "Password reset e-mail has been sent."},
             status=status.HTTP_200_OK,
         )
 
+def sendEmail(request,email,absurl,user):
+    mail_subject = 'Thank you for your order!'
+    message = render_to_string('reset_password.html', {
+        'mail': mail,
+        'user': user,
+        'absurl':absurl,
+    })
+    to_email = email
+    send_email = EmailMessage(mail_subject, message, to=[to_email])
+    send_email.send()
 class SetNewPasswordAPIView(generics.GenericAPIView):
     serializer_class = SetNewPasswordSerializer
     def patch(self, request):
