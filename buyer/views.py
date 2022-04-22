@@ -142,7 +142,7 @@ class LoginView(APIView):
         email = request.POST.get('email')
         token=request.POST.get('token')
         user_id=request.POST.get('user_id')
-         users=User.objects.filter(Q(username=username, password=password)|Q(email=username, password=password))
+        users=User.objects.filter(Q(username=username, password=password)|Q(email=username, password=password))
         if token:
             token = AccessToken.objects.get(token=token)
             user = token.user
