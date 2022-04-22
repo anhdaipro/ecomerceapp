@@ -43,7 +43,8 @@ from itemdetail.models import *
 from actionorder.models import *
 from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
-from .serializers import ChangePasswordSerializer,UserSerializer,SMSPinSerializer,SMSPinSerializer,SMSVerificationSerializer,CategorySerializer
+from .serializers import ChangePasswordSerializer,UserSerializer,SMSPinSerializer,SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,
+SetNewPasswordSerializer
 from rest_framework_simplejwt.tokens import AccessToken
 from oauth2_provider.models import AccessToken, Application
 from rest_framework.permissions import AllowAny, IsAuthenticated
