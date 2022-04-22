@@ -4,7 +4,7 @@ from twilio.rest import Client
 from django.db.models import Q
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
-
+from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
 from django.contrib.auth.tokens import default_token_generator
