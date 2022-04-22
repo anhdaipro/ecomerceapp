@@ -49,8 +49,6 @@ INSTALLED_APPS = [
     'social_django',
     'oauth2_provider',
     'drf_social_oauth2',
-    'rest_auth.registration',
-    
     'rest_framework',
     'shop',
     'checkout',
@@ -61,7 +59,6 @@ INSTALLED_APPS = [
     'discount',
     'itemdetail',
     'corsheaders',
-    'django_social_share',
     'buyer',
     'city',
     'actionorder',
