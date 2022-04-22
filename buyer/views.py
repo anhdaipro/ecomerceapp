@@ -1267,14 +1267,12 @@ class CheckoutAPIView(APIView):
                     products=Variation.objects.get(orderitem=item.id)
                     products.inventory -= item.quantity
                     products.save()
-                email_body = 'Hello, \n Use link below to reset your password  \n' + \
-                absurl+"?redirect_url="+redirect_url
-            data = {'email_body': email_body, 'to_email': user.email,
-                    'email_subject': 'Reset your passsword'}
+                order_sucsses_email(order,user)
             bulk_update(orders)
 
             data={'a':'a'}
             return Response(data)
+def order_sucsses_email(order,user):
 
 class OrderinfoAPIView(APIView):
     permission_classes = (IsAuthenticated)
@@ -1999,16 +1997,15 @@ class PasswordResetView(APIView):
 
         absurl = 'http://localhost:3000/forgot_password/' +uidb64+ '/'+token+'?email='+email
         
-        sendEmail(self.request,email,absurl,user)
+        sendEmail(email,absurl,user)
         return Response(
             {"detail": "Password reset e-mail has been sent."},
             status=status.HTTP_200_OK,
         )
 
-def sendEmail(request,email,absurl,user):
+def sendEmail(absurl,user):
     mail_subject = 'Thiết lập lại mật khẩu đăng nhập Anh dai!'
     message = render_to_string('reset_password.html', {
-        'mail': mail,
         'user': user,
         'absurl':absurl,
     })
