@@ -168,16 +168,17 @@ class LoginView(APIView):
                 absurl = 'http://localhost:3000/forgot_password/' +uidb64+ '/'+token+'?email='+email
                 email_body =f"Xin chao {user.username}, \nAi đó đang cố gắng truy cập Tài khoản của bạn.\nNếu Bạn đang thực hiện đăng nhập, vui lòng xác nhận TẠI ĐÂY (hiệu lực trong vòng 10 phút). \n{absurl}"
                 data = {'email_body': email_body, 'to_email': user.email,
-                    'email_subject': f"Cảnh báo bảo mật Tài khoản"}
+                        'email_subject': f"Cảnh báo bảo mật Tài khoản"}
                 email = EmailMessage(
-                    subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+                        subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
                 email.send()
                 refresh = RefreshToken.for_user(user)
                 data = {
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-                }
-            except Exception as e:
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                    }
+                return Response(data)
+            except Exception:
                 raise AuthenticationFailed('Incorrect password or username!')
 class VeryAccountAPI(APIView):
     def post(self, request):
@@ -375,7 +376,7 @@ class DetailAPIView(APIView):
             paginator = Paginator(items,30)
             page_obj = paginator.get_page(page)
             count_follow=Shop.objects.filter(followers=shop.user).count()
-            data={'shop_logo':shop.logo.url,'shop_url':shop.get_absolute_url(),'count_followings': count_follow,
+            data={'shop_logo':shop.user.profile.image.url,'shop_url':shop.get_absolute_url(),'count_followings': count_follow,
                 'shop_name':shop.name,'shop':'shop','shop_user':shop.user.id,'created':shop.create_at,
                 'online':shop.user.shop.online,'num_followers':shop.num_follow(),'slug':shop.slug,
                 'is_online':shop.user.shop.is_online,'count_product':shop.count_product(),
@@ -546,7 +547,7 @@ class ProductInfoAPIVIew(APIView):
                     } for i in items]}
                 return Response(data)
             elif shop:
-                data={'shop_logo':item.shop.logo.url,'shop_url':item.shop.get_absolute_url(),
+                data={'shop_logo':item.shop.user.profile.image.url,'shop_url':item.shop.get_absolute_url(),
                 'shop_name':item.shop.name,
                 'online':item.shop.user.shop.online,'num_follow':item.shop.num_follow(),
                 'is_online':item.shop.user.shop.is_online,'count_product':item.shop.count_product(),
