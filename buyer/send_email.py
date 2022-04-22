@@ -32,7 +32,7 @@ def send_register_mail(self, user, key):
         raise self.retry(exc=e, countdown=25200)
 
 
-def send_reset_password_email(user):
+def send_reset_password_email(self,user):
     body = """
     hello %s,
     reset url : %sretypepassword/%s/%s
