@@ -1996,11 +1996,6 @@ class PasswordResetView(APIView):
             raise NotAcceptable(_("Please enter a valid email."))
         uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
         token = default_token_generator.make_token(user)
-        current_site = get_current_site(
-            request=request).domain
-        relativeLink = reverse(
-            '', kwargs={'uidb64': uidb64, 'token': token})
-        redirect_url = request.data.get('redirect_url', '')
         absurl = 'http://localhost:3000/password-reset-confirm' +uidb64+ '/'+token+'/'
         email_body = 'Hello, \n Use link below to reset your password  \n' + \
             absurl
