@@ -33,11 +33,11 @@ from .views import (
     UserView,
     ListThreadAPIView,
     Sendotp,VerifySMSView,
-    RegisterView, LoginView,  LogoutView
-    
+    RegisterView, LoginView,  LogoutView 
 )
 
 urlpatterns = [
+    
     path(
         "reset/password/", views.PasswordResetView.as_view(), name="rest_password_reset"
     ),
@@ -46,7 +46,7 @@ urlpatterns = [
         views.PasswordResetConfirmView.as_view(),
         name="password-reset-confirm",
     ),
-    
+    path('registers', 'text',name='llll'),
     path('register', RegisterView.as_view()),
     path('login', LoginView.as_view()),
     path('category/home',Category_home.as_view()),

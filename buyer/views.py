@@ -1267,7 +1267,12 @@ class CheckoutAPIView(APIView):
                     products=Variation.objects.get(orderitem=item.id)
                     products.inventory -= item.quantity
                     products.save()
+                email_body = 'Hello, \n Use link below to reset your password  \n' + \
+                absurl+"?redirect_url="+redirect_url
+            data = {'email_body': email_body, 'to_email': user.email,
+                    'email_subject': 'Reset your passsword'}
             bulk_update(orders)
+
             data={'a':'a'}
             return Response(data)
 
@@ -1994,11 +1999,11 @@ class PasswordResetView(APIView):
         current_site = get_current_site(
             request=request).domain
         relativeLink = reverse(
-            'password-reset-confirm', kwargs={'uidb64': uidb64, 'token': token})
+            '', kwargs={'uidb64': uidb64, 'token': token})
         redirect_url = request.data.get('redirect_url', '')
-        absurl = 'http://localhost:3000/' + relativeLink
+        absurl = 'http://localhost:3000/password-reset-confirm' +uidb64+ '/'+token+'/'
         email_body = 'Hello, \n Use link below to reset your password  \n' + \
-            absurl+"?redirect_url="+redirect_url
+            absurl
         data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Reset your passsword'}
         
