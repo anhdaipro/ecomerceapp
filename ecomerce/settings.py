@@ -274,8 +274,8 @@ STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 SOCIAL_AUTH_RAISE_EXCEPTIONS = False
-SOCIAL_AUTH_FACEBOOK_KEY = '3095799834025869'  # App ID
-SOCIAL_AUTH_FACEBOOK_SECRET = 'a6856d982b974abb7a0826146567409d'
+SOCIAL_AUTH_FACEBOOK_KEY = '343723940813089'  # App ID
+SOCIAL_AUTH_FACEBOOK_SECRET = 'b463a19816648184acecb3ef9e475a6a'
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', 'user_link']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
   'fields': 'id, name, email, picture.type(large), link'
