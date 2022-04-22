@@ -1964,7 +1964,7 @@ class PasswordResetView(APIView):
                     'email_subject': 'Reset your passsword'}
         Util.send_email(data)
         return Response(
-            {"detail": _("Password reset e-mail has been sent.")},
+            {"detail": "Password reset e-mail has been sent."},
             status=status.HTTP_200_OK,
         )
 
@@ -1981,7 +1981,7 @@ class PasswordResetConfirmView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({"detail": _("Password has been reset with the new password.")})
+        return Response({"detail":"Password has been reset with the new password."})
 
 class ChangePasswordView(generics.UpdateAPIView):
     """
