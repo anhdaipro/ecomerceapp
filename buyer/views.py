@@ -3,7 +3,7 @@
 from twilio.rest import Client
 from django.db.models import Q
 from django.conf import settings
-from django.template.loader import render_to_string
+
 from django.core.mail import EmailMessage
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
@@ -1267,21 +1267,14 @@ class CheckoutAPIView(APIView):
                     products=Variation.objects.get(orderitem=item.id)
                     products.inventory -= item.quantity
                     products.save()
-                if user.email!=None:
-                    order_sucsses_email(order,user)
+                email_body = 'Hello, \n Use link below to reset your password  \n' + \
+                absurl+"?redirect_url="+redirect_url
+            data = {'email_body': email_body, 'to_email': user.email,
+                    'email_subject': 'Reset your passsword'}
             bulk_update(orders)
 
             data={'a':'a'}
             return Response(data)
-def order_sucsses_email(order,user,email):
-    mail_subject = 'Thiết lập lại mật khẩu đăng nhập Anh dai!'
-    message = render_to_string('order_receive_email.html', {
-        'user': user,
-        'order':order,
-    })
-    to_email = email
-    send_email = EmailMessage(mail_subject, message, to=[to_email])
-    send_email.send()
 
 class OrderinfoAPIView(APIView):
     permission_classes = (IsAuthenticated)
@@ -2005,22 +1998,19 @@ class PasswordResetView(APIView):
         token = default_token_generator.make_token(user)
 
         absurl = 'http://localhost:3000/forgot_password/' +uidb64+ '/'+token+'?email='+email
+    
+        email_body =f"Hello {user.username}, \nChúng tôi nhận được yêu cầu thiết lập lại mật khẩu cho tài khoản Shopee của bạn.\nNhấn tại đây để thiết lập mật khẩu mới cho tài khoản Shopee của bạn. \n Use link below to reset your password  \n' + \{absurl}"
+        data = {'email_body': email_body, 'to_email': user.email,
+                    'email_subject': f"Thiết lập lại mật khẩu đăng nhập {user.username}"}
         
-        sendEmail(email,absurl,user)
+        email = EmailMessage(
+            subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+        email.send()
         return Response(
             {"detail": "Password reset e-mail has been sent."},
             status=status.HTTP_200_OK,
         )
 
-def sendEmail(email,absurl,user):
-    mail_subject = 'Thiết lập lại mật khẩu đăng nhập Anh dai!'
-    message = render_to_string('reset_password.html', {
-        'user': user,
-        'absurl':absurl,
-    })
-    to_email = email
-    send_email = EmailMessage(mail_subject, message, to=[to_email])
-    send_email.send()
 class SetNewPasswordAPIView(generics.GenericAPIView):
     serializer_class = SetNewPasswordSerializer
     def patch(self, request):
