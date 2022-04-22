@@ -1999,7 +1999,7 @@ class PasswordResetView(APIView):
 
         absurl = 'http://localhost:3000/forgot_password/' +uidb64+ '/'+token+'?email='+email
         
-        sendEmail(self.request,email,absurl,user,uidb64,token)
+        sendEmail(self.request,email,absurl,user)
         return Response(
             {"detail": "Password reset e-mail has been sent."},
             status=status.HTTP_200_OK,
