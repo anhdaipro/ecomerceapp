@@ -3,6 +3,7 @@
 from twilio.rest import Client
 from django.db.models import Q
 from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404
@@ -1945,7 +1946,19 @@ class PasswordResetView(APIView):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             raise NotAcceptable(_("Please enter a valid email."))
-        send_reset_password_email(user)
+        uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
+        token = default_token_generator.make_token(user)
+        current_site = get_current_site(
+            request=request).domain
+        relativeLink = reverse(
+            'password-reset-confirm', kwargs={'uidb64': uidb64, 'token': token})
+        redirect_url = request.data.get('redirect_url', '')
+        absurl = 'http://'+current_site + relativeLink
+        email_body = 'Hello, \n Use link below to reset your password  \n' + \
+            absurl+"?redirect_url="+redirect_url
+        data = {'email_body': email_body, 'to_email': user.email,
+                    'email_subject': 'Reset your passsword'}
+        Util.send_email(data)
         return Response(
             {"detail": _("Password reset e-mail has been sent.")},
             status=status.HTTP_200_OK,
