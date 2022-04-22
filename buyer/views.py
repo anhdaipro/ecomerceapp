@@ -2010,20 +2010,12 @@ class PasswordResetView(APIView):
             status=status.HTTP_200_OK,
         )
 
-
-class PasswordResetConfirmView(GenericAPIView):
-    permission_classes = (AllowAny,)
-    serializer_class = PasswordResetConfirmSerializer
-
-    @sensitive_post_parameters_m
-    def dispatch(self, *args, **kwargs):
-        return super(PasswordResetConfirmView, self).dispatch(*args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+class SetNewPasswordAPIView(generics.GenericAPIView):
+    serializer_class = SetNewPasswordSerializer
+    def patch(self, request):
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"detail":"Password has been reset with the new password."})
+        return Response({'success': True, 'message': 'Password reset success'}, status=status.HTTP_200_OK)
 
 class ChangePasswordView(generics.UpdateAPIView):
     """

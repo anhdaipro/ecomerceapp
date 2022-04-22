@@ -13,7 +13,7 @@ from .views import (
     ProfileAPIView,
     ImageHomeAPIView,
     ListItemRecommendAPIView,
-    PasswordResetConfirmView,
+    SetNewPasswordAPIView,
     PasswordResetView,
     ProductInfoAPIVIew,
     CartItemAPIView,
@@ -43,7 +43,7 @@ urlpatterns = [
     ),
      path(
         'password-reset/<uidb64>/<token>/',
-        views.PasswordResetConfirmView.as_view(),
+        views.SetNewPasswordAPIView.as_view(),
         name="password-reset-confirm",
     ),
     

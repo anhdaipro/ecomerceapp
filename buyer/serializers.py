@@ -11,6 +11,8 @@ from django.contrib.auth import authenticate,login,logout
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 class UserCreateSerializer(UserCreateSerializer):
     class Meta(UserCreateSerializer.Meta):
         model = User
@@ -103,7 +105,6 @@ class SetNewPasswordSerializer(serializers.Serializer):
             uidb64 = attrs.get('uidb64')
             id = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(id=id)
-            default_token_generator.make_token(user)
             if not PasswordResetTokenGenerator().check_token(user, token):
                 raise AuthenticationFailed('The reset link is invalid', 401)
 
