@@ -184,8 +184,6 @@ class LoginView(APIView):
             }
             return Response(data)
 
-class VeryAccountAPI(APIView):
-
 class LogoutView(APIView):
     def post(self, request):
         response = Response()
@@ -380,8 +378,8 @@ class DetailAPIView(APIView):
             count_follow=Shop.objects.filter(followers=shop.user).count()
             data={'shop_logo':shop.user.profile.image.url,'shop_url':shop.get_absolute_url(),'count_followings': count_follow,
                 'shop_name':shop.name,'shop':'shop','shop_user':shop.user.id,'created':shop.create_at,
-                'online':shop.user.shop.online,'num_followers':shop.num_follow(),'slug':shop.slug,
-                'is_online':shop.user.shop.is_online,'count_product':shop.count_product(),
+                'online':shop.user.profile.online,'num_followers':shop.num_follow(),'slug':shop.slug,
+                'is_online':shop.user.profile.is_online,'count_product':shop.count_product(),
                 'total_review':shop.total_review(),'averge_review':shop.averge_review(),
                 'promotion_combo':[{'combo_type':promotion.combo_type,
                 'quantity_to_reduced':promotion.quantity_to_reduced,'limit_order':promotion.quantity_to_reduced,
@@ -425,9 +423,9 @@ class DetailAPIView(APIView):
         else:
             follow=True
             shop.followers.add(user)
-        data={'num_followers':shop.num_follow(),'follow':follow,'online':shop.user.shop.online,
+        data={'num_followers':shop.num_follow(),'follow':follow,'online':shop.user.profile.online,
         'num_followers':shop.num_follow(),'count_followings': count_follow,
-        'is_online':shop.user.shop.is_online,'count_product':shop.count_product(),
+        'is_online':shop.user.profile.is_online,'count_product':shop.count_product(),
         'total_review':shop.total_review(),'averge_review':shop.averge_review()}
         return Response(data)
 
@@ -551,8 +549,8 @@ class ProductInfoAPIVIew(APIView):
             elif shop:
                 data={'shop_logo':item.shop.user.profile.image.url,'shop_url':item.shop.get_absolute_url(),
                 'shop_name':item.shop.name,
-                'online':item.shop.user.shop.online,'num_follow':item.shop.num_follow(),
-                'is_online':item.shop.user.shop.is_online,'count_product':item.shop.count_product(),
+                'online':item.shop.user.profile.online,'num_follow':item.shop.num_follow(),
+                'is_online':item.shop.user.profile.is_online,'count_product':item.shop.count_product(),
                 'total_order':item.shop.total_order()}
                 return Response(data)
             
