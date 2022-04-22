@@ -46,7 +46,7 @@ urlpatterns = [
         views.PasswordResetConfirmView.as_view(),
         name="password-reset-confirm",
     ),
-    path('registers', 'text',name='llll'),
+    
     path('register', RegisterView.as_view()),
     path('login', LoginView.as_view()),
     path('category/home',Category_home.as_view()),
