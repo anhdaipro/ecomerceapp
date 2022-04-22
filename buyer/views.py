@@ -136,7 +136,7 @@ class VerifySMSView(APIView):
 
 class LoginView(APIView):
     permission_classes = (AllowAny,)
-    def post(self, request):
+    def post(self, request,):
         username = request.POST.get('username')
         password = request.POST.get('password')
         email = request.POST.get('email')
@@ -161,28 +161,30 @@ class LoginView(APIView):
             return Response(data)
         
         else:
-            try:
-                user = authenticate(request, username=username, password=password)
-                if email:
-                    user = authenticate(request, email=email, password=password)
-                absurl = 'http://localhost:3000/forgot_password/' +uidb64+ '/'+token+'?email='+email
-                email_body =f"Xin chao {user.username}, \nAi đó đang cố gắng truy cập Tài khoản của bạn.\nNếu Bạn đang thực hiện đăng nhập, vui lòng xác nhận TẠI ĐÂY (hiệu lực trong vòng 10 phút). \n{absurl}"
-                data = {'email_body': email_body, 'to_email': user.email,
-                        'email_subject': f"Cảnh báo bảo mật Tài khoản"}
-                email = EmailMessage(
-                        subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
-                email.send()
-                refresh = RefreshToken.for_user(user)
-                data = {
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                    }
-                return Response(data)
-            except Exception:
-                raise AuthenticationFailed('Incorrect password or username!')
+            if username:
+                user = authenticate(request, email=email, password=password)
+            user = authenticate(request, username=username, password=password)
+            absurl = 'http://localhost:3000/forgot_password/' +uidb64+ '/'+token+'?email='+email
+            email_body =f"Xin chao {user.username}, \nAi đó đang cố gắng truy cập Tài khoản của bạn.\nNếu Bạn đang thực hiện đăng nhập, vui lòng xác nhận TẠI ĐÂY (hiệu lực trong vòng 10 phút). \n{absurl}"
+            data = {'email_body': email_body, 'to_email': user.email,
+                'email_subject': f"Cảnh báo bảo mật Tài khoản"}
+            email = EmailMessage(
+                subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+            email.send()
+            if user is None:
+                raise AuthenticationFailed('User not found!')
+
+            if not user.check_password(password):
+                raise AuthenticationFailed('Incorrect password!')
+            
+            refresh = RefreshToken.for_user(user)
+            data = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+            return Response(data)
+
 class VeryAccountAPI(APIView):
-    def post(self, request):
-        create=0
 
 class LogoutView(APIView):
     def post(self, request):
