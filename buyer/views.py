@@ -162,9 +162,9 @@ class LoginView(APIView):
         
         else:
             try:
-                if username:
-                    user = authenticate(request, username=username, password=password)
-                user = authenticate(request, email=email, password=password)
+                user = authenticate(request, username=username, password=password)
+                if email:
+                    user = authenticate(request, email=email, password=password)
                 absurl = 'http://localhost:3000/forgot_password/' +uidb64+ '/'+token+'?email='+email
                 email_body =f"Xin chao {user.username}, \nAi đó đang cố gắng truy cập Tài khoản của bạn.\nNếu Bạn đang thực hiện đăng nhập, vui lòng xác nhận TẠI ĐÂY (hiệu lực trong vòng 10 phút). \n{absurl}"
                 data = {'email_body': email_body, 'to_email': user.email,
