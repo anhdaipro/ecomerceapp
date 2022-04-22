@@ -50,15 +50,13 @@ class Profile(models.Model):
         if self.last_seen:
             now = datetime.now(timezone.utc)
             if now > self.last_seen + timedelta(minutes=settings.USER_ONLINE_TIMEOUT):
-                self.online=True
-                self.save()
+                
                 return False
 
             else:
                 return True
         else:
-            self.online=True
-            self.save()
+            
             return False
 
 class SMSVerification(models.Model):
