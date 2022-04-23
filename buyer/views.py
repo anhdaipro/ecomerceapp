@@ -402,7 +402,8 @@ class DetailAPIView(APIView):
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
                 'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price()} for i in main_product],
                 'total_order':shop.total_order(),'list_category_child':[{'title':category.title,'id':category.id,'url':category.get_absolute_url()} for category in category_children]}
-            if not jwt.ExpiredSignatureError:
+            
+            try:
                 user=request.user
                 if ShopView.objects.filter(shop=shop,user=user).filter(create_at__gte=datetime.date.now()).count()==0:
                     ShopViews.objects.create(shop=shop,user=user)
@@ -412,7 +413,9 @@ class DetailAPIView(APIView):
                 threads = Thread.objects.filter(participants=user).order_by('timestamp')
                 data.update({'user':user_id,'follow':follow,
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
-            return Response(data)
+                return Response(data)
+            except Exception:
+                return Response(data)
     def post(self, request, *args, **kwargs):
         shop_name=request.POST.get('shop_name')
         shop=Shop.objects.get(name=shop_name)
