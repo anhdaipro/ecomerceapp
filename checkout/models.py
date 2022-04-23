@@ -7,7 +7,7 @@ from actionorder.models import *
 from discount.models import *
 import datetime
 from django.utils import timezone
-import actionorder.models from *
+from actionorder.models import *
 from cart.models import *
 # Create your models here.
 

@@ -308,7 +308,7 @@ class DetailAPIView(APIView):
             variation=Variation.objects.filter(item=item).distinct()
             item_detail=Detail_Item.objects.filter(item=item).values()
 
-            data={'count_variation':item.count_variation(),
+            data={'count_variation':item.count_variation(),'aaa':request.session['recently_viewed'],
             'item_name':item.name,'min_price':item.min_price(),'max_price':item.max_price(),
             'id':item.id,'num_like':item.num_like(),'percent_discount':item.percent_discount(),
             'item_review':item.average_review(),'count_review':item.count_review(),
