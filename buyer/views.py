@@ -219,7 +219,7 @@ class Lisitemcommon(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
-        return Item.objects.filter(variation__product__order__ordered=True).annotate(count_review= Count('variation__product__review')).annotate(count_like= Count('liked')).annotate(count_order= Count('variation__orderitem__order')).order_by('-count_order,-count_like,-count_review')
+        return Item.objects.filter(variation__orderitem__order__ordered=True).annotate(count_review= Count('variation__product__review')).annotate(count_like= Count('liked')).annotate(count_order= Count('variation__orderitem__order')).order_by('-count_order,-count_like,-count_review')
 class DetailAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request,slug):
@@ -445,7 +445,7 @@ class DetailAPIView(APIView):
         return Response(data)
 class Topsearch(APIView):
     def get(self,request):
-        keyword=SearchKey.objects.all().order_by('-count_search').values('keyword').filter(updated_on__year__gte=datetime.datetime.now().year)
+        keyword=SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__year__gte=datetime.datetime.now().year)
         items=Item.objects.filter(Q(item_name__icontains=keyword)).values('name')
         result = dict((i, items.count(i)) for i in items)
         list_name=sorted(result, key=result.get, reverse=True)[:5]
@@ -480,7 +480,7 @@ class SearchitemAPIView(APIView):
             category_choice=Category.objects.filter(item__in=list_items).distinct()
             list_shop=Shop.objects.filter(item__in=list_items)
             SearchKey.objects.get_or_create(keyword=keyword)
-            SearchKey.objects.filter(keyword=keyword).update(count_search=F('count_search') + 1)
+            SearchKey.objects.filter(keyword=keyword).update(total_searches=F('total_searches') + 1)
         if shop:
             list_items=list_items.filter(shop__name=shop)
             items=items.filter(shop__name=shop).distinct()
