@@ -332,7 +332,7 @@ class DetailAPIView(APIView):
             }
             try:
                 user=request.user
-                if ItemViews.objects.filter(item=item,user=user).filter(create_at__gte=datetime.datetime.now()).count()==0:
+                if ItemViews.objects.filter(item=item,user=user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
                     ItemViews.objects.create(item=item,user=user)
                 like=False
                 if user in item.liked.all():
@@ -407,7 +407,7 @@ class DetailAPIView(APIView):
             
             try:
                 user=request.user
-                if ShopViews.objects.filter(shop=shop,user=user).filter(create_at__gte=datetime.datetime.now()).count()==0:
+                if ShopViews.objects.filter(shop=shop,user=user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
                     ShopViews.objects.create(shop=shop,user=user)
                 follow=False
                 if user in shop.followers.all():
