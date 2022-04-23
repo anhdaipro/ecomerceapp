@@ -548,44 +548,12 @@ class ProductInfoAPIVIew(APIView):
         from_item=request.GET.get('from_item')
         if item_id:
             item=Item.objects.get(id=item_id)
-            if name and not order:
-                shop=Shop.objects.filter(name=name)
-                items=Item.objects.filter(shop__in=shop).order_by('-id')[:10]
-                if from_item :
-                    from_item=int(from_item)
-                    to_item=from_item+10
-                    items=Item.objects.filter(shop__in=shop).order_by('-id')[from_item:to_item]
-                data={
-                    'items':[{'item_info':i.item_info(),'item_image':item.media_upload.all()[0].upload_file(),'item_max':i.max_price(),'num_order':i.number_order(),
-                    'item_url':i.get_absolute_url(),'voucher':i.get_voucher(),'item_min':i.min_price(),
-                    'program_valid':i.count_program_valid(),'item_inventory':item.total_inventory()
-                    } for i in items]}
-                return Response(data)
-            elif shop:
+            if shop:
                 data={'shop_logo':item.shop.user.profile.image.url,'shop_url':item.shop.get_absolute_url(),
                 'shop_name':item.shop.name,
                 'online':item.shop.user.profile.online,'num_follow':item.shop.num_follow(),
                 'is_online':item.shop.user.profile.is_online,'count_product':item.shop.count_product(),
                 'total_order':item.shop.total_order()}
-                return Response(data)
-            
-            elif order and name:
-                shop=Shop.objects.filter(name=name)
-                orders=Order.objects.filter(shop__in=shop).order_by('-id')[:10]
-                if from_item:
-                    from_item=int(from_item)
-                    to_item=from_item+10
-                    orders=Order.objects.filter(shop__in=shop).order_by('-id')[from_item:to_item]
-                data={
-                    'list_orders':[{
-                        'id':order.id,'shop':order.shop.name,'total':order.total_price(),'total_final':order.total_final(),
-                        'order_item':[{'item_image':order_item.product.item.media_upload.all()[0].upload_file(),'item_url':order_item.product.item.get_absolute_url(),
-                        'item_name':order_item.product.item.name,'color_value':order_item.product.get_color(),
-                        'quantity':order_item.quantity,'percent_discount':order_item.product.percent_discount,
-                        'size_value':order_item.product.get_size(),'price':order_item.product.price,
-                        'total_price':order_item.final_price_item()
-                        } for order_item in order.items.filter(check=True)]} for order in orders]
-                    }
                 return Response(data)
             elif review:
                 list_review=ReView.objects.filter(orderitem__product__item=item)
@@ -630,9 +598,20 @@ class ProductInfoAPIVIew(APIView):
         data={'num_like':item.num_like(),'like':like}
         return Response(data)
 
+class Getshopinfo(APIView):
+    def get(self,request):
+        shop_id=request.GET.get('shop_id')
+        
+        data={'shop_logo':item.shop.user.profile.image.url,'shop_url':item.shop.get_absolute_url(),
+            'shop_name':item.shop.name,
+            'online':item.shop.user.profile.online,'num_follow':item.shop.num_follow(),
+            'is_online':item.shop.user.profile.is_online,'count_product':item.shop.count_product(),
+            'total_order':item.shop.total_order()}
+        return Response(data)
 class ShopinfoAPIVIew(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
+        item_id=request.GET.get('item_id')
         shop_name=request.GET.get('shop_name')
         page=request.GET.get('page')
         sort_price=request.GET.get('price_sort')
@@ -679,12 +658,21 @@ class Itemrecently(APIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemrecentlySerializer
     def get_queryset(self):
+        request=self.request
         user=request.user
         return ItenReviews.objects.filter(user=user).order_by('-id,item')[:12].distinct()
-        
+class Listitemhostsale(APIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ItemrecentlySerializer
+    def get_queryset(self):
+        request=self.request
+        shop_id=request.GET.get('shop_id')
+        item=Item.objects.filter(shop_id=shop_id).filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__orderitem__order')).order_by('-count_order')
+        return ItenReviews.objects.filter(user=user).order_by('-id,item')[:12].distinct()
+class Shopinfo(APIView):
 
+class Review       
 @api_view(['GET', 'POST'])
-
 def save_voucher(request):
     if request.method=="POST":
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
