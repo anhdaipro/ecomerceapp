@@ -330,9 +330,9 @@ class DetailAPIView(APIView):
                 'url_shop':review.user.shop.get_absolute_url()
                 } for review in reviews] 
             }
-            if not jwt.ExpiredSignatureError:
+            try:
                 user=request.user
-                if ItemViews.objects.filter(item=item,user=user).filter(create_at__gte=datetime.date.now()).count()==0:
+                if ItemViews.objects.filter(item=item,user=user).filter(create_at__gte=datetime.datetime.now()).count()==0:
                     ItemViews.objects.create(item=item,user=user)
                 like=False
                 if user in item.liked.all():
@@ -340,7 +340,9 @@ class DetailAPIView(APIView):
                 threads = Thread.objects.filter(participants=user).order_by('timestamp')
                 data.update({'user':user.id,'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
-            return Response(data)
+                return Response(data)
+            except Exception:
+                return Response(data)
         elif shop.exists():
             shop_user=Shop.objects.filter(user=request.user)
             shop=Shop.objects.get(slug=slug)
@@ -405,7 +407,7 @@ class DetailAPIView(APIView):
             
             try:
                 user=request.user
-                if ShopView.objects.filter(shop=shop,user=user).filter(create_at__gte=datetime.date.now()).count()==0:
+                if ShopViews.objects.filter(shop=shop,user=user).filter(create_at__gte=datetime.datetime.now()).count()==0:
                     ShopViews.objects.create(shop=shop,user=user)
                 follow=False
                 if user in shop.followers.all():
