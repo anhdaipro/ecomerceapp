@@ -68,7 +68,7 @@ INSTALLED_APPS = [
     'channels',
     'notification',
     'mptt',
-    'django_rest_passwordreset',
+    
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     
@@ -168,6 +168,7 @@ DATABASES = {
         'NAME': 'd8k68jjvd35kmk',
         'USER': 'ndrxbdifcwcwhc',
         'PASSWORD': '78df2214305e5be4a73842a13187b208f7c9466c9b22412b40a2ce1d132bdbbe',
+       
         'HOST': 'ec2-3-218-171-44.compute-1.amazonaws.com',
         'PORT': '5432',
     }
