@@ -332,7 +332,7 @@ class DetailAPIView(APIView):
             }
             if not jwt.ExpiredSignatureError:
                 user=request.user
-                if not ItemViews.objects.filter(item=item,user=user).filter(created_at__gte=time_zone().now()).exists():
+                if ItemViews.objects.filter(item=item,user=user).filter(create_at__gte=datetime.date.now()).count()==0:
                     ItemViews.objects.create(item=item,user=user)
                 like=False
                 if user in item.liked.all():
@@ -404,7 +404,7 @@ class DetailAPIView(APIView):
                 'total_order':shop.total_order(),'list_category_child':[{'title':category.title,'id':category.id,'url':category.get_absolute_url()} for category in category_children]}
             if not jwt.ExpiredSignatureError:
                 user=request.user
-                if not ShopView.objects.filter(shop=shop,user=user).filter(created_at__gte=time_zone().now()).exists():
+                if ShopView.objects.filter(shop=shop,user=user).filter(create_at__gte=datetime.date.now()).count()==0:
                     ShopViews.objects.create(shop=shop,user=user)
                 follow=False
                 if user in shop.followers.all():
