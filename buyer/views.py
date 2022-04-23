@@ -330,8 +330,8 @@ class DetailAPIView(APIView):
                 'url_shop':review.user.shop.get_absolute_url()
                 } for review in reviews] 
             }
-            obj_token=OutstandingToken.objects.get(token=token)
-            if obj_token.expires_at>timezome.now():
+            
+            if token:
                 user=request.user
                 if ItemViews.objects.filter(item=item,user=user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
                     ItemViews.objects.create(item=item,user=user)
@@ -403,8 +403,8 @@ class DetailAPIView(APIView):
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
                 'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price()} for i in main_product],
                 'total_order':shop.total_order(),'list_category_child':[{'title':category.title,'id':category.id,'url':category.get_absolute_url()} for category in category_children]}
-            obj_token=OutstandingToken.objects.get(token=token)
-            if obj_token.expires_at>timezome.now():
+            
+            if token:
                 user=request.user
                 if ShopViews.objects.filter(shop=shop,user=user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
                     ShopViews.objects.create(shop=shop,user=user)
