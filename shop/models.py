@@ -290,16 +290,21 @@ class Item(models.Model):
         return media_file
 
 class ShopViews(models.Model):
-    ip = models.CharField(max_length=250)
     shop = models.ForeignKey(
         Shop, related_name="shop_views", on_delete=models.CASCADE
     )
+    user=models.ForeignKey(
+        User, on_delete=models.CASCADE,null=True
+    )
     create_at=models.DateTimeField(auto_now=True)
-class ProductViews(models.Model):
-    ip = models.CharField(max_length=250)
+
+class ItemViews(models.Model):
     item = models.ForeignKey(
         Item, related_name="item_views", on_delete=models.CASCADE
     )  
+    user=models.ForeignKey(
+        User, on_delete=models.CASCADE,null=True
+    )
     create_at=models.DateTimeField(auto_now=True)
 class Color(models.Model):
     name=models.CharField(max_length=20)

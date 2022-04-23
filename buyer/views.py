@@ -291,23 +291,8 @@ class DetailAPIView(APIView):
 
         elif item.exists():
             item=Item.objects.get(slug=slug)
-            if x_forwarded_for:
-                ip = x_forwarded_for.split(",")[0]
-            else:
-                ip = request.META.get("REMOTE_ADDR")
-
-            if not ProductViews.objects.filter(item=item, ip=ip).exists():
-                ProductViews.objects.create(item=item, ip=ip)
-                item.views += 1
-                item.save()
-            if 'recently_viewed' in request.session:
-                if item.id in request.session['recently_viewed']:
-                    request.session['recently_viewed'].remove(slug)
-                request.session['recently_viewed'].insert(0,slug)
-                if len(request.session['recently_viewed']) > 6:
-                    request.session['recently_viewed'].pop()
-            else:
-                request.session['recently_viewed']=[slug]
+            item.views += 1
+            item.save()
             items=Item.objects.filter(shop=item.shop)
             vouchers=Vocher.objects.filter(product=item,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
             deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
@@ -347,6 +332,8 @@ class DetailAPIView(APIView):
             }
             if not jwt.ExpiredSignatureError:
                 user=request.user
+                if not ItemViews.objects.filter(item=item,user=user).filter(created_at__gte=time_zone().now()).exists():
+                    ItemViews.objects.create(item=item,user=user)
                 like=False
                 if user in item.liked.all():
                     like=True
@@ -357,15 +344,8 @@ class DetailAPIView(APIView):
         elif shop.exists():
             shop_user=Shop.objects.filter(user=request.user)
             shop=Shop.objects.get(slug=slug)
-            if x_forwarded_for:
-                ip = x_forwarded_for.split(",")[0]
-            else:
-                ip = request.META.get("REMOTE_ADDR")
-
-            if not ShopViews.objects.filter(shop=shop, ip=ip).exists():
-                ShopViews.objects.create(shop=shop, ip=ip)
-                shop.views += 1
-                shop.save()
+            shop.views += 1
+            shop.save()
             list_voucher=Vocher.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
             deal_shock=Buy_with_shock_deal.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
             main_product=Item.objects.filter(main_product__in=deal_shock)
@@ -423,7 +403,9 @@ class DetailAPIView(APIView):
                 'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price()} for i in main_product],
                 'total_order':shop.total_order(),'list_category_child':[{'title':category.title,'id':category.id,'url':category.get_absolute_url()} for category in category_children]}
             if not jwt.ExpiredSignatureError:
-                user=User.objects.get(id=user_id)
+                user=request.user
+                if not ShopView.objects.filter(shop=shop,user=user).filter(created_at__gte=time_zone().now()).exists():
+                    ShopViews.objects.create(shop=shop,user=user)
                 follow=False
                 if user in shop.followers.all():
                     follow=True

@@ -34,7 +34,7 @@ class Profile(models.Model):
     )
     user_type=models.CharField(max_length=10,choices=USER_TYPE,blank=True)
     gender=models.CharField(max_length=10,choices=GENDER_CHOICE,blank=True)
-    date_of_birth=models.DateField(null=True,default=datetime.datetime.now())
+    date_of_birth=models.DateField(null=True)
     xu=models.IntegerField(default=0,null=True)
     is_online=models.DateTimeField(auto_now=True)
     online=models.BooleanField(default=False)

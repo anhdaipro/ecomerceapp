@@ -14,7 +14,12 @@ class VariationAdmin(admin.ModelAdmin):
     list_display = ['id','color','size','price','percent_discount','percent_discount_deal_shock','inventory','percent_discount_flash_sale']
 class CommentAdmin(admin.ModelAdmin):
     list_display=['user','comment','parent']
-
+class ShopviewAdmin(admin.ModelAdmin):
+    list_display=['user','shop','create_at']
+class ItemviewAdmin(admin.ModelAdmin):
+    list_display=['user','item','create_at']
+admin.site.register(ShopViews,ShopviewAdmin)
+admin.site.register(ItemViews,ItemviewAdmin)
 admin.site.register(Item,ItemAdmin)
 admin.site.register(Variation,VariationAdmin)
 admin.site.register(Color)
