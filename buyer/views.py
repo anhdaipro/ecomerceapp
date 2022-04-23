@@ -444,11 +444,14 @@ class DetailAPIView(APIView):
         'total_review':shop.total_review(),'averge_review':shop.averge_review()}
         return Response(data)
 class Topsearch(APIView):
-    keyword=SearchKey.objects.all().order_by('-count_search').values('keyword').filter(updated_on__year__gte=datetime.datetime.now().year)
-    items=Item.objects.filter(Q(item_name__icontains=keyword)).values('category__title')
-    list_category=Category.objects.filter(item=item).distinct()
-    data={'list_category':[{'image':category.image.url,title:category.title} for category in list_category],'list_item':items}
-    return Response(data)
+    def get(self,request):
+        keyword=SearchKey.objects.all().order_by('-count_search').values('keyword').filter(updated_on__year__gte=datetime.datetime.now().year)
+        items=Item.objects.filter(Q(item_name__icontains=keyword)).values('category__title')
+        list_category=Category.objects.filter(item=item).annotate(count_item= Count('item__id')).order_by('-count_item')[:5]
+        data={'list_category':[{'image':category.image.url,title:category.title} for category in list_category],'list_item':items}
+        return Response(data)
+
+
 class SearchitemAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request):
