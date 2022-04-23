@@ -191,7 +191,6 @@ class HomeAPIView(APIView):
     def get(self,request):
         list_flashsale=Flash_sale.objects.filter(valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
         list_items=Item.objects.filter(flash_sale__in=list_flashsale).distinct()
-       
         data={
             'a':[{'item_name':i.name,'item_image':i.get_media_cover(),'number_order':i.number_order(),
             'percent_discount':i.discount_flash_sale(),'item_id':i.id,'item_inventory':i.total_inventory(),'item_max':i.max_price(),'item_url':i.get_absolute_url(),
@@ -208,6 +207,7 @@ class CategoryListView(APIView):
         data={'b':list_category_parent,'ik':'fkkk'}
         
         return Response(data)
+class Listitemsales(APIView):
 
 class DetailAPIView(APIView):
     permission_classes = (AllowAny,)
@@ -343,7 +343,6 @@ class DetailAPIView(APIView):
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
         elif shop.exists():
-            shop_user=Shop.objects.filter(user=request.user)
             shop=Shop.objects.get(slug=slug)
             shop.views += 1
             shop.save()
@@ -710,12 +709,14 @@ class ItemAPIView(APIView):
 
 def save_voucher(request):
     if request.method=="POST":
-        user=request.user
-        voucher_id=request.POST.get('voucher_id')
-        voucher=Vocher.objects.get(id=voucher_id)
-        voucher.user.add(user)
-        data={'ok':'ok'}
-        return Response(data)
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+        if token:
+            user=request.user
+            voucher_id=request.POST.get('voucher_id')
+            voucher=Vocher.objects.get(id=voucher_id)
+            voucher.user.add(user)
+            data={'ok':'ok'}
+            return Response(data)
 
 @api_view(['GET', 'POST'])
 def update_image(request):
@@ -737,24 +738,31 @@ class Category_home(ListAPIView):
 class CartAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
-        user=request.user
-        profile=Profile.objects.get(user=user)
-        cart_item=OrderItem.objects.filter(ordered=False,user=user)[0:5]
-        cart_items=OrderItem.objects.filter(ordered=False,user=user)
-        count=cart_items.count()
-        list_cart_item=[{'item_info':order_item.product.item.item_info(),'id':order_item.id,                'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
-                'item_url':order_item.product.item.get_absolute_url(),
-                'price':order_item.product.price-order_item.product.total_discount(),
-                'shock_deal_type':order_item.product.item.shock_deal_type(),
-                'promotion':order_item.product.item.get_promotion(),
-                } for order_item in cart_item]
-        data={
-                'count':count,
-                'a':list_cart_item,
-                'user_name':user.username,
-                'image':profile.image.url
-                }
-        return Response(data)
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+        if token:
+            user=request.user
+            profile=Profile.objects.get(user=user)
+            cart_item=OrderItem.objects.filter(ordered=False,user=user)[0:5]
+            cart_items=OrderItem.objects.filter(ordered=False,user=user)
+            count=cart_items.count()
+            list_cart_item=[{'item_info':order_item.product.item.item_info(),'id':order_item.id,                'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
+                    'item_url':order_item.product.item.get_absolute_url(),
+                    'price':order_item.product.price-order_item.product.total_discount(),
+                    'shock_deal_type':order_item.product.item.shock_deal_type(),
+                    'promotion':order_item.product.item.get_promotion(),
+                    } for order_item in cart_item]
+            data={
+                    'count':count,
+                    'a':list_cart_item,
+                    'user_name':user.username,
+                    'image':profile.image.url
+                    }
+            return Response(data)
+        else:
+            data={'error':'error'}
+            return Response(data)
+
+
 
 class UpdateCartAPIView(APIView):
     permission_classes = (IsAuthenticated)
