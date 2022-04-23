@@ -446,9 +446,11 @@ class DetailAPIView(APIView):
 class Topsearch(APIView):
     def get(self,request):
         keyword=SearchKey.objects.all().order_by('-count_search').values('keyword').filter(updated_on__year__gte=datetime.datetime.now().year)
-        items=Item.objects.filter(Q(item_name__icontains=keyword)).values('category__title')
-        list_category=Category.objects.filter(item=item).annotate(count_item= Count('item__id')).order_by('-count_item')[:5]
-        data={'list_category':[{'image':category.image.url,title:category.title} for category in list_category],'list_item':items}
+        items=Item.objects.filter(Q(item_name__icontains=keyword)).values('name')
+        result = dict((i, items.count(i)) for i in items)
+        list_name=sorted(result, key=result.get, reverse=True)[:5]
+        list_items=Item.objects.filter(Q(item_name__icontains=keyword)).values('name')
+        data={'list_item':[{'image':item.get_image_cover(),'title':item.category.title} for category in list_items],'count':result}
         return Response(data)
 
 
