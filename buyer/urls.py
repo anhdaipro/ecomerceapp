@@ -52,7 +52,7 @@ urlpatterns = [
     path('login', LoginView.as_view()),
     path('category/home',Category_home.as_view()),
     path('update/image', views.update_image),
-    path('item/recently',Itemrecently.asview()),
+    path('item/recently',Itemrecently.as_view()),
     path("verify-sms", views.VerifySMSView.as_view()),
     path("resend-sms", views.Sendotp.as_view()),
     path('logout', LogoutView.as_view()),
