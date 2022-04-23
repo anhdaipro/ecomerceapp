@@ -212,6 +212,7 @@ class CategoryListView(APIView):
 class DetailAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request,slug):
+        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
         category=Category.objects.filter(slug=slug)
         item=Item.objects.filter(slug=slug)
         shop=Shop.objects.filter(slug=slug)
@@ -290,6 +291,15 @@ class DetailAPIView(APIView):
 
         elif item.exists():
             item=Item.objects.get(slug=slug)
+            if x_forwarded_for:
+                ip = x_forwarded_for.split(",")[0]
+            else:
+                ip = request.META.get("REMOTE_ADDR")
+
+            if not ProductViews.objects.filter(item=item, ip=ip).exists():
+                ProductViews.objects.create(item=item, ip=ip)
+                item.views += 1
+                item.save()
             if 'recently_viewed' in request.session:
                 if item.id in request.session['recently_viewed']:
                     request.session['recently_viewed'].remove(slug)
@@ -347,6 +357,15 @@ class DetailAPIView(APIView):
         elif shop.exists():
             shop_user=Shop.objects.filter(user=request.user)
             shop=Shop.objects.get(slug=slug)
+            if x_forwarded_for:
+                ip = x_forwarded_for.split(",")[0]
+            else:
+                ip = request.META.get("REMOTE_ADDR")
+
+            if not ShopViews.objects.filter(shop=shop, ip=ip).exists():
+                ShopViews.objects.create(shop=shop, ip=ip)
+                shop.views += 1
+                shop.save()
             list_voucher=Vocher.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
             deal_shock=Buy_with_shock_deal.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
             main_product=Item.objects.filter(main_product__in=deal_shock)

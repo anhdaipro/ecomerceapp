@@ -35,7 +35,7 @@ class Shop(models.Model):
     shipping=models.ManyToManyField(to="shipping.Shipping",blank=True)
     shop_type=models.CharField(max_length=25,choices=shop_type,null=True)
     followers = models.ManyToManyField(User, blank=True, related_name='followers')
-    view=models.ManyToManyField(IpModel,blank=True)
+    views=models.IntegerField(default=0)
     slug=models.SlugField(null=True)
     image_cover=models.ImageField(upload_to='shop/',null=True)
     city=models.CharField(max_length=200,null=True)
@@ -91,6 +91,7 @@ status_choice=(
     ('1','New'),
     ('2','Like New'),
 )
+
 class Item(models.Model):
     category=models.ForeignKey(Category,on_delete=models.CASCADE)
     name = models.CharField(max_length=120)
@@ -111,7 +112,7 @@ class Item(models.Model):
     length=models.IntegerField(null=True)
     price_ship=models.FloatField(null=True,blank=True)
     is_active=models.BooleanField(default=False)
-    view=models.ManyToManyField(IpModel,blank=True)
+    views=models.IntegerField(default=0)
     slug=models.CharField(max_length=150)
     created=models.DateTimeField(auto_now=True)
     liked=models.ManyToManyField(User,blank=True)
@@ -287,6 +288,19 @@ class Item(models.Model):
     def get_media_cover(self):
         media_file=[media for media in self.media_upload.all() if media.media_type()=='image'][0].upload_file()    
         return media_file
+
+class ShopViews(models.Model):
+    ip = models.CharField(max_length=250)
+    shop = models.ForeignKey(
+        Shop, related_name="shop_views", on_delete=models.CASCADE
+    )
+    create_at=models.DateTimeField(auto_now=True)
+class ProductViews(models.Model):
+    ip = models.CharField(max_length=250)
+    item = models.ForeignKey(
+        Item, related_name="item_views", on_delete=models.CASCADE
+    )  
+    create_at=models.DateTimeField(auto_now=True)
 class Color(models.Model):
     name=models.CharField(max_length=20)
     value=models.CharField(max_length=20)
@@ -320,6 +334,7 @@ class Variation(models.Model):
     percent_discount_deal_shock=models.IntegerField(null=True)#Buy_with_shock_deal
     percent_discount_flash_sale=models.IntegerField(null=True)#flash_sale
     quantity_flash_sale_products=models.IntegerField(null=True)#flash_sale
+    view=models.IntegerField(default=0)
     def __str__(self):
         return str(self.item)
     def get_absolute_url(self):
