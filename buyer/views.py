@@ -290,9 +290,12 @@ class DetailAPIView(APIView):
 
         elif item.exists():
             item=Item.objects.get(slug=slug)
+            if 'recently_viewed' in request.session:
+                if item.id in request.session['recently_viewed']:
+                    request.session['recently_viewed'].remove(item.id)
+                if len(request.session['recently_viewed']) > 6:
+                    request.session['recently_viewed'].pop()
             request.session['recently_viewed']=[item.id]
-            if len(request.session['recently_viewed']) > 6:
-                request.session['recently_viewed'].pop()
             request.session.modified = True
             items=Item.objects.filter(shop=item.shop)
             vouchers=Vocher.objects.filter(product=item,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
@@ -660,9 +663,8 @@ class ListItemRecommendAPIView(APIView):
 class Itemrecently(APIView):
     def get(self,request):
         products=[]
-        recently_viewed=request.session.get('recently_viewed')
-        if recently_viewed:
-            products = Item.objects.filter(id__in=recently_viewed.reverse())
+        if 'recently_viewed' in request.session:
+            products = Item.objects.filter(id__in=request.session['recently_viewed'].reverse())
         list_items_recently=[{'item_name':i.name,'item_image':i.get_media_cover(),
             'item_max':i.max_price(),
             'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
