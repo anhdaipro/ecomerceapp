@@ -661,9 +661,8 @@ class ListItemRecommendAPIView(APIView):
         return Response(data)
 class Itemrecently(APIView):
     def get(self,request):
-        products=[]
-        if 'recently_viewed' in request.session:
-            products = Item.objects.filter(id__in=request.session['recently_viewed'].reverse())
+        
+        products = Item.objects.filter(id__in=request.session['recently_viewed'].reverse())
         list_items_recently=[{'item_name':i.name,'item_image':i.get_media_cover(),
             'item_max':i.max_price(),
             'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
