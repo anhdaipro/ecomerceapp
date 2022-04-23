@@ -295,7 +295,7 @@ class DetailAPIView(APIView):
                     request.session['recently_viewed'].remove(item.id)
                 if len(request.session['recently_viewed']) > 6:
                     request.session['recently_viewed'].pop()
-            request.session['recently_viewed']=[item.id]
+            request.session['recently_viewed']=item.id
             items=Item.objects.filter(shop=item.shop)
             vouchers=Vocher.objects.filter(product=item,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
             deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
