@@ -277,7 +277,7 @@ class DetailAPIView(APIView):
                         items=items.annotate(avg_price= Avg('variation__price')).order_by('-avg_price')
             paginator = Paginator(items,30)
             page_obj = paginator.get_page(page)
-            shoptype=[{'value':shop.shop_type,'name':shop.get_shop_type_display()} for shop in list_shop]
+            shoptype=[{'value':shop.shop_type,'name':shop.get_shop_type_display()} for shop in list_shop ]
             status=[{'value':item.status,'name':item.get_status_display()} for item in list_items]
             data={
                 'image_home':[{'image':i.image.url,'url':i.url_field} for i in category.image_category.all()],
@@ -520,7 +520,7 @@ class SearchitemAPIView(APIView):
         status=[{'value':item.status,'name':item.get_status_display()} for item in list_items]
         data={
             'shoptype':list({item['value']:item for item in shoptype}.values()),
-            'cities':list(set([shop.city for shop in list_shop])),
+            'cities':list(set([shop.city for shop in list_shop if shop.city!=None])),
             'unitdelivery':list(set(['Nhanh','Hỏa tốc'])),
             'brands':list(set([item.brand for item in list_items])),
             'status':list({item['value']:item for item in status}.values()),
