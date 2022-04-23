@@ -43,7 +43,7 @@ from itemdetail.models import *
 from actionorder.models import *
 from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
-from .serializers import ChangePasswordSerializer,UserSerializer,SMSPinSerializer,SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer
+from .serializers import ChangePasswordSerializer,UserSerializer,SMSPinSerializer,SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer,ItemSellerSerializer
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -207,8 +207,16 @@ class CategoryListView(APIView):
         data={'b':list_category_parent,'ik':'fkkk'}
         
         return Response(data)
-class Listitemsales(APIView):
-
+class Listitemseller(ListAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ItemSellerSerializer
+    def get_queryset(self):
+        return Item.objects.filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__orderitem__order')).order_by('-count_order')
+class Lisitemcommon(ListAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ItemSellerSerializer
+    def get_queryset(self):
+        return Item.objects.filter(variation__product__order__ordered=True).annotate(count_review= Count('variation__product__review')).annotate(count_like= Count('liked')).annotate(count_order= Count('variation__orderitem__order')).order_by('-count_order,-count_like,-count_review')
 class DetailAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request,slug):
@@ -257,7 +265,7 @@ class DetailAPIView(APIView):
             if sortby:
                 items=items.filter(variation__orderitem__order__ordered=True)
                 if sortby=='pop':
-                    items=items.annotate(count_like= Count('liked')).annotate(count_order= Count('variation__orderitem__order')).annotate(count_order= Count('variation__orderitem__order')).annotate(count_review= Count('variation__orderitem__review')).order_by('-count_like','-count_review','-count_order')
+                    items=items.annotate(count_like= Count('liked')).annotate(count_order= Count('variation__orderitem__order')).annotate(count_review= Count('variation__orderitem__review')).order_by('-count_like','-count_review','-count_order')
                 elif sortby=='ctime':
                     items=items.annotate(count_order= Count('variation__orderitem__order__id')).annotate(count_review= Count('variation__orderitem__review')).order_by('-id')
                 elif sort_by=='price':

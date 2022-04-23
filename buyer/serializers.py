@@ -66,7 +66,9 @@ class LoginSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         email = attrs.get('email', '')
         password = attrs.get('password', '')
+        password = attrs.get('username', '')
         filtered_user_by_email = User.objects.filter(email=email)
+        filtered_user_by_username = User.objects.filter(username=username)
         user = auth.authenticate(email=email, password=password)
 
         return {
@@ -115,6 +117,7 @@ class SetNewPasswordSerializer(serializers.Serializer):
         except Exception as e:
             raise AuthenticationFailed('The reset link is invalid', 401)
         return super().validate(attrs)
+        
 class Image_homeSerializer(serializers.ModelSerializer):
     image=serializers.SerializerMethodField()
     class Meta:
@@ -125,7 +128,21 @@ class Image_homeSerializer(serializers.ModelSerializer):
         )
     def get_image(self,obj):
         return obj.image.url
-
+class ItemSellerSerializer(serializers.ModelSerializer):
+    image=serializers.SerializerMethodField()
+    count_order=serializers.SerializerMethodField()
+    class Meta:
+        model = Item
+        fields = (
+            'id',
+            'image',
+            'count_order',
+        )
+    
+    def get_image(self,obj):
+        return obj.get_media_cover()
+    def get_count_order(self,obj):
+        return obj.number_order()
 class ItemSerializer(serializers.ModelSerializer):
     shop=serializers.SerializerMethodField()
     percent_discount = serializers.SerializerMethodField()
