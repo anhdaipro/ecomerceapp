@@ -450,7 +450,7 @@ class Topsearch(APIView):
         list_name=[{'name':i.name} for i in items]
         result = dict((i, list_name.count(i)) for i in list_name)
         list_name=sorted(result, key=result.get, reverse=True)[:5]
-        list_items=Item.objects.filter(Q(item_name__icontains=keyword)).values('name')
+        list_items=Item.objects.filter(Q(name__icontains=keyword)).values('name')
         data={'list_item':[{'image':item.get_image_cover(),'title':item.category.title} for category in list_items],'count':result}
         return Response(data)
 
