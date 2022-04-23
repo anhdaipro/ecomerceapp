@@ -669,9 +669,7 @@ class Listitemhostsale(APIView):
         shop_id=request.GET.get('shop_id')
         item=Item.objects.filter(shop_id=shop_id).filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__orderitem__order')).order_by('-count_order')
         return ItenReviews.objects.filter(user=user).order_by('-id,item')[:12].distinct()
-class Shopinfo(APIView):
-
-class Review       
+    
 @api_view(['GET', 'POST'])
 def save_voucher(request):
     if request.method=="POST":
