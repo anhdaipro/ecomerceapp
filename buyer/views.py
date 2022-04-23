@@ -44,7 +44,7 @@ from actionorder.models import *
 from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
 from .serializers import ChangePasswordSerializer,UserSerializer,SMSPinSerializer,SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .send_email import send_register_mail, send_reset_password_email
@@ -212,7 +212,7 @@ class CategoryListView(APIView):
 class DetailAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request,slug):
-        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         category=Category.objects.filter(slug=slug)
         item=Item.objects.filter(slug=slug)
         shop=Shop.objects.filter(slug=slug)
@@ -330,7 +330,8 @@ class DetailAPIView(APIView):
                 'url_shop':review.user.shop.get_absolute_url()
                 } for review in reviews] 
             }
-            try:
+            obj_token=OutstandingToken.objects.get(token=token)
+            if obj_token.expires_at>timezome.now():
                 user=request.user
                 if ItemViews.objects.filter(item=item,user=user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
                     ItemViews.objects.create(item=item,user=user)
@@ -340,9 +341,7 @@ class DetailAPIView(APIView):
                 threads = Thread.objects.filter(participants=user).order_by('timestamp')
                 data.update({'user':user.id,'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
-                return Response(data)
-            except Exception:
-                return Response(data)
+            return Response(data)
         elif shop.exists():
             shop_user=Shop.objects.filter(user=request.user)
             shop=Shop.objects.get(slug=slug)
@@ -404,8 +403,8 @@ class DetailAPIView(APIView):
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
                 'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price()} for i in main_product],
                 'total_order':shop.total_order(),'list_category_child':[{'title':category.title,'id':category.id,'url':category.get_absolute_url()} for category in category_children]}
-            
-            try:
+            obj_token=OutstandingToken.objects.get(token=token)
+            if obj_token.expires_at>timezome.now():
                 user=request.user
                 if ShopViews.objects.filter(shop=shop,user=user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
                     ShopViews.objects.create(shop=shop,user=user)
@@ -415,9 +414,8 @@ class DetailAPIView(APIView):
                 threads = Thread.objects.filter(participants=user).order_by('timestamp')
                 data.update({'user':user_id,'follow':follow,
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
-                return Response(data)
-            except Exception:
-                return Response(data)
+            return Response(data)
+           
     def post(self, request, *args, **kwargs):
         shop_name=request.POST.get('shop_name')
         shop=Shop.objects.get(name=shop_name)
