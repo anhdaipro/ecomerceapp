@@ -1270,10 +1270,12 @@ class CheckoutAPIView(APIView):
                     products=Variation.objects.get(orderitem=item.id)
                     products.inventory -= item.quantity
                     products.save()
-                email_body = 'Hello, \n Use link below to reset your password  \n' + \
-                absurl+"?redirect_url="+redirect_url
-            data = {'email_body': email_body, 'to_email': user.email,
-                    'email_subject': 'Reset your passsword'}
+                email_body = f"Hello {user.username}, \n {order.shop.user.username} cảm ơn bạn đã đặt hàng"
+                data = {'email_body': email_body, 'to_email': user.email,
+                    'email_subject': 'Thanks order!'}
+                email = EmailMessage(
+                subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+                email.send()
             bulk_update(orders)
 
             data={'a':'a'}
