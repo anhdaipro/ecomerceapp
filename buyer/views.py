@@ -290,6 +290,10 @@ class DetailAPIView(APIView):
 
         elif item.exists():
             item=Item.objects.get(slug=slug)
+            request.session['recently_viewed']=[item.id]
+            if len(request.session['recently_viewed']) > 6:
+                request.session['recently_viewed'].pop()
+            request.session.modified = True
             items=Item.objects.filter(shop=item.shop)
             vouchers=Vocher.objects.filter(product=item,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
             deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
@@ -639,24 +643,6 @@ class ShopinfoAPIVIew(APIView):
             }
             return Response(data)
 
-
-@api_view(['GET', 'POST'])
-def login_view(request):
-    if request.method=="POST":
-        username = request.data.get('username')
-        password = request.data.get("password")
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            data={'ok':'ok'}
-            return Response(data)
-        elif User.objects.filter(username = username).exists() and not User.objects.get(username=username).is_active:
-            data={'errp':'ok'}
-            return Response(data)
-        else:
-            data={'error':'ok'}
-            return Response(data)
-
 class ListItemRecommendAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
@@ -671,13 +657,25 @@ class ListItemRecommendAPIView(APIView):
         for i in page_obj]
         data={'d':list_items_recommend}
         return Response(data)
-
+class Itemrecently(APIView):
+    def get(self,request):
+        products=[]
+        recently_viewed=request.session.get('recently_viewed')
+        if recently_viewed:
+            products = Item.objects.filter(id__in=recently_viewed.reverse())
+        list_items_recently=[{'item_name':i.name,'item_image':i.get_media_cover(),
+            'item_max':i.max_price(),
+            'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
+            'num_order':i.number_order()
+            }
+        for i in products]
+        return Response({'data':list_items_recently})
 class ItemAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
-        recently_viewed_products = None
+        recently_viewed_products = []
         if 'recently_viewed' in request.session:
-            products = Item.objects.filter(slug__in=request.session['recently_viewed'])
+            products = Item.objects.filter(in__in=request.session['recently_viewed'])
             recently_viewed_products = sorted(products, 
                 key=lambda x: request.session['recently_viewed'].index(x.slug)
                 )
