@@ -219,7 +219,7 @@ class Lisitemcommon(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
-        return Item.objects.filter(variation__orderitem__order__ordered=True).annotate(count_review= Count('variation__orderitem__review')).annotate(count_like= Count('liked')).annotate(count_order= Count('variation__orderitem__order')).order_by('-count_order,-count_like,-count_review')
+        return Item.objects.filter(variation__orderitem__order__ordered=True).annotate(count_like= Count('liked')).annotate(count_order= Count('variation__orderitem__order')).annotate(count_order= Count('variation__orderitem__order')).annotate(count_review= Count('variation__orderitem__review')).order_by('-count_like','-count_review','-count_order')
 class DetailAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request,slug):
@@ -445,7 +445,7 @@ class DetailAPIView(APIView):
         return Response(data)
 class Topsearch(APIView):
     def get(self,request):
-        keyword=SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__year__gte=datetime.datetime.now().year)
+        keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__year__gte=datetime.datetime.now().year))
         items=Item.objects.filter(Q(name__icontains=keyword))
         list_name=[{'name':i.name} for i in items]
         result = dict((i, list_name.count(i)) for i in list_name)
