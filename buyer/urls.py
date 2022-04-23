@@ -35,6 +35,7 @@ from .views import (
     Lisitemcommon,
     ListThreadAPIView,
     Sendotp,VerifySMSView,
+    Topsearch,
     RegisterView, LoginView,  LogoutView 
 )
 
@@ -54,6 +55,7 @@ urlpatterns = [
     path("resend-sms", views.Sendotp.as_view()),
     path('logout', LogoutView.as_view()),
     path('user-id/', UserView.as_view()),
+    path('top-search',Topsearch.as_view()),
     path('change/password/', ChangePasswordView.as_view()),
     path('products', HomeAPIView.as_view()),
     path('category/home',Category_home.as_view()),

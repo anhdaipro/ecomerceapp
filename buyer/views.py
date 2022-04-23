@@ -3,7 +3,7 @@
 from twilio.rest import Client
 from django.db.models import Q
 from django.conf import settings
-
+from django.db.models import F
 from django.core.mail import EmailMessage
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
@@ -443,7 +443,12 @@ class DetailAPIView(APIView):
         'is_online':shop.user.profile.is_online,'count_product':shop.count_product(),
         'total_review':shop.total_review(),'averge_review':shop.averge_review()}
         return Response(data)
-
+class Topsearch(APIView):
+    keyword=SearchKey.objects.all().order_by('-count_search').values('keyword').filter(updated_on__year__gte=datetime.datetime.now().year)
+    items=Item.objects.filter(Q(item_name__icontains=keyword)).values('category__title')
+    list_category=Category.objects.filter(item=item).distinct()
+    data={'list_category':[{'image':category.image.url,title:category.title} for category in list_category],'list_item':items}
+    return Response(data)
 class SearchitemAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request):
@@ -469,6 +474,8 @@ class SearchitemAPIView(APIView):
             name__in=keyword)|Q(category__title=keyword))
             category_choice=Category.objects.filter(item__in=list_items).distinct()
             list_shop=Shop.objects.filter(item__in=list_items)
+            SearchKey.objects.get_or_create(keyword=keyword)
+            SearchKey.objects.filter(keyword=keyword).update(count_search=F('count_search') + 1)
         if shop:
             list_items=list_items.filter(shop__name=shop)
             items=items.filter(shop__name=shop).distinct()
@@ -725,8 +732,6 @@ class CartAPIView(APIView):
         else:
             data={'error':'error'}
             return Response(data)
-
-
 
 class UpdateCartAPIView(APIView):
     permission_classes = (IsAuthenticated)

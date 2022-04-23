@@ -8,3 +8,10 @@ class Notify(models.Model):
 class Image_home(models.Model):
     image=models.ImageField(null=True)
     url_field=models.URLField(max_length=200,null=True)
+
+class SearchKey(models.Model):
+    keyword = models.CharField(max_length=255)
+    total_searches = models.IntegerField(default=0)
+    updated_on = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return self.keyword
