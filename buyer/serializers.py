@@ -128,6 +128,25 @@ class Image_homeSerializer(serializers.ModelSerializer):
         )
     def get_image(self,obj):
         return obj.image.url
+class ItemrecentlySerializer(serializers.ModelSerializer):
+    image=serializers.SerializerMethodField()
+    max_price=serializers.SerializerMethodField()
+    min_price=serializers.SerializerMethodField()
+    class Meta:
+        model = ItemViews
+        fields = (
+            'id',
+            'image',
+            'max_price',
+            'min_price'
+        )
+    
+    def get_image(self,obj):
+        return obj.item.get_media_cover()
+    def get_max_price(self,obj):
+        return obj.item.max_price()
+    def get_min_price(self,obj):
+        return obj.item.min_price()
 class ItemSellerSerializer(serializers.ModelSerializer):
     image=serializers.SerializerMethodField()
     count_order=serializers.SerializerMethodField()

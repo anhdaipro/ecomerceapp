@@ -43,7 +43,10 @@ from itemdetail.models import *
 from actionorder.models import *
 from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
-from .serializers import ChangePasswordSerializer,UserSerializer,SMSPinSerializer,SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer,ItemSellerSerializer
+from .serializers import (ChangePasswordSerializer,
+UserSerializer,SMSPinSerializer,
+SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer,
+ItemSellerSerializer,ItemrecentlySerializer)
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -673,45 +676,12 @@ class ListItemRecommendAPIView(APIView):
         data={'d':list_items_recommend}
         return Response(data)
 class Itemrecently(APIView):
-    def get(self,request):
-        products=[]
-        if 'recently_viewed' in request.session:
-            products = Item.objects.filter(slug__in=request.session['recently_viewed'].reverse())
-        list_items_recently=[{'item_name':i.name,'item_image':i.get_media_cover(),
-            'item_max':i.max_price(),
-            'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
-            'num_order':i.number_order()
-            }
-        for i in products]
-        return Response({'data':list_items_recently})
-class ItemAPIView(APIView):
     permission_classes = (AllowAny,)
-    def get(self,request):
-        recently_viewed_products = []
-        if 'recently_viewed' in request.session:
-            products = Item.objects.filter(in__in=request.session['recently_viewed'])
-            recently_viewed_products = sorted(products, 
-                key=lambda x: request.session['recently_viewed'].index(x.slug)
-                )
-            if len(request.session['recently_viewed']) > 6:
-                request.session['recently_viewed'].pop()
-        items=Item.objects.all()[0:30]
-        list_items_recommend=[{'item_name':i.name,'item_image':i.get_media_cover(),
-            'item_max':i.max_price(),
-            'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
-            'num_order':i.number_order()
-            }
-            for i in items]
-        data={
-            'b':list_items_recommend,
-            'recently_viewed_products': [{'item_name':i.name,'item_image':i.get_media_cover(),
-            'item_max':i.max_price(),
-            'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
-            'num_order':i.number_order()
-            }
-            for i in recently_viewed_products],
-        }
-        return Response(data)
+    serializer_class = ItemrecentlySerializer
+    def get_queryset(self):
+        user=request.user
+        return ItenReviews.objects.filter(user=user).order_by('-id,item')[:12].distinct()
+        
 
 @api_view(['GET', 'POST'])
 
