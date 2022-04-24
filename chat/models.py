@@ -26,12 +26,7 @@ class Thread(models.Model):
     def info_thread(self):
         info=[]
         for user in self.participants.all():
-            if Shop.objects.filter(user=user).exists():
-                info.append({'shop_logo':Shop.objects.filter(user=user).first().logo.url,
-                'shop_name':Shop.objects.filter(user=user).first().name,
-                'user_id':user.id})
-            else:
-                info.append({'user_id':user.id,'username':user.username})
+            info.append({'user_id':user.id,'username':user.username,'shop_logo':user.profile.image.url})
         return info
     
 class UploadFile(models.Model):
