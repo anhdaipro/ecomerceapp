@@ -223,8 +223,8 @@ class Lisitemcommon(ListAPIView):
 def search_matching(list_keys):
     q = Q()
     for key in list_keys:
-        q |= Q(name__icontains = key)
-    return Item.objects.filter(q)
+        q |= Q(name__icontains = key))
+    return Item.obects.filter(q)
 class DetailAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request,slug):
@@ -450,14 +450,21 @@ class DetailAPIView(APIView):
         return Response(data)
 class Topsearch(APIView):
     def get(self,request):
-        keyword=SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__year__gte=datetime.datetime.now().year)
+        from_item=0
+        to_item=5
+        from_item=request.GET.get('from_item')
+        to_item=request.GET.get('to_item')
+        keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__year__gte=datetime.datetime.now().replace(day=datetime.datetime.now()-7)))
         list_keys=[i['keyword'] for i in keyword]
         items=search_matching(list_keys)
-        list_name=[{'name':i.name} for i in items]
-        result = dict((i, list_name.count(i)) for i in list_name)
-        list_name=sorted(result, key=result.get, reverse=True)[:5]
-        list_items=Item.objects.filter(Q(name__icontains=keyword)).values('name')
-        data={'list_item':[{'image':item.get_image_cover(),'title':item.category.title} for category in list_items],'count':result}
+        list_title=[i.name for i in items]
+        result = dict((i, list_title.count(i)) for i in list_title)
+        list_name_search_trend=sorted(result, key=result.get, reverse=True)[from_item:to_item]
+        list_name_top_search=sorted(result, key=result.get, reverse=True)[:20]
+        item_search_trend=Item.objects.filter(Q(name=list_name_search_trend))
+        item_top_search=Item.objects.filter(Q(name=list_name_top_search))
+        data={'item_search_trend':[{'image':item.get_media_cover(),'title':item.category.title,'name':item.name} for item in item_search_trend],
+        'item_top_search':[{'image':item.get_media_cover(),'name':item.name} for item in item_top_search],'count':result}
         return Response(data)
 
 

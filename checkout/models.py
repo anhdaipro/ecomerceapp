@@ -115,7 +115,8 @@ class Order(models.Model):
     def count_review(self):
         count=0
         for order_item in self.items.all():
-            count+=ReView.objects.filter(orderitem=order_item).count()
+            if order_item.review:
+                count+=1
         return count
     
 ADDRESS_CHOICES = (
