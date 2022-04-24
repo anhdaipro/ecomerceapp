@@ -472,7 +472,7 @@ class Topsearch(APIView):
         keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__gte=datetime.datetime.now()-datetime.timedelta(days=7)))
         list_keys=[i['keyword'] for i in keyword]
         items=search_matching(list_keys)
-        list_title_item=[i.name for i in items]
+        list_title_item=list(set([i.name for i in items]))
         list_title_category=[i.category.title for i in items]
         result_item = dict((i, list_title_item.count(i)) for i in list_title_item)
         result_category = dict((i, list_title_category.count(i)) for i in list_title_category)
