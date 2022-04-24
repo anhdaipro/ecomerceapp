@@ -143,7 +143,7 @@ const Login = ({ login, isAuthenticated }) => {
                             </div>
                         </div>
                         <div className="_3AiUtd">
-                            <div className="_2O9TWB yjBjsT">Bạn mới biết đến Shopee? 
+                            <div className="_2O9TWB yjBjsT">Bạn mới biết đến Anhdai? 
                                 <a className="_25Fkvp" href="/account/signup/">Đăng ký</a>
                             </div>
                         </div>
