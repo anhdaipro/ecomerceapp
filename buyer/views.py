@@ -1305,7 +1305,7 @@ class OrderinfoAPIView(APIView):
         'received':order.received,'canceled':order.canceled,'accepted':order.accepted,'amount':order.total_final_order(),
         'being_delivered':order.being_delivered,'ordered_date':order.ordered_date,'received_date':order.received_date,
         'canceled_date':order.canceled_date,'accepted_date':order.accepted_date,
-        'shop':order.shop.name,'discount_voucher':order.discount_voucher(),
+        'shop':order.shop.name,'shop_url':order.shop.get_absolute_url(),'shop_user':order.shop.user.id,
         'total':order.total_price_order(),'total_final':order.total_final_order(),
         'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),
         'order_item':[{'item_info':order_item.product.item.item_info(),'item_url':order_item.product.item.get_absolute_url(),
@@ -1843,7 +1843,7 @@ class PurchaseAPIView(APIView):
             order_all = Order.objects.filter(ordered=True,user=user).order_by('-id')
             count_order=order_all.count()
             orders = Order.objects.filter(ordered=True,user=user).order_by('-id')[from_item:to_item]
-            list_order=[{'shop_name':order.shop.name,'shop_user':order.shop.user.id,'received':order.received,'canceled':order.canceled,
+            list_order=[{'shop_name':order.shop.name,'shop_url':order.shop.get_absulute_url(),'shop_user':order.shop.user.id,'received':order.received,'canceled':order.canceled,
                 'being_delivered':order.being_delivered,'shop_url':order.shop.get_absolute_url(),'id':order.id,
                 'accepted':order.accepted,'amount':order.total_final_order(),
                 'received_date':order.received_date,'review':get_count_review(order),
