@@ -6,7 +6,6 @@ from django.urls import reverse
 from actionorder.models import *
 from discount.models import *
 import datetime
-from actionorder.models import *
 from django.utils import timezone
 
 from cart.models import *
@@ -115,8 +114,7 @@ class Order(models.Model):
     def count_review(self):
         count=0
         for order_item in self.items.all():
-            if order_item.review:
-                count+=1
+            count+= actionorder.models.ReView.objects.filter(orderitem=order_item).count()
         return count
     
 ADDRESS_CHOICES = (

@@ -30,6 +30,8 @@ class OrderItem(models.Model):
     check=models.BooleanField(default=False)
     def __str__(self):
         return f"{self.quantity}  {self.product.item} of {self.product.item.shop}"
+    def get_review(self):
+        return Review.objects.filter(orderitem=self).count()
     def count_item_cart(self):
         count=1
         for byproduct in self.byproduct.all():
