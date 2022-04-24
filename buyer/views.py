@@ -470,9 +470,8 @@ class Topsearch(APIView):
         item_search_trend=Category.objects.filter(Q(title__in=list_name_search_trend))
         item_top_search=Item.objects.filter(Q(name__in=list_name_top_search))
         data={'item_search_trend':[{'title':category.title,'count':get_count(category),'image':category.item_set.all()[0].get_media_cover()} for category in item_search_trend],
-        'item_top_search':[{'image':item.get_media_cover(),'name':item.name,'number_order':item.number_order()} for item in item_top_search],'count':result_category}
+        'item_top_search':[{'image':item.get_media_cover(),'name':item.name,'number_order':item.number_order()} for item in item_top_search]}
         return Response(data)
-
 
 class SearchitemAPIView(APIView):
     permission_classes = (AllowAny,)
@@ -1571,7 +1570,7 @@ class ListThreadAPIView(APIView):
                 ]
             }
             return Response(data)
-        elif  participants and order_id:
+        elif  participants:
             list_user=User.objects.filter(id__in=participants)
             thread=Thread.objects.create(
             group_name=group_name
@@ -1795,7 +1794,11 @@ def get_address(request):
     addresses = Address.objects.filter(user=user)
     data={'a':list(addresses.values()),'user':{'image':user.profile.image.url,'name':user.username}}
     return Response(data)
-
+def get_count_review(order):
+     count=0
+    for order_item in order.items.all():
+        count+= ReView.objects.filter(orderitem=order_item).count()
+    return count
 class PurchaseAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
@@ -1843,7 +1846,7 @@ class PurchaseAPIView(APIView):
             list_order=[{'shop_name':order.shop.name,'shop_user':order.shop.user.id,'received':order.received,'canceled':order.canceled,
                 'being_delivered':order.being_delivered,'shop_url':order.shop.get_absolute_url(),'id':order.id,
                 'accepted':order.accepted,'amount':order.total_final_order(),
-                'received_date':order.received_date,'review':order.count_review(),
+                'received_date':order.received_date,'review':get_count_review(order),
                 'order_item':[{
                 'item_image':order_item.product.item.media_upload.all()[0].upload_file(),'item_url':order_item.product.item.get_absolute_url(),
                 'item_name':order_item.product.item.name,'color_value':order_item.product.get_color(),
