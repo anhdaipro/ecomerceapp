@@ -239,7 +239,7 @@ def search_matching(list_keys):
         q |= Q(name__icontains = key)
     return Item.objects.filter(q)
 def get_count(category):
-    return Item.objects.filter(category=category)
+    return Item.objects.filter(category=category).count()
 class DetailAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request,slug):
@@ -483,7 +483,7 @@ class Topsearch(APIView):
         item_search_trend=Category.objects.filter(Q(title__in=list_name_search_trend))
         item_top_search=Item.objects.filter(Q(name__in=list_name_top_search))
         data={
-        'item_top_search':[{'image':item.get_media_cover(),'count':get_count(item.category),'name':item.name,'number_order':item.number_order()} for item in item_top_search]}
+        'item_top_search':[{'image':item.get_media_cover(),'title':item.category.title,'count':get_count(item.category),'name':item.name,'number_order':item.number_order()} for item in item_top_search]}
         return Response(data)
 
 class SearchitemAPIView(APIView):
