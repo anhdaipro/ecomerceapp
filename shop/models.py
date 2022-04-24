@@ -16,6 +16,7 @@ from shipping.models import *
 from actionorder.models import *
 from cart.models import *
 from checkout.models import *
+from category.models import Category
 import datetime
 import re
 import subprocess

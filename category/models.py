@@ -1,5 +1,5 @@
 from django.db import models
-import collection
+
 # Create your models here.
 from django.conf import settings
 from django.db import models
@@ -24,7 +24,7 @@ class Category(MPTTModel):
     def __str__(self):
         return self.title
     def get_count_item(self):
-        return collection.models.Item.objects.filter(category=self).count()
+        return "shop.Item".objects.filter(category=self).count()
     def update_result(self):
         Category.objects.all().update(slug=re.sub('[,./\ & ]', "-",self.title) + '-cat.' + str(self.id))
         # At this point obj.val is still 1, but the value in the database

@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
-import collection
+
 from django.db.models import  Q
 from django.urls import reverse
 from actionorder.models import *
@@ -115,7 +115,7 @@ class Order(models.Model):
     def count_review(self):
         count=0
         for order_item in self.items.all():
-            count+= collection.models.ReView.objects.filter(orderitem=order_item).count()
+            count+= "actionorder.ReView".objects.filter(orderitem=order_item).count()
         return count
     
 ADDRESS_CHOICES = (
