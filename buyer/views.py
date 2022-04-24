@@ -140,7 +140,7 @@ class VerifySMSView(APIView):
             otp.save()
             if profile.exists():
                 if reset:
-                    user=profile.user
+                    user=profile.first().user
                     uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
                     token = default_token_generator.make_token(user)
                     return Response({'verify':True,'token':token,'uidb64':uidb64})
