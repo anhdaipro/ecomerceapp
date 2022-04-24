@@ -223,7 +223,7 @@ class Lisitemcommon(ListAPIView):
 def search_matching(list_keys):
     q = Q()
     for key in list_keys:
-        q |= Q(name__icontains = key))
+        q |= Q(name__icontains = key)
     return Item.obects.filter(q)
 class DetailAPIView(APIView):
     permission_classes = (AllowAny,)
@@ -464,7 +464,7 @@ class Topsearch(APIView):
         item_search_trend=Item.objects.filter(Q(name=list_name_search_trend))
         item_top_search=Item.objects.filter(Q(name=list_name_top_search))
         data={'item_search_trend':[{'image':item.get_media_cover(),'title':item.category.title,'name':item.name} for item in item_search_trend],
-        'item_top_search':[{'image':item.get_media_cover(),'name':item.name} for item in item_top_search],'count':result}
+        'item_top_search':[{'image':item.get_media_cover(),'name':item.name,'number_order':item.number_order()} for item in item_top_search],'count':result}
         return Response(data)
 
 

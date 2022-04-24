@@ -7,7 +7,7 @@ from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel 
 from django.db.models import Q
 from django.urls import reverse
-
+from shop.models import *
 import re
 class Image_category(models.Model):
     image=models.ImageField(upload_to='category/')
@@ -22,7 +22,8 @@ class Category(MPTTModel):
     choice=models.BooleanField(default=False)
     def __str__(self):
         return self.title
-    
+    def get_count_item(self):
+        return Item.objects.filter(category=self).count()
     def update_result(self):
         Category.objects.all().update(slug=re.sub('[,./\ & ]', "-",self.title) + '-cat.' + str(self.id))
         # At this point obj.val is still 1, but the value in the database
