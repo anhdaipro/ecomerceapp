@@ -102,17 +102,24 @@ class Sendotp(APIView):
     def post(self, request, *args, **kwargs):
         phone=request.POST.get('phone')
         login=request.POST.get('login')
+        reset=request.POST.get('reset')
         usr_otp = random.randint(100000, 999999)
         otp=SMSVerification.objects.create(pin=usr_otp,phone=phone)
         if login: 
             message = client.messages.create(
-                body=f"DE DANG NHAP TAI KHOAN VUI LONG NHAP MA XAC THUC {otp.pin}. Co hieu luc trong 15 phut. Khong chia se max nay voi nguoi khac",
+                body=f"DE DANG NHAP TAI KHOAN VUI LONG NHAP MA XAC THUC {otp.pin}. Co hieu luc trong 15 phut. Khong chia se ma nay voi nguoi khac",
+                from_=settings.TWILIO_FROM_NUMBER,
+                to=str(phone)
+            )
+        elif reset:
+            message = client.messages.create(
+                body=f"DE CAP NHAT MAT KHAU VUI LONG NHAP MA XAC THUC {otp.pin}. Co hieu luc trong 15 phut. Khong chia se ma nay voi nguoi khac",
                 from_=settings.TWILIO_FROM_NUMBER,
                 to=str(phone)
             )
         else:
             message = client.messages.create(
-                body=f"DE DANG KY TAI KHOAN VUI LONG NHAP MA XAC THUC {otp.pin}. Co hieu luc trong 15 phut. Khong chia se max nay voi nguoi khac",
+                body=f"DE DANG KY TAI KHOAN VUI LONG NHAP MA XAC THUC {otp.pin}. Co hieu luc trong 15 phut. Khong chia se ma nay voi nguoi khac",
                 from_=settings.TWILIO_FROM_NUMBER,
                 to=str(phone)
             )
@@ -125,12 +132,17 @@ class VerifySMSView(APIView):
         id=request.POST.get('id')
         pin = int(request.POST.get("pin"))
         phone=request.POST.get('phone')
+        reset=request.POST.get('reset')
         otp=SMSVerification.objects.get(id=id)
         profile=Profile.objects.filter(phone=phone)
         if otp.pin==pin:
             otp.verified=True
             otp.save()
             if profile.exists():
+                if reset:
+                    uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
+                    token = default_token_generator.make_token(user)
+                    return Response({'verify':True,'token':token,'uidb64':uidb64})
                 return Response({'verify':True,'image':profile.first().image.url,'username':profile.first().user.username,'user_id':profile.first().user.id})
             else:
                 return Response({'verify':True})
@@ -492,11 +504,10 @@ class SearchitemAPIView(APIView):
         category=request.GET.get('category')
         shop=request.GET.get('shop')
         if keyword:
-            list_items = Item.objects.filter(Q(name__icontains=keyword) | Q(
-            name__in=keyword)|Q(category__title=keyword))
+            list_items = Item.objects.filter(Q(name__icontains=keyword)|Q(shop__name=keyword) | Q(brand__in=keyword)|Q(category__title__in=keyword)).order_by('name').distinct()
             items = Item.objects.filter(Q(name__icontains=keyword) | Q(
-            name__in=keyword)|Q(category__title=keyword))
-            category_choice=Category.objects.filter(item__in=list_items).distinct()
+            brand__in=keyword)|Q(category__title__in=keyword)).distinct()
+            category_choice=Category.objects.filter(item__in=list_items).order_by('name').distinct()
             list_shop=Shop.objects.filter(item__in=list_items)
             SearchKey.objects.get_or_create(keyword=keyword)
             SearchKey.objects.filter(keyword=keyword).update(total_searches=F('total_searches') + 1)
@@ -2004,8 +2015,7 @@ class PurchaseAPIView(APIView):
 
 class PasswordResetView(APIView):
     def post(self, request, *args, **kwargs):
-
-        email = request.data.get("email", None)
+        phone=request.data.get('phone',None)
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
