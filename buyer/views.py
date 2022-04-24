@@ -332,8 +332,6 @@ class DetailAPIView(APIView):
             order=Order.objects.filter(items__product__item=item,received=True)
             reviews=ReView.objects.filter(orderitem__product__item=item).distinct()
             variation=Variation.objects.filter(item=item).distinct()
-            item_detail=Detail_Item.objects.filter(item=item).values()
-
             data={'count_variation':item.count_variation(),
             'item_name':item.name,'min_price':item.min_price(),'max_price':item.max_price(),
             'id':item.id,'num_like':item.num_like(),'percent_discount':item.percent_discount(),
@@ -344,7 +342,7 @@ class DetailAPIView(APIView):
             'item_inventory':item.total_inventory(),
             'num_order':item.number_order(),'description':item.description,
             'program_valid':item.count_program_valid(),
-            'shock_deal_type':item.shock_deal_type(),'item_detail':item_detail,
+            'shock_deal_type':item.shock_deal_type(),
             'deal_shock':list(deal_shock.values()),'flash_sale':list(flash_sale.values()),
             'promotion_combo':list(promotion_combo.values()),'shop_user':item.shop.user.id,
             'voucher':list(vouchers.values()),
@@ -472,7 +470,7 @@ class Topsearch(APIView):
         keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__gte=datetime.datetime.now()-datetime.timedelta(days=7)))
         list_keys=[i['keyword'] for i in keyword]
         items=search_matching(list_keys)
-        list_title_item=list(set([i.name for i in items]))
+        list_title_item=([i['name'] for i in items]
         list_title_category=[i.category.title for i in items]
         result_item = dict((i, list_title_item.count(i)) for i in list_title_item)
         result_category = dict((i, list_title_category.count(i)) for i in list_title_category)
@@ -591,9 +589,10 @@ class ProductInfoAPIVIew(APIView):
         from_item=request.GET.get('from_item')
         if item_id:
             item=Item.objects.get(id=item_id)
+            item_detail=Detail_Item.objects.filter(item=item).values()
             if shop:
                 data={'shop_logo':item.shop.user.profile.image.url,'shop_url':item.shop.get_absolute_url(),
-                'shop_name':item.shop.name,
+                'shop_name':item.shop.name,'item_detail':item_detail,
                 'online':item.shop.user.profile.online,'num_follow':item.shop.num_follow(),
                 'is_online':item.shop.user.profile.is_online,'count_product':item.shop.count_product(),
                 'total_order':item.shop.total_order()}
