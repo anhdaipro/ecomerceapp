@@ -454,7 +454,7 @@ class Topsearch(APIView):
         to_item=5
         from_item=request.GET.get('from_item')
         to_item=request.GET.get('to_item')
-        keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__year__gte=datetime.datetime.now().replace(day=datetime.datetime.now().day-7)))
+        keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__gte=datetime.datetime.now()-datetime.timedelta(days=7)))
         list_keys=[i['keyword'] for i in keyword]
         items=search_matching(list_keys)
         list_title=[i.name for i in items]
