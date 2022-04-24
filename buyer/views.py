@@ -1300,8 +1300,8 @@ class OrderinfoAPIView(APIView):
         if shop in list_user:
             exist=True
         data={'exist':exist,
-        'district':order.address.district,'town':order.address.town,'ref_code':order.ref_code,
-        'name':order.address.name,'phone_number':order.address.phone_number,'city':order.address.city,'address':order.address.address,
+        'district':order.shipping_address.district,'town':order.shipping_address.town,'ref_code':order.ref_code,
+        'name':order.shipping_address.name,'phone_number':order.shipping_address.phone_number,'city':order.shipping_address.city,'address':order.shipping_address.address,
         'received':order.received,'canceled':order.canceled,'accepted':order.accepted,'amount':order.total_final_order(),
         'being_delivered':order.being_delivered,'ordered_date':order.ordered_date,'received_date':order.received_date,
         'canceled_date':order.canceled_date,'accepted_date':order.accepted_date,
