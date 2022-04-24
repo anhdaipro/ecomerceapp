@@ -1843,7 +1843,7 @@ class PurchaseAPIView(APIView):
             order_all = Order.objects.filter(ordered=True,user=user).order_by('-id')
             count_order=order_all.count()
             orders = Order.objects.filter(ordered=True,user=user).order_by('-id')[from_item:to_item]
-            list_order=[{'shop_name':order.shop.name,'shop_url':order.shop.get_absulute_url(),'shop_user':order.shop.user.id,'received':order.received,'canceled':order.canceled,
+            list_order=[{'shop_name':order.shop.name,'shop_url':order.shop.get_absolute_url(),'shop_user':order.shop.user.id,'received':order.received,'canceled':order.canceled,
                 'being_delivered':order.being_delivered,'shop_url':order.shop.get_absolute_url(),'id':order.id,
                 'accepted':order.accepted,'amount':order.total_final_order(),
                 'received_date':order.received_date,'review':get_count_review(order),
