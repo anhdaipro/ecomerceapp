@@ -215,7 +215,7 @@ class Listitemseller(ListAPIView):
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
         return Item.objects.filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__orderitem__order')).order_by('-count_order')
-class Lisitemcommon(ListAPIView):
+class ListTrendsearch(APIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
@@ -225,6 +225,8 @@ def search_matching(list_keys):
     for key in list_keys:
         q |= Q(name__icontains = key)
     return Item.objects.filter(q)
+def get_count(category):
+    return Item.objects.filter(category=category)
 class DetailAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request,slug):
@@ -457,14 +459,17 @@ class Topsearch(APIView):
         keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__gte=datetime.datetime.now()-datetime.timedelta(days=7)))
         list_keys=[i['keyword'] for i in keyword]
         items=search_matching(list_keys)
-        list_title=[i.name for i in items]
-        result = dict((i, list_title.count(i)) for i in list_title)
-        list_sort={k: v for k, v in sorted(result.items(), key=lambda item: item[1],reverse=True)}
-        list_name_search_trend=sorted(list_sort, key=list_sort.get, reverse=True)[from_item:to_item]
-        list_name_top_search=sorted(list_sort, key=list_sort.get, reverse=True)[:20]
-        item_search_trend=Item.objects.filter(Q(name__in=list_name_search_trend))
+        list_title_item=[i.name for i in items]
+        list_title_category=[i.category.title for i in items]
+        result_item = dict((i, list_title_item.count(i)) for i in list_title_item)
+        result_category = dict((i, list_title_category.count(i)) for i in list_title_category)
+        list_sort_item={k: v for k, v in sorted(result_item.items(), key=lambda item: item[1],reverse=True)}
+        list_sort_category={k: v for k, v in sorted(result_category.items(), key=lambda item: item[1],reverse=True)}
+        list_name_search_trend=sorted(list_sort_category, key=list_sort.get, reverse=True)[from_item:to_item]
+        list_name_top_search=sorted(list_sort_item, key=list_sort.get, reverse=True)[:20]
+        item_search_trend=Category.objects.filter(Q(name__in=list_name_search_trend))
         item_top_search=Item.objects.filter(Q(name__in=list_name_top_search))
-        data={'item_search_trend':[{'image':item.get_media_cover(),'title':item.category.title,'count':item.category.get_count_item()} for item in item_search_trend],
+        data={'item_search_trend':[{'title':category.title,'count':get_count(category),'image':category.item_set.all()[0].get_image_cover()} for category in item_search_trend],
         'item_top_search':[{'image':item.get_media_cover(),'name':item.name,'number_order':item.number_order()} for item in item_top_search],'count':result}
         return Response(data)
 
