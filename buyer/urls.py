@@ -32,7 +32,7 @@ from .views import (
     Listitemseller,
     UserView,
     Itemrecently,
-    Lisitemcommon,
+  
     ListThreadAPIView,
     Sendotp,VerifySMSView,
     Topsearch,
@@ -63,7 +63,7 @@ urlpatterns = [
     path('item/recently',Itemrecently.as_view()),
     path('item/bestseller', Listitemseller.as_view()),
     path('product/recommend', ListItemRecommendAPIView.as_view()),
-    path('item/common', Lisitemcommon.as_view()),
+    
     path('imagehome', ImageHomeAPIView.as_view()),
     path('categories', CategoryListView.as_view()),
     path('add-to-cart', AddToCartAPIView.as_view()),
