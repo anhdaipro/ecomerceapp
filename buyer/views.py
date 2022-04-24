@@ -1289,7 +1289,7 @@ class CheckoutAPIView(APIView):
             return Response(data)
 
 class OrderinfoAPIView(APIView):
-    permission_classes = (IsAuthenticated)
+    permission_classes = (IsAuthenticated,)
     def get(self,request,id):
         user=request.user
         order=Order.objects.get(id=id)
@@ -1300,8 +1300,8 @@ class OrderinfoAPIView(APIView):
         if shop in list_user:
             exist=True
         data={'exist':exist,
-        'district':address.district,'town':address.town,
-        'name':address.name,'phone_number':address.phone_number,'city':address.city,'address':address.address,
+        'district':order.address.district,'town':order.address.town,'ref_code':order.ref_code,
+        'name':order.address.name,'phone_number':order.address.phone_number,'city':order.address.city,'address':order.address.address,
         'received':order.received,'canceled':order.canceled,'accepted':order.accepted,'amount':order.total_final_order(),
         'being_delivered':order.being_delivered,
         'shop':order.shop.name,'discount_voucher':order.discount_voucher(),
