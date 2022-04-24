@@ -265,7 +265,7 @@ def get_product(request):
             pageitem = obj_paginator.get_page(page)
             data={'count_product':list_product.count(),
                     'pageitem':[{'item_name':item.name,'item_image':item.media_upload.all()[0].upload_file(),
-                    'item_id':item.id,'item_sku':item.sku_product,'get_absolute_id':item.get_absolute_id(),
+                    'item_id':item.id,'item_sku':item.sku_product,
                     'count_variation':item.variation_set.all().count(),
                     'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),
                     'size_value':variation.get_size(),'inventory':variation.inventory,
