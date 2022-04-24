@@ -454,7 +454,7 @@ class Topsearch(APIView):
         to_item=5
         from_item=request.GET.get('from_item')
         to_item=request.GET.get('to_item')
-        keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__year__gte=datetime.datetime.now().replace(day=datetime.datetime.now()-7)))
+        keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__year__gte=datetime.datetime.now().replace(day=datetime.datetime.now().day-7)))
         list_keys=[i['keyword'] for i in keyword]
         items=search_matching(list_keys)
         list_title=[i.name for i in items]
@@ -463,7 +463,7 @@ class Topsearch(APIView):
         list_name_top_search=sorted(result, key=result.get, reverse=True)[:20]
         item_search_trend=Item.objects.filter(Q(name=list_name_search_trend))
         item_top_search=Item.objects.filter(Q(name=list_name_top_search))
-        data={'item_search_trend':[{'image':item.get_media_cover(),'title':item.category.title,'name':item.name} for item in item_search_trend],
+        data={'item_search_trend':[{'image':item.get_media_cover(),'title':item.category.title,'count':item.category.get_count_item()} for item in item_search_trend],
         'item_top_search':[{'image':item.get_media_cover(),'name':item.name,'number_order':item.number_order()} for item in item_top_search],'count':result}
         return Response(data)
 
