@@ -237,7 +237,7 @@ def search_matching(list_keys):
     q = Q()
     for key in list_keys:
         q |= Q(name__icontains = key)
-    return Item.objects.filter(q)
+    return Item.objects.filter(q).values('name').order_by('name').distinct()
 def get_count(category):
     return Item.objects.filter(category=category).count()
 class DetailAPIView(APIView):
