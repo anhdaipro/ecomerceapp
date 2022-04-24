@@ -459,8 +459,9 @@ class Topsearch(APIView):
         items=search_matching(list_keys)
         list_title=[i.name for i in items]
         result = dict((i, list_title.count(i)) for i in list_title)
-        list_name_search_trend=sorted(result, key=result.get, reverse=True)[from_item:to_item]
-        list_name_top_search=sorted(result, key=result.get, reverse=True)[:20]
+        list_sort={k: v for k, v in sorted(list_sort.items(), key=lambda item: item[1],reverse=True)}
+        list_name_search_trend=sorted(list_sort, key=list_sort.get, reverse=True)[from_item:to_item]
+        list_name_top_search=sorted(list_sort, key=list_sort.get, reverse=True)[:20]
         item_search_trend=Item.objects.filter(Q(name=list_name_search_trend))
         item_top_search=Item.objects.filter(Q(name=list_name_top_search))
         data={'item_search_trend':[{'image':item.get_media_cover(),'title':item.category.title,'count':item.category.get_count_item()} for item in item_search_trend],
