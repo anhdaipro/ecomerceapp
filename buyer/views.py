@@ -1683,7 +1683,7 @@ class ThreadAPIView(APIView):
             'messages':[{'text':message.message,'file':message.message_file(),'filetype':message.message_filetype(),
             'user_id':message.user.id,'created':message.date_created,'item':message.message_product(),
             'message_order':message.message_order(),
-            'list_file':[{'file':uploadfile.file.url,'filename':uploadfile.filename(),
+            'list_file':[{'file':uploadfile.file.url,'file_name':uploadfile.filename(),
             'file_preview':uploadfile.file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.filetype()}
             for uploadfile in message.file.all()
             ]} for message in messages
@@ -1735,7 +1735,7 @@ def upload_file(request):
             upload_by=user)
             for i in range(len(file))])
             data={
-               'list_file':[{'id':upload_file.id,'file':upload_file.file.url,'filename':upload_file.file_name,
+               'list_file':[{'id':upload_file.id,'file':upload_file.file.url,'file_name':upload_file.file_name,
                'file_preview':upload_file.file_preview(),'filetype':upload_file.filetype(),'duration':upload_file.duration
                } for upload_file in upload_files] 
             }
