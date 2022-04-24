@@ -224,7 +224,7 @@ def search_matching(list_keys):
     q = Q()
     for key in list_keys:
         q |= Q(name__icontains = key)
-    return Item.obects.filter(q)
+    return Item.objects.filter(q)
 class DetailAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request,slug):
