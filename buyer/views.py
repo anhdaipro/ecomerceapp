@@ -368,9 +368,12 @@ class DetailAPIView(APIView):
                 like=False
                 if user in item.liked.all():
                     like=True
-                threads = Thread.objects.filter(participants=user).order_by('timestamp')
+                exist_thread=False
+                threads = Thread.objects.filter(participants=user).filter(participants=item.shop.user)
+                if threads.exists():
+                    exist_thread=True
                 data.update({'user':user.id,'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
-                'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
+                'exist_thread':exist_thread})
             return Response(data)
         elif shop.exists():
             shop=Shop.objects.get(slug=slug)
@@ -440,9 +443,12 @@ class DetailAPIView(APIView):
                 follow=False
                 if user in shop.followers.all():
                     follow=True
-                threads = Thread.objects.filter(participants=user).order_by('timestamp')
-                data.update({'follow':follow,
-                'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
+                exist_thread=False
+                threads = Thread.objects.filter(participants=user).filter(participants=shop.user)
+                if threads.exists():
+                    exist_thread=True
+                data.update({'follow':follow,'user':user.id})
+                
             return Response(data)
            
     def post(self, request, *args, **kwargs):
