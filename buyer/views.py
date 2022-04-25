@@ -306,7 +306,7 @@ class DetailAPIView(APIView):
                 'unitdelivery':list(set(['Nhanh','Hỏa tốc'])),
                 'brands':list(set([item.brand for item in list_items])),
                 'status':list({item['value']:item for item in status}.values()),
-                'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.get_absolute_url()} for i in category_choice],
+                'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.get_absolute_url()} for i in category_choice if i.item_set.all().count()>0],
                 'category_info':{'title':category.title,'image':category.image.url,'id':category.id},
                 'category_children':[{'id':i.id,'title':i.title,'url':i.get_absolute_url()} for i in category_children],
                 'list_item_page':[{'item_name':i.name,'item_image':i.get_media_cover(),
