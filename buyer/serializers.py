@@ -18,7 +18,7 @@ class UserCreateSerializer(UserCreateSerializer):
         model = User
         fields = ('id', 'email', 'username', 'password')
 
-class UseprofileSerializer(serializers.ModelSerializer):
+class UserprofileSerializer(serializers.ModelSerializer):
     image=serializers.SerializerMethodField()
     class Meta:
         model=User
