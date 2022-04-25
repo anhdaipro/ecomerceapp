@@ -369,7 +369,7 @@ class DetailAPIView(APIView):
                 if user in item.liked.all():
                     like=True
                 threads = Thread.objects.filter(participants=user).order_by('timestamp')
-                data.update({'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
+                data.update({'user':user.id,'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
         elif shop.exists():
@@ -441,7 +441,7 @@ class DetailAPIView(APIView):
                 if user in shop.followers.all():
                     follow=True
                 threads = Thread.objects.filter(participants=user).order_by('timestamp')
-                data.update({'follow':follow,
+                data.update({'user':user_id,'follow':follow,
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
            
@@ -1009,6 +1009,7 @@ class CartItemAPIView(APIView):
         list_order_item=OrderItem.objects.filter(user=user,ordered=False).order_by('-id')
         shops=Shop.objects.filter(shop_order__in=list_order_item).distinct()
         data={
+            'user':{'user_id':user.id},
             'order_item':[{'id':order_item.id,'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
             'list_voucher':order_item.product.item.get_voucher(),'count_variation':order_item.product.item.count_variation(),
             'price':order_item.product.price,'discount_price':order_item.product.total_discount(),'shop_name':order_item.shop.name,
@@ -1450,7 +1451,8 @@ class MessageAPIView(APIView):
     def get(self,request):
         user=request.user
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
-        data ={'threads':[{
+        data = {
+            'threads':[{
             'message':[{'read':message.seen,'sender':message.user.username}
             for message in thread.chatmessage_thread.all().order_by('-id')[:1]]}
             for thread in threads]
@@ -1797,7 +1799,7 @@ class ProfileAPIView(APIView):
 def get_address(request):
     user=request.user
     addresses = Address.objects.filter(user=user)
-    data={'a':list(addresses.values())
+    data={'a':list(addresses.values())}
     return Response(data)
 def get_count_review(order):
     count=0
