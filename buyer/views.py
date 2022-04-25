@@ -237,7 +237,7 @@ def search_matching(list_keys):
     q = Q()
     for key in list_keys:
         q |= Q(name__icontains = key)
-    return Item.objects.filter(q).values('name').order_by('name').distinct()
+    return Item.objects.filter(q).values('name').order_by('category__title').distinct()
 def get_count(category):
     return Item.objects.filter(category=category).count()
 class DetailAPIView(APIView):
@@ -302,7 +302,7 @@ class DetailAPIView(APIView):
             data={
                 'image_home':[{'image':i.image.url,'url':i.url_field} for i in category.image_category.all()],
                 'shoptype':list({item['value']:item for item in shoptype}.values()),
-                'cities':list(set([shop.city for shop in list_shop])),
+                'cities':list(set([shop.city for shop in list_shop if shop.city!=None])),
                 'unitdelivery':list(set(['Nhanh','Hỏa tốc'])),
                 'brands':list(set([item.brand for item in list_items])),
                 'status':list({item['value']:item for item in status}.values()),
