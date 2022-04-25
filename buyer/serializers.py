@@ -39,7 +39,8 @@ class UserSerializer(serializers.ModelSerializer):
         if password is not None:
             instance.set_password(password)
         instance.save()
-        Profile.objects.create(user = instance,**profile_data)
+        if Profile.objects.filter(user=instance).exists():
+            Profile.objects.filter(user=instance).update(**profile_data)
         return instance
 
 class SMSPinSerializer(serializers.Serializer):
