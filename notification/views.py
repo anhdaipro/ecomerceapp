@@ -53,7 +53,6 @@ class NotificationAPIView(RetrieveDestroyAPIView):
 
 class MarkedAllAsReadNotificationView(APIView):
     permission_classes = [IsAuthenticated]
-
     def post(self, request):
         user = request.user
         notifications = Notification.objects.filter(

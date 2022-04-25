@@ -1230,7 +1230,7 @@ class CheckoutAPIView(APIView):
         address=Address.objects.filter(user=user,default=True)
         orders = Order.objects.filter(user=user, ordered=False).exclude(items=None)
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
-        list_orders=[{'shop':order.shop.name,'discount_voucher':order.discount_voucher(),'shop_user':shop.user.id,
+        list_orders=[{'shop':order.shop.name,'discount_voucher':order.discount_voucher(),'shop_user':order.shop.user.id,
         'total':order.total_price_order(),'total_final':order.total_final_order(),
         'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),
         'discount_promotion':order.discount_promotion(),'total_discount':order.total_discount_order(),
