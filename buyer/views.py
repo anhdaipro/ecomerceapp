@@ -371,6 +371,7 @@ class DetailAPIView(APIView):
                 exist_thread=False
                 threads = Thread.objects.filter(participants=user).filter(participants=item.shop.user)
                 if threads.exists():
+                    data.update({'thread_id':threads.first().id})
                     exist_thread=True
                 data.update({'user':user.id,'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
                 'exist_thread':exist_thread})
