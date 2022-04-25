@@ -441,7 +441,7 @@ class DetailAPIView(APIView):
                 if user in shop.followers.all():
                     follow=True
                 threads = Thread.objects.filter(participants=user).order_by('timestamp')
-                data.update({'user':user_id,'follow':follow,
+                data.update({'follow':follow,
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
            
