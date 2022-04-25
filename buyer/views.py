@@ -369,7 +369,7 @@ class DetailAPIView(APIView):
                 if user in item.liked.all():
                     like=True
                 threads = Thread.objects.filter(participants=user).order_by('timestamp')
-                data.update({'user':user.id,'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
+                data.update({'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
         elif shop.exists():
@@ -441,7 +441,7 @@ class DetailAPIView(APIView):
                 if user in shop.followers.all():
                     follow=True
                 threads = Thread.objects.filter(participants=user).order_by('timestamp')
-                data.update({'user':user_id,'follow':follow,
+                data.update({'follow':follow,
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]})
             return Response(data)
            
@@ -994,7 +994,7 @@ class AddToCartAPIView(APIView):
                 shop=item.shop,
                 )
             data={
-                'item_info':order_item.product.item.item_info(),'id':order_item.id,                'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
+                'item_info':order_item.product.item.item_info(),'id':order_item.id,'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
                 'item_url':order_item.product.item.get_absolute_url(),
                 'price':order_item.product.price-order_item.product.total_discount(),
                 'shock_deal_type':order_item.product.item.shock_deal_type(),
@@ -1009,7 +1009,6 @@ class CartItemAPIView(APIView):
         list_order_item=OrderItem.objects.filter(user=user,ordered=False).order_by('-id')
         shops=Shop.objects.filter(shop_order__in=list_order_item).distinct()
         data={
-            'user':{'user_id':user.id},
             'order_item':[{'id':order_item.id,'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
             'list_voucher':order_item.product.item.get_voucher(),'count_variation':order_item.product.item.count_variation(),
             'price':order_item.product.price,'discount_price':order_item.product.total_discount(),'shop_name':order_item.shop.name,
@@ -1158,7 +1157,7 @@ class AddressAPIView(APIView):
     def get(self,request):
         user=request.user
         addresses = Address.objects.filter(user=user)
-        data={'a':list(addresses.values()),'user':{'image':user.profile.image.url,'name':user.username}}
+        data={'a':list(addresses.values())}
         return Response(data)
     def post(self, request, *args, **kwargs):
         user=request.user
@@ -1230,7 +1229,7 @@ class CheckoutAPIView(APIView):
         address=Address.objects.filter(user=user,default=True)
         orders = Order.objects.filter(user=user, ordered=False).exclude(items=None)
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
-        list_orders=[{'shop':order.shop.name,'discount_voucher':order.discount_voucher(),
+        list_orders=[{'shop':order.shop.name,'discount_voucher':order.discount_voucher(),'shop_user':shop.user.id,
         'total':order.total_price_order(),'total_final':order.total_final_order(),
         'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),
         'discount_promotion':order.discount_promotion(),'total_discount':order.total_discount_order(),
@@ -1251,7 +1250,7 @@ class CheckoutAPIView(APIView):
         'total_price':order_item.total_discount_orderitem()
         } for order_item in order.items.all()]} for order in orders]
         data={
-            'a':list_orders,'c':list(address.values()),'user':{'user_id':user.id},
+            'a':list_orders,'c':list(address.values()),
             'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]
         }
         return Response(data)
@@ -1451,8 +1450,7 @@ class MessageAPIView(APIView):
     def get(self,request):
         user=request.user
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
-        data = {'user':{'username':user.username,'user_id':user.id},
-            'threads':[{
+        data ={'threads':[{
             'message':[{'read':message.seen,'sender':message.user.username}
             for message in thread.chatmessage_thread.all().order_by('-id')[:1]]}
             for thread in threads]
@@ -1799,7 +1797,7 @@ class ProfileAPIView(APIView):
 def get_address(request):
     user=request.user
     addresses = Address.objects.filter(user=user)
-    data={'a':list(addresses.values()),'user':{'image':user.profile.image.url,'name':user.username}}
+    data={'a':list(addresses.values())
     return Response(data)
 def get_count_review(order):
     count=0
@@ -1862,7 +1860,6 @@ class PurchaseAPIView(APIView):
                 'id':order_item.id
                 } for order_item in order.items.all()]} for order in orders]
             data={
-                'user':{'image':user.profile.image.url,'name':user.username,'user_id':user.id},
                 'a':list_order,'count_order':count_order,
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]
                 }
