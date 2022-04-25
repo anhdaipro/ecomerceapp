@@ -1232,7 +1232,7 @@ class CheckoutAPIView(APIView):
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
         list_orders=[{'shop':order.shop.name,'discount_voucher':order.discount_voucher(),'shop_user':order.shop.user.id,
         'total':order.total_price_order(),'total_final':order.total_final_order(),
-        'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),
+        'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),'id':order.id,
         'discount_promotion':order.discount_promotion(),'total_discount':order.total_discount_order(),
         'order_item':[{'item_info':order_item.product.item.item_info(),'item_url':order_item.product.item.get_absolute_url(),
         'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
