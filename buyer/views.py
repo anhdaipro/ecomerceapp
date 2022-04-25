@@ -45,7 +45,7 @@ from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
 from .serializers import (ChangePasswordSerializer,
 UserSerializer,SMSPinSerializer,
-SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer,UserprofileSerializer
+SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer,UserprofileSerializer,
 ItemSellerSerializer,ItemrecentlySerializer)
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
