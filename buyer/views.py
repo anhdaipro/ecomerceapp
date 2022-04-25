@@ -2010,7 +2010,7 @@ class PurchaseAPIView(APIView):
 
 class PasswordResetView(APIView):
     def post(self, request, *args, **kwargs):
-        phone=request.data.get('phone',None)
+        email=request.data.get('email',None)
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
