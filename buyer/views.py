@@ -45,7 +45,7 @@ from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
 from .serializers import (ChangePasswordSerializer,
 UserSerializer,SMSPinSerializer,
-SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer,
+SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer,UserprofileSerializer
 ItemSellerSerializer,ItemrecentlySerializer)
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
@@ -87,7 +87,7 @@ class UserView(APIView):
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Unauthenticated!')
         user=request.user
-        serializer = UserSerializer(user)
+        serializer = UserprofileSerializer(user)
         return Response(serializer.data)
 class RegisterView(APIView):
     permission_classes = (AllowAny,)

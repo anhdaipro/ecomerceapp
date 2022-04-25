@@ -14,9 +14,17 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 class UserCreateSerializer(UserCreateSerializer):
-    class Meta(UserCreateSerializer.Meta):
+    class Meta:
         model = User
         fields = ('id', 'email', 'username', 'password')
+
+class UseprofileSerializer(serializers.ModelSerializer):
+    image=serializers.SerializerMethodField()
+    class Meta:
+        model=User
+        fields = ('username','id','image')
+    def get_image(self,obj):
+        return obj.profile.image.url
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
