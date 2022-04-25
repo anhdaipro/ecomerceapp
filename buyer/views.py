@@ -447,6 +447,7 @@ class DetailAPIView(APIView):
                 exist_thread=False
                 threads = Thread.objects.filter(participants=user).filter(participants=shop.user)
                 if threads.exists():
+                    data.update({'thread_id':threads.first().id})
                     exist_thread=True
                 data.update({'follow':follow,'user':user.id})
                 
