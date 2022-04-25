@@ -325,6 +325,7 @@ class DetailAPIView(APIView):
             item.views += 1
             item.save()
             items=Item.objects.filter(shop=item.shop)
+            item_detail=Detail_Item.objects.filter(item=item).values()
             vouchers=Vocher.objects.filter(product=item,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
             deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
             promotion_combo=Promotion_combo.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
@@ -332,7 +333,7 @@ class DetailAPIView(APIView):
             order=Order.objects.filter(items__product__item=item,received=True)
             reviews=ReView.objects.filter(orderitem__product__item=item).distinct()
             variation=Variation.objects.filter(item=item).distinct()
-            data={'count_variation':item.count_variation(),
+            data={'count_variation':item.count_variation(),'item_detail':item_detail,
             'item_name':item.name,'min_price':item.min_price(),'max_price':item.max_price(),
             'id':item.id,'num_like':item.num_like(),'percent_discount':item.percent_discount(),
             'item_review':item.average_review(),'count_review':item.count_review(),
@@ -584,10 +585,10 @@ class ProductInfoAPIVIew(APIView):
         from_item=request.GET.get('from_item')
         if item_id:
             item=Item.objects.get(id=item_id)
-            item_detail=Detail_Item.objects.filter(item=item).values()
+            
             if shop:
                 data={'shop_logo':item.shop.user.profile.image.url,'shop_url':item.shop.get_absolute_url(),
-                'shop_name':item.shop.name,'item_detail':item_detail,
+                'shop_name':item.shop.name,
                 'online':item.shop.user.profile.online,'num_follow':item.shop.num_follow(),
                 'is_online':item.shop.user.profile.is_online,'count_product':item.shop.count_product(),
                 'total_order':item.shop.total_order()}
