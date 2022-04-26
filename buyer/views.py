@@ -616,6 +616,7 @@ class ProductInfoAPIVIew(APIView):
                 paginator = Paginator(reviews, 10)  # Show 25 contacts per page.
                 page_number = request.GET.get('page')
                 page_obj = paginator.get_page(page_number)
+                list_report=Report.objects.filter(user=user,review__in=page_obj)
                 data={
                 'reviews':[{'id':review.id,'review_text':review.review_text,'created':review.created,
                         'info_more':review.info_more,'rating_anonymous':review.anonymous_review,
@@ -635,17 +636,25 @@ class ProductInfoAPIVIew(APIView):
     def post(self, request, *args, **kwargs):
         item_id=request.POST.get('item_id')
         review_id=request.POST.get('review_id')
+        reason=request.POST.get('reason')
         user=request.user
         like_item=True
         like_review=False
         data={}
         if review_id:
             review=ReView.objects.get(id=review_id)
-            if user in review.user.all():
-                like_review=False
-                review.like.remove(user)  
+            if reason:
+                if Report.objects.filter(user=user,review=review).exists():
+                    Report.objects.filter(user=user,review=review).update(reson=reason)
+                else:
+                    Report.objects.create(user=user,reson=reason,review=review)
+                data.update({'report':True})
             else:
-                review.like.add(user)  
+                if user in review.like.all():
+                    like_review=False
+                    review.like.remove(user)  
+                else:
+                    review.like.add(user)  
             data.update({'like_review':like_review,'num_like_review':review.num_like()})  
         if item_id:
             item=Item.objects.get(id=item_id)
