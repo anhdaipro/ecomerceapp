@@ -22,7 +22,7 @@ class ChatConsumer(AsyncConsumer):
             'type': 'websocket.accept'
         })
 
-        if user.is_authenticated:
+        if user:
         	await self.update_user_status(user,True)
 
     async def websocket_receive(self, event):
@@ -39,7 +39,7 @@ class ChatConsumer(AsyncConsumer):
         count_uploadfile = data.get('count_uploadfile')
         list_uploadfile = data.get('list_uploadfile')
         typing = data.get('typing')
-        if not msg and not count_uploadfile and not item_id and not order_id and not typing:
+        if not msg and not count_uploadfile and not item_id and not order_id and not typing and send_by_id==None:
             print('Error:: empty message')
             return False
         sent_by_user = await self.get_user_object(sent_by_id)
@@ -90,7 +90,7 @@ class ChatConsumer(AsyncConsumer):
     async def websocket_disconnect(self, event):
         print('disconnect', event)
         user = self.scope['user']
-        if user.is_authenticated:
+        if user!=None:
     	    await self.update_user_status(user,False)
     async def chat_message(self, event):
         print('chat_message', event)
