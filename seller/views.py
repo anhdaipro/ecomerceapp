@@ -2011,10 +2011,10 @@ def create_shop(request):
     user=request.user
     if request.method == "POST":
         shop=Shop.objects.get(user=user)
-        shop.name=request.POST.get('name')
-        shop.phone_number = request.POST.get('phone_number')
+        name=request.POST.get('name')
+        shop.name =name
         shop.city = request.POST.get('city')
-        shop.slug=name
+        shop.slug=name.replace(' ','')
         shop.save()
         data={'ok':'ok'}
         return Response(data)
