@@ -32,7 +32,7 @@ class Profile(models.Model):
         ('FEMALE','FEMALE'),
         ('ORTHER','ORTHER')
     )
-    user_type=models.CharField(max_length=10,choices=USER_TYPE,blank=True)
+    user_type=models.CharField(max_length=10,choices=USER_TYPE,blank=True,default='C')
     gender=models.CharField(max_length=10,choices=GENDER_CHOICE,blank=True)
     date_of_birth=models.DateField(null=True)
     xu=models.IntegerField(default=0,null=True)

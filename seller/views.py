@@ -93,7 +93,7 @@ class ListflashsaleAPI(ListAPIView):
 def infoseller(request):
     user=request.user
     profile=Profile.objects.get(user=user)
-    data={'name':user.username,'image':profile.image.url}
+    data={'name':user.username,'image':profile.image.url,'user_type':profile.user_type}
     return Response(data)
 @api_view(['GET', 'POST'])
 def homeseller(request):
