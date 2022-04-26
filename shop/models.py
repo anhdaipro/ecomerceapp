@@ -211,12 +211,6 @@ class Item(models.Model):
             max_price=int(variations["max"])
         return max_price
     
-    def percent_discount(self):
-        percent=0
-        variations = Variation.objects.filter(item=self).aggregate(avg=Avg('percent_discount'))
-        if variations['avg'] is not None:
-            percent=int(variations['avg'])
-        return percent
     def count_variation(self):
         count=0
         size=Size.objects.filter(variation__item=self,variation__inventory__gt=0)
@@ -296,6 +290,12 @@ class Item(models.Model):
         media_file=[media for media in self.media_upload.all() if media.media_type()=='image'][0].upload_file()    
         return media_file
 
+    def percent_discount(self):
+        percent=0
+        variations = Variation.objects.filter(item=self).aggregate(avg=Avg('percent_discount'))
+        if variations['avg'] is not None and self.count_program_valid():
+            percent=int(variations['avg'])
+        return percent
 class ShopViews(models.Model):
     shop = models.ForeignKey(
         Shop, related_name="shop_views", on_delete=models.CASCADE
