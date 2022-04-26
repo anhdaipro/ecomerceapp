@@ -1917,7 +1917,7 @@ class PurchaseAPIView(APIView):
                 if i==j:
                     list_duration[i]=float(duration[j])
         total_xu=request.POST.get('total_xu')
-        shop=shop.objects.get(user=user)
+        profile=Profile.objects.get(user=user)
         orderitem_id=request.POST.getlist('orderitem_id')
         orderitem=OrderItem.objects.filter(id__in=orderitem_id)
         review_rating=request.POST.getlist('review_rating')
@@ -2000,8 +2000,8 @@ class PurchaseAPIView(APIView):
             }
             return Response(data)
         else:
-            shop.xu=total_xu
-            shop.save()
+            profile.xu=total_xu
+            profile.save()
             list_media=Media_review.objects.bulk_create(
                 [Media_review(
                     upload_by=user,
