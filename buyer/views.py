@@ -633,15 +633,28 @@ class ProductInfoAPIVIew(APIView):
                 return Response(data)
     def post(self, request, *args, **kwargs):
         item_id=request.POST.get('item_id')
+        review_id=request.POST.get('review_id')
         user=request.user
-        item=Item.objects.get(id=item_id)
-        like=True
-        if user in item.liked.all():
-            item.liked.remove(user)
-            like=False
-        else:
-            item.liked.add(user)    
-        data={'num_like':item.num_like(),'like':like}
+        like_item=True
+        like_review=False
+        data={}
+        if review_id:
+            review=ReView.objects.get(id=review_id)
+            if user in review.user.all():
+                like_review=False
+                review.like.remove(user)  
+            data.update({'like_review':like_review,'num_like_review':review.num_like()})  
+            else:
+                review.like.add(user)  
+            
+        if item_id:
+            item=Item.objects.get(id=item_id)
+            if user in item.liked.all():
+                item.liked.remove(user)
+                like_item=False
+            else:
+                item.liked.add(user) 
+            data.update({'num_like':item.num_like(),'like_item':like_item})  
         return Response(data)
 
 class Getshopinfo(APIView):
@@ -1482,7 +1495,6 @@ class ListThreadAPIView(APIView):
         threads = Thread.objects.filter(participants=user)
         if thread_id:
             thread=Thread.objects.get(id=thread_id)
-            
             messages=Message.objects.filter(thread=thread)
             if seen:
                 messages.update(seen=True)

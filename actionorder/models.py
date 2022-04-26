@@ -64,7 +64,8 @@ class ReView(models.Model):
         if self.user.shop:
             name=self.user.shop.name
         return name
-
+    def num_like(self):
+        return self.like.all().count()
 class Report(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE)
