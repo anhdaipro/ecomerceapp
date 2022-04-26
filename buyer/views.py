@@ -329,7 +329,7 @@ class DetailAPIView(APIView):
             item_detail=Detail_Item.objects.filter(item=item).values()
             vouchers=Vocher.objects.filter(product=item,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
             deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).order_by('valid_to')
-            list_host_sale=Item.objects.filter(shop=item.shop,variation__orderitem__order__ordered=True).annotate(count=Count('varition__orderitem__order__id')).order_by('-count')
+            list_hot_sales=Item.objects.filter(shop=item.shop,variation__orderitem__order__ordered=True).annotate(count=Count('variation__orderitem__order__id')).order_by('-count')
             if deal_shock.exists():
                 byproduct=deal_shock.first().byproduct.all()
                 main_product=item.variation_set.all()[0]
@@ -359,7 +359,7 @@ class DetailAPIView(APIView):
             'list_host_sale':[{'item_name':i.name,'item_image':i.get_media_cover(),'item_max':i.max_price(),
             'percent_discount':i.percent_discount(),'item_min':i.min_price(),
             'program_valid':i.count_program_valid(),'item_url':i.get_absolute_url()
-            } for i in list_host_sale]
+            } for i in list_hot_sales]
             })
             
             if token:
