@@ -619,7 +619,7 @@ class ProductInfoAPIVIew(APIView):
                 data={
                 'reviews':[{'id':review.id,'review_text':review.review_text,'created':review.created,
                         'info_more':review.info_more,'rating_anonymous':review.anonymous_review,
-                        'review_rating':review.review_rating,'num_like':review.num_like(),'user':[user.id for user in review.like.all()],
+                        'review_rating':review.review_rating,'num_like':review.num_like(),'user_like':[user.id for user in review.like.all()],
                         'list_file':[{'file_id':file.id,'filetype':file.filetype(),'file':file.upload_file(),
                         'media_preview':file.media_preview(),'duration':file.duration,'show':False}
                         for file in review.media_upload.all()],'color_value':review.orderitem.product.get_color(),
@@ -1897,6 +1897,7 @@ class PurchaseAPIView(APIView):
         reason=request.POST.get('reason')
         order_id=request.POST.get('order_id')
         list_id=request.POST.getlist('id')
+        list_id_remove=request.POST.getlist('id_remove')
         file_preview=request.FILES.getlist('file_preview')
         duration=request.POST.getlist('duration')
         list_preview=[None for  i in range(len(file))]
@@ -1919,6 +1920,7 @@ class PurchaseAPIView(APIView):
         rating_anonymous=request.POST.getlist('rating_anonymous')
         list_anonymous_review=[False if rating_anonymous[i]=='false' else True for i in range(len(rating_anonymous))]
         rating_bab_category=request.POST.getlist('rating_bab_category')
+        Media_review.objects.filter(id__in=list_id_remove).delete()
         if review_id:
             Media_review.objects.filter(review=None).delete()
             reviews=ReView.objects.filter(id__in=review_id)
