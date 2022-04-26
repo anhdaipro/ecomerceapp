@@ -66,7 +66,7 @@ INSTALLED_APPS = [
     'myweb',
     'shipping',
     'channels',
-    'notification',
+    
     'mptt',
     
     'rest_framework_simplejwt',
