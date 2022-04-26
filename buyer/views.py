@@ -95,7 +95,31 @@ class RegisterView(APIView):
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        absurl = 'http://localhost:3000/verify/'+token
+    
+        email_body =f"Xin chao {user.username}, \nChúng tôi nhận được yêu cầu thiết lập lại mật khẩu cho tài khoản Anhdai của bạn.\nNhấn tại đây để thiết lập mật khẩu mới cho tài khoản Anhdai của bạn. \n{absurl}"
+        data = {'email_body': email_body, 'to_email': user.email,
+                    'email_subject': f"Thiết lập lại mật khẩu đăng nhập {user.username}"}
+        
+        email = EmailMessage(
+            subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+        email.send()
         return Response(serializer.data)
+
+class VerifyEmail(views.APIView):
+    def get(self, request):
+        token = request.GET.get('token')
+        try:
+            user = request.user
+            profile=user.profile
+            if not profile.is_verified:
+                proile.is_verified = True
+                profile.save()
+            return Response({'email': 'Successfully activated'}, status=status.HTTP_200_OK)
+        except jwt.ExpiredSignatureError as identifier:
+            return Response({'error': 'Activation Expired'}, status=status.HTTP_400_BAD_REQUEST)
+        except jwt.exceptions.DecodeError as identifier:
+            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
 class Sendotp(APIView):
     permission_classes = (AllowAny,)
@@ -1914,10 +1938,7 @@ class PurchaseAPIView(APIView):
             for j in range(len(file_preview)):
                 if i==j:
                     list_preview[i]=file_preview[j]
-        for i in range(len(list_duration)):
-            for j in range(len(duration)):
-                if i==j:
-                    list_duration[i]=float(duration[j])
+        
         total_xu=request.POST.get('total_xu')
         profile=Profile.objects.get(user=user)
         orderitem_id=request.POST.getlist('orderitem_id')
@@ -1937,7 +1958,7 @@ class PurchaseAPIView(APIView):
                     upload_by=user,
                     file=file[i],
                     file_preview=list_preview[i],
-                    duration=list_duration[i]
+                    duration=duration[i]
                 )
                 for i in range(len(file))
                 ]
@@ -2010,14 +2031,14 @@ class PurchaseAPIView(APIView):
                     upload_by=user,
                     file=file[i],
                     file_preview=list_preview[i],
-                    duration=list_duration[i]
+                    duration=duration[i]
                 )
                 for i in range(len(file))
                 ]
             )
             count_media=Media_review.objects.filter(upload_by=user).count()
             list_mediaupload=Media_review.objects.filter(upload_by=user)[count_media-len(file):count_media]
-            reviews=[
+            reviews=ReView.objects.bulk_create([
                 ReView(
                     user=user,
                     orderitem=orderitem[i],
@@ -2029,9 +2050,8 @@ class PurchaseAPIView(APIView):
                     rating_seller_service=int(rating_bab_category[i].split(',')[1]),
                     rating_shipping_service=int(rating_bab_category[i].split(',')[2]),
                 ) for i in range(len(orderitem_id))
-            ]
+            ])
             
-            ReView.objects.bulk_create(reviews)
             count_review=ReView.objects.filter(user=user).count()
             from_review=count_review-len(orderitem_id)
             list_reviews=ReView.objects.filter(user=user)[from_review:count_review]
