@@ -336,7 +336,7 @@ class DetailAPIView(APIView):
             data={'count_variation':item.count_variation(),'item_detail':item_detail,
             'item_name':item.name,'min_price':item.min_price(),'max_price':item.max_price(),
             'id':item.id,'num_like':item.num_like(),'percent_discount':item.percent_discount(),
-            'item_review':item.average_review(),'count_review':item.count_review(),
+            'item_review':item.average_review(),'count_review':item.count_review(),'shop_user':item.shop.user.id,
             'category':item.category.get_full_category(),'media_upload':[{'file':i.upload_file(),
             'image_preview':i.file_preview(),'duration':i.duration,'media_type':i.media_type(),
             } for i in item.media_upload.all()],'size':item.get_size(),'color':item.get_color(),
