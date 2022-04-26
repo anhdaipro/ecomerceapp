@@ -616,7 +616,6 @@ class ProductInfoAPIVIew(APIView):
                 paginator = Paginator(reviews, 10)  # Show 25 contacts per page.
                 page_number = request.GET.get('page')
                 page_obj = paginator.get_page(page_number)
-                list_report=Report.objects.filter(user=user,review__in=page_obj)
                 data={
                 'reviews':[{'id':review.id,'review_text':review.review_text,'created':review.created,
                         'info_more':review.info_more,'rating_anonymous':review.anonymous_review,
