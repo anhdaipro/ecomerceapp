@@ -23,6 +23,8 @@ class ChatConsumer(AsyncConsumer):
 
         if user:
         	await self.update_user_status(user,True)
+        else:
+            await self.update_user_status(user,True)
 
     async def websocket_receive(self, event):
         print('receive', event)
