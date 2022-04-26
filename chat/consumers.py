@@ -90,8 +90,7 @@ class ChatConsumer(AsyncConsumer):
     async def websocket_disconnect(self, event):
         print('disconnect', event)
         user = self.scope['user']
-        if user!=None:
-    	    await self.update_user_status(user,False)
+
     async def chat_message(self, event):
         print('chat_message', event)
         await self.send({
@@ -172,7 +171,8 @@ class ChatConsumer(AsyncConsumer):
         return count
     @database_sync_to_async
     def update_user_status (self, user, status):
-        return Shop.objects.filter(user_id=user.pk).update(online=status,is_online=timezone.now())
+        Profile.objects.filter(user_id=user.pk).update(online=status,is_online=timezone.now())
+        Profile.objects.exclude(user_id=user.pk).update(online=False,is_online=timezone.now())
 
     
                                 
