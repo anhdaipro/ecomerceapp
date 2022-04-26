@@ -2020,7 +2020,7 @@ def create_shop(request):
         return Response(data)
     else:
         address=Address.objects.filter(user=user,address_type='B')
-        data={'address':address.values(),'info':{'name':user.shop.name,'phone_number':user.shop.phone_number}}
+        data={'address':address.values(),'info':{'username':user.username,'email':user.email,'name':user.shop.name,'phone_number':user.profile.phone}}
         return Response(data)
                 
     
