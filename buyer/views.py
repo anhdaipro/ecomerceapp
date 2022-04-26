@@ -618,7 +618,7 @@ class ProductInfoAPIVIew(APIView):
                 data={
                 'reviews':[{'id':review.id,'review_text':review.review_text,'created':review.created,
                         'info_more':review.info_more,'rating_anonymous':review.anonymous_review,
-                        'review_rating':review.review_rating,
+                        'review_rating':review.review_rating,'num_like':review.num_like(),'user':[user.id for user in review.like.all()]
                         'list_file':[{'file_id':file.id,'filetype':file.filetype(),'file':file.upload_file(),
                         'media_preview':file.media_preview(),'duration':file.duration,'show':False}
                         for file in review.media_upload.all()],'color_value':review.orderitem.product.get_color(),
@@ -643,10 +643,9 @@ class ProductInfoAPIVIew(APIView):
             if user in review.user.all():
                 like_review=False
                 review.like.remove(user)  
-            data.update({'like_review':like_review,'num_like_review':review.num_like()})  
             else:
                 review.like.add(user)  
-            
+            data.update({'like_review':like_review,'num_like_review':review.num_like()})  
         if item_id:
             item=Item.objects.get(id=item_id)
             if user in item.liked.all():
@@ -654,7 +653,7 @@ class ProductInfoAPIVIew(APIView):
                 like_item=False
             else:
                 item.liked.add(user) 
-            data.update({'num_like':item.num_like(),'like_item':like_item})  
+            data.update({'num_like_item':item.num_like(),'like_item':like_item})  
         return Response(data)
 
 class Getshopinfo(APIView):
