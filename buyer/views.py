@@ -106,7 +106,7 @@ class RegisterView(APIView):
         email.send()
         return Response(serializer.data)
 
-class VerifyEmail(views.APIView):
+class VerifyEmail(APIView):
     def get(self, request):
         token = request.GET.get('token')
         try:
