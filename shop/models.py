@@ -186,6 +186,12 @@ class Item(models.Model):
         return list_size
     def num_like(self):
         return self.liked.all().count()
+    def discount_deal(self):
+        discount=0
+        variations = Variation.objects.filter(item=self,percent_discount_deal_shock__gt=0).aggregate(avg=Avg('percent_discount_deal_shock'))
+        if variations['avg'] is not None:
+            discount=int(variations["avg"])
+        return discount
     def discount_flash_sale(self):
         discount_flash_sale=0
         variations = Variation.objects.filter(item=self).aggregate(max=Max('percent_discount_flash_sale'))

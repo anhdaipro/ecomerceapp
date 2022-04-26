@@ -261,6 +261,7 @@ class DetailAPIView(APIView):
         unitdelivery=request.GET.get('unitdelivery')
         shoptype=request.GET.get('shoptype')
         categoryID=request.GET.get('categoryID')
+        data={}
         if category.exists():
             category=Category.objects.get(slug=slug)
             category_children=Category.objects.filter(parent=category)
@@ -299,7 +300,7 @@ class DetailAPIView(APIView):
             page_obj = paginator.get_page(page)
             shoptype=[{'value':shop.shop_type,'name':shop.get_shop_type_display()} for shop in list_shop ]
             status=[{'value':item.status,'name':item.get_status_display()} for item in list_items]
-            data={
+            data.update({
                 'image_home':[{'image':i.image.url,'url':i.url_field} for i in category.image_category.all()],
                 'shoptype':list({item['value']:item for item in shoptype}.values()),
                 'cities':list(set([shop.city for shop in list_shop if shop.city!=None])),
@@ -317,7 +318,7 @@ class DetailAPIView(APIView):
                 'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
                 }
             for i in page_obj],'page_count':paginator.num_pages
-            }
+            })
             return Response(data)
 
         elif item.exists():
@@ -327,13 +328,20 @@ class DetailAPIView(APIView):
             items=Item.objects.filter(shop=item.shop)
             item_detail=Detail_Item.objects.filter(item=item).values()
             vouchers=Vocher.objects.filter(product=item,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
-            deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+            deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).order_by('valid_to')
+            if deal_shock.exists():
+                byproduct=deal_shock.first().byproduct.all()
+                main_product=item.variation_set.all()[0]
+                data.update({'byproduct':[{'item_name':i.name,'item_image':i.get_media_cover(),
+                'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
+                'max_price':i.max_price(),'discount_deal':i.discount_deal(),
+                'program_valid':i.count_program_valid()} for i in byproduct]})
             promotion_combo=Promotion_combo.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
             flash_sale=Flash_sale.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
             order=Order.objects.filter(items__product__item=item,received=True)
             reviews=ReView.objects.filter(orderitem__product__item=item).distinct()
             variation=Variation.objects.filter(item=item).distinct()
-            data={'count_variation':item.count_variation(),'item_detail':item_detail,
+            data.update({'count_variation':item.count_variation(),'item_detail':item_detail,
             'item_name':item.name,'min_price':item.min_price(),'max_price':item.max_price(),
             'id':item.id,'num_like':item.num_like(),'percent_discount':item.percent_discount(),
             'item_review':item.average_review(),'count_review':item.count_review(),'shop_user':item.shop.user.id,
@@ -359,7 +367,7 @@ class DetailAPIView(APIView):
                 'size_value':review.orderitem.product.get_size(),'user':review.user.username,'shop':review.shop_name(),
                 'url_shop':review.user.shop.get_absolute_url()
                 } for review in reviews] 
-            }
+            })
             
             if token:
                 user=request.user
@@ -410,7 +418,7 @@ class DetailAPIView(APIView):
             paginator = Paginator(items,30)
             page_obj = paginator.get_page(page)
             count_follow=Shop.objects.filter(followers=shop.user).count()
-            data={'shop_logo':shop.user.profile.image.url,'shop_url':shop.get_absolute_url(),'count_followings': count_follow,
+            data.update({'shop_logo':shop.user.profile.image.url,'shop_url':shop.get_absolute_url(),'count_followings': count_follow,
                 'shop_name':shop.name,'shop':'shop','shop_user':shop.user.id,'created':shop.create_at,
                 'online':shop.user.profile.online,'num_followers':shop.num_follow(),'slug':shop.slug,
                 'is_online':shop.user.profile.is_online,'count_product':shop.count_product(),
@@ -435,7 +443,7 @@ class DetailAPIView(APIView):
                 'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
                 'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price()} for i in main_product],
-                'total_order':shop.total_order(),'list_category_child':[{'title':category.title,'id':category.id,'url':category.get_absolute_url()} for category in category_children]}
+                'total_order':shop.total_order(),'list_category_child':[{'title':category.title,'id':category.id,'url':category.get_absolute_url()} for category in category_children]})
             
             if token:
                 user=request.user
@@ -618,7 +626,7 @@ class ProductInfoAPIVIew(APIView):
                 data={
                 'reviews':[{'id':review.id,'review_text':review.review_text,'created':review.created,
                         'info_more':review.info_more,'rating_anonymous':review.anonymous_review,
-                        'review_rating':review.review_rating,'num_like':review.num_like(),'user':[user.id for user in review.like.all()]
+                        'review_rating':review.review_rating,'num_like':review.num_like(),'user':[user.id for user in review.like.all()],
                         'list_file':[{'file_id':file.id,'filetype':file.filetype(),'file':file.upload_file(),
                         'media_preview':file.media_preview(),'duration':file.duration,'show':False}
                         for file in review.media_upload.all()],'color_value':review.orderitem.product.get_color(),
