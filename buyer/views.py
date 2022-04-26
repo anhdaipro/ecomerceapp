@@ -1477,11 +1477,15 @@ class ListThreadAPIView(APIView):
         item=request.GET.get('item')
         order=request.GET.get('order')
         list_thread=request.GET.get('list_thread')
+        seen=request.GET.get('seen')
         limit=10
         threads = Thread.objects.filter(participants=user)
         if thread_id:
             thread=Thread.objects.get(id=thread_id)
+            
             messages=Message.objects.filter(thread=thread)
+            if seen:
+                messages.update(seen=True)
             message_count=messages.count()
             to_item=message_count
             if offset:
