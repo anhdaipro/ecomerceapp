@@ -622,7 +622,7 @@ class ProductInfoAPIVIew(APIView):
             if shop:
                 data={'shop_logo':item.shop.user.profile.image.url,'shop_url':item.shop.get_absolute_url(),
                 'shop_name':item.shop.name,
-                'online':item.shop.user.profile.online,'num_follow':item.shop.num_follow(),
+                'online':item.shop.user.profile.get_online(),'num_follow':item.shop.num_follow(),
                 'is_online':item.shop.user.profile.is_online,'count_product':item.shop.count_product(),
                 'total_order':item.shop.total_order()}
                 return Response(data)
