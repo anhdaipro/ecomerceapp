@@ -388,8 +388,8 @@ class DetailAPIView(APIView):
             })
             
             if token:
-                tokenData = jwt.decode(token, "secret", algorithms=["HS256"])
-                user_id = tokenData['id']
+                tokenData = OutstandingToken.objects.get(token=token)
+                user_id = tokenData.user
                 user=request.user
                 if ItemViews.objects.filter(item=item,user=user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
                     ItemViews.objects.create(item=item,user=user)
