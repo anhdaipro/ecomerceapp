@@ -11,6 +11,7 @@ from django.contrib import messages
 from account.models import *
 from shop.models import *
 from shipping.models import *
+from actionorder.models import *
 from category.models import *
 from checkout.models import *
 from discount.models import *
@@ -138,7 +139,7 @@ def homeseller(request):
 class ShopratingAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
-        list_reveiew=Review.objects.filter(orderitem__shop=shop)
+        list_reveiew=ReView.objects.filter(orderitem__shop=shop)
         page=request.GEt.get('page')
         paginator = Paginator(list_reveiew,5)
         page_obj = paginator.get_page(page)
@@ -149,7 +150,7 @@ class ShopratingAPI(APIView):
         'color_value':review.orderitem.product.get_color(),'get_reply':review.get_reply(),
         'size_value':review.orderitem.product.get_size(),
         'item_name':review.orderitem.product.item.name,
-        'user':review.user.username,
+        'user':review.user.username,'image':review.user.profile.image.url,
         } for review in page_obj],'page_count':paginator.num_pages}
         return Response(data) 
     def post(self,request):
