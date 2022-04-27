@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.conf import settings
 from django.db.models import F
 from django.core.mail import EmailMessage
+from rest_framework_simplejwt.backends import TokenBackend
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.sites.shortcuts import get_current_site
@@ -387,6 +388,7 @@ class DetailAPIView(APIView):
             })
             
             if token:
+                valid_data = TokenBackend(algorithm='HS256').decode(token,verify=True)
                 user=request.user
                 if ItemViews.objects.filter(item=item,user=user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
                     ItemViews.objects.create(item=item,user=user)
