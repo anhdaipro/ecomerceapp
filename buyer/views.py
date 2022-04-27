@@ -337,7 +337,7 @@ class DetailAPIView(APIView):
                 'list_item_page':[{'item_name':i.name,'item_image':i.get_media_cover(),
                 'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-                'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price(),
+                'review_rating':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price(),
                 'program_valid':i.count_program_valid(),'promotion':i.get_promotion(),
                 'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
                 }
@@ -369,7 +369,7 @@ class DetailAPIView(APIView):
             data.update({'count_variation':item.count_variation(),'item_detail':item_detail,
             'item_name':item.name,'min_price':item.min_price(),'max_price':item.max_price(),
             'id':item.id,'num_like':item.num_like(),'percent_discount':item.percent_discount(),
-            'item_review':item.average_review(),'count_review':item.count_review(),'shop_user':item.shop.user.id,
+            'review_rating':item.average_review(),'count_review':item.count_review(),'shop_user':item.shop.user.id,
             'category':item.category.get_full_category(),'media_upload':[{'file':i.upload_file(),
             'image_preview':i.file_preview(),'duration':i.duration,'media_type':i.media_type(),
             } for i in item.media_upload.all()],'size':item.get_size(),'color':item.get_color(),
@@ -447,11 +447,11 @@ class DetailAPIView(APIView):
                 'item_combo':[{'item_name':i.name,'item_image':i.get_media_cover(),
                 'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-                'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price()} for i in item_combo],
+                'review_rating':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price()} for i in item_combo],
                 'list_item_page':[{'item_name':i.name,'item_image':i.get_media_cover(),
                 'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-                'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price(),
+                'review_rating':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price(),
                 'program_valid':i.count_program_valid(),'promotion':i.get_promotion(),
                 'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
                 }
@@ -459,7 +459,7 @@ class DetailAPIView(APIView):
                 'main_product':[{'item_name':i.name,'item_image':i.get_media_cover(),
                 'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-                'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price()} for i in main_product],
+                'review_rating':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price()} for i in main_product],
                 'total_order':shop.total_order(),'list_category_child':[{'title':category.title,'id':category.id,'url':category.get_absolute_url()} for category in category_children]})
             
             if token:
@@ -585,7 +585,7 @@ class SearchitemAPIView(APIView):
             'list_item_page':[{'item_name':i.name,'item_image':i.get_media_cover(),
             'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
             'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-            'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price(),
+            'review_rating':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price(),
             'program_valid':i.count_program_valid(),'promotion':i.get_promotion(),
             'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
             }
@@ -721,7 +721,7 @@ class ShopinfoAPIVIew(APIView):
             list_page_item=[{'item_name':i.name,'item_image':i.get_media_cover(),
             'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
             'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-            'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price(),
+            'review_rating':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price(),
             'program_valid':i.count_program_valid(),'promotion':i.get_promotion(),
             'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
             }
@@ -836,7 +836,7 @@ class UpdateCartAPIView(APIView):
             'item_image':item.media_upload.all()[0].upload_file(),
             'percent_discount':i.percent_discount(),'item_min':i.min_price(),
             'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-            'item_review':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price(),
+            'review_rating':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price(),
             'promotion':i.get_promotion(),
             'shock_deal':i.shock_deal_type(),'num_order':i.number_order(),
             'item_url':i.get_absolute_url(),
