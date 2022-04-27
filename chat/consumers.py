@@ -13,7 +13,7 @@ from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 class ChatConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
         print('connected', event)
-        token = django_request.GET['token'].split(' ')[1]
+        token = self.request.GET['token'].split(' ')[1]
         user = self.scope['user']
         chat_room = f'user_chatroom_{user.id}'
         self.chat_room = chat_room
