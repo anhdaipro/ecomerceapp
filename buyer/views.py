@@ -1512,6 +1512,32 @@ class MessageAPIView(APIView):
         }
         return Response(data)
 
+class ActionThread(APIView):
+    permission_classes = (IsAuthenticated,)
+    def post(self,request):
+        thread_id_delete=request.POST.get('thread_id_delete')
+        thread_id=request.POST.get('thread_id')
+        gim=request.POST.get('gim')
+        unread=request.POST.get('unread')
+        data={}
+        if thread_id:
+            thread=Thread.objects.get(id=thread_id)
+            if gim:
+                if gim=='true':
+                    thread.gim=True
+                    data.update({'gim':True})
+                else:
+                    thread.gim=False
+                    data.update({'gim':False})
+                thread.save()
+            else:
+                if unread=='true':
+                    Message.objects.filter(thread=thread)[:1].update(seen=False)
+                else:
+                    Message.objects.filter(thread=thread)[:1].update(seen=True)
+        else:
+            thread=Thread.objects.get(id=thread_id_delete).delete()
+        return Response(data)
 class ListThreadAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
@@ -1553,7 +1579,7 @@ class ListThreadAPIView(APIView):
         
             if list_thread:
                 data.update({
-                    'threads':[{'id':thread.id,'info_thread':thread.info_thread(),
+                    'threads':[{'id':thread.id,'info_thread':thread.info_thread(),'gim':thread.gim,
                     'count_message_not_seen':thread.count_message_not_seen(),'count_message':thread.count_message(),
                     'message':[{'text':message.message,'file':message.message_file(),'read':message.seen,'sender':message.user.username,
                     'created':message.date_created,'message_order':message.message_order(),'message_product':message.message_product(),
@@ -1599,7 +1625,7 @@ class ListThreadAPIView(APIView):
             if type_chat=='2':
                 threads = Thread.objects.filter(Q(participants=user)&Q(message__seen=False) & ~Q(message__user=user))
                 data.update({
-                'threads':[{'id':thread.id,'info_thread':thread.info_thread(),
+                'threads':[{'id':thread.id,'info_thread':thread.info_thread(),'gim':thread.gim,
                 'count_message_not_seen':thread.count_message_not_seen(),'count_message':thread.count_message(),
                 'message':[{'text':message.message,'file':message.message_file(),'read':message.seen,'sender':message.user.username,
                 'created':message.date_created,'message_order':message.message_order(),'message_product':message.message_product(),
@@ -1610,7 +1636,7 @@ class ListThreadAPIView(APIView):
                 })
         else:
             data.update({
-            'threads':[{'id':thread.id,'info_thread':thread.info_thread(),
+            'threads':[{'id':thread.id,'info_thread':thread.info_thread(),'gim':thread.gim,
             'count_message_not_seen':thread.count_message_not_seen(),'count_message':thread.count_message(),
             'message':[{'text':message.message,'file':message.message_file(),'read':message.seen,'sender':message.user.username,
             'created':message.date_created,'message_order':message.message_order(),'message_product':message.message_product(),
@@ -1679,7 +1705,7 @@ class ListThreadAPIView(APIView):
             'file_preview':uploadfile.file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.filetype()}
             for uploadfile in message.file.all()
             ]} for message in messages],
-            'threads':[{'id':thread.id,'info_thread':thread.info_thread(),
+            'threads':[{'id':thread.id,'info_thread':thread.info_thread(),'gim':thread.gim,
             'count_message_not_seen':thread.count_message_not_seen(),'count_message':thread.count_message(),
             'message':[{'text':message.message,'file':message.message_file(),'read':message.seen,'sender':message.user.username,
             'created':message.date_created,'message_order':message.message_order(),'message_product':message.message_product(),

@@ -35,7 +35,8 @@ urlpatterns = [
     path('bundle-deal/<int:id>',views.bundle_deal,name='promotion_combo'),
     path('addon-deal-cart-selection/<int:id>', views.deal_shock,name="deal_shock"),
     path('api/v4/',include('buyer.urls')),
-    path('api/v3/',include('seller.urls'))
+    path('api/v3/',include('seller.urls')),
+    path('api/v1/',include('chat.urls'))
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += [re_path(r'^.*', TemplateView.as_view(template_name='index.html'))]

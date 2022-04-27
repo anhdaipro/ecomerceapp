@@ -14,7 +14,7 @@ class Thread(models.Model):
     participants=models.ManyToManyField(User,blank=True)
     group_name=models.CharField(max_length=200,null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-   
+    gim=models.BooleanField(default=False)
     def count_message_not_seen(self):
         return Message.objects.filter(seen=False,thread=self).count()
     def count_message(self):
