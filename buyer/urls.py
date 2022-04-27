@@ -7,8 +7,6 @@ from .views import (
     CategoryListView,
     DetailAPIView,
     ShopinfoAPIVIew,
-    MessageAPIView,
-    ThreadAPIView,
     ProfileAPIView,
     ImageHomeAPIView,
     ListItemRecommendAPIView,
@@ -33,7 +31,6 @@ from .views import (
     UserView,
     Itemrecently,
   
-    ListThreadAPIView,
     Sendotp,VerifySMSView,
     Topsearch,
     RegisterView, LoginView,  LogoutView 
@@ -76,10 +73,7 @@ urlpatterns = [
     path('addon-deal-cart-selection/<int:id>', DealShockAPIView.as_view()),
     path('bundle-deal/<int:id>', PromotionAPIView.as_view()),
     path('add-to-cart-batch',AddToCardBatchAPIView.as_view()),
-    path('message', MessageAPIView.as_view()),
     path('search', SearchitemAPIView.as_view()),
-    path('chat', ThreadAPIView.as_view()),
-    path('thread/list', ListThreadAPIView.as_view()),
     path('upload-file',views.upload_file),
     path('profile',ProfileAPIView.as_view()),
     path('purchase',PurchaseAPIView.as_view()),

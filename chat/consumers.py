@@ -40,7 +40,7 @@ class ChatConsumer(AsyncConsumer):
         count_uploadfile = data.get('count_uploadfile')
         list_uploadfile = data.get('list_uploadfile')
         typing = data.get('typing')
-        if not msg and not count_uploadfile and not item_id and not order_id and not typing and send_by_id==None:
+        if not msg and not count_uploadfile and not item_id and not order_id and not typing:
             print('Error:: empty message')
             return False
         sent_by_user = await self.get_user_object(sent_by_id)
