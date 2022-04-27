@@ -1596,7 +1596,7 @@ class ListThreadAPIView(APIView):
                     } for order_item in order.items.all()]} for order in list_orders]
                 })
         if type_chat:
-            if type_chat==2:
+            if type_chat=='2':
                 threads = Thread.objects.filter(Q(participants=user)&Q(message__seen=False) & ~Q(message__user=user))
                 data.update({
                 'threads':[{'id':thread.id,'info_thread':thread.info_thread(),
