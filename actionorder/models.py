@@ -77,3 +77,4 @@ class Reply(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE)
     text=models.TextField(max_length=2000)
+    created = models.DateTimeField(auto_now=True)

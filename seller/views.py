@@ -134,7 +134,10 @@ def homeseller(request):
     'hours':hours,'sum':sum_hour,'count':count_hour
     }
     return Response(data)
-    
+
+class Reviewshop(APIView):
+    def get(self,request):
+        Review.objects.filter(shop=shop)  
 @api_view(['GET', 'POST'])
 def product(request):
     user=request.user
