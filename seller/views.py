@@ -93,7 +93,8 @@ class ListflashsaleAPI(ListAPIView):
 def infoseller(request):
     user=request.user
     profile=Profile.objects.get(user=user)
-    data={'name':user.username,'image':profile.image.url,'user_type':profile.user_type}
+    address=Address.objects.filter(user=user,address_type='B')
+    data={'name':user.username,'image':profile.image.url,'user_type':profile.user_type,'phone':str(profile.phone)}
     return Response(data)
 @api_view(['GET', 'POST'])
 def homeseller(request):
@@ -2010,6 +2011,9 @@ def update_item(request,id):
 def create_shop(request):
     user=request.user
     if request.method == "POST":
+        profile=user.profile
+        profile.user_type="S"
+        profile.save()
         shop=Shop.objects.get(user=user)
         name=request.POST.get('name')
         shop.name =name
