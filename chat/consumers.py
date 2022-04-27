@@ -14,8 +14,6 @@ from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer
 class ChatConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
         print('connected', event)
-        message.content.setdefault('method', 'FAKE')
-        django_request = AsgiRequest(message)
         token = django_request.GET['token'].split(' ')[1]
         data = {'token': token}
         valid_data = VerifyJSONWebTokenSerializer().validate(data)
