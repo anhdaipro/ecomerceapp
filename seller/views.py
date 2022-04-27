@@ -140,7 +140,7 @@ class ShopratingAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
         list_reveiew=ReView.objects.filter(orderitem__shop=shop)
-        page=request.GEt.get('page')
+        page=request.GET.get('page')
         paginator = Paginator(list_reveiew,5)
         page_obj = paginator.get_page(page)
         reply=Reply.objects.create(id=id,text=text,review=review,user=reqeust.user)
