@@ -139,7 +139,7 @@ def homeseller(request):
 class ShopratingAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
-        list_reveiew=ReView.objects.filter(orderitem__shop=shop)
+        list_review=ReView.objects.filter(orderitem__shop=shop)
         page=request.GET.get('page')
         paginator = Paginator(list_reveiew,5)
         page_obj = paginator.get_page(page)
