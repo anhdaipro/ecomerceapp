@@ -388,7 +388,6 @@ class DetailAPIView(APIView):
             })
             
             if token:
-                valid_data = TokenBackend(algorithm='HS256').decode(token,verify=True)
                 user=request.user
                 if ItemViews.objects.filter(item=item,user=user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
                     ItemViews.objects.create(item=item,user=user)
