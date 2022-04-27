@@ -1703,7 +1703,7 @@ class PurchaseAPIView(APIView):
                     upload_by=user,
                     file=file[i],
                     file_preview=list_preview[i],
-                    duration=duration[i]
+                    duration=float(duration[i])
                 )
                 for i in range(len(file))
                 ]
@@ -1776,7 +1776,7 @@ class PurchaseAPIView(APIView):
                     upload_by=user,
                     file=file[i],
                     file_preview=list_preview[i],
-                    duration=duration[i]
+                    duration=float(duration[i])
                 )
                 for i in range(len(file))
                 ]

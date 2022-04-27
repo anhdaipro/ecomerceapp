@@ -20,9 +20,9 @@ class TokenAuthMiddleware:
  
         # Close old database connections to prevent usage of timed out connections
         close_old_connections()
- 
+        request=self.request
         # Get the token
-        token = parse_qs(scope["query_string"].decode("utf8"))["token"][0]
+        token = request.GET.get('token')
  
         # Try to authenticate the user
         try:
@@ -34,18 +34,7 @@ class TokenAuthMiddleware:
             return None
         else:
             #  Then token is valid, decode it
-            decoded_data = jwt_decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            print(decoded_data)
-            # Will return a dictionary like -
-            # {
-            #     "token_type": "access",
-            #     "exp": 1568770772,
-            #     "jti": "5c15e80d65b04c20ad34d77b6703251b",
-            #     "user_id": 6
-            # }
- 
-            # Get the user using ID
-            user = get_user_model().objects.get(id=decoded_data["user_id"])
+            user = request.user
  
         # Return the inner application directly and let it run everything else
         return self.inner(dict(scope, user=user))
