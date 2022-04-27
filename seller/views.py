@@ -135,9 +135,30 @@ def homeseller(request):
     }
     return Response(data)
 
-class Reviewshop(APIView):
+class ShopratingAPI(APIView):
     def get(self,request):
-        Review.objects.filter(shop=shop)  
+        shop=Shop.objects.get(user=request.user)
+        list_reveiew=Review.objects.filter(orderitem__shop=shop)
+        page=request.GEt.get('page')
+        paginator = Paginator(list_reveiew,5)
+        page_obj = paginator.get_page(page)
+        reply=Reply.objects.create(id=id,text=text,review=review,user=reqeust.user)
+        count_review=list_review.count()
+        data={'reviews':[{'id':review.id,'review_text':review.review_text,'created':review.created,
+        'info_more':review.info_more,'review_rating':review.review_rating,
+        'color_value':review.orderitem.product.get_color(),'get_reply':review.get_reply(),
+        'size_value':review.orderitem.product.get_size(),
+        'item_name':review.orderitem.product.item.name,
+        'user':review.user.username,
+        } for review in page_obj],'page_count':paginator.num_pages}
+        return Response(data) 
+    def post(self,request):
+        text=request.POST.get('text')
+        id=request.POST.get('id')
+        review=Review.objects.get(id=id)
+        reply=Reply.objects.create(text=text,review=review,user=reqeust.user)
+        data={'id':reply.id,'text':reply.text}
+        return()
 @api_view(['GET', 'POST'])
 def product(request):
     user=request.user

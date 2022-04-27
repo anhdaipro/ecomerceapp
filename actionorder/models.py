@@ -66,6 +66,11 @@ class ReView(models.Model):
         return name
     def num_like(self):
         return self.like.all().count()
+    def get_reply(self):
+        reply_text=''
+        if Reply.objects.filter(review=self).exists():
+            reply_text=Reply.objects.filter(review=self).first().text
+        return reply_text
 class Report(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE)
