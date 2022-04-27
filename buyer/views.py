@@ -1523,8 +1523,10 @@ class ListThreadAPIView(APIView):
         order=request.GET.get('order')
         list_thread=request.GET.get('list_thread')
         seen=request.GET.get('seen')
+        type_chat=request.GET.get('type_chat')
         limit=10
         threads = Thread.objects.filter(participants=user)
+        data={}
         if thread_id:
             thread=Thread.objects.get(id=thread_id)
             messages=Message.objects.filter(thread=thread)
@@ -1539,7 +1541,7 @@ class ListThreadAPIView(APIView):
                 from_item=0
             if from_item<to_item:
                 messages=messages[from_item:to_item]
-            data={
+            data.update({
             'messages':[{'text':message.message,
                 'sender':message.user.username,'created':message.date_created,
                 'message_order':message.message_order(),'message_product':message.message_product(),
@@ -1547,7 +1549,7 @@ class ListThreadAPIView(APIView):
                 'file_preview':uploadfile.file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.filetype()}
                 for uploadfile in message.file.all()
                 ]} for message in messages]
-                }
+                })
         
             if list_thread:
                 data.update({
@@ -1560,7 +1562,6 @@ class ListThreadAPIView(APIView):
                     for message in thread.chatmessage_thread.all().order_by('-id')[:1]]}
                     for thread in threads]
                 })
-            return Response(data)
 
         elif shop_name:
             shop=Shop.objects.get(name=shop_name)
@@ -1570,13 +1571,12 @@ class ListThreadAPIView(APIView):
                     to_item=int(offset)
                 from_item=to_item-5
                 list_items=Item.objects.filter(shop=shop).order_by('-id')[from_item:to_item]
-                data={'count_product':shop.count_product(),
+                data.update({'count_product':shop.count_product(),
                     'list_items':[{'item_name':i.name,'item_image':i.get_media_cover(),'number_order':i.number_order(),
                     'item_id':i.id,'item_inventory':i.total_inventory(),'item_max':i.max_price(),
                     'item_min':i.min_price()
                     } for i in list_items]
-                }
-                return Response(data)
+                })
             else:
                 count_order=Order.objects.filter(shop=shop,user=user,ordered=True).count()
                 to_item=count_order
@@ -1584,7 +1584,7 @@ class ListThreadAPIView(APIView):
                     to_item=int(offset)
                 from_item=to_item-5
                 list_orders=Order.objects.filter(shop=shop,user=user).order_by('-id')[from_item:to_item]
-                data={'count_order':count_order,
+                data.update({'count_order':count_order,
                     'list_orders':[{
                     'id':order.id,'shop':order.shop.name,'total_final_order':order.total_final_order(),
                     'count_item':order.count_item_cart(),
@@ -1594,10 +1594,22 @@ class ListThreadAPIView(APIView):
                     'size_value':order_item.product.get_size(),'price':order_item.product.price,
                     'total_price':order_item.total_discount_orderitem()
                     } for order_item in order.items.all()]} for order in list_orders]
-                }
-                return Response(data)
+                })
+        if type_chat:
+            if type_chat==2:
+                threads = Thread.objects.filter(Q(participants=user)&Q(message__seen=False) & ~Q(message__user=user))
+                data.update({
+                'threads':[{'id':thread.id,'info_thread':thread.info_thread(),
+                'count_message_not_seen':thread.count_message_not_seen(),'count_message':thread.count_message(),
+                'message':[{'text':message.message,'file':message.message_file(),'read':message.seen,'sender':message.user.username,
+                'created':message.date_created,'message_order':message.message_order(),'message_product':message.message_product(),
+                'list_file':[{'filetype':uploadfile.filetype()}
+                for uploadfile in message.file.all()]}
+                for message in thread.chatmessage_thread.all().order_by('-id')[:1]]}
+                for thread in threads]
+                })
         else:
-            data = {
+            data.update({
             'threads':[{'id':thread.id,'info_thread':thread.info_thread(),
             'count_message_not_seen':thread.count_message_not_seen(),'count_message':thread.count_message(),
             'message':[{'text':message.message,'file':message.message_file(),'read':message.seen,'sender':message.user.username,
@@ -1606,8 +1618,8 @@ class ListThreadAPIView(APIView):
             for uploadfile in message.file.all()]}
             for message in thread.chatmessage_thread.all().order_by('-id')[:1]]}
             for thread in threads]
-            }
-            return Response(data)
+            })
+        return Response(data)
     def post(self, request, *args, **kwargs):
         user=request.user
         participants=request.POST.getlist('participants')
@@ -1683,6 +1695,7 @@ class ThreadAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         thread_id=request.GET.get('thread_id')
+        type=request.GET.get('type')
         if thread_id:
             thread=Thread.objects.get(id=thread_id)
             messages=Message.objects.filter(thread=thread)
