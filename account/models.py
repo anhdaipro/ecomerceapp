@@ -45,19 +45,19 @@ class Profile(models.Model):
     def last_seen(self):
         return cache.get(f"seen_{self.user.username}")
 
-    @property
     def get_online(self):
+        online=True
         if self.last_seen:
             now = datetime.now(timezone.utc)
-            if now > self.last_seen + timedelta(minutes=settings.USER_ONLINE_TIMEOUT):
-                
-                return False
+            if now > self.last_seen + timedelta(minutes=settings.USER_ONLINE_TIMEOUT): 
+                online=False
 
             else:
-                return True
+                online=True
         else:
             
-            return False
+            online=False
+        return online
 
 class SMSVerification(models.Model):
     verified = models.BooleanField(default=False)
