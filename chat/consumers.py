@@ -14,8 +14,8 @@ class ChatConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
         print('connected', event)
         token = django_request.GET['token'].split(' ')[1]
-        valid_data = OutstandingToken.objects.get(token=str(token))
-        user = valid_data['user']
+        valid_data = OutstandingToken.objects.get(token=token)
+        user = valid_data.user
         chat_room = f'user_chatroom_{user.id}'
         self.chat_room = chat_room
         await self.channel_layer.group_add(
