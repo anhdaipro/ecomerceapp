@@ -21,11 +21,9 @@ class ChatConsumer(AsyncConsumer):
             'type': 'websocket.accept'
         })
 
-        if user:
+        if user!=None:
         	await self.update_user_status(user,True)
-        else:
-            await self.update_user_status(user,True)
-
+        
     async def websocket_receive(self, event):
         print('receive', event)
         data = json.loads(event['text'])
