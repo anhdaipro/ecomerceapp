@@ -143,7 +143,6 @@ class ShopratingAPI(APIView):
         page=request.GET.get('page')
         paginator = Paginator(list_reveiew,5)
         page_obj = paginator.get_page(page)
-        reply=Reply.objects.create(id=id,text=text,review=review,user=reqeust.user)
         count_review=list_review.count()
         data={'reviews':[{'id':review.id,'review_text':review.review_text,'created':review.created,
         'info_more':review.info_more,'review_rating':review.review_rating,
