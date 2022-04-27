@@ -21,9 +21,6 @@ class ChatConsumer(AsyncConsumer):
             'type': 'websocket.accept'
         })
 
-        if user!=None:
-        	await self.update_user_status(user,True)
-        
     async def websocket_receive(self, event):
         print('receive', event)
         data = json.loads(event['text'])
@@ -38,7 +35,7 @@ class ChatConsumer(AsyncConsumer):
         count_uploadfile = data.get('count_uploadfile')
         list_uploadfile = data.get('list_uploadfile')
         typing = data.get('typing')
-        if not msg and not count_uploadfile and not item_id and not order_id and not typing:
+        if not msg and not count_uploadfile and not item_id and not order_id and not typing and send_by_id==None:
             print('Error:: empty message')
             return False
         sent_by_user = await self.get_user_object(sent_by_id)
@@ -168,10 +165,7 @@ class ChatConsumer(AsyncConsumer):
                             if list(messages).index(message)==list(upload_files).index(files):
                                 message.file.add(files)
         return count
-    @database_sync_to_async
-    def update_user_status (self, user, status):
-        Profile.objects.filter(user_id=user.pk).update(online=status,is_online=timezone.now())
-        Profile.objects.exclude(user_id=user.pk).update(online=False,is_online=timezone.now())
+   
 
     
                                 

@@ -53,7 +53,7 @@ class ActionThread(APIView):
         else:
             thread.delete()
         return Response(data)
-        
+
 class ListThreadAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
@@ -139,7 +139,7 @@ class ListThreadAPIView(APIView):
                 })
         if type_chat:
             if type_chat=='2':
-                threads = Thread.objects.filter(Q(participants=user)&Q(message__seen=False) & ~Q(message__user=user))
+                threads = Thread.objects.filter(Q(participants=user)&Q(chatmessage_thread__seen=False) & ~Q(message__user=user))
                 data.update({
                 'threads':[{'id':thread.id,'info_thread':thread.info_thread(),'gim':thread.gim,
                 'count_message_not_seen':thread.count_message_not_seen(),'count_message':thread.count_message(),
