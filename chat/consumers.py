@@ -2,21 +2,19 @@ import json
 from channels.consumer import AsyncConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
-from channels.handler import AsgiRequest
-from channels.generic.websockets import JsonWebsocketConsumer
+
 from chat.models import *
 User = get_user_model()
 from shop.models import *
 from checkout.models import *
 from django.utils import timezone
+from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 
-from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer
 class ChatConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
         print('connected', event)
         token = django_request.GET['token'].split(' ')[1]
-        data = {'token': token}
-        valid_data = VerifyJSONWebTokenSerializer().validate(data)
+        valid_data = OutstandingToken.objects.get(token=str(token))
         user = valid_data['user']
         chat_room = f'user_chatroom_{user.id}'
         self.chat_room = chat_room
