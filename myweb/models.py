@@ -7,10 +7,9 @@ class Notify(models.Model):
     message=models.CharField(max_length=1000)
     read=models.BooleanField(default=False)
 class Image_home(models.Model):
-    upload_by=models.ManyToManyField(User,blank=True)
+    upload_by=models.ForeignKey(User, on_delete=models.CASCADE,null=True)
     image=models.ImageField(null=True)
     url_field=models.URLField(max_length=200,null=True)
-
 class SearchKey(models.Model):
     keyword = models.CharField(max_length=255)
     total_searches = models.IntegerField(default=0)
