@@ -107,9 +107,10 @@ class ShopprofileAPIView(APIView):
         profile=Profile.objects.get(user=request.user)
         shop.name=name
         shop.description=description
-        for file in list_file:
-            Image_home.objects.create(url_field=url,upload_by=request.user)
         for url in list_url:
+        
+            Image_home.objects.create(url_field=url,upload_by=request.user)
+        for file in list_file:
             Image_home.objects.create(image=file,upload_by=request.user)
         
         if image_cover:
