@@ -46,7 +46,7 @@ class OrderItem(models.Model):
                 discount_deal+=byproduct.discount_deal_by()
         return discount_deal
     def get_ref_code(self):
-        return Order.objects.get(items=self).ref_code
+        return Order.objects.filter(items=self).first().ref_code
     def discount_promotion(self):
         discount_promotion=0
         discount_price=self.product.price
