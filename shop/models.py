@@ -14,6 +14,7 @@ from django.db.models import Max, Min, Count, Avg,Sum
 from discount.models import *
 from shipping.models import *
 from actionorder.models import *
+from myweb.models import *
 from cart.models import *
 from checkout.models import *
 from category.models import Category
@@ -38,13 +39,14 @@ class Shop(models.Model):
     followers = models.ManyToManyField(User, blank=True, related_name='followers')
     views=models.IntegerField(default=0)
     slug=models.SlugField(null=True)
+    description_url=models.ManyToManyField(Image_home,blank=True)
     image_cover=models.ImageField(upload_to='shop/',null=True)
     city=models.CharField(max_length=200,null=True)
     def __str__(self):
         return str(self.user)
     def get_image(self):
-        if self.logo and hasattr(self.logo,'url'):
-            return self.logo.url
+        if self.image_cover and hasattr(self.image_cover,'url'):
+            return self.image_cover.url
     def get_absolute_url(self):
         return reverse("category", kwargs={"slug": self.slug})
     def num_follow(self):

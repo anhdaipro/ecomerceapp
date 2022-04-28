@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import ShopratingAPI, ListvoucherAPI,ListcomboAPI,ListdealshockAPI,ListprogramAPI,ListflashsaleAPI
+from .views import ShopratingAPI,ShopprofileAPIView, ListvoucherAPI,ListcomboAPI,ListdealshockAPI,ListprogramAPI,ListflashsaleAPI
 urlpatterns = [
     
     path("infoseller", views.infoseller),
@@ -33,4 +33,5 @@ urlpatterns = [
     path("new_deal", views.new_deal),
     path('deal_shock/<int:id>',views.deal_shock,name="item_deal_shock"),
     path("home/seller", views.homeseller),
+    path("shop/profile",ShopprofileAPIView.as_view()),
 ]

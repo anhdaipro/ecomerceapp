@@ -89,7 +89,13 @@ class ListflashsaleAPI(ListAPIView):
         shop=Shop.objects.get(user=user)
         return Flashsale.objects.filter(shop=shop)
 
-
+class ShopprofileAPIView(APIView):
+    def get(self,request):
+        user=request.user
+        shop=Shop.objects.get(user=user)
+        description_url=shop.description_url.all()
+        data={'image_cover':shop.get_image(),'name':shop.name,'description':shop.description,'description_url':[{'image':i.get_image(),'url':i.url} for i in description_url]}
+        return Response(data)
 @api_view(['GET', 'POST'])
 def infoseller(request):
     user=request.user
