@@ -109,7 +109,7 @@ class ShopprofileAPIView(APIView):
         shop.name=name
         shop.description=description
         Image_home.objects.bulk_create([Image_home(url_field=url,upload_by=request.user) for url in list_url])
-        Image_home.objects.bulk_create([Image_home(image=file,upload_by=request.user) for image in list_file])
+        Image_home.objects.bulk_create([Image_home(image=file,upload_by=request.user) for file in list_file])
         if image_cover:
             shop.image_cover=image_cover
         if image:
