@@ -101,7 +101,6 @@ class ShopprofileAPIView(APIView):
         list_url=request.POST.getlist('url')
         image=request.FILES.get('image')
         image_cover=request.FILES.get('image_cover')
-        image_cover=request.FILES.get('image_cover')
         name=request.POST.get('name')
         description=request.POST.get('description')
         shop=Shop.objects.get(user=request.user)
@@ -109,7 +108,7 @@ class ShopprofileAPIView(APIView):
         shop.name=name
         shop.description=description
         Image_home.objects.bulk_create([Image_home(url_field=url,upload_by=request.user) for url in list_url])
-        Image_home.objects.bulk_create([Image_home(image=file,upload_by=request.user) for file in list_file])
+        Image_home.objects.bulk_create([Image_home(image=file[i],upload_by=request.user) for i in range(len(file))])
         if image_cover:
             shop.image_cover=image_cover
         if image:
