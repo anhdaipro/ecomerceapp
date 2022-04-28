@@ -10,6 +10,9 @@ class Image_home(models.Model):
     upload_by=models.ForeignKey(User, on_delete=models.CASCADE,null=True)
     image=models.ImageField(null=True)
     url_field=models.URLField(max_length=200,null=True)
+    def get_image(self):
+        if self.image and hasattr(self.image,'url'):
+            retunr self.image.url
 class SearchKey(models.Model):
     keyword = models.CharField(max_length=255)
     total_searches = models.IntegerField(default=0)
