@@ -20,7 +20,7 @@ PAYMENT_CHOICES = (
 DEFAULT_SHIPPING_ID = 1
 class Order(models.Model):
     user=models.ForeignKey(User, on_delete=models.CASCADE)
-    items=models.ManyToManyField(OrderItem)
+    items=models.ManyToManyField(to="cart.OrderItem")
     shop=models.ForeignKey(to="shop.Shop",on_delete=models.CASCADE,related_name='order_shop')
     ordered=models.BooleanField(default=False)
     ref_code = models.CharField(max_length=20,null=True,blank=True)
