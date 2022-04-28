@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.db.models import  Q
 from django.urls import reverse
-from actionorder.models import *
 from discount.models import *
 from checkout.models import *
 import datetime
@@ -47,7 +46,7 @@ class OrderItem(models.Model):
                 discount_deal+=byproduct.discount_deal_by()
         return discount_deal
     def get_ref_code(self):
-        return Order.objects.get(items==self).ref_code
+        return Order.objects.get(items=self).ref_code
     def discount_promotion(self):
         discount_promotion=0
         discount_price=self.product.price
