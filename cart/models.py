@@ -5,6 +5,7 @@ from django.db.models import  Q
 from django.urls import reverse
 from actionorder.models import *
 from discount.models import *
+from checkout.models import *
 import datetime
 from django.utils import timezone
 # Create your models here.
@@ -45,7 +46,8 @@ class OrderItem(models.Model):
             for byproduct in self.byproduct.all():
                 discount_deal+=byproduct.discount_deal_by()
         return discount_deal
-
+    def get_ref_code(self):
+        return Order.objects.get(items==self).ref_code
     def discount_promotion(self):
         discount_promotion=0
         discount_price=self.product.price
