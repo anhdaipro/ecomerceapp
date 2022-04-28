@@ -97,7 +97,7 @@ class ShopprofileAPIView(APIView):
         data={'image_cover':shop.get_image(),'name':shop.name,'description':shop.description,'description_url':[{'image':i.get_image(),'url':i.url} for i in description_url]}
         return Response(data)
     def post(self,request):
-        list_file=request.FILES.getlist('file')
+        file=request.FILES.getlist('file')
         list_url=request.POST.getlist('url')
         image=request.FILES.get('image')
         image_cover=request.FILES.get('image_cover')
@@ -115,8 +115,8 @@ class ShopprofileAPIView(APIView):
             profile.image=image
         shop.save()
         count=len(list_url)+len(list_file)
-        image=Image_home.objects.filter(upload_by=request.user).order_by('-id')[:count]
-        shop.description_url.add(*image)
+        list_image=Image_home.objects.filter(upload_by=request.user).order_by('-id')[:count]
+        shop.description_url.add(*list_image)
         profile.save()
         data={'ok':'ok'}
         return Response(data)
