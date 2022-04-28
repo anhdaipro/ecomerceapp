@@ -158,7 +158,7 @@ class ShopratingAPI(APIView):
         review=ReView.objects.get(id=id)
         reply=Reply.objects.create(text=text,review=review,user=request.user)
         data={'id':reply.id,'text':reply.text}
-        return()
+        return Response(data)
 @api_view(['GET', 'POST'])
 def product(request):
     user=request.user
