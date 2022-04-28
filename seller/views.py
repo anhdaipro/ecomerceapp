@@ -148,7 +148,7 @@ class ShopratingAPI(APIView):
         'info_more':review.info_more,'review_rating':review.review_rating,
         'color_value':review.orderitem.product.get_color(),'get_reply':review.get_reply(),
         'size_value':review.orderitem.product.get_size(),
-        'item_name':review.orderitem.product.item.name,'ref_code':review.orderitem.get.ref_code(),
+        'item_name':review.orderitem.product.item.name,'ref_code':review.orderitem.get_ref_code(),
         'user':review.user.username,'image':review.user.profile.image.url,
         } for review in page_obj],'page_count':paginator.num_pages}
         return Response(data) 
