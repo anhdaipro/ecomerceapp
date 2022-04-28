@@ -155,7 +155,7 @@ class ShopratingAPI(APIView):
     def post(self,request):
         text=request.POST.get('text')
         id=request.POST.get('id')
-        review=Review.objects.get(id=id)
+        review=ReView.objects.get(id=id)
         reply=Reply.objects.create(text=text,review=review,user=reqeust.user)
         data={'id':reply.id,'text':reply.text}
         return()
