@@ -94,7 +94,7 @@ class ShopprofileAPIView(APIView):
         user=request.user
         shop=Shop.objects.get(user=user)
         description_url=shop.description_url.all()
-        data={'image_cover':shop.get_image(),'name':shop.name,'description':shop.description,'description_url':[{'image':i.get_image(),'url':i.url} for i in description_url]}
+        data={'image_cover':shop.get_image(),'name':shop.name,'description':shop.description,'description_url':[{'image':i.get_image(),'url':i.url_field} for i in description_url]}
         return Response(data)
     def post(self,request):
         list_file=request.FILES.getlist('file')
