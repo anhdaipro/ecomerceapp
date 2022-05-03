@@ -7,6 +7,7 @@ from django.db.models import F
 from django.core.mail import EmailMessage
 from rest_framework_simplejwt.backends import TokenBackend
 from django.urls import reverse
+from channels.generic.websocket import WebsocketConsumer
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes,smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
