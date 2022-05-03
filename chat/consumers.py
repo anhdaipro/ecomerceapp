@@ -2,15 +2,14 @@ import json
 from channels.consumer import AsyncConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
-
+from channels.generic.websocket import WebsocketConsumer
 from chat.models import *
 User = get_user_model()
 from shop.models import *
 from checkout.models import *
 from django.utils import timezone
-from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 
-class ChatConsumer(AsyncConsumer):
+class ChatConsumer(WebsocketConsumer):
     async def websocket_connect(self, event):
         print('connected', event)
         user = self.scope['user']

@@ -5,7 +5,7 @@ import chat.routing
 from .json_token_auth import TokenAuthMiddleware
 application = ProtocolTypeRouter({
     # (http->django views is added by default)
-    'websocket': TokenAuthMiddleware(
+    'websocket': AuthMiddlewareStack(
         URLRouter(
             chat.routing.websocket_urlpatterns
         )
