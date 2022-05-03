@@ -24,9 +24,6 @@ class ChatConsumer(WebsocketConsumer):
             'type': 'websocket.accept'
         })
 
-        if user.is_authenticated:
-        	await self.update_user_status(user,True)
-
     async def websocket_receive(self, event):
         print('receive', event)
         data = json.loads(event['text'])
@@ -92,8 +89,7 @@ class ChatConsumer(WebsocketConsumer):
     async def websocket_disconnect(self, event):
         print('disconnect', event)
         user = self.scope['user']
-        if user.is_authenticated:
-    	    await self.update_user_status(user,False)
+        
     async def chat_message(self, event):
         print('chat_message', event)
         await self.send({
