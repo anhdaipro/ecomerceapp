@@ -102,9 +102,6 @@ class RegisterView(APIView):
 
 class Registeremail(APIView):
     def post(self,request):
-        serializer = UserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
         username=request.POST.get('username')
         email=request.POST.get('email')
         verify=request.POST.get('verify')
