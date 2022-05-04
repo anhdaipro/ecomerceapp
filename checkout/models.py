@@ -47,10 +47,7 @@ class Order(models.Model):
         return str(self.ref_code)
     def get_absolute_url(self):
         return reverse("order", kwargs={"id": self.id})
-    def save(self,*args, **kwargs):
-        if datetime.datetime.now()>self.accepted_date:
-            self.accepted=True
-            super().save(*args,**kwargs)
+    
     def get_voucher(self):
         id_voucher=None
         vouchers=Vocher.objects.filter(order=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))

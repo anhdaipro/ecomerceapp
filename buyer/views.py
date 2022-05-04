@@ -1334,6 +1334,8 @@ class CheckoutAPIView(APIView):
                 order.ordered_date=datetime.datetime.now()
                 order.accepted_date=datetime.datetime.now()+timedelta(minutes=1)
                 order.payment_choice=payment_option
+                if datetime.datetime.now()>order.accepted_date:
+                    order.accepted=True
                 items = order.items.all()
                 items.update(ordered=True) 
                 for item in items:
