@@ -804,10 +804,8 @@ class CartAPIView(APIView):
     def get(self,request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         if token:
-            user=request.user
-            profile=Profile.objects.get(user=user)
-            cart_item=OrderItem.objects.filter(ordered=False,user=user)[0:5]
-            cart_items=OrderItem.objects.filter(ordered=False,user=user)
+            cart_item=OrderItem.objects.filter(ordered=False,user=request.user)[0:5]
+            cart_items=OrderItem.objects.filter(ordered=False,user=request.user)
             count=cart_items.count()
             list_cart_item=[{'item_info':order_item.product.item.item_info(),'id':order_item.id,                'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
                     'item_url':order_item.product.item.get_absolute_url(),
@@ -817,9 +815,7 @@ class CartAPIView(APIView):
                     } for order_item in cart_item]
             data={
                     'count':count,
-                    'a':list_cart_item,
-                    'user_name':user.username,
-                    'image':profile.image.url
+                    'a':list_cart_item
                     }
             return Response(data)
         else:
