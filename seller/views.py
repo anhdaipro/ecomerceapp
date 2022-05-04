@@ -174,6 +174,7 @@ def homeseller(request):
 
 class Listordershop(APIView):
     def get(self,request):
+        shop=Shop.objects.get(user=request.user)
         orders=Order.objects.filter(shop=shop,ordered=True)
         type_order=request.GET.get('type')
         source=request.GET.get('source')
