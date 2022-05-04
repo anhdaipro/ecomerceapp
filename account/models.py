@@ -44,7 +44,7 @@ class Profile(models.Model):
     @property
     def last_seen(self):
         return cache.get(f"seen_{self.user.username}")
-
+    @property
     def get_online(self):
         online=True
         if self.last_seen:
