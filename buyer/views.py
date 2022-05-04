@@ -110,15 +110,12 @@ class Registeremail(APIView):
             return Response({'error':True})
         else:
             usr_otp = random.randint(100000, 999999)
-            Verifyemail.objects.create(user = user, otp = usr_otp)
-            mess = f"Hello {user.first_name},\nYour OTP is {usr_otp}\nThanks!"
-            send_mail(
-            "Welcome to AnhDai's Shop - Verify Your Email",
-            mess,
-            settings.EMAIL_HOST_USER,
-            [email],
-            fail_silently = False
-            )
+            Verifyemail.objects.create(email = email, otp = usr_otp)
+            email_body = f"Chào mừng bạn đến với anhdai.com,\n Mã xác nhận email của bạn là: {usr_otp}"
+            data = {'email_body': email_body, 'to_email':email,
+                    'email_subject': "Welcome to AnhDai's Shop - Verify Your Email!"}
+            email = EmailMessage(subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+            email.send()
             return Response({'error':False})
         
 class VerifyEmailView(APIView):
