@@ -1332,7 +1332,7 @@ class CheckoutAPIView(APIView):
                 order.amount=order.total_discount_order()
                 order.ref_code = create_ref_code()
                 order.ordered_date=datetime.datetime.now()
-                order.time_accepted=datetime.datetime.now()+timedelta(minutes=1)
+                order.accepted_date=datetime.datetime.now()+timedelta(minutes=1)
                 order.payment_choice=payment_option
                 items = order.items.all()
                 items.update(ordered=True) 
