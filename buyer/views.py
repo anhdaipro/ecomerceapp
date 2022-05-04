@@ -98,15 +98,6 @@ class RegisterView(APIView):
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        absurl = 'http://localhost:3000/verify/'+token
-    
-        email_body =f"Xin chao {user.username}, \nChúng tôi nhận được yêu cầu thiết lập lại mật khẩu cho tài khoản Anhdai của bạn.\nNhấn tại đây để thiết lập mật khẩu mới cho tài khoản Anhdai của bạn. \n{absurl}"
-        data = {'email_body': email_body, 'to_email': user.email,
-                    'email_subject': f"Thiết lập lại mật khẩu đăng nhập {user.username}"}
-        
-        email = EmailMessage(
-            subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
-        email.send()
         return Response(serializer.data)
 
 class Registeremail(APIView):
@@ -116,37 +107,30 @@ class Registeremail(APIView):
         serializer.save()
         username=request.POST.get('username')
         email=request.POST.get('email')
-        password=request.POST.get('password')
-        re_password=request.POST.get('re_password')
         verify=request.POST.get('verify')
         check_user=User.objects.filter(Q(username=username) | Q(email=email))
         if check_user.exists():
-            return Response({'error':'Tài khoản đã tồn tại'})
+            return Response({'error':True})
         else:
-            if verify=='false':
-                usr_otp = random.randint(100000, 999999)
-                Verifyemail.objects.create(user = user, otp = usr_otp)
-                mess = f"Hello {user.first_name},\nYour OTP is {usr_otp}\nThanks!"
-                send_mail(
-                "Welcome to AnhDai's Shop - Verify Your Email",
-                mess,
-                settings.EMAIL_HOST_USER,
-                [email],
-                fail_silently = False
-                )
-                return Response({'error':False})
-            else:
-                serializer = UserSerializer(data=request.data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-           
+            usr_otp = random.randint(100000, 999999)
+            Verifyemail.objects.create(user = user, otp = usr_otp)
+            mess = f"Hello {user.first_name},\nYour OTP is {usr_otp}\nThanks!"
+            send_mail(
+            "Welcome to AnhDai's Shop - Verify Your Email",
+            mess,
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently = False
+            )
+            return Response({'error':False})
+        
 class VerifyEmailView(APIView):
+    permission_classes = (AllowAny,)
     def post(self, request):
         otp = int(request.POST.get("otp"))
         email=request.POST.get('email')
         reset=request.POST.get('reset')
-        id=request.POST.get('id')
-        verifyemail=Verifyemail.objects.get(id=id)
+        verifyemail=Verifyemail.objects.filter(email=email).last()
         if verifyemail.otp==otp:    
             return Response({'verify':True})
         else:
