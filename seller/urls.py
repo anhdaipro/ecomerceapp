@@ -34,5 +34,5 @@ urlpatterns = [
     path('deal_shock/<int:id>',views.deal_shock,name="item_deal_shock"),
     path("home/seller", views.homeseller),
     path("shop/profile",ShopprofileAPIView.as_view()),
-    path("shop/order",ShopprofileAPIView.as_view()),
+    path("shop/order",Listordershop.as_view()),
 ]
