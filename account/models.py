@@ -71,6 +71,6 @@ class Verifylink(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
 class Verifyemail(models.Model):
-    token=models.CharField(max_length=50)
-    user=models.ForeignKey(User, on_delete=models.CASCADE)
+    otp=RandomPinField(length=6,null=True)
+    email=models.CharField(max_length=50,null=True)
     created = models.DateTimeField(auto_now_add=True)

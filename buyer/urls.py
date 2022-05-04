@@ -30,7 +30,8 @@ from .views import (
     Listitemseller,
     UserView,
     Itemrecently,
-  
+    Registeremail,
+    Verifyemail,
     Sendotp,VerifySMSView,
     Topsearch,
     RegisterView, LoginView,  LogoutView 
@@ -46,6 +47,8 @@ urlpatterns = [
         views.SetNewPasswordAPIView.as_view(),
         name="password-reset-confirm",
     ),
+    path('register/email', Registeremail.as_view()),
+    path('verify/email', Verifyemail.as_view()),
     path('register', RegisterView.as_view()),
     path('login', LoginView.as_view()),
     path("verify-sms", views.VerifySMSView.as_view()),

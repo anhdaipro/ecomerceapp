@@ -109,20 +109,48 @@ class RegisterView(APIView):
         email.send()
         return Response(serializer.data)
 
+class Registeremail(APIView):
+    def post(self,request):
+        serializer = UserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        username=request.POST.get('username')
+        email=request.POST.get('email')
+        password=request.POST.get('password')
+        re_password=request.POST.get('re_password')
+        verify=request.POST.get('verify')
+        check_user=User.objects.filter(Q(username=username) | Q(email=email))
+        if check_user.exists():
+            return Response({'error':'Tài khoản đã tồn tại'})
+        else:
+            if verify=='false':
+                usr_otp = random.randint(100000, 999999)
+                Verifyemail.objects.create(user = user, otp = usr_otp)
+                mess = f"Hello {user.first_name},\nYour OTP is {usr_otp}\nThanks!"
+                send_mail(
+                "Welcome to AnhDai's Shop - Verify Your Email",
+                mess,
+                settings.EMAIL_HOST_USER,
+                [email],
+                fail_silently = False
+                )
+                return Response({'error':False})
+            else:
+                serializer = UserSerializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+           
 class VerifyEmail(APIView):
-    def get(self, request):
-        token = request.GET.get('token')
-        try:
-            user = request.user
-            profile=user.profile
-            if not profile.is_verified:
-                proile.is_verified = True
-                profile.save()
-            return Response({'email': 'Successfully activated'}, status=status.HTTP_200_OK)
-        except jwt.ExpiredSignatureError as identifier:
-            return Response({'error': 'Activation Expired'}, status=status.HTTP_400_BAD_REQUEST)
-        except jwt.exceptions.DecodeError as identifier:
-            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request):
+        otp = int(request.POST.get("otp"))
+        email=request.POST.get('email')
+        reset=request.POST.get('reset')
+        id=request.POST.get('id')
+        verifyemail=Verifyemail.objects.get(id=id)
+        if verifyemail.otp==otp:    
+            return Response({'verify':True})
+        else:
+            return Response({'verify':False})
 
 class Sendotp(APIView):
     permission_classes = (AllowAny,)
@@ -1332,10 +1360,8 @@ class CheckoutAPIView(APIView):
                 order.amount=order.total_discount_order()
                 order.ref_code = create_ref_code()
                 order.ordered_date=datetime.datetime.now()
-                order.accepted_date=datetime.datetime.now()+timedelta(minutes=1)
+                order.accepted_date=datetime.datetime.now()+timedelta(minutes=10)
                 order.payment_choice=payment_option
-                if datetime.datetime.now()>order.accepted_date:
-                    order.accepted=True
                 items = order.items.all()
                 items.update(ordered=True) 
                 for item in items:
@@ -1623,6 +1649,7 @@ class PurchaseAPIView(APIView):
         user=request.user
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
         order_id=request.GET.get('id')
+        type_order=request.GET.get('type')
         review=request.GET.get('review')
         if order_id and not review:
             order = Order.objects.get(id=order_id)
@@ -1657,7 +1684,15 @@ class PurchaseAPIView(APIView):
             to_item=from_item+limit
             order_all = Order.objects.filter(ordered=True,user=user).order_by('-id')
             count_order=order_all.count()
-            orders = Order.objects.filter(ordered=True,user=user).order_by('-id')[from_item:to_item]
+            order_all = order_all[from_item:to_item]
+            if type_order=='2':
+                order_all=order_all.filter(accepted_date__lt=timezone.now(),canceled=False)
+            if type_order=='3':
+                order_all=order_all.filter(being_delivered=True)
+            if type_order=='4':
+                order_all=order_all.filter(received=True)
+            if type_order=='5':
+                order_all=order_all.filter(canceled=True)
             list_order=[{'shop_name':order.shop.name,'shop_url':order.shop.get_absolute_url(),'shop_user':order.shop.user.id,'received':order.received,'canceled':order.canceled,
                 'being_delivered':order.being_delivered,'shop_url':order.shop.get_absolute_url(),'id':order.id,
                 'accepted':order.accepted,'amount':order.total_final_order(),
