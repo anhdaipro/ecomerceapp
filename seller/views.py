@@ -137,6 +137,7 @@ def homeseller(request):
     user=request.user
     shop=Shop.objects.get(user=user)
     current_date=datetime.datetime.now()
+    Order.objects.filter(shop=shop,accepted_date__gte=timezone.now()).update(accepted=True)
     orders = Order.objects.filter(shop=shop,ordered=True,received=True)
     total_order_day=Order.objects.filter(shop=shop,ordered=True,ordered_date__date__gte=current_date).annotate(day=TruncHour('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
     total_amount_day=Order.objects.filter(shop=shop,ordered=True,ordered_date__date__gte=current_date).annotate(day=TruncHour('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
@@ -2108,7 +2109,7 @@ def my_dashboard(request):
         canceled=False
         if cancel:
             canceled=True
-        accepted=False
+        accepted=[False,True]
         ordered=True
         if accept:
             accepted=True
