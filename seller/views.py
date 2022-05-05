@@ -15,6 +15,7 @@ from actionorder.models import *
 from category.models import *
 from checkout.models import *
 from discount.models import *
+from chat.models import *
 from cart.models import *
 from django.db.models import FloatField
 from django.db.models import Max, Min, Count, Avg,Sum,F,Value as V
