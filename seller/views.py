@@ -182,9 +182,9 @@ class Listordershop(APIView):
             if type_order=='toship':
                 orders=orders.filter(accepted_date__lt=timezone.now())
                 if source=='processed':
-                    orders=orders.filter(accepted=True)
+                    orders=orders.filter(accepted=True,being_delivered=False,received=False,canceled=False)
             if type_order=='shipping':
-                orders=orders.filter(being_delivered=True) 
+                orders=orders.filter(being_delivered=True,received=False,canceled=False) 
             if type_order=='completed':
                 orders=orders.filter(received=True) 
             if type_order=='canceled':

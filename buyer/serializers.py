@@ -30,7 +30,16 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model=Profile
         fields = ('phone',)
-
+class Verifyemail(serializers.ModelSerializer):
+    model = Verifyemail
+    fields=['otp','email']
+class Verifyemailuser(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'password','verifyemail']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer()
     class Meta:
