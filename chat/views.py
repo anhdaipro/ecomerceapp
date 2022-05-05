@@ -47,9 +47,12 @@ class ActionThread(APIView):
             thread.save()
         elif unread:
             if unread=='true':
-                Message.objects.filter(thread=thread)[:1].update(seen=False)
+                messages=Message.objects.filter(thread=thread)
+                if messages.exists():
+                    messages.last().seen=False
+                    messages.last().save()
             else:
-                Message.objects.filter(thread=thread)[:1].update(seen=True)
+                Message.objects.filter(thread=thread).update(seen=True)
         else:
             thread.delete()
         return Response(data)
