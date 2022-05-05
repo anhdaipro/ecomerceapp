@@ -138,8 +138,10 @@ def homeseller(request):
     user=request.user
     shop=Shop.objects.get(user=user)
     current_date=datetime.datetime.now()
-    Order.objects.filter(shop=shop,accepted_date__lt=timezone.now()).update(accepted=True)
-    orders = Order.objects.filter(shop=shop,ordered=True,received=True)
+    count_order_waiting_comfirmed=Order.objects.filter(shop=shop,ordered=True,canceled=False,accepted=False,being_delivered=False,received=False,accepted_date__gt=timezone.now()).count()
+    count_order_canceled=Order.objects.filter(shop=shop,ordered=True,canceled=True).count()
+    count_order_processed=Order.objects.filter(shop=shop,ordered=True,canceled=False,accepted=True,received=False,being_delivered=False).count()
+    count_order_waiting_processed=Order.objects.filter(shop=shop,ordered=True,being_delivered=False,accepted=False,accepted_date__lt=timezone.now()).count()
     total_order_day=Order.objects.filter(shop=shop,ordered=True,ordered_date__date__gte=current_date).annotate(day=TruncHour('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
     total_amount_day=Order.objects.filter(shop=shop,ordered=True,ordered_date__date__gte=current_date).annotate(day=TruncHour('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
     total_amount_days=[]
@@ -169,7 +171,9 @@ def homeseller(request):
     current_date.strftime('%d')
     hours=[datetime.time(i).strftime('%H:00') for i in hour] 
     data={
-    'hours':hours,'sum':sum_hour,'count':count_hour
+    'hours':hours,'sum':sum_hour,'count':count_hour,'count_order_waiting_comfirmed':count_order_waiting_comfirmed,
+    'count_order_canceled':count_order_canceled,'count_order_processed':count_order_processed,
+    'count_order_waiting_processed':count_order_waiting_processed
     }
     return Response(data)
 
