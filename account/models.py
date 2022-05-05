@@ -47,7 +47,7 @@ class Profile(models.Model):
     def get_online(self):
         online=True
         if self.last_seen:
-            now = datetime.now(timezone.utc)
+            now = datetime.datetime.now(timezone.utc)
             if now > self.last_seen + timedelta(minutes=settings.USER_ONLINE_TIMEOUT): 
                 online=False
 
