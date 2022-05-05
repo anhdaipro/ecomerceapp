@@ -180,7 +180,7 @@ class Listordershop(APIView):
         type_order=request.GET.get('type')
         source=request.GET.get('source')
         threads=Thread.objects.filter(participants=request.user)
-        list_user=User.object.filter(thread__in=threads).distinct()
+        list_user=User.objects.filter(thread__in=threads).distinct()
         if type_order:
             if type_order=='toship':
                 orders=orders.filter(accepted_date__lt=timezone.now())
