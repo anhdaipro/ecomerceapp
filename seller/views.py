@@ -193,7 +193,7 @@ class Listordershop(APIView):
                 orders=orders.exclude(refund=None)
         data={'list_orders':[{'received':order.received,'canceled':order.canceled,'accepted':order.accepted,'amount':order.total_final_order(),
             'being_delivered':order.being_delivered,'ordered_date':order.ordered_date,'received_date':order.received_date,
-            'canceled_date':order.canceled_date,'accepted_date':order.accepted_date,'id':order.id,
+            'canceled_date':order.canceled_date,'accepted_date':order.accepted_date,'id':order.id,'ref_code':order.ref_code,
             'shop':order.shop.name,'user':{'username':order.user.username,'image':order.user.profile.image.url},
             'total':order.total_price_order(),'total_final':order.total_final_order(),'payment_choice':order.payment_choice,
             'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),
