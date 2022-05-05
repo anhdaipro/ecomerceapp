@@ -197,7 +197,7 @@ class Listordershop(APIView):
         data={'list_orders':[{'received':order.received,'canceled':order.canceled,'accepted':order.accepted,'amount':order.total_final_order(),
             'being_delivered':order.being_delivered,'ordered_date':order.ordered_date,'received_date':order.received_date,
             'canceled_date':order.canceled_date,'accepted_date':order.accepted_date,'id':order.id,'ref_code':order.ref_code,
-            'user':{'username':order.user.username,'image':order.user.profile.image.url,'id':user.id},'exist':True if order.user in list_user else False,
+            'user':{'username':order.user.username,'image':order.user.profile.image.url,'id':order.user.id},'exist':True if order.user in list_user else False,
             'total_final':order.total_final_order(),'payment_choice':order.payment_choice,
             'order_item':[{'item_info':order_item.product.item.item_info(),'item_url':order_item.product.item.get_absolute_url(),
             'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
