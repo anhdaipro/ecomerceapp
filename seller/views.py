@@ -178,6 +178,8 @@ class Listordershop(APIView):
         orders=Order.objects.filter(shop=shop,ordered=True)
         type_order=request.GET.get('type')
         source=request.GET.get('source')
+        threads=Thread.objects.filter(participants=request.user)
+        list_user=User.object.filter(thread__in=threads).distinct()
         if type_order:
             if type_order=='toship':
                 orders=orders.filter(accepted_date__lt=timezone.now())
@@ -194,9 +196,8 @@ class Listordershop(APIView):
         data={'list_orders':[{'received':order.received,'canceled':order.canceled,'accepted':order.accepted,'amount':order.total_final_order(),
             'being_delivered':order.being_delivered,'ordered_date':order.ordered_date,'received_date':order.received_date,
             'canceled_date':order.canceled_date,'accepted_date':order.accepted_date,'id':order.id,'ref_code':order.ref_code,
-            'shop':order.shop.name,'user':{'username':order.user.username,'image':order.user.profile.image.url},
-            'total':order.total_price_order(),'total_final':order.total_final_order(),'payment_choice':order.payment_choice,
-            'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),
+            'user':{'username':order.user.username,'image':order.user.profile.image.url,'id':user.id},'exist':True if order.user in list_user else False,
+            'total_final':order.total_final_order(),'payment_choice':order.payment_choice,
             'order_item':[{'item_info':order_item.product.item.item_info(),'item_url':order_item.product.item.get_absolute_url(),
             'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
             'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
@@ -209,10 +210,10 @@ class Listordershop(APIView):
             'count_program_valid':byproduct.byproduct.item.count_program_valid(),
             'total_price':byproduct.total_price(),
              } for byproduct in order_item.byproduct.all()],
-        'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
-        'price':order_item.product.price,
-        'total_price':order_item.total_discount_orderitem()
-        } for order_item in order.items.all()]} for order in orders]}
+            'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
+            'price':order_item.product.price,
+            'total_price':order_item.total_discount_orderitem()
+            } for order_item in order.items.all()]} for order in orders]}
         return Response(data)
 
     def post(self,request):
