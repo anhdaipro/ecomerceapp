@@ -1677,7 +1677,7 @@ class PurchaseAPIView(APIView):
                 'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
                 'size_value':order_item.product.get_size(),'price':order_item.product.price,
                 'id':order_item.id
-                } for order_item in order.items.all()]} for order in orders]
+                } for order_item in order.items.all()]} for order in order_all]
             data={
                 'a':list_order,'count_order':count_order,
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]
