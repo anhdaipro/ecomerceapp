@@ -89,7 +89,7 @@ class UserView(APIView):
             user=request.user
             Profile.objects.filter(user=user).update(online=True)
         except jwt.ExpiredSignatureError:
-            Profile.objects.all().update(online=True)
+            Profile.objects.all().update(online=False)
             raise AuthenticationFailed('Unauthenticated!')
         user=request.user
         serializer = UserprofileSerializer(user)
