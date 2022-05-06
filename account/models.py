@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 import logging
 import datetime
-from datetime import timedelta
+from datetime import timedeltacd eco
 # Create your models here.
 from randompinfield import RandomPinField
 from twilio.rest import Client
@@ -41,23 +41,6 @@ class Profile(models.Model):
     online=models.BooleanField(default=False)
     def __str__(self):
         return "%s" % self.user.username
-
-    def last_seen(self):
-        return cache.get(f"seen_{self.user.username}")
-    
-    def get_online(self):
-        online=True
-        if self.last_seen:
-            now = datetime.datetime.now(timezone.utc)
-            if now > self.last_seen + timedelta(minutes=settings.USER_ONLINE_TIMEOUT): 
-                online=False
-
-            else:
-                online=True
-        else:
-            
-            online=False
-        return online
 
 class SMSVerification(models.Model):
     verified = models.BooleanField(default=False)
