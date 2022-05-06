@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 import logging
 import datetime
+from datetime import timedelta
 # Create your models here.
 from randompinfield import RandomPinField
 from twilio.rest import Client
