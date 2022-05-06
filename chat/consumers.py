@@ -14,7 +14,7 @@ class ChatConsumer(AsyncConsumer):
         print('connected', event)
         user = self.scope['user']
         if user.is_authenticated:
-    		await self.update_user_status(user,True)
+    	    await self.update_user_status(user,True)
         chat_room = f'user_chatroom_{user.id}'
         self.chat_room = chat_room
         await self.channel_layer.group_add(
