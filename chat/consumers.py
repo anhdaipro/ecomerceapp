@@ -2,19 +2,19 @@ import json
 from channels.consumer import AsyncConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
-from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from channels.generic.websocket import WebsocketConsumer
 from chat.models import *
 User = get_user_model()
 from shop.models import *
 from checkout.models import *
 from django.utils import timezone
 
-class ChatConsumer(AsyncJsonWebsocketConsumer):
+class ChatConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
         print('connected', event)
         user = self.scope['user']
         if user.is_authenticated:
-    	    await self.update_user_status(user,True)	
+    		await self.update_user_status(user,True)
         chat_room = f'user_chatroom_{user.id}'
         self.chat_room = chat_room
         await self.channel_layer.group_add(
@@ -90,8 +90,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def websocket_disconnect(self, event):
         print('disconnect', event)
         user = self.scope['user']
-        if user.is_authenticated:
-    	    await self.update_user_status(user,False)
+        
     async def chat_message(self, event):
         print('chat_message', event)
         await self.send({
@@ -171,10 +170,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                             if list(messages).index(message)==list(upload_files).index(files):
                                 message.file.add(files)
         return count
-
     @database_sync_to_async
-    def update_user_status(self, user,status):
-	    return Profile.objects.filter(user_id=user.pk).update(online=status)
+	def update_user_status(self, user,status):
+		return Profile.objects.filter(user_id=user.pk).update(online=status)
    
 
     
