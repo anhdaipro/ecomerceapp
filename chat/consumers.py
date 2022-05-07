@@ -172,7 +172,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         return count
     @database_sync_to_async
     def update_user_status(self, user,status):
-		return Profile.objects.filter(user=user).update(online=status)
+	    return Profile.objects.filter(user=user).update(online=status)
    
 
     
