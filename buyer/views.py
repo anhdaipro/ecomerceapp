@@ -1799,8 +1799,8 @@ class PurchaseAPIView(APIView):
                 for i in range(len(file))
                 ]
             )
-            count_media=Media_review.objects.filter(upload_by=user).count()
-            list_mediaupload=Media_review.objects.filter(upload_by=user)[count_media-len(file):count_media]
+        
+            list_mediaupload=Media_review.objects.filter(upload_by=user).order_by('-id')[:len(file)]
             reviews=ReView.objects.bulk_create([
                 ReView(
                     user=user,
@@ -1818,6 +1818,7 @@ class PurchaseAPIView(APIView):
             count_review=ReView.objects.filter(user=user).count()
             from_review=count_review-len(orderitem_id)
             list_reviews=ReView.objects.filter(user=user)[from_review:count_review]
+            list_id.reverse()
             for review in list_reviews:
                 for j in range(len(list_id)):
                     if int(list_id[j])==review.orderitem.id:
