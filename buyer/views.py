@@ -1066,7 +1066,7 @@ class CartItemAPIView(APIView):
     def get(self,request):
         user = request.user
         list_order_item=OrderItem.objects.filter(user=user,ordered=False).select_related('user').order_by('-id')
-        shops=Shop.objects.filter(shop_order__in=list_order_item).distinct()
+        shops=Shop.objects.filter(shop_order__in=list_order_item).select_related('user').distinct()
         data={
             'user':{'user_id':user.id},
             'order_item':[{'id':order_item.id,'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
@@ -1193,7 +1193,7 @@ class ListorderAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
-        order_check = Order.objects.filter(user=user, ordered=False).exclude(items=None)
+        order_check = Order.objects.filter(user=user, ordered=False).select_related('user').exclude(items=None)
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
         data={
         'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads],
