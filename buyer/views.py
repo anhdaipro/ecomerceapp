@@ -1065,7 +1065,7 @@ class CartItemAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user = request.user
-        list_order_item=OrderItem.objects.filter(user=user,ordered=False).select_related('user').order_by('-id')
+        list_order_item=OrderItem.objects.filter(user=user,ordered=False).select_related('product__item').order_by('-id')
         shops=Shop.objects.filter(shop_order__in=list_order_item).select_related('user').distinct()
         data={
             'user':{'user_id':user.id},
