@@ -255,7 +255,7 @@ class CategoryListView(APIView):
     def get(self,request):
         category_parent=Category.objects.all().order_by('id')
         list_category_parent=[{'title':i.title,'image':i.image.url,'url':i.get_absolute_url()} for i in category_parent if i.image]
-        data={'b':list_category_parent,'ik':'fkkk'}
+        data={'b':list_category_parent}
         
         return Response(data)
 class Listitemseller(ListAPIView):
@@ -703,7 +703,6 @@ class ProductInfoAPIVIew(APIView):
 class Getshopinfo(APIView):
     def get(self,request):
         shop_id=request.GET.get('shop_id')
-        
         data={'shop_logo':item.shop.user.profile.image.url,'shop_url':item.shop.get_absolute_url(),
             'shop_name':item.shop.name,
             'online':item.shop.user.profile.online,'num_follow':item.shop.num_follow(),
@@ -1066,7 +1065,7 @@ class CartItemAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user = request.user
-        list_order_item=OrderItem.objects.filter(user=user,ordered=False).order_by('-id')
+        list_order_item=OrderItem.objects.filter(user=user,ordered=False).select_related('user').order_by('-id')
         shops=Shop.objects.filter(shop_order__in=list_order_item).distinct()
         data={
             'user':{'user_id':user.id},
