@@ -262,7 +262,7 @@ class Listitemseller(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
-        return Item.objects.filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__orderitem__order')).order_by('-count_order')
+        return Item.objects.prefetch_related('variation__product__order').filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__orderitem__order')).order_by('-count_order')
 class ListTrendsearch(APIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
