@@ -200,7 +200,7 @@ class LoginView(APIView):
             data = {
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
-                'access_expires': datetime.datetime.now()+settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME',
+                'access_expires': datetime.datetime.now()+settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
             }
             return Response(data)
         elif user_id:
