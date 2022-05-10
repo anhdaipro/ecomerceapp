@@ -35,7 +35,7 @@ class JwtAuthMiddlewareInstance:
             inner = self.inner(dict(self.scope, user=self.scope.get('user')))
             return await inner(receive, send)
 
-        query_string = self.scope["query_string"]
+        query_string = dict(scope['headers'])
         if not query_string:
             inner = self.inner(dict(self.scope, user=AnonymousUser()))
             return await inner(receive, send)
