@@ -1514,7 +1514,7 @@ def upload_file(request):
         file_id=request.POST.get('file_id')
         file=request.FILES.getlist('file')
         file_preview=request.FILES.getlist('file_preview')
-        list_duration=request.POST.getlist('duration')
+        duration=request.POST.getlist('duration')
         name=request.POST.getlist('name')
         media_preview=[None for  i in range(len(file))]
         if file_preview:
