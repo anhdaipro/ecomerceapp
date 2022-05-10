@@ -1,45 +1,48 @@
-from http import cookies
+from rest_framework_simplejwt.tokens import UntypedToken
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from jwt import decode as jwt_decode
+from urllib.parse import parse_qs
+from django.contrib.auth import get_user_model
+from channels.db import database_sync_to_async
+from django.conf import settings
 
-from channels.auth import AuthMiddlewareStack
-from django.contrib.auth.models import AnonymousUser
-from django.db import close_old_connections
-from rest_framework_jwt.authentication import BaseJSONWebTokenAuthentication
+
+@database_sync_to_async
+def get_user(user_id):
+    User = get_user_model()
+    try:
+        return User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return 'AnonymousUser'
 
 
-class JsonWebTokenAuthenticationFromScope(BaseJSONWebTokenAuthentication):
-    """
-    Extracts the JWT from a channel scope (instead of an http request)
-    """
+class TokenAuthMiddleware:
 
-    def get_jwt_value(self, scope):
+    def __init__(self, app):
+        # Store the ASGI application we were passed
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        # Look up user from query string (you should also do things like
+        # checking if it is a valid user ID, or if scope["user"] is already
+        # populated).
+
+        token = parse_qs(scope["query_string"].decode("utf8"))["token"][0]
+        print(token)
         try:
-            cookie = next(x for x in scope['headers'] if x[0].decode('utf-8') == 'cookie')[1].decode('utf-8')
-            return cookies.SimpleCookie(cookie)['JWT'].value
-        except:
+            # This will automatically validate the token and raise an error if token is invalid
+            is_valid = UntypedToken(token)
+        except (InvalidToken, TokenError) as e:
+            # Token is invalid
+            print(e)
             return None
+        else:
+            #  Then token is valid, decode it
+            decoded_data = jwt_decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            print(decoded_data)
 
+            scope['user'] = await get_user(int(decoded_data.get('user_id', None)))
 
-class JsonTokenAuthMiddleware(BaseJSONWebTokenAuthentication):
-    """
-    Token authorization middleware for Django Channels 2
-    """
+            # Return the inner application directly and let it run everything else
 
-    def __init__(self, inner):
-        self.inner = inner
-
-    def __call__(self, scope):
-
-        try:
-            # Close old database connections to prevent usage of timed out connections
-            close_old_connections()
-
-            user, jwt_value = JsonWebTokenAuthenticationFromScope().authenticate(scope)
-            scope['user'] = user
-        except:
-            scope['user'] = AnonymousUser()
-
-        return self.inner(scope)
-
-
-def JsonTokenAuthMiddlewareStack(inner):
-    return JsonTokenAuthMiddleware(AuthMiddlewareStack(inner))
+        return await self.app(scope, receive, send) 
