@@ -41,7 +41,7 @@ class JwtAuthMiddlewareInstance:
             return await inner(receive, send)
 
         try:
-            query_dict = parse.parse_qs(query_string.decode('utf-8'))
+            query_dict = parse.parse_qs(query_string)
         except:
             inner = self.inner(dict(self.scope, user=AnonymousUser()))
             return await inner(receive, send)
