@@ -2,12 +2,10 @@ from urllib import parse
 from channels.auth import AuthMiddlewareStack
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import AnonymousUser
-# noinspection PyProtectedMember
 from django.db import close_old_connections
 from rest_framework_simplejwt.settings import api_settings
-from rest_framework_simplejwt.state import User
 from rest_framework_simplejwt.tokens import AccessToken
-
+from django.contrib.auth.models import User
 @database_sync_to_async
 def get_user(**kwargs):
     try:
