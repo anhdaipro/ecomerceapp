@@ -29,8 +29,8 @@ class JwtAuthMiddlewareInstance:
         try:
             token = self.request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
             token_decoded = AccessToken(token)
-            user_id=token_decoded['user_id']
-            scope['user'] = User.objects.get(id=user_id)
+            
+            scope['user'] = self.request.user
         except Exception:
             scope['user'] = AnonymousUser()
         return self.inner(scope)
