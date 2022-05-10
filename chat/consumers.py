@@ -9,23 +9,22 @@ from shop.models import *
 from checkout.models import *
 from django.utils import timezone
 
-class ChatConsumer(AsyncConsumer):
-    async def websocket_connect(self, event):
-        print('connected', event)
-        user = self.scope['user']
-        if user.is_authenticated:
-    	    await self.update_user_status(user,True)
-        chat_room = f'user_chatroom_{user.id}'
-        self.chat_room = chat_room
+class ChatConsumer(AsyncJsonWebsocketConsumer):
+    async def connect(self, event):
+        self.group_name='chat'
         await self.channel_layer.group_add(
-            chat_room,
+            self.group_name,
             self.channel_name
         )
-        await self.send({
-            'type': 'websocket.accept'
-        })
+        await self.accept()
+    
+    async def disconnect(self, event):
+        await self.channel_layer.group_add(
+            self.group_name,
+            self.channel_name
+        )
 
-    async def websocket_receive(self, event):
+    async def receive(self, event):
         print('receive', event)
         data = json.loads(event['text'])
         msg = data.get('message')
@@ -87,10 +86,6 @@ class ChatConsumer(AsyncConsumer):
             }
         )
 
-    async def websocket_disconnect(self, event):
-        print('disconnect', event)
-        user = self.scope['user']
-        
     async def chat_message(self, event):
         print('chat_message', event)
         await self.send({
