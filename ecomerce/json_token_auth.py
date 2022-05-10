@@ -26,15 +26,13 @@ class JwtAuthMiddlewareInstance:
         self.inner = inner
 
     def __call__(self, scope):
-        headers = dict(scope['headers'])
-        if b'Authorization' in headers:
-            try:
-                token_key = headers[b'Authorization'].split()
-                token_decoded = AccessToken(token_key)
-                user_id=token_decoded['user_id']
-                scope['user'] = User.objects.get(id=user_id)
-            except Exception:
-                scope['user'] = AnonymousUser()
+        try:
+            token = self.request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+            token_decoded = AccessToken(token)
+            user_id=token_decoded['user_id']
+            scope['user'] = User.objects.get(id=user_id)
+        except Exception:
+            scope['user'] = AnonymousUser()
         return self.inner(scope)
     
         
