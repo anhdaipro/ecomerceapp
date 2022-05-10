@@ -1514,7 +1514,7 @@ def upload_file(request):
         file_id=request.POST.get('file_id')
         file=request.FILES.getlist('file')
         file_preview=request.FILES.getlist('file_preview')
-        duration=request.POST.getlist('duration')
+        list_duration=request.POST.getlist('duration')
         name=request.POST.getlist('name')
         media_preview=[None for  i in range(len(file))]
         if file_preview:
@@ -1531,7 +1531,7 @@ def upload_file(request):
             file=file[i],
             file_name=name[i],
             image_preview=media_preview[i],
-            duration=list_duration[i],
+            duration=duration[i],
             upload_by=user)
             for i in range(len(file))])
             list_uploads=UploadFile.objects.filter(upload_by=user).select_related('upload_by').order_by('-id')[:len(file)]
