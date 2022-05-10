@@ -9,7 +9,7 @@ from shop.models import *
 from checkout.models import *
 from django.utils import timezone
 
-class ChatConsumer(WebsocketConsumer):
+class ChatConsumer(AsyncJsonWebsocketConsumer):
 
 
     def connect(self):
