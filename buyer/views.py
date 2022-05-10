@@ -1517,12 +1517,8 @@ def upload_file(request):
         duration=request.POST.getlist('duration')
         name=request.POST.getlist('name')
         media_preview=[None for  i in range(len(file))]
-        list_duration=[0 for  i in range(len(file))]
-        for i in range(len(media_preview)):
-            for j in range(len(file_preview)):
-                if i==j:
-                    media_preview[i]=file_preview[j]
-        
+        if file_preview:
+            media_preview=file_preview
         if file_id:
             UploadFile.objects.get(id=file_id).delete()
             data={
@@ -1538,10 +1534,11 @@ def upload_file(request):
             duration=list_duration[i],
             upload_by=user)
             for i in range(len(file))])
+            list_uploads=UploadFile.objects.filter(upload_by=user).select_related('upload_by').order_by('-id')[:len(file)]
             data={
                'list_file':[{'id':upload_file.id,'file':upload_file.file.url,'file_name':upload_file.file_name,
                'file_preview':upload_file.file_preview(),'filetype':upload_file.filetype(),'duration':upload_file.duration
-               } for upload_file in upload_files] 
+               } for upload_file in list_uploads] 
             }
             return Response(data)
 
