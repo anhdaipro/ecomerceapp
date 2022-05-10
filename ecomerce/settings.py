@@ -326,4 +326,6 @@ CHANNEL_LAYERS = {
         # }
     }
 }
-
+JWT_AUTH = {
+    'JWT_AUTH_COOKIE': 'JWT',     # the cookie will also be sent on WebSocket connections
+}
