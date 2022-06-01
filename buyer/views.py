@@ -98,7 +98,7 @@ class UpdateOnline(APIView):
     def post(self,request):
         online=request.POST.get('online')
         if online=='false':
-            Profile.objects.filter(user=request.user).update(online=False)
+            Profile.objects.filter(user=request.user).update(online=False,is_online=timezone.now())
         return Response({'pk':'ki'})
 class RegisterView(APIView):
     permission_classes = (AllowAny,)
