@@ -42,7 +42,8 @@ class Order(models.Model):
     refund_granted = models.BooleanField(default=False)
     canceled=models.BooleanField(default=False)
     amount=models.FloatField(null=True,blank=True)
-    
+    class Meta:
+        ordering=['-id']
     def __str__(self):
         return str(self.ref_code)
     def get_absolute_url(self):

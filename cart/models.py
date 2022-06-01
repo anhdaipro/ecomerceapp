@@ -28,6 +28,8 @@ class OrderItem(models.Model):
     updated_at = models.DateField(auto_now=True) 
     ordered=models.BooleanField(default=False)
     check=models.BooleanField(default=False)
+    class Meta:
+        ordering = ['-id']
     def __str__(self):
         return f"{self.quantity}  {self.product.item} of {self.product.item.shop}"
     def get_review(self):

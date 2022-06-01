@@ -1074,7 +1074,7 @@ class CartItemAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user = request.user
-        list_order_item=OrderItem.objects.filter(user=user,ordered=False).select_related('product__item').order_by('-id')
+        list_order_item=OrderItem.objects.filter(user=user,ordered=False).select_related('product__item')
         shops=Shop.objects.filter(shop_order__in=list_order_item).select_related('user').distinct()
         data={
             'order_item':[{'id':order_item.id,'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
@@ -1150,7 +1150,7 @@ class CartItemAPIView(APIView):
                     Order(
                         user=user, ordered_date=ordered_date,shop=shop) for shop in list_shop_remain]
                         )
-                    orders=Order.objects.filter(user=user).order_by('-id')[:len(list_shop_remain)]
+                    orders=Order.objects.filter(user=user)[:len(list_shop_remain)]
                     for order in orders:
                         list_order_item=OrderItem.objects.filter(shop=order.shop,id__in=id_checked)
                         order.items.add(*list_order_item)
@@ -1662,7 +1662,7 @@ class PurchaseAPIView(APIView):
             if offset:
                 from_item=int(offset)
             to_item=from_item+limit
-            order_all = Order.objects.filter(ordered=True,user=user).order_by('-id')
+            order_all = Order.objects.filter(ordered=True,user=user)
             count_order=order_all.count()
             order_all = order_all[from_item:to_item]
             if type_order=='2':

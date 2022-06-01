@@ -288,7 +288,7 @@ class ThreadAPIView(APIView):
             messages=messages[message_count-10:message_count]
             data={
             'messages':[{'text':message.message,'file':message.message_file(),'filetype':message.message_filetype(),
-                'user_id':message.user.id,'created':message.date_created,'item':[{'item_name':item.name,
+                'user_id':message.user_id,'created':message.date_created,'item':[{'item_name':item.name,
                 'item_image':item.media_upload.all()[0].upload_file(),'item_url':item.get_absolute_url(),'item_max':item.max_price(),
                 'item_min':item.min_price(),'percent_discount':item.percent_discount()
                 } for item in Item.objects.filter(message=message)],
@@ -328,9 +328,9 @@ class ThreadAPIView(APIView):
         message_count=messages.count()
         messages=messages[message_count-10:message_count]
         data={'count':count,
-            'thread':thread.id,'sender':thread.sender.id,'receiver':thread.receiver.id,
+            'thread':thread.id,'sender':thread.sender_id,'receiver':thread.receiver_id,
             'messages':[{'text':message.message,'file':message.message_file(),'filetype':message.message_filetype(),
-            'user_id':message.user.id,'created':message.date_created,'item':message.message_product(),
+            'user_id':message.user_id,'created':message.date_created,'item':message.message_product(),
             'message_order':message.message_order(),
             'list_file':[{'file':uploadfile.file.url,'file_name':uploadfile.filename(),
             'file_preview':uploadfile.file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.filetype()}
@@ -339,13 +339,13 @@ class ThreadAPIView(APIView):
             ],
             'threads':[{'thread_id':thread.id,'sender':thread.sender.username,'receiver':thread.receiver.username,
             'shop_name_sender':thread.shop_name_sender(),'shop_logo_sender':thread.shop_logo_sender(),
-            'count_message_not_seen':thread.count_message_not_seen(),'sender_id':thread.sender.id,
-            'receiver_id':thread.receiver.id,
+            'count_message_not_seen':thread.count_message_not_seen(),'sender_id':thread.sender_id,
+            'receiver_id':thread.receiver_id,
             'shop_name_receiver':thread.shop_name_receiver(),'shop_logo_receiver':thread.shop_logo_receiver(),
             'messages':[{'text':message.message,'file':message.message_file(),'created':message.date_created,
             'message_order':message.message_order(),'message_product':message.message_product(),
             'message_filetype':message.message_filetype(),
-            'user_id':message.user.id} for message in thread.chatmessage_thread.all().order_by('-id')[:1]
+            'user_id':message.user_id} for message in thread.chatmessage_thread.all().order_by('-id')[:1]
             ]} for thread in threads
             ]
         }
