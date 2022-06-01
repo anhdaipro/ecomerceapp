@@ -29,6 +29,46 @@ class MessageAPIView(APIView):
         }
         return Response(data)
 
+class CreateMessage(APIView):
+    def post(self,request):
+        msg = request.data.get('message')
+        sent_by_id = request.data.get('sent_by')
+        send_to_id = request.data.get('send_to')
+        thread_id = request.data.get('thread_id')
+        item_id = request.data.get('item_id')
+        order_id=request.data.get('order_id')
+        count_uploadfile = request.data.get('count_uploadfile')
+        list_uploadfile = request.data.get('list_uploadfile')
+        thread=Thread.objects.get(id=thread_id)
+        if msg!='':    
+            Message.objects.create(thread=thread,user_id=sent_by_id, message=msg)
+        if item_id:
+            Message.objects.create(thread=thread,user_id=sent_by_id,product_id=item_id)
+        if order_id:
+            Message.objects.create(thread=thread,user_id=sent_by_id,order_id=order_id)
+        if count_uploadfile>0:
+            list_image=[obj['file_name'] for obj in list_uploadfile if obj['filetype']=='image'] 
+            if len(list_image)>0:
+                messages=Message.objects.create(thread=thread,user_id=sent_by_id)
+                obj = UploadFile.objects.filter(file_name__in=list_image,upload_by_id=sent_by_id).order_by('-upload_date')[:count_uploadfile]
+                messages.file.add(*obj)
+            list_file=[upload['file_name'] for upload in list_uploadfile if upload['filetype']!='image']
+            if len(list_file)>0:
+                Message.objects.bulk_create([
+                    Message(
+                    thread=thread,
+                    user_id=sent_by_id)
+                for i in range(len(list_file))])
+
+                upload_files=UploadFile.objects.filter(file_name__in=list_file,upload_by_id=sent_by_id).order_by('-upload_date')[:count_uploadfile]
+                messages=Message.objects.all().order_by('-id')[:len(list_file)]
+                for i in range(len(upload_files)):
+                    messages[i].file.add(upload_files[i])
+        data={
+            'ok':'ok'
+        }
+        return Response(data)
+
 class ActionThread(APIView):
     permission_classes = (IsAuthenticated,)
     def post(self,request,id,*args, **kwargs):
