@@ -34,7 +34,8 @@ from .views import (
     VerifyEmailView,
     Sendotp,VerifySMSView,
     Topsearch,
-    RegisterView, LoginView,  LogoutView 
+    RegisterView, LoginView,  LogoutView ,
+    UpdateOnline
 )
 
 urlpatterns = [
@@ -51,6 +52,7 @@ urlpatterns = [
     path('verify/email', VerifyEmailView.as_view()),
     path('register', RegisterView.as_view()),
     path('login', LoginView.as_view()),
+    path('update/online', UpdateOnline.as_view()),
     path("verify-sms", views.VerifySMSView.as_view()),
     path("resend-sms", views.Sendotp.as_view()),
     path('logout', LogoutView.as_view()),

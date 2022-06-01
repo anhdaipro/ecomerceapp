@@ -38,7 +38,7 @@ class CreateMessage(APIView):
         item_id = request.data.get('item_id')
         order_id=request.data.get('order_id')
         count_uploadfile = request.data.get('count_uploadfile')
-        list_uploadfile = request.data.get('list_uploadfile')
+        list_uploadfile = request.data.get('list_file')
         thread=Thread.objects.get(id=thread_id)
         if msg!='':    
             Message.objects.create(thread=thread,user_id=sent_by_id, message=msg)

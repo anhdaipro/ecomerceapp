@@ -89,11 +89,17 @@ class UserView(APIView):
             user=request.user
             Profile.objects.filter(user=user).update(online=True)
         except jwt.ExpiredSignatureError:
-            Profile.objects.all().update(online=False)
             raise AuthenticationFailed('Unauthenticated!')
         user=request.user
         serializer = UserprofileSerializer(user)
         return Response(serializer.data)
+class UpdateOnline(APIView):
+    permission_classes = (IsAuthenticated,)
+    def post(self,request):
+        online=request.POST.get('online')
+        if online=='false':
+            Profile.objects.filter(user=request.user).update(online=False)
+        return Response({'pk':'ki'})
 class RegisterView(APIView):
     permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
