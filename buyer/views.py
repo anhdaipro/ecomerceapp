@@ -203,33 +203,14 @@ class LoginView(APIView):
         if token:
             token = AccessToken.objects.get(token=token)
             user = token.user
-            refresh = RefreshToken.for_user(user)
-            data = {
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-                'access_expires': datetime.datetime.now()+settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
-            }
-            return Response(data)
         elif user_id:
             user=User.objects.get(id=user_id)
-            refresh = RefreshToken.for_user(user)
-            data = {
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-                'access_expires': datetime.datetime.now()+settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'],
-            }
-            return Response(data)
-        
         else:
-            user = authenticate(request, username=username, password=password)
             if email:
                 user = authenticate(request, email=username, password=password)
-            if user is None:
-                raise AuthenticationFailed('User not found!')
-
-            if not user.check_password(password):
-                raise AuthenticationFailed('Incorrect password!')
-            
+            else:
+                user = authenticate(request, username=username, password=password)
+        try:
             refresh = RefreshToken.for_user(user)
             data = {
                 'refresh': str(refresh),
@@ -237,6 +218,9 @@ class LoginView(APIView):
                 'access_expires': datetime.datetime.now()+settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
             }
             return Response(data)
+        except Exception:
+            return Response({'error':True})
+
 
 class LogoutView(APIView):
     def post(self, request):
