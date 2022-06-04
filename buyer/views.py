@@ -102,8 +102,9 @@ class UpdateOnline(APIView):
         return Response({'pk':'ki'})
 class RegisterView(APIView):
     permission_classes = (AllowAny,)
+    serializers_class=UserSerializer
     def post(self, request, *args, **kwargs):
-        serializer = UserSerializer(data=request.data)
+        serializer = self.serializers_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)

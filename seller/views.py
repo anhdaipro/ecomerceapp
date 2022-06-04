@@ -201,7 +201,7 @@ class Listordershop(APIView):
         data={'list_orders':[{'received':order.received,'canceled':order.canceled,'accepted':order.accepted,'amount':order.total_final_order(),
             'being_delivered':order.being_delivered,'ordered_date':order.ordered_date,'received_date':order.received_date,
             'canceled_date':order.canceled_date,'accepted_date':order.accepted_date,'id':order.id,'ref_code':order.ref_code,
-            'user':{'username':order.user.username,'image':order.user.profile.image.url,'id':order.user.id},'exist':True if order.user in list_user else False,
+            'user':{'username':order.user.username,'image':order.user.profile.image.url,'id':order.user_id},'exist':True if order.user in list_user else False,
             'total_final':order.total_final_order(),'payment_choice':order.payment_choice,
             'order_item':[{'item_info':order_item.product.item.item_info(),'item_url':order_item.product.item.get_absolute_url(),
             'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
@@ -285,7 +285,7 @@ def product(request):
                 'id':i.id,'item_sku':i.sku_product,'get_absolute_id':i.get_absolute_id()
                 } for i in first_page]
             list_variation=[{'number_order':i.number_order(),'inventory':i.inventory,'price':i.price,'sku':i.sku_classify,'color_value':i.get_color(),'size_value':i.get_size(),
-            'item__id':i.item.id ,'id':i.id
+            'item__id':i.item_id ,'id':i.id
                     } for i in variation]
             data={
                 'a':list_product,'b':list_variation,'page_range':obj_paginator.num_pages,'count_product':product.count()
@@ -321,7 +321,7 @@ def product(request):
                 'id':i.id,'item_sku':i.sku_product,'get_absolute_id':i.get_absolute_id()
                 } for i in first_page]
             list_variation=[{'number_order':i.number_order(),'inventory':i.inventory,'price':i.price,'sku':i.sku_classify,'color_value':i.get_color(),'size_value':i.get_size(),
-            'item__id':i.item.id ,'id':i.id
+            'item__id':i.item_id ,'id':i.id
                     } for i in variation]
             data={
                 'a':list_product,'b':list_variation,'page_range':obj_paginator.num_pages,'count_product':product.count()
@@ -339,7 +339,7 @@ def product(request):
                 'id':i.id,'item_sku':i.sku_product,'get_absolute_id':i.get_absolute_id()
                 } for i in first_page]
             list_variation=[{'number_order':i.number_order(),'inventory':i.inventory,'price':i.price,'sku':i.sku_classify,'color_value':i.get_color(),'size_value':i.get_size(),
-            'item__id':i.item.id ,'id':i.id
+            'item__id':i.item_id ,'id':i.id
                     } for i in variation]
             data={
                 'a':list_product,'b':list_variation,'page_range':obj_paginator.num_pages,'count_product':product.count()
@@ -408,7 +408,7 @@ def delete_product(request):
             'id':i.id,'item_sku':i.sku_product,'get_absolute_id':i.get_absolute_id()
             } for i in first_page]
         list_variation=[{'number_order':i.number_order(),'inventory':i.inventory,'price':i.price,'sku':i.sku_classify,'color_value':i.get_color(),'size_value':i.get_size(),
-        'item__id':i.item.id ,'id':i.id
+        'item__id':i.item_id ,'id':i.id
                 } for i in variation]
         data={
             'a':list_product,'b':list_variation,'page_range':obj_paginator.num_pages,'count_product':product.count()

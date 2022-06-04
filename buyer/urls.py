@@ -34,7 +34,7 @@ from .views import (
     VerifyEmailView,
     Sendotp,VerifySMSView,
     Topsearch,
-    RegisterView, LoginView,  LogoutView ,
+    RegisterView, LoginView, LogoutView ,
     UpdateOnline
 )
 
