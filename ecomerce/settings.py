@@ -33,7 +33,7 @@ ALLOWED_HOSTS = ['anhdai.herokuapp.com','localhost']
 
 # Application definition
 CORS_ALLOWED_ORIGINS = [
-    'https://gentle-plains-88366.herokuapp.com','http://localhost:3000',"http://127.0.0.1:3000"
+    'https://gentle-plains-88366.herokuapp.com','http://localhost:3000',"https://anhdaipro.github.io/ecomerceapp"
 ]
 INSTALLED_APPS = [
     'jazzmin',
