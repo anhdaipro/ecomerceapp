@@ -33,7 +33,7 @@ ALLOWED_HOSTS = ['anhdai.herokuapp.com','localhost']
 
 # Application definition
 CORS_ALLOWED_ORIGINS = [
-    "*"
+    "https://"
 ]
 INSTALLED_APPS = [
     'jazzmin',
