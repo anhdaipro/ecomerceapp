@@ -33,7 +33,7 @@ ALLOWED_HOSTS = ['anhdai.herokuapp.com','localhost']
 
 # Application definition
 CORS_ALLOWED_ORIGINS = [
-    "https://"
+    'https://ecomerceapp.vercel.app','http://localhost:3000'
 ]
 INSTALLED_APPS = [
     'jazzmin',
