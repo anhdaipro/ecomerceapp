@@ -219,7 +219,7 @@ class LoginView(APIView):
             }
             return Response(data)
         except Exception:
-            return Response({'error':True})
+            raise AuthenticationFailed('Unauthenticated!')
 
 
 class LogoutView(APIView):
