@@ -17,7 +17,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
-from .utils import Util
+
 from rest_framework.generics import (
     ListAPIView, RetrieveAPIView, CreateAPIView,
     UpdateAPIView, DestroyAPIView,GenericAPIView,
@@ -1194,8 +1194,7 @@ class ListorderAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
-        order_check = Order.objects.filter(user=user, ordered=False).select_related('user').exclude(items=None)
-        threads = Thread.objects.filter(participants=user).order_by('timestamp')
+        order_check = Order.objects.filter(user=user, ordered=False).select_related('user').select_related('voucher').exclude(items=None)
         data={
         'orders':[{'discount_voucher_shop':order.discount_voucher(),'total':order.total_price_order(),
             'discount_deal':order.discount_deal(),'count':order.count_item_cart(),
