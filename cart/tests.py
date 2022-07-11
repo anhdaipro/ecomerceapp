@@ -406,7 +406,7 @@ class DetailAPIView(APIView):
             paginator = Paginator(items,30)
             page_obj = paginator.get_page(page)
             count_follow=Shop.objects.filter(followers=shop.user).count()
-            data={'shop_logo':shop.user.profile.image.url,'shop_url':shop.get_absolute_url(),'count_followings': count_follow,
+            data={'avatar':shop.user.profile.avatar.url,'shop_url':shop.get_absolute_url(),'count_followings': count_follow,
                 'shop_name':shop.name,'shop':'shop','shop_user':shop.user.id,'created':shop.create_at,
                 'online':shop.user.profile.online,'num_followers':shop.num_follow(),'slug':shop.slug,
                 'is_online':shop.user.profile.is_online,'count_product':shop.count_product(),
@@ -577,7 +577,7 @@ class ProductInfoAPIVIew(APIView):
                     } for i in items]}
                 return Response(data)
             elif shop:
-                data={'shop_logo':item.shop.user.profile.image.url,'shop_url':item.shop.get_absolute_url(),
+                data={'avatar':item.shop.user.profile.avatar.url,'shop_url':item.shop.get_absolute_url(),
                 'shop_name':item.shop.name,
                 'online':item.shop.user.profile.online,'num_follow':item.shop.num_follow(),
                 'is_online':item.shop.user.profile.is_online,'count_product':item.shop.count_product(),
@@ -784,7 +784,7 @@ class CartAPIView(APIView):
                 'count':count,
                 'a':list_cart_item,
                 'user_name':user.username,
-                'image':profile.image.url
+                'image':profile.avatar.url
                 }
         return Response(data)
 
@@ -1182,7 +1182,7 @@ class AddressAPIView(APIView):
     def get(self,request):
         user=request.user
         addresses = Address.objects.filter(user=user)
-        data={'a':list(addresses.values()),'user':{'image':user.profile.image.url,'name':user.username}}
+        data={'a':list(addresses.values()),'user':{'image':user.profile.avatar.url,'name':user.username}}
         return Response(data)
     def post(self, request, *args, **kwargs):
         user=request.user
@@ -1706,10 +1706,10 @@ class ThreadAPIView(APIView):
             ]} for message in messages
             ],
             'threads':[{'thread_id':thread.id,'sender':thread.sender.username,'receiver':thread.receiver.username,
-            'shop_name_sender':thread.shop_name_sender(),'shop_logo_sender':thread.shop_logo_sender(),
+            'shop_name_sender':thread.shop_name_sender(),'avatar_sender':thread.avatar_sender(),
             'count_message_not_seen':thread.count_message_not_seen(),'sender_id':thread.sender.id,
             'receiver_id':thread.receiver.id,
-            'shop_name_receiver':thread.shop_name_receiver(),'shop_logo_receiver':thread.shop_logo_receiver(),
+            'shop_name_receiver':thread.shop_name_receiver(),'avatar_receiver':thread.avatar_receiver(),
             'messages':[{'text':message.message,'file':message.message_file(),'created':message.date_created,
             'message_order':message.message_order(),'message_product':message.message_product(),
             'message_filetype':message.message_filetype(),
@@ -1789,7 +1789,7 @@ class ProfileAPIView(APIView):
         data={
             'username':user.username,'name':user.shop.name,'email':user.email,
             'phone':str(user.profile.phone),'date_of_birth':user.profile.date_of_birth,
-            'image':user.profile.image.url,'shop_name':shop_name,
+            'image':user.profile.avatar.url,'shop_name':shop_name,
             'gender':user.profile.gender,'user_id':user.id,'count_product':count_product,
             }
         return Response(data)
@@ -1811,7 +1811,7 @@ class ProfileAPIView(APIView):
         shop.name=shop_name
         profile.gender=gender
         if image:
-            profile.image=image
+            profile.avatar=image
         profile.phone=phone
         profile.date_of_birth=date_of_birth
         profile.save()
@@ -1821,7 +1821,7 @@ class ProfileAPIView(APIView):
 def get_address(request):
     user=request.user
     addresses = Address.objects.filter(user=user)
-    data={'a':list(addresses.values()),'user':{'image':user.profile.image.url,'name':user.username}}
+    data={'a':list(addresses.values()),'user':{'image':user.profile.avatar.url,'name':user.username}}
     return Response(data)
 
 class PurchaseAPIView(APIView):
@@ -1880,7 +1880,7 @@ class PurchaseAPIView(APIView):
                 'id':order_item.id
                 } for order_item in order.items.all()]} for order in orders]
             data={
-                'user':{'image':user.profile.image.url,'name':user.username,'user_id':user.id},
+                'user':{'image':user.profile.avatar.url,'name':user.username,'user_id':user.id},
                 'a':list_order,'count_order':count_order,
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]
                 }

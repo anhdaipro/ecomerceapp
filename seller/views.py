@@ -100,7 +100,7 @@ class ShopprofileAPIView(APIView):
     def post(self,request):
         list_file=request.FILES.getlist('file')
         list_url=request.POST.getlist('url')
-        image=request.FILES.get('image')
+        avatar=request.FILES.get('avatar')
         image_cover=request.FILES.get('image_cover')
         name=request.POST.get('name')
         description=request.POST.get('description')
@@ -116,8 +116,8 @@ class ShopprofileAPIView(APIView):
         
         if image_cover:
             shop.image_cover=image_cover
-        if image:
-            profile.image=image
+        if avatar:
+            profile.avatar=avatar
         shop.save()
         count=len(list_url)+len(list_file)
         list_image=Image_home.objects.filter(upload_by=request.user).order_by('-id')[:count]
@@ -131,7 +131,7 @@ def infoseller(request):
     user=request.user
     profile=Profile.objects.get(user=user)
     address=Address.objects.filter(user=user,address_type='B')
-    data={'name':user.username,'image':profile.image.url,'user_type':profile.user_type,'phone':str(profile.phone)}
+    data={'name':user.username,'image':profile.avatar.url,'user_type':profile.user_type,'phone':str(profile.phone)}
     return Response(data)
 @api_view(['GET', 'POST'])
 def homeseller(request):
@@ -201,7 +201,7 @@ class Listordershop(APIView):
         data={'list_orders':[{'received':order.received,'canceled':order.canceled,'accepted':order.accepted,'amount':order.total_final_order(),
             'being_delivered':order.being_delivered,'ordered_date':order.ordered_date,'received_date':order.received_date,
             'canceled_date':order.canceled_date,'accepted_date':order.accepted_date,'id':order.id,'ref_code':order.ref_code,
-            'user':{'username':order.user.username,'image':order.user.profile.image.url,'id':order.user_id},'exist':True if order.user in list_user else False,
+            'user':{'username':order.user.username,'image':order.user.profile.avatar.url,'id':order.user_id},'exist':True if order.user in list_user else False,
             'total_final':order.total_final_order(),'payment_choice':order.payment_choice,
             'order_item':[{'item_info':order_item.product.item.item_info(),'item_url':order_item.product.item.get_absolute_url(),
             'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
@@ -240,7 +240,7 @@ class ShopratingAPI(APIView):
         'color_value':review.orderitem.product.get_color(),'get_reply':review.get_reply(),
         'size_value':review.orderitem.product.get_size(),
         'item_name':review.orderitem.product.item.name,'ref_code':review.orderitem.get_ref_code(),
-        'user':review.user.username,'image':review.user.profile.image.url,
+        'user':review.user.username,'image':review.user.profile.avatar.url,
         } for review in page_obj],'page_count':paginator.num_pages}
         return Response(data) 
     def post(self,request):
@@ -540,7 +540,6 @@ def detail_voucher(request,id):
     user=request.user
     shop=Shop.objects.get(user=user)
     items=Item.objects.filter(shop=shop).order_by('-id')
-    
     vocher=Vocher.objects.get(id=id)
     order=request.GET.get('order')
     price=request.GET.get('price')
@@ -903,7 +902,6 @@ def new_deal(request):
 def deal_shock(request,id):
     user=request.user
     shop=Shop.objects.get(user=user)
-    
     deal_shock=Buy_with_shock_deal.objects.get(id=id)
     items=Item.objects.filter(shop=shop).filter(Q(main_product=None) | (Q(main_product__valid_to__lt=datetime.datetime.now()) & Q(main_product__isnull=False))).distinct().order_by('-id')
     item_id=request.GET.getlist('item_id')
@@ -1211,12 +1209,13 @@ def new_program(request):
                     if i==list(variation_byproduct).index(variation):
                         variation.percent_discount=percent_discount[i]
                         variation.number_of_promotional_products=number_of_promotional_products[i]
-            bulk_update(variation_byproduct)
+            
             for item in list_products:
                 for i in range(len(limit_order)):
                     if i==list(list_products).index(item):
                         item.quantity_limit=limit_order[i]
             bulk_update(list_products,batch_size=200)
+            bulk_update(variation_byproduct)
             data={'ok':'ok'}
             return Response(data)
     else:
@@ -1278,8 +1277,7 @@ def new_program(request):
 @api_view(['GET', 'POST'])
 def detail_program(request,id):
     user=request.user
-    shop=Shop.objects.get(user=user)
-    
+    shop=Shop.objects.get(user=user) 
     shop_program=Shop_program.objects.get(id=id)
     items=Item.objects.filter(shop=shop).filter(Q(shop_program=None)|Q(shop_program=shop_program) | (Q(shop_program__valid_to__lt=datetime.datetime.now()) & Q(shop_program__isnull=False)))
     order=request.GET.get('order')
@@ -1323,12 +1321,13 @@ def detail_program(request,id):
                     if i==list(variation_byproduct).index(variation):
                         variation.percent_discount=percent_discount[i]
                         variation.number_of_promotional_products=number_of_promotional_products[i]
-            bulk_update(variation_byproduct)
+            
             for item in list_products:
                 for i in range(len(limit_order)):
                     if i==list(list_products).index(item):
                         item.quantity_limit=limit_order[i]
             bulk_update(list_products)
+            bulk_update(variation_byproduct)
             Variation.objects.filter(id__in=variation_id_off).update(percent_discount_deal_shock=0)
             data={'ok':'ok'}
             return Response(data)

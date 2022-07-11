@@ -32,6 +32,13 @@ class OrderItem(models.Model):
         ordering = ['-id']
     def __str__(self):
         return f"{self.quantity}  {self.product.item} of {self.product.item.shop}"
+   
+    def get_image(self):
+        image=self.item.get_media_cover()
+        if self.product.color:
+            if self.product.color.image:
+                image=self.product.color.image.url
+        return image
     def get_review(self):
         return ReView.objects.filter(orderitem=self).count()
     def count_item_cart(self):

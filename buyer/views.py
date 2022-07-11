@@ -186,7 +186,7 @@ class VerifySMSView(APIView):
                     uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
                     token = default_token_generator.make_token(user)
                     return Response({'verify':True,'token':token,'uidb64':uidb64})
-                return Response({'verify':True,'image':profile.first().image.url,'username':profile.first().user.username,'user_id':profile.first().user.id})
+                return Response({'verify':True,'avatar':profile.first().avatar.url,'username':profile.first().user.username,'user_id':profile.first().user.id})
             else:
                 return Response({'verify':True})
         else:
@@ -440,7 +440,7 @@ class DetailAPIView(APIView):
             paginator = Paginator(items,30)
             page_obj = paginator.get_page(page)
             count_follow=Shop.objects.filter(followers=shop.user).count()
-            data.update({'shop_logo':shop.user.profile.image.url,'shop_url':shop.get_absolute_url(),'count_followings': count_follow,
+            data.update({'avatar':shop.user.profile.avatar.url,'shop_url':shop.get_absolute_url(),'count_followings': count_follow,
                 'shop_name':shop.name,'shop':'shop','shop_user':shop.user.id,'created':shop.create_at,
                 'online':shop.user.profile.online,'num_followers':shop.num_follow(),'slug':shop.slug,
                 'is_online':shop.user.profile.is_online,'count_product':shop.count_product(),
@@ -625,7 +625,7 @@ class ProductInfoAPIVIew(APIView):
             item=Item.objects.get(id=item_id)
             
             if shop:
-                data={'shop_logo':item.shop.user.profile.image.url,'shop_url':item.shop.get_absolute_url(),
+                data={'avatar':item.shop.user.profile.avatar.url,'shop_url':item.shop.get_absolute_url(),
                 'shop_name':item.shop.name,
                 'online':item.shop.user.profile.online,'num_follow':item.shop.num_follow(),
                 'is_online':item.shop.user.profile.is_online,'count_product':item.shop.count_product(),
@@ -697,7 +697,7 @@ class ProductInfoAPIVIew(APIView):
 class Getshopinfo(APIView):
     def get(self,request):
         shop_id=request.GET.get('shop_id')
-        data={'shop_logo':item.shop.user.profile.image.url,'shop_url':item.shop.get_absolute_url(),
+        data={'avatar':item.shop.user.profile.avatar.url,'shop_url':item.shop.get_absolute_url(),
             'shop_name':item.shop.name,
             'online':item.shop.user.profile.online,'num_follow':item.shop.num_follow(),
             'is_online':item.shop.user.profile.is_online,'count_product':item.shop.count_product(),
@@ -1566,13 +1566,13 @@ class ProfileAPIView(APIView):
         data={
             'username':user.username,'name':user.shop.name,'email':user.email,
             'phone':str(user.profile.phone),'date_of_birth':user.profile.date_of_birth,
-            'image':user.profile.image.url,'shop_name':shop_name,
+            'image':user.profile.avatar.url,'shop_name':shop_name,
             'gender':user.profile.gender,'user_id':user.id,'count_product':count_product,
             }
         return Response(data)
     def post(self,request):
         shop_name=request.POST.get('shop_name')
-        image=request.FILES.get('file')
+        avatar=request.FILES.get('file')
         username=request.POST.get('username')
         gender=request.POST.get('gender')
         name=request.POST.get('name')
@@ -1587,8 +1587,8 @@ class ProfileAPIView(APIView):
         user.save()
         shop.name=shop_name
         profile.gender=gender
-        if image:
-            profile.image=image
+        if avatar:
+            profile.avatar=avatar
         profile.phone=phone
         profile.date_of_birth=date_of_birth
         profile.save()

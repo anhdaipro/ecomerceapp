@@ -23,7 +23,8 @@ class Profile(models.Model):
     username_edit=models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     phone = PhoneNumberField(null=True)
-    image=models.ImageField(upload_to="profile/",default='no_user_ypl5wh.png')
+    count_notifi_unseen=models.IntegerField(default=0,null=True)
+    avatar=models.ImageField(upload_to="profile/",default='no_user_ypl5wh.png')
     USER_TYPE=(
         ('C','Customer'),
         ('S','Seller')

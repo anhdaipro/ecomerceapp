@@ -11,91 +11,158 @@ from rest_framework.generics import (
     ListAPIView, RetrieveAPIView, CreateAPIView,
     UpdateAPIView, DestroyAPIView,GenericAPIView,
 )
+from .serializers import ThreadinfoSerializer,MessageSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
-class MessageAPIView(APIView):
-    permission_classes = (IsAuthenticated,)
-    def get(self,request):
-        user=request.user
-        threads = Thread.objects.filter(participants=user).order_by('timestamp')
-        data = {
-            'threads':[{
-            'message':[{'read':message.seen,'sender':message.user.username}
-            for message in thread.chatmessage_thread.all().order_by('-id')[:1]]}
-            for thread in threads]
-        }
-        return Response(data)
-
-class CreateMessage(APIView):
-    def post(self,request):
-        msg = request.data.get('message')
-        sent_by_id = request.data.get('sent_by')
-        send_to_id = request.data.get('send_to')
-        thread_id = request.data.get('thread_id')
-        item_id = request.data.get('item_id')
-        order_id=request.data.get('order_id')
-        count_uploadfile = request.data.get('count_uploadfile')
-        list_uploadfile = request.data.get('list_file')
-        thread=Thread.objects.get(id=thread_id)
-        if msg!='':    
-            Message.objects.create(thread=thread,user_id=sent_by_id, message=msg)
-        if item_id:
-            Message.objects.create(thread=thread,user_id=sent_by_id,product_id=item_id)
-        if order_id:
-            Message.objects.create(thread=thread,user_id=sent_by_id,order_id=order_id)
-        if count_uploadfile>0:
-            list_image=[obj['file_name'] for obj in list_uploadfile if obj['filetype']=='image'] 
-            if len(list_image)>0:
-                messages=Message.objects.create(thread=thread,user_id=sent_by_id)
-                obj = UploadFile.objects.filter(file_name__in=list_image,upload_by_id=sent_by_id).order_by('-upload_date')[:count_uploadfile]
-                messages.file.add(*obj)
-            list_file=[upload['file_name'] for upload in list_uploadfile if upload['filetype']!='image']
-            if len(list_file)>0:
-                Message.objects.bulk_create([
-                    Message(
-                    thread=thread,
-                    user_id=sent_by_id)
-                for i in range(len(list_file))])
-
-                upload_files=UploadFile.objects.filter(file_name__in=list_file,upload_by_id=sent_by_id).order_by('-upload_date')[:count_uploadfile]
-                messages=Message.objects.all().order_by('-id')[:len(list_file)]
-                for i in range(len(upload_files)):
-                    messages[i].file.add(upload_files[i])
-        data={
-            'ok':'ok'
-        }
-        return Response(data)
 
 class ActionThread(APIView):
     permission_classes = (IsAuthenticated,)
+    def get(self,request,id):
+        listmessage=Message.objects.filter(thread_id=id).prefetch_related('message_media').select_related('order').select_related('product').order_by('-id')
+        Member.objects.filter(thread_id=id,user=request.user).update(is_seen=True)
+        count_message=listmessage.count()
+        item_from=0
+        offset=request.GET.get('offset') 
+        if offset:
+            item_from=int(offset)
+        to_item=item_from+10
+        if item_from>=count_message:
+            to_item=count_message
+        listmessage=listmessage[item_from:to_item]
+        serializer = MessageSerializer(listmessage,many=True, context={"request": request})
+        return Response(serializer.data)
     def post(self,request,id,*args, **kwargs):
-        gim=request.POST.get('gim')
-        unread=request.POST.get('unread')
-        delete=request.POST.get('delete')
-        data={}
+        action=request.POST.get('action')
+        member=Member.objects.get(thread_id=id,user=request.user)
+        listmessage=list()
         thread=Thread.objects.get(id=id)
-        if gim:
-            if gim=='true':
-                thread.gim=True
-                data.update({'gim':True})
+        if action=='gim': 
+            if member.gim:
+                member.gim=False
             else:
-                thread.gim=False
-                data.update({'gim':False})
-            thread.save()
-        elif unread:
-            if unread=='true':
-                messages=Message.objects.filter(thread=thread)
-                if messages.exists():
-                    messages.last().seen=False
-                    messages.last().save()
-            else:
-                Message.objects.filter(thread=thread).update(seen=True)
+                member.gim=True
+            member.save()
+        elif action=='create-message':
+            msg = request.data.get('message')
+            image=request.FILES.getlist('image')
+            file=request.FILES.getlist('file')
+            file_preview=request.FILES.getlist('file_preview')
+            duration=request.POST.getlist('duration')
+            order_id=request.POST.getlist('order_id') 
+            item_id=request.POST.get('item_id') 
+            if order_id:
+                message=Message.objects.create(thread_id=id,user=request.user,message=msg,order_id=order_id)
+                listmessage.append({'id':message.id,'message_type':message.get_message_type(),
+                'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_order(),
+                })
+            if item_id:
+                message=Message.objects.create(thread_id=id,user=request.user,message=msg,item_id=item_id)
+                listmessage.append({'id':message.id,'message_type':message.get_message_type(),
+                'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_product(),
+                })
+            if msg:    
+                message=Message.objects.create(thread_id=id,user=request.user,message=msg,story_id=story_id)
+                listmessage.append({'id':message.id,'message':message.message,'message_type':message.get_message_type(),
+                'user_id':message.user_id,'date_created':message.date_created,'story_id':message.story_id,'media_story':message.get_story(),
+                'list_file':[]})
+            if image:
+                message=Message.objects.create(thread_id=id,user=request.user)
+                list_file_chat=Messagemedia.objects.bulk_create([Messagemedia(upload_by=request.user,file=image[i],message=message) for i in range(len(image))])
+                listmessage.append({'id':message.id,'message':message.message,'message_type':message.get_message_type(),
+                        'user_id':message.user_id,'date_created':message.date_created,
+                        'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,'filetype':uploadfile.get_filetype()}
+                for uploadfile in list_file_chat
+                ]})
+            if file: 
+                list_file_preview=[None for i in range(len(file))]
+                for i in range(len(list_file_preview)):
+                    for j in range(len(file_preview)):
+                        if i==j:
+                            list_file_preview[i]=file_preview[j]
+                count=Message.objects.last().id
+                messages=Message.objects.bulk_create([
+                Message(thread_id=id,
+                    id=count+i+1,
+                    user=request.user
+                ) for i in range(len(file))]) 
+                        
+                Messagemedia.objects.bulk_create([Messagemedia(message_id=messages[i].id,upload_by=request.user,duration=float(duration[i]),file_preview=list_file_preview[i],file=file[i],file_name=name[i]) for i in range(len(file))])
+                listmessage=[{'id':message.id,'message':message.message,'message_type':message.get_message_type(),
+                'user_id':message.user_id,'date_created':message.date_created,
+                'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,'file_name':uploadfile.filename(),
+                'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.get_filetype()}
+                for uploadfile in message.message_file.all()
+                ]} for message in messages]
+            return Response(listmessage)
         else:
             thread.delete()
         return Response(data)
+
+class CountThread(APIView):
+    permission_classes = (IsAuthenticated,)
+    def get(self,request):
+        count=Thread.objects.filter(participant=request.user).exclude(message_thread=None).count()
+        return Response({'count':count})
+
+class ListThreadAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    def get(self,request):
+        user=request.user
+        threads=Thread.objects.filter(participant=user).exclude(message_thread=None)
+        serializer = ThreadinfoSerializer(threads,many=True, context={"request": request})
+        return Response(serializer.data)
+
+class MediathreadAPI(APIView):
+    permission_classes = (IsAuthenticated,)
+    def get(self,request):
+        id=request.GET.get('id')
+        file=Messagemedia.objects.get(id=id)
+        serializer = MediathreadSerializer(file, context={"request": request})
+
+class CreateThread(APIView):
+    def post(self,request):
+        member=request.data.get('member')
+        group=request.data.get('group')
+        listmessage=list()
+        listuser=User.objects.filter(id__in=member).select_related('profile')
+        thread=Thread.objects.filter(group=False)
+        if group:
+            thread=thread.filter(group=True)
+        for user in listuser:
+            thread=thread.filter(participant=user)
+        if thread.exists():
+            listmember=Member.objects.filter(thread=thread[0]).select_related('user__profile')
+            messages=Message.objects.filter(thread=thread.first()).prefetch_related('message_file').order_by('-id')[:10]
+            listmessage=[{'id':message.id,'message':message.message,'story_id':message.story_id,'media_story':message.get_story(),'filetype':message.get_message_filetype(),
+                'user_id':message.user_id,'date_created':message.date_created,
+                'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,'file_name':uploadfile.filename(),
+                'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.get_filetype()}
+                for uploadfile in message.message_file.all()
+                ]} for message in messages
+                ]
+            data={'messages':listmessage,
+            'thread':{'id':thread[0].id,'count_message':thread[0].count_message(),
+            'group_name':thread[0].group_name,'emoticon':thread[0].emoticon},
+            'members':[{'nickname':member.nickname,'user_id':member.user_id,'id':member.id,
+            'avatar':member.user.profile.avatar.url,'username':member.user.username,
+            'name':member.user.profile.name,'online':member.user.profile.online,'is_online':member.user.profile.is_online} for member in listmember]}
+            return Response(data)
+        else:
+            thread=Thread.objects.create(admin=request.user)
+            if group:
+                thread.group=True
+            thread.participant.add(*member)
+            thread.save()
+            Member.objects.bulk_create([
+                Member(user=listuser[i],nickname=listuser[i].profile.name,thread=thread)
+                for i in range(len(list(listuser)))
+            ])
+            data={'messages':listmessage,'thread':{'id':thread.id,'count_message':0},'members':[{'user_id':member.id,'avatar':member.profile.avatar.url,'username':member.username,
+            'name':member.profile.name,'online':member.profile.online,'is_online':member.profile.is_online} for member in listuser]}
+            return Response(data)
 
 class ListThreadAPIView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -112,43 +179,7 @@ class ListThreadAPIView(APIView):
         limit=10
         threads = Thread.objects.filter(participants=user)
         data={}
-        if thread_id:
-            thread=Thread.objects.get(id=thread_id)
-            messages=Message.objects.filter(thread=thread)
-            if seen:
-                messages.update(seen=True)
-            message_count=messages.count()
-            to_item=message_count
-            if offset:
-                to_item=message_count-int(offset)
-            from_item=to_item-limit
-            if to_item-limit<=0:
-                from_item=0
-            if from_item<to_item:
-                messages=messages[from_item:to_item]
-            data.update({
-            'messages':[{'text':message.message,
-                'sender':message.user.username,'created':message.date_created,
-                'message_order':message.message_order(),'message_product':message.message_product(),
-                'list_file':[{'file':uploadfile.file.url,'file_name':uploadfile.filename(),
-                'file_preview':uploadfile.file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.filetype()}
-                for uploadfile in message.file.all()
-                ]} for message in messages]
-                })
-        
-            if list_thread:
-                data.update({
-                    'threads':[{'id':thread.id,'info_thread':thread.info_thread(),'gim':thread.gim,
-                    'count_message_not_seen':thread.count_message_not_seen(),'count_message':thread.count_message(),
-                    'message':[{'text':message.message,'file':message.message_file(),'read':message.seen,'sender':message.user.username,
-                    'created':message.date_created,'message_order':message.message_order(),'message_product':message.message_product(),
-                    'list_file':[{'filetype':uploadfile.filetype()}
-                    for uploadfile in message.file.all()]}
-                    for message in thread.chatmessage_thread.all().order_by('-id')[:1]]}
-                    for thread in threads]
-                })
-
-        elif shop_name:
+        if shop_name:
             shop=Shop.objects.get(name=shop_name)
             if item:
                 to_item=shop.count_product()
@@ -276,80 +307,5 @@ class ListThreadAPIView(APIView):
             
             return Response(data)
 
-class ThreadAPIView(APIView):
-    permission_classes = (IsAuthenticated,)
-    def get(self,request):
-        thread_id=request.GET.get('thread_id')
-        type=request.GET.get('type')
-        if thread_id:
-            thread=Thread.objects.get(id=thread_id)
-            messages=Message.objects.filter(thread=thread)
-            message_count=messages.count()
-            messages=messages[message_count-10:message_count]
-            data={
-            'messages':[{'text':message.message,'file':message.message_file(),'filetype':message.message_filetype(),
-                'user_id':message.user_id,'created':message.date_created,'item':[{'item_name':item.name,
-                'item_image':item.media_upload.all()[0].upload_file(),'item_url':item.get_absolute_url(),'item_max':item.max_price(),
-                'item_min':item.min_price(),'percent_discount':item.percent_discount()
-                } for item in Item.objects.filter(message=message)],
-                'message_order':message.message_order(),'message_product':message.message_product(),
-                'list_file':[{'file':uploadfile.file.url,'file_name':uploadfile.filename(),
-                'file_preview':uploadfile.file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.filetype()}
-                for uploadfile in message.file.all()
-                ]} for message in messages
-                ]
-            }
-            return Response(data)
-    def post(self, request, *args, **kwargs):
-        user=request.user
-        item=Item.objects.all()
-        count=item.count()
-        sender=user
-        user=user
-        thread=Thread.objects.filter(sender=user)
-        receiver=request.POST.get('id')
-        thread_id=request.POST.get('thread_id')
-        seen=request.POST.get('seen')
-        receive=User.objects.get(id=receiver)
-        if Thread.objects.filter(sender=user,receiver=receive).exists():
-            thread=Thread.objects.filter(sender=user,receiver=receive).first()
-        elif Thread.objects.filter(sender=receive,receiver=user).exists():
-            thread=Thread.objects.filter(sender=receive,receiver=user).first()
-        elif thread_id:
-            thread=Thread.objects.get(id=thread_id)
-            Message.objects.filter(thread=thread,seen=False).update(seen=True)
-        else:
-            thread,created=Thread.objects.get_or_create(
-                sender=sender,
-                receiver=receive,
-            )
-        threads=Thread.objects.filter(Q(sender=user) | Q(receiver=user)).order_by('-id')
-        messages=Message.objects.filter(thread=thread)
-        message_count=messages.count()
-        messages=messages[message_count-10:message_count]
-        data={'count':count,
-            'thread':thread.id,'sender':thread.sender_id,'receiver':thread.receiver_id,
-            'messages':[{'text':message.message,'file':message.message_file(),'filetype':message.message_filetype(),
-            'user_id':message.user_id,'created':message.date_created,'item':message.message_product(),
-            'message_order':message.message_order(),
-            'list_file':[{'file':uploadfile.file.url,'file_name':uploadfile.filename(),
-            'file_preview':uploadfile.file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.filetype()}
-            for uploadfile in message.file.all()
-            ]} for message in messages
-            ],
-            'threads':[{'thread_id':thread.id,'sender':thread.sender.username,'receiver':thread.receiver.username,
-            'shop_name_sender':thread.shop_name_sender(),'shop_logo_sender':thread.shop_logo_sender(),
-            'count_message_not_seen':thread.count_message_not_seen(),'sender_id':thread.sender_id,
-            'receiver_id':thread.receiver_id,
-            'shop_name_receiver':thread.shop_name_receiver(),'shop_logo_receiver':thread.shop_logo_receiver(),
-            'messages':[{'text':message.message,'file':message.message_file(),'created':message.date_created,
-            'message_order':message.message_order(),'message_product':message.message_product(),
-            'message_filetype':message.message_filetype(),
-            'user_id':message.user_id} for message in thread.chatmessage_thread.all().order_by('-id')[:1]
-            ]} for thread in threads
-            ]
-        }
-        
-        return Response(data)
 
 

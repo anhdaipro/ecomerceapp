@@ -154,7 +154,7 @@ class Item(models.Model):
         list_color=[]
         color=Color.objects.filter(variation__item=self,variation__inventory__gt=0)
         if color.exists():
-            list_color=[{'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in color.distinct()]
+            list_color=[{'image':i.image.url,'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in color.distinct()]
         return list_color
     def get_list_color(self):
         list_color=[]
@@ -256,38 +256,20 @@ class Item(models.Model):
         return Shipping.objects.all().last()
     def count_program_valid(self):
         return Shop_program.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).count()
-    def item_info(self):
-        info_item={}
-        info_item['item_name']=self.name
-        info_item['item_id']=self.id
-        return info_item
+    
     def get_promotion(self):
-        promotion_combo={}
-        if Promotion_combo.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
-            promotion_first=Promotion_combo.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).first()
-            promotion_combo['combo_type']=promotion_first.combo_type
-            promotion_combo['id']=promotion_first.id
-            promotion_combo['quantity_to_reduced']=promotion_first.quantity_to_reduced
-            promotion_combo['combo_url']=promotion_first.get_absolute_url()
-            promotion_combo['limit_order']=promotion_first.limit_order
-            if promotion_first.combo_type=="1":
-                promotion_combo['discount_percent']=promotion_first.discount_percent
-            elif promotion_first.combo_type=="2":
-                promotion_combo['discount_price']=promotion_first.discount_price
-            else:
-                promotion_combo['price_special_sale']=promotion_first.price_special_sale
-        return promotion_combo
+        promotion_combo=Promotion_combo.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        if promotion_combo.exists():
+            promotion_combo=promotion_combo.first()
+            return {'id':promotion_combo.id,'combo_type':promotion_combo.combo_type,
+            'quantity_to_reduced':promotion_combo.quantity_to_reduced,
+            'limit_order':promotion_combo.limit_order,'discount_percent':promotion_combo.discount_percent,
+            'discount_price':promotion_combo.discount_price,
+            'price_special_sale':promotion_combo.price_special_sale}
     
     def get_media(self):
-        list_media=[]
-        for media in self.media_upload.all():
-            media_file={}
-            media_file['typefile']=media.media_type()
-            media_file['file']=media.upload_file()
-            media_file['image_preview']=media.file_preview()
-            media_file['duration']=media.duration
-            list_media.append(media_file)
-        return list_media
+        return [{'typefile':media.media_type,'file':media.upload_file(),'image_preview':media.file_preview(),'duration':media.duration} for media in self.media_upload.all()]
+    
     def get_media_cover(self):
         media_file=[media for media in self.media_upload.all() if media.media_type()=='image'][0].upload_file()    
         return media_file
@@ -380,14 +362,21 @@ class Variation(models.Model):
         return number_order
     def get_size(self):
         size=''
-        if Size.objects.filter(variation=self).exists():
-            size=Size.objects.filter(variation=self).last().value
+        if self.size:
+            size=self.size.value
         return size
     def get_color(self):
         color=''
-        if Color.objects.filter(variation=self).exists():
-            color=Color.objects.filter(variation=self).last().value
+        if self.color:
+            color=self.color.value
         return color
+    def get_image(self):
+        image=self.item.get_media_cover()
+        if self.color:
+            if self.color.image:
+                image=self.color.image.url
+        return image
+
     
     
 class Byproductcart(models.Model):

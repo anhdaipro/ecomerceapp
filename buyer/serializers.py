@@ -4,6 +4,7 @@ from cart.models import *
 from category.models import *
 from myweb.models import *
 from account.models import *
+from chat.models import *
 from django.contrib import auth
 from djoser.serializers import UserCreateSerializer
 from django.contrib.auth.models import User
@@ -19,13 +20,18 @@ class UserCreateSerializer(UserCreateSerializer):
         fields = ('id', 'email', 'username', 'password')
 
 class UserprofileSerializer(serializers.ModelSerializer):
-    image=serializers.SerializerMethodField()
+    avatar=serializers.SerializerMethodField()
+    count_message_unseen=serializers.SerializerMethodField()
+    count_notifi_unseen=serializers.SerializerMethodField()
     class Meta:
         model=User
-        fields = ('username','id','image')
+        fields = ('username','id','avatar','count_message_unseen','count_notifi_unseen',)
     def get_image(self,obj):
-        return obj.profile.image.url
-
+        return obj.profile.avatar.url
+    def get_count_notifi_unseen(self,obj):
+        return obj.profile.count_notifi_unseen
+    def get_count_message_unseen(self,obj):
+        return Member.objects.filter(user=obj,is_seen=False)
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model=Profile
