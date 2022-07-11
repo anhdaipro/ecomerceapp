@@ -240,12 +240,12 @@ class Item(models.Model):
         return number_order
     
     def get_voucher(self):
-        vouchers=Vocher.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        vouchers=Voucher.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if vouchers.exists():
             return list(vouchers.values())[0]
 
     def list_voucher(self):
-        voucher=Vocher.objects.filter(product=self,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        voucher=Voucher.objects.filter(product=self,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
         return voucher
 
     def shock_deal_type(self):
