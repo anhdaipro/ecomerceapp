@@ -299,7 +299,7 @@ class DetailAPIView(APIView):
             category_children=Category.objects.filter(parent=category)
             category_choice=category.get_descendants(include_self=False).filter(choice=True)
             list_items=Item.objects.filter(category__in=category_choice)
-            items=Item.objects.filter(category__in=category_choice).prefetch_related('main_product').prefetch_related('shop_program').prefetch_related('variation').prefetch_related('promotion_combo')
+            items=Item.objects.filter(category__in=category_choice).prefetch_related('main_product').prefetch_related('shop_program').prefetch_related('variation__cartitem__order').prefetch_related('promotion_combo').prefetch_related('media_upload')
             list_shop=Shop.objects.filter(item__in=list_items)
             if categoryID:
                 items=items.filter(category__id=categoryID)
