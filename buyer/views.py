@@ -806,7 +806,7 @@ class CartAPIView(APIView):
     def get(self,request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         if token:
-            list_cart_items=CartItem.objects.filter(ordered=False,user=request.user).select_related('item__media_upload').select_related('item__main_product').select_related('item__promotion_combo')
+            list_cart_items=CartItem.objects.filter(ordered=False,user=request.user).select_related('item').prefetch_related('item__main_product').prefetch_related('item__promotion_combo')
             list_cart_item=list_cart_items[0:5]
             count=list_cart_items.count()
             list_cart_item=[{'item_id':cart_item.item_id,'item_name':cart_item.item.name,'id':cart_item.id,
