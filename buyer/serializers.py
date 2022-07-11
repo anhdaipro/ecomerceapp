@@ -31,7 +31,7 @@ class UserprofileSerializer(serializers.ModelSerializer):
     def get_count_notifi_unseen(self,obj):
         return obj.profile.count_notifi_unseen
     def get_count_message_unseen(self,obj):
-        return Member.objects.filter(user=obj,is_seen=False)
+        return Member.objects.filter(user=obj,is_seen=False).count()
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model=Profile
