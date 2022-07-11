@@ -32,8 +32,8 @@ class Member(models.Model):
     thread = models.ForeignKey(Thread, null=True, on_delete=models.CASCADE, related_name='member_thread')
     user = models.ForeignKey(User, on_delete=models.CASCADE,null=True,related_name='member_user')
     created = models.DateTimeField(auto_now=True)
-    is_seen = models.BooleanField(default=True)
-    blocker=models.ManyToManyField(User,blank=True,related_name="blocker")
+    is_seen = models.BooleanField(default=False)
+    block=models.BooleanField(default=False)
     ignore=models.BooleanField(default=True)
     gim=models.BooleanField(default=False)
 class Sticker(models.Model):

@@ -26,7 +26,7 @@ class UserprofileSerializer(serializers.ModelSerializer):
     class Meta:
         model=User
         fields = ('username','id','avatar','count_message_unseen','count_notifi_unseen',)
-    def get_image(self,obj):
+    def get_avatar(self,obj):
         return obj.profile.avatar.url
     def get_count_notifi_unseen(self,obj):
         return obj.profile.count_notifi_unseen

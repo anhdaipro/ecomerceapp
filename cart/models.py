@@ -20,6 +20,7 @@ class OrderItem(models.Model):
     user=models.ForeignKey(User, on_delete=models.CASCADE)
     shop=models.ForeignKey(to="shop.Shop",on_delete=models.CASCADE,related_name='shop_order')
     product=models.ForeignKey(to="shop.Variation", on_delete=models.CASCADE)
+    item=models.ForeignKey(to="shop.Item", on_delete=models.CASCADE)
     byproduct=models.ManyToManyField(to="shop.Byproductcart",blank=True)
     deal_shock=models.ForeignKey(to="discount.Buy_with_shock_deal",on_delete=models.SET_NULL, blank=True, null=True)
     promotion_combo=models.ForeignKey(to="discount.Promotion_combo",on_delete=models.SET_NULL, blank=True, null=True)

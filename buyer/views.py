@@ -235,11 +235,11 @@ class HomeAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
         list_flashsale=Flash_sale.objects.filter(valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
-        list_items=Item.objects.filter(flash_sale__in=list_flashsale).distinct()
+        list_items=Item.objects.filter(flash_sale__in=list_flashsale).select_related('flash_sale').distinct()
         data={
-            'a':[{'item_name':i.name,'item_image':i.get_media_cover(),'number_order':i.number_order(),
-            'percent_discount':i.discount_flash_sale(),'item_id':i.id,'item_inventory':i.total_inventory(),'item_max':i.max_price(),'item_url':i.get_absolute_url(),
-            'item_min':i.min_price(),'quantity_limit_flash_sale':i.quantity_limit_flash_sale} for i in list_items],
+            'a':[{'item_name':i.name,'item_image':i.get_image_cover(),'number_order':i.number_order(),
+            'percent_discount':i.discount_flash_sale(),'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),'item_url':i.get_absolute_url(),
+            'min_price':i.min_price(),'quantity_limit_flash_sale':i.quantity_limit_flash_sale} for i in list_items],
             'list_flashsale':list_flashsale.values('valid_from','valid_to')
         }
         return Response(data)
@@ -247,28 +247,31 @@ class HomeAPIView(APIView):
 class CategoryListView(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
-        category_parent=Category.objects.all().order_by('id')
+        category_parent=Category.objects.all()
         list_category_parent=[{'title':i.title,'image':i.image.url,'url':i.get_absolute_url()} for i in category_parent if i.image]
-        data={'b':list_category_parent}
-        
-        return Response(data)
+        return Response(list_category_parent)
+
 class Listitemseller(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
         return Item.objects.prefetch_related('variation__product__order').filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__orderitem__order')).order_by('-count_order')
+
 class ListTrendsearch(APIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
         return Item.objects.filter(variation__orderitem__order__ordered=True).annotate(count_like= Count('liked')).annotate(count_order= Count('variation__orderitem__order')).annotate(count_order= Count('variation__orderitem__order')).annotate(count_review= Count('variation__orderitem__review')).order_by('-count_like','-count_review','-count_order')
+
 def search_matching(list_keys):
     q = Q()
     for key in list_keys:
         q |= Q(name__icontains = key)
     return Item.objects.filter(q).values('name').order_by('category__title').distinct()
+
 def get_count(category):
     return Item.objects.filter(category=category).count()
+
 class DetailAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request,slug):
@@ -339,10 +342,10 @@ class DetailAPIView(APIView):
                 'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.get_absolute_url()} for i in category_choice if i.item_set.all().count()>0],
                 'category_info':{'title':category.title,'image':category.image.url,'id':category.id},
                 'category_children':[{'id':i.id,'title':i.title,'url':i.get_absolute_url()} for i in category_children],
-                'list_item_page':[{'item_name':i.name,'item_image':i.get_media_cover(),
-                'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
+                'list_item_page':[{'item_name':i.name,'item_image':i.get_image_cover(),
+                'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-                'review_rating':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price(),
+                'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
                 'program_valid':i.count_program_valid(),'promotion':i.get_promotion(),
                 'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
                 }
@@ -362,7 +365,7 @@ class DetailAPIView(APIView):
             if deal_shock.exists():
                 byproduct=deal_shock.first().byproduct.all()
                 main_product=item.variation_set.all()[0]
-                data.update({'byproduct':[{'item_name':i.name,'item_image':i.get_media_cover(),
+                data.update({'byproduct':[{'item_name':i.name,'item_image':i.get_image_cover(),
                 'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
                 'max_price':i.max_price(),'discount_deal':i.discount_deal(),
                 'program_valid':i.count_program_valid()} for i in byproduct]})
@@ -385,8 +388,8 @@ class DetailAPIView(APIView):
             'deal_shock':list(deal_shock.values()),'flash_sale':list(flash_sale.values()),
             'promotion_combo':list(promotion_combo.values()),'shop_user':item.shop.user.id,
             'voucher':list(vouchers.values()),
-            'list_host_sale':[{'item_name':i.name,'item_image':i.get_media_cover(),'item_max':i.max_price(),
-            'percent_discount':i.percent_discount(),'item_min':i.min_price(),
+            'list_host_sale':[{'item_name':i.name,'item_image':i.get_image_cover(),'max_price':i.max_price(),
+            'percent_discount':i.percent_discount(),'min_price':i.min_price(),
             'program_valid':i.count_program_valid(),'item_url':i.get_absolute_url()
             } for i in list_hot_sales]
             })
@@ -449,22 +452,22 @@ class DetailAPIView(APIView):
                 'quantity_to_reduced':promotion.quantity_to_reduced,'limit_order':promotion.quantity_to_reduced,
                 'discount_percent':promotion.discount_percent,'discount_price':promotion.discount_price,
                 'price_special_sale':promotion.price_special_sale} for promotion in promotion_combo],
-                'item_combo':[{'item_name':i.name,'item_image':i.get_media_cover(),
-                'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
+                'item_combo':[{'item_name':i.name,'item_image':i.get_image_cover(),
+                'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-                'review_rating':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price()} for i in item_combo],
-                'list_item_page':[{'item_name':i.name,'item_image':i.get_media_cover(),
-                'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
+                'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price()} for i in item_combo],
+                'list_item_page':[{'item_name':i.name,'item_image':i.get_image_cover(),
+                'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-                'review_rating':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price(),
+                'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
                 'program_valid':i.count_program_valid(),'promotion':i.get_promotion(),
                 'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
                 }
                 for i in page_obj],'page_count':paginator.num_pages,'list_voucher':list_voucher.values(),
-                'main_product':[{'item_name':i.name,'item_image':i.get_media_cover(),
-                'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
+                'main_product':[{'item_name':i.name,'item_image':i.get_image_cover(),
+                'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-                'review_rating':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price()} for i in main_product],
+                'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price()} for i in main_product],
                 'total_order':shop.total_order(),'list_category_child':[{'title':category.title,'id':category.id,'url':category.get_absolute_url()} for category in category_children]})
             
             if token:
@@ -515,7 +518,7 @@ class Topsearch(APIView):
         list_name_top_search=sorted(list_sort_item, key=list_sort_item.get, reverse=True)[:20]
         item_top_search=Item.objects.filter(Q(name__in=list_name_top_search))
         data={
-        'item_top_search':[{'image':item.get_media_cover(),'title':item.category.title,'count':get_count(item.category),'name':item.name,'number_order':item.number_order()} for item in item_top_search]}
+        'item_top_search':[{'image':item.get_image_cover(),'title':item.category.title,'count':get_count(item.category),'name':item.name,'number_order':item.number_order()} for item in item_top_search]}
         return Response(data)
 
 class SearchitemAPIView(APIView):
@@ -587,10 +590,10 @@ class SearchitemAPIView(APIView):
             'brands':list(set([item.brand for item in list_items])),
             'status':list({item['value']:item for item in status}.values()),
             'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.get_absolute_url()} for i in category_choice],
-            'list_item_page':[{'item_name':i.name,'item_image':i.get_media_cover(),
-            'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
+            'list_item_page':[{'item_name':i.name,'item_image':i.get_image_cover(),
+            'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
             'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-            'review_rating':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price(),
+            'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
             'program_valid':i.count_program_valid(),'promotion':i.get_promotion(),
             'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
             }
@@ -703,6 +706,7 @@ class Getshopinfo(APIView):
             'is_online':item.shop.user.profile.is_online,'count_product':item.shop.count_product(),
             'total_order':item.shop.total_order()}
         return Response(data)
+
 class ShopinfoAPIVIew(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
@@ -722,10 +726,10 @@ class ShopinfoAPIVIew(APIView):
             page_obj = paginator.get_page(1)
             if page:
                 page_obj = paginator.get_page(page)
-            list_page_item=[{'item_name':i.name,'item_image':i.get_media_cover(),
-            'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'item_min':i.min_price(),
+            list_page_item=[{'item_name':i.name,'item_image':i.get_image_cover(),
+            'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
             'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-            'review_rating':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price(),
+            'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
             'program_valid':i.count_program_valid(),'promotion':i.get_promotion(),
             'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
             }
@@ -742,13 +746,14 @@ class ListItemRecommendAPIView(APIView):
         page_number = request.GET.get('page')
         paginator = Paginator(items_recommend, 30)
         page_obj = paginator.get_page(page_number)
-        list_items_recommend=[{'item_name':i.name,'item_image':i.get_media_cover(),'item_max':i.max_price(),
-        'percent_discount':i.percent_discount(),'item_min':i.min_price(),
+        list_items_recommend=[{'item_name':i.name,'item_image':i.get_image_cover(),'max_price':i.max_price(),
+        'percent_discount':i.percent_discount(),'min_price':i.min_price(),
         'program_valid':i.count_program_valid(),'item_url':i.get_absolute_url()
         }
         for i in page_obj]
         data={'d':list_items_recommend}
         return Response(data)
+
 class Itemrecently(APIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemrecentlySerializer
@@ -756,6 +761,7 @@ class Itemrecently(APIView):
         request=self.request
         user=request.user
         return ItenReviews.objects.filter(user=user).order_by('-id,item')[:12].distinct()
+
 class Listitemhostsale(APIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemrecentlySerializer
@@ -799,15 +805,16 @@ class CartAPIView(APIView):
     def get(self,request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         if token:
-            cart_item=OrderItem.objects.filter(ordered=False,user=request.user)[0:5]
-            cart_items=OrderItem.objects.filter(ordered=False,user=request.user)
+            cart_items=OrderItem.objects.filter(ordered=False,user=request.user).select_related('item')
+            cart_item=cart_items[0:5]
             count=cart_items.count()
-            list_cart_item=[{'item_info':order_item.product.item.item_info(),'id':order_item.id,                'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
-                    'item_url':order_item.product.item.get_absolute_url(),
-                    'price':order_item.product.price-order_item.product.total_discount(),
-                    'shock_deal_type':order_item.product.item.shock_deal_type(),
-                    'promotion':order_item.product.item.get_promotion(),
-                    } for order_item in cart_item]
+            list_cart_item=[{'item_id':order_item.item_id,'item_name':order_item.item.name,'id':order_item.id,
+            'item_image':order_item.get_image(),
+            'item_url':order_item.item.get_absolute_url(),
+            'price':order_item.product.price-order_item.product.total_discount(),
+            'shock_deal_type':order_item.item.shock_deal_type(),
+            'promotion':order_item.item.get_promotion(),
+            } for order_item in cart_item]
             data={
                     'count':count,
                     'a':list_cart_item
@@ -834,9 +841,9 @@ class UpdateCartAPIView(APIView):
             'page_count':paginator.num_pages,'page':int(page_no),
             'list_item':[{'item_info':i.item_info(),
             'item_image':item.media_upload.all()[0].upload_file(),
-            'percent_discount':i.percent_discount(),'item_min':i.min_price(),
+            'percent_discount':i.percent_discount(),'min_price':i.min_price(),
             'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-            'review_rating':i.average_review(),'num_like':i.num_like(),'item_max':i.max_price(),
+            'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
             'promotion':i.get_promotion(),
             'shock_deal':i.shock_deal_type(),'num_order':i.number_order(),
             'item_url':i.get_absolute_url(),
@@ -879,7 +886,8 @@ class UpdateCartAPIView(APIView):
             byproduct.byproduct=product
             byproduct.save()
             data.update({ 
-            'id':byproduct.id,'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
+            'id':byproduct.id,'color_value':byproduct.byproduct.get_color(),
+            'size_value':byproduct.byproduct.get_size(),
             'price':byproduct.byproduct.price,
             'size':byproduct.item.get_size(),
             'color':byproduct.item.get_color(),
@@ -892,7 +900,6 @@ class UpdateCartAPIView(APIView):
             count_orderitem+=order.count_item_cart()
             for orderitem in order.items.all():
                 count+=orderitem.count_item_cart()
-                
                 total+=orderitem.total_price_orderitem()
                 total_discount+=orderitem.discount()
                 discount_deal+=orderitem.discount_deal()
@@ -989,17 +996,13 @@ class AddToCartAPIView(APIView):
         size_id=request.GET.get('size_id')
         product=Variation.objects.all()
         if item_id and color_id and size_id:
-            color=Color.objects.get(id=color_id)
-            size=Size.objects.get(id=size_id)
-            product=Variation.objects.get(item=item_id,color=color,size=size)
+            product=Variation.objects.get(item_id=item_id,color_id=color_id,size_id=size_id)
         elif item_id and color_id and not size_id:
-            color=Color.objects.get(id=color_id)
-            product=Variation.objects.get(item=item_id,color=color)
+            product=Variation.objects.get(item_id=item_id,color_id=color_id)
         elif item_id and not color_id and size_id:
-            size=Size.objects.get(id=size_id)
-            product=Variation.objects.get(item=item_id,size=size)
+            product=Variation.objects.get(item_id=item_id,size_id=size_id)
         elif item_id and not size_id and not color_id:
-            product=Variation.objects.get(item=item_id)
+            product=Variation.objects.get(item_id=item_id)
         data={
             'price':product.price,
             'percent_discout':product.percent_discount,
@@ -1031,27 +1034,31 @@ class AddToCartAPIView(APIView):
                 order_item.save()
                 return Response({'erorr':'over quantity'})
             else:
-                data={'item_info':order_item.product.item.item_info(),'id':order_item.id,                'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
-                'item_url':order_item.product.item.get_absolute_url(),
+                data={'item_info':order_item.item.item_info(),'id':order_item.id,                'item_image':order_item.item.media_upload.all()[0].upload_file(),
+                'item_url':order_item.item.get_absolute_url(),
                 'price':order_item.product.price-order_item.product.total_discount(),
-                'shock_deal_type':order_item.product.item.shock_deal_type(),
-                'promotion':order_item.product.item.get_promotion(),
+                'shock_deal_type':order_item.item.shock_deal_type(),
+                'promotion':order_item.item.get_promotion(),
                 }
                 return Response(data)
         except Exception:
             order_item=OrderItem.objects.create(
                 product=product,
+                item_id=item_id,
                 user=user,
                 ordered=False,
                 quantity=int(quantity),
                 shop=item.shop,
                 )
             data={
-                'item_info':order_item.product.item.item_info(),'id':order_item.id,'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
-                'item_url':order_item.product.item.get_absolute_url(),
-                'price':order_item.product.price-order_item.product.total_discount(),
-                'shock_deal_type':order_item.product.item.shock_deal_type(),
-                'promotion':order_item.product.item.get_promotion(),
+                'item_id':order_item.item_id,
+                'item_name':order_item.item_name,
+                'id':order_item.id,
+                'item_image':order_item.get_image(),
+                'item_url':order_item.item.get_absolute_url(),
+                'price':order_item.price-order_item.product.total_discount(),
+                'shock_deal_type':order_item.item.shock_deal_type(),
+                'promotion':order_item.item.get_promotion(),
                 }
             return Response(data)
 
@@ -1063,29 +1070,29 @@ class CartItemAPIView(APIView):
         shops=Shop.objects.filter(shop_order__in=list_order_item).select_related('user').distinct()
         data={
             'order_item':[{'id':order_item.id,'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
-            'list_voucher':order_item.product.item.get_voucher(),'count_variation':order_item.product.item.count_variation(),
+            'list_voucher':order_item.item.get_voucher(),'count_variation':order_item.item.count_variation(),
             'price':order_item.product.price,'discount_price':order_item.product.total_discount(),'shop_name':order_item.shop.name,
-            'voucher_user':[True if user in voucher.user.all() else False for voucher in order_item.product.item.list_voucher()],
-            'size':order_item.product.item.get_size(),'open':False,
-            'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
+            'voucher_user':[True if user in voucher.user.all() else False for voucher in order_item.item.list_voucher()],
+            'size':order_item.item.get_size(),'open':False,
+            'item_image':order_item.get_image(),
             'variation_url':order_item.product.get_absolute_url(),'byproduct':[{
             'id':byproduct.id,'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
-            'color':byproduct.byproduct.item.get_color_deal(),'percent_discount_deal':byproduct.byproduct.percent_discount_deal_shock,
-            'size':byproduct.byproduct.item.get_size_deal(),'price':byproduct.byproduct.price,
-            'variation_id':byproduct.byproduct_id,'item_info':byproduct.byproduct.item.item_info(),
-            'inventory':byproduct.byproduct.inventory,'quantity':byproduct.quantity,'item_url':byproduct.byproduct.item.get_absolute_url(),
-            'count_program_valid':byproduct.byproduct.item.count_program_valid(),
+            'color':byproduct.item.get_color_deal(),'percent_discount_deal':byproduct.byproduct.percent_discount_deal_shock,
+            'size':byproduct.item.get_size_deal(),'price':byproduct.byproduct.price,
+            'variation_id':byproduct.byproduct_id,'item_id':byproduct.item_id,'item_name':byproduct.item.name,
+            'inventory':byproduct.byproduct.inventory,'quantity':byproduct.quantity,'item_url':byproduct.item.get_absolute_url(),
+            'count_program_valid':byproduct.item.count_program_valid(),
             'total_price':byproduct.total_price(),'open':False,
-            'item_image':byproduct.byproduct.item.media_upload.all()[0].upload_file(),
-            'count_variation':byproduct.byproduct.item.count_variation(),
-             } for byproduct in order_item.byproduct.all() if byproduct.byproduct.item.get_count_deal()>0],
-            'color':order_item.product.item.get_color(),'item_info':order_item.product.item.item_info(),
-            'item_url':order_item.product.item.get_absolute_url(),
-            'count_program_valid':order_item.product.item.count_program_valid(),
-            'promotion':order_item.product.item.get_promotion(),'check':order_item.check,
+            'item_image':byproduct.item.get_image_cover(),
+            'count_variation':byproduct.item.count_variation(),
+             } for byproduct in order_item.byproduct.all() if byproduct.item.get_count_deal()>0],
+            'color':order_item.item.get_color(),'item_info':order_item.item.item_info(),
+            'item_url':order_item.item.get_absolute_url(),
+            'count_program_valid':order_item.item.count_program_valid(),
+            'promotion':order_item.item.get_promotion(),'check':order_item.check,
             'variation_id':order_item.product_id,'total_price':order_item.total_discount_orderitem(),
             'inventory':order_item.product.inventory,'quantity':order_item.quantity,
-            'shock_deal_type':order_item.product.item.shock_deal_type(),
+            'shock_deal_type':order_item.item.shock_deal_type(),
             } for order_item in list_order_item],'list_shop':[{'shop_user':shop.user_id,'shop_name':shop.name,'list_voucher_unique':[]} for shop in shops]
         }
         return Response(data,status=status.HTTP_200_OK)
@@ -1189,7 +1196,6 @@ class ListorderAPIView(APIView):
         order_check = Order.objects.filter(user=user, ordered=False).select_related('user').exclude(items=None)
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
         data={
-        'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads],
         'orders':[{'discount_voucher_shop':order.discount_voucher(),'total':order.total_price_order(),
             'discount_deal':order.discount_deal(),'count':order.count_item_cart(),
             'count_orderitem':order.count_orderitem(),'shop_name':order.shop.name,
@@ -1286,16 +1292,16 @@ class CheckoutAPIView(APIView):
         'total':order.total_price_order(),'total_final':order.total_final_order(),
         'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),'id':order.id,
         'discount_promotion':order.discount_promotion(),'total_discount':order.total_discount_order(),
-        'order_item':[{'item_info':order_item.product.item.item_info(),'item_url':order_item.product.item.get_absolute_url(),
+        'order_item':[{'item_info':order_item.item.item_info(),'item_url':order_item.item.get_absolute_url(),
         'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
-        'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
+        'item_image':order_item.item.media_upload.all()[0].upload_file(),
         'byproduct':[{
             'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
             'price':byproduct.byproduct.price,
-            'item_image':byproduct.byproduct.item.media_upload.all()[0].upload_file(),
-            'item_info':byproduct.byproduct.item.item_info(),
-            'quantity':byproduct.quantity,'item_url':byproduct.byproduct.item.get_absolute_url(),
-            'count_program_valid':byproduct.byproduct.item.count_program_valid(),
+            'item_image':byproduct.item.get_image_cover(),
+            'item_info':byproduct.item.item_info(),
+            'quantity':byproduct.quantity,'item_url':byproduct.item.get_absolute_url(),
+            'count_program_valid':byproduct.item.count_program_valid(),
             'total_price':byproduct.total_price(),
              } for byproduct in order_item.byproduct.all()],
         'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
@@ -1369,16 +1375,16 @@ class OrderinfoAPIView(APIView):
         'shop':order.shop.name,'shop_url':order.shop.get_absolute_url(),'shop_user':order.shop.user_id,
         'total':order.total_price_order(),'total_final':order.total_final_order(),
         'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),
-        'order_item':[{'item_info':order_item.product.item.item_info(),'item_url':order_item.product.item.get_absolute_url(),
+        'order_item':[{'item_info':order_item.item.item_info(),'item_url':order_item.item.get_absolute_url(),
         'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
-        'item_image':order_item.product.item.media_upload.all()[0].upload_file(),
+        'item_image':order_item.item.media_upload.all()[0].upload_file(),
         'byproduct':[{
             'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
             'price':byproduct.byproduct.price,
-            'item_image':byproduct.byproduct.item.media_upload.all()[0].upload_file(),
-            'item_info':byproduct.byproduct.item.item_info(),
-            'quantity':byproduct.quantity,'item_url':byproduct.byproduct.item.get_absolute_url(),
-            'count_program_valid':byproduct.byproduct.item.count_program_valid(),
+            'item_image':byproduct.item.get_image_cover(),
+            'item_info':byproduct.item.item_info(),
+            'quantity':byproduct.quantity,'item_url':byproduct.item.get_absolute_url(),
+            'count_program_valid':byproduct.item.count_program_valid(),
             'total_price':byproduct.total_price(),
              } for byproduct in order_item.byproduct.all()],
         'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
@@ -1447,7 +1453,7 @@ class DealShockAPIView(APIView):
             orderitem_id=orderitem_last.id
             for byproduct in orderitem_last.byproduct.all():
                 order_item.append({'variation_id':byproduct.byproduct_id,'color_value':byproduct.byproduct.get_color(),
-                'quantity':byproduct.quantity,'size_value':byproduct.byproduct.get_size(),'item_info':byproduct.byproduct.item.item_info(),
+                'quantity':byproduct.quantity,'size_value':byproduct.byproduct.get_size(),'item_info':byproduct.item.item_info(),
                 'discount_price':byproduct.byproduct.total_discount(),'byproduct_id':byproduct.id})
         item=Item.objects.get(variation=variation)
         shock_deal=Buy_with_shock_deal.objects.get(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
@@ -1620,8 +1626,8 @@ class PurchaseAPIView(APIView):
             order = Order.objects.get(id=order_id)
             data={
                 'order_item':[{
-                'item_image':order_item.product.item.media_upload.all()[0].upload_file(),'item_url':order_item.product.item.get_absolute_url(),
-                'item_name':order_item.product.item.name,'color_value':order_item.product.get_color(),
+                'item_image':order_item.item.media_upload.all()[0].upload_file(),'item_url':order_item.item.get_absolute_url(),
+                'item_name':order_item.item.name,'color_value':order_item.product.get_color(),
                 'size_value':order_item.product.get_size(),'id':order_item.id
                 } for order_item in order.items.all()],'username':user.username
             }
@@ -1663,8 +1669,8 @@ class PurchaseAPIView(APIView):
                 'accepted':order.accepted,'amount':order.total_final_order(),
                 'received_date':order.received_date,'review':get_count_review(order),
                 'order_item':[{
-                'item_image':order_item.product.item.media_upload.all()[0].upload_file(),'item_url':order_item.product.item.get_absolute_url(),
-                'item_name':order_item.product.item.name,'color_value':order_item.product.get_color(),
+                'item_image':order_item.item.media_upload.all()[0].upload_file(),'item_url':order_item.item.get_absolute_url(),
+                'item_name':order_item.item.name,'color_value':order_item.product.get_color(),
                 'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
                 'size_value':order_item.product.get_size(),'price':order_item.product.price,
                 'id':order_item.id

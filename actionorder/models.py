@@ -21,29 +21,10 @@ class CancelOrder(models.Model):
     order = models.ForeignKey(to="checkout.Order", on_delete=models.CASCADE,null=True)
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     reason = models.CharField(max_length=200,null=True)
-class Media_review(models.Model):
-    upload_by=models.ForeignKey(User,
-                             on_delete=models.CASCADE)
-    file=models.FileField(null=True,storage=RawMediaCloudinaryStorage())
-    duration=models.IntegerField(null=True)
-    file_preview=models.FileField(null=True)
-    def upload_file(self):
-        if self.file and hasattr(self.file,'url'):
-            return self.file.url
-    def media_preview(self):
-        if self.file_preview and hasattr(self.file_preview,'url'):
-            return self.file_preview.url
-    def filetype(self):
-        type_tuple = guess_type(self.file.url, strict=True)
-        if (type_tuple[0]).__contains__("image"):
-            return "image"
-        elif (type_tuple[0]).__contains__("video"):
-            return "video"
+
 class ReView(models.Model):
-    user = models.ForeignKey(User,
-                             on_delete=models.CASCADE)
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
     orderitem = models.ForeignKey(to="cart.OrderItem", on_delete=models.CASCADE)
-    media_upload=models.ManyToManyField(Media_review,blank=True)
     review_text = models.CharField(max_length=200,null=True)
     info_more=models.TextField(max_length=2000,null=True)
     review_rating = models.IntegerField(null=True)
@@ -72,7 +53,25 @@ class ReView(models.Model):
             reply['text']=Reply.objects.filter(review=self).first().text
             reply['created']=Reply.objects.filter(review=self).first().created
         return reply
-
+class Media_review(models.Model):
+    upload_by=models.ForeignKey(User,
+                             on_delete=models.CASCADE)
+    file=models.FileField(storage=RawMediaCloudinaryStorage())
+    review=models.ForeignKey(ReView,on_delete=models.CASCADE,related_name='media_review')
+    duration=models.IntegerField(null=True)
+    file_preview=models.FileField(null=True)
+    def upload_file(self):
+        if self.file and hasattr(self.file,'url'):
+            return self.file.url
+    def media_preview(self):
+        if self.file_preview and hasattr(self.file_preview,'url'):
+            return self.file_preview.url
+    def filetype(self):
+        type_tuple = guess_type(self.file.url, strict=True)
+        if (type_tuple[0]).__contains__("image"):
+            return "image"
+        elif (type_tuple[0]).__contains__("video"):
+            return "video"
 class Report(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE)

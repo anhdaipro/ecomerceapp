@@ -144,24 +144,22 @@ class Item(models.Model):
         if reviews["average"] is not None:
             avg = float(reviews["average"])
         return avg
+    
     def get_size(self):
-        list_size=[]
         size=Size.objects.filter(variation__item=self,variation__inventory__gt=0)
-        if size.exists():
-            list_size=[{'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in size.distinct()]
+        list_size=[{'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in size.distinct()]
         return list_size
+    
     def get_color(self):
-        list_color=[]
         color=Color.objects.filter(variation__item=self,variation__inventory__gt=0)
-        if color.exists():
-            list_color=[{'image':i.image.url,'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in color.distinct()]
+        list_color=[{'image':i.image.url,'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in color.distinct()]
         return list_color
+    
     def get_list_color(self):
-        list_color=[]
         color=Color.objects.filter(variation__item=self)
-        if color.exists():
-            list_color=[{'file':i.get_file(),'file_preview':None,'filetype':'image','id':i.id,'name':i.name,'value':i.value} for i in color.distinct()]
+        list_color=[{'file':i.get_file(),'file_preview':None,'filetype':'image','id':i.id,'name':i.name,'value':i.value} for i in color.distinct()]
         return list_color
+    
     def get_count_deal(self):
         count_deal=0
         if Buy_with_shock_deal.objects.filter(byproduct=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
@@ -169,43 +167,47 @@ class Item(models.Model):
             if self in deal_valid.byproduct.all():
                 count_deal=Variation.objects.filter(item=self,percent_discount_deal_shock__gt=0).count()
         return count_deal
+    
     def deal_valid(self):
         count_deal=0
         if Buy_with_shock_deal.objects.filter(main_product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
             count_deal=Buy_with_shock_deal.objects.filter(main_product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).count()
         return count_deal
+    
     def get_color_deal(self):
-        list_color=[]
         color=Color.objects.filter(variation__item=self,variation__percent_discount_deal_shock__gt=0)
-        if color.exists():
-            list_color=[{'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in color.distinct()]
+        list_color=[{'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in color.distinct()]
         return list_color
+    
     def get_size_deal(self):
-        list_size=[]
         size=Size.objects.filter(variation__item=self,variation__percent_discount_deal_shock__gt=0)
-        if size.exists():
-            list_size=[{'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in size.distinct()]
+        list_size=[{'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in size.distinct()]
         return list_size
+    
     def num_like(self):
         return self.liked.all().count()
+    
     def discount_deal(self):
         discount=0
         variations = Variation.objects.filter(item=self,percent_discount_deal_shock__gt=0).aggregate(avg=Avg('percent_discount_deal_shock'))
         if variations['avg'] is not None:
             discount=int(variations["avg"])
         return discount
+    
     def discount_flash_sale(self):
         discount_flash_sale=0
         variations = Variation.objects.filter(item=self).aggregate(max=Max('percent_discount_flash_sale'))
         if variations['max'] is not None:
             discount_flash_sale=int(variations["max"])
         return discount_flash_sale
+    
     def total_inventory(self):
         variations = Variation.objects.filter(item=self).aggregate(sum=Sum('inventory'))
         total_inventory = 0
         if variations['sum'] is not None:
             total_inventory=int(variations["sum"])
         return total_inventory
+    
     def max_price(self):
         max_price=0
         variations = Variation.objects.filter(item=self).aggregate(max=Max('price'))
@@ -222,12 +224,14 @@ class Item(models.Model):
         if color.exists():
             count+=1
         return count
+    
     def min_price(self):
         min_price=0
         variations = Variation.objects.filter(item=self).aggregate(min=Min('price'))
         if variations['min'] is not None:
             min_price=int(variations["min"])
         return min_price
+    
     def number_order(self):
         number_order=0
         order=Order.objects.filter(items__product__item=self,ordered=True).aggregate(count=Count('id'))
@@ -236,22 +240,18 @@ class Item(models.Model):
         return number_order
     
     def get_voucher(self):
-        list_voucher={}
-        voucher_percent=0
         vouchers=Vocher.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if vouchers.exists():
-            list_voucher['voucher_info']=list(vouchers.values())
-        voucher=Vocher.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=20)).aggregate(max=Max('percent'))
-       
-        return list_voucher
+            return list(vouchers.values())[0]
+
     def list_voucher(self):
-        voucher=[]
-        if Vocher.objects.filter(product=self,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
-            voucher=Vocher.objects.filter(product=self,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        voucher=Vocher.objects.filter(product=self,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
         return voucher
+
     def shock_deal_type(self):
         if Buy_with_shock_deal.objects.filter(main_product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
             return Buy_with_shock_deal.objects.filter(main_product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).last().shock_deal_type
+    
     def shipping(self):
         return Shipping.objects.all().last()
     def count_program_valid(self):
@@ -270,7 +270,7 @@ class Item(models.Model):
     def get_media(self):
         return [{'typefile':media.media_type,'file':media.upload_file(),'image_preview':media.file_preview(),'duration':media.duration} for media in self.media_upload.all()]
     
-    def get_media_cover(self):
+    def get_image_cover(self):
         media_file=[media for media in self.media_upload.all() if media.media_type()=='image'][0].upload_file()    
         return media_file
 
@@ -280,6 +280,7 @@ class Item(models.Model):
         if variations['avg'] is not None and self.count_program_valid():
             percent=int(variations['avg'])
         return percent
+
 class ShopViews(models.Model):
     shop = models.ForeignKey(
         Shop, related_name="shop_views", on_delete=models.CASCADE
@@ -297,6 +298,7 @@ class ItemViews(models.Model):
         User, on_delete=models.CASCADE,null=True
     )
     create_at=models.DateTimeField(auto_now=True)
+
 class Color(models.Model):
     name=models.CharField(max_length=20)
     value=models.CharField(max_length=20)
@@ -308,6 +310,7 @@ class Color(models.Model):
     def get_file(self):
         if self.image and hasattr(self.image,'url'):
             return self.image.url
+
 class Size(models.Model):
     name=models.CharField(max_length=20)
     value=models.CharField(max_length=20)
@@ -339,14 +342,17 @@ class Variation(models.Model):
         count_program=Shop_program.objects.filter(product=self.item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).count()
         if count_program==0:
             self.percent_discount=0
+
     def save(self, *args, **kwargs):
         self.update_percent()        
         super(Variation, self).save(*args, **kwargs)
+        
     def discount_price_deal_shock(self):
         discount=0
         if self.percent_discount_deal_shock>0:
             discount= self.price*self.percent_discount_deal_shock/100
         return discount
+
     def total_discount(self):
         discount=0
         if self.percent_discount and self.item.count_program_valid() > 0:
@@ -371,17 +377,16 @@ class Variation(models.Model):
             color=self.color.value
         return color
     def get_image(self):
-        image=self.item.get_media_cover()
+        image=self.item.get_image_cover()
         if self.color:
             if self.color.image:
                 image=self.color.image.url
         return image
 
-    
-    
 class Byproductcart(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
-    byproduct=models.ForeignKey(Variation,on_delete=models.CASCADE,null=True)
+    byproduct=models.ForeignKey(Variation,on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
     quantity=models.IntegerField()
     def discount_deal_by(self):
         return self.quantity * self.byproduct.discount_price_deal_shock()
