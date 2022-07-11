@@ -255,13 +255,13 @@ class Listitemseller(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
-        return Item.objects.prefetch_related('variation__product__order').select_related('media_upload').filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__orderitem__order')).order_by('-count_order')
+        return Item.objects.prefetch_related('variation__product__order').prefetch_related('media_upload').filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__orderitem__order')).order_by('-count_order')
 
 class ListTrendsearch(APIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
-        return Item.objects.filter(variation__orderitem__order__ordered=True).annotate(count_like= Count('liked')).annotate(count_order= Count('variation__orderitem__order')).annotate(count_order= Count('variation__orderitem__order')).annotate(count_review= Count('variation__orderitem__review')).select_related('media_upload').prefetch_related('variation__product__order').order_by('-count_like','-count_review','-count_order')
+        return Item.objects.filter(variation__orderitem__order__ordered=True).annotate(count_like= Count('liked')).annotate(count_order= Count('variation__orderitem__order')).annotate(count_order= Count('variation__orderitem__order')).annotate(count_review= Count('variation__orderitem__review')).prefetch_related('media_upload').prefetch_related('variation__product__order').order_by('-count_like','-count_review','-count_order')
 
 def search_matching(list_keys):
     q = Q()
@@ -517,7 +517,7 @@ class Topsearch(APIView):
         result_item = dict((i, list_title_item.count(i)) for i in list_title_item)
         list_sort_item={k: v for k, v in sorted(result_item.items(), key=lambda item: item[1],reverse=True)}
         list_name_top_search=sorted(list_sort_item, key=list_sort_item.get, reverse=True)[:20]
-        item_top_search=Item.objects.filter(Q(name__in=list_name_top_search)).select_related('media_upload').select_related('category')
+        item_top_search=Item.objects.filter(Q(name__in=list_name_top_search)).prefetch_related('media_upload').select_related('category')
         data={
         'item_top_search':[{'image':item.get_image_cover(),'title':item.category.title,'count':get_count(item.category),'name':item.name,'number_order':item.number_order()} for item in item_top_search]}
         return Response(data)
