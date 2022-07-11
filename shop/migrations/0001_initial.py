@@ -157,14 +157,5 @@ class Migration(migrations.Migration):
             name='view',
             field=models.ManyToManyField(blank=True, to='shop.IpModel'),
         ),
-        migrations.CreateModel(
-            name='Byproductcart',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('quantity', models.IntegerField()),
-                ('item', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='shop.item')),
-                ('byproduct', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='shop.variation')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-        ),
+       
     ]

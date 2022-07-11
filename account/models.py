@@ -58,3 +58,24 @@ class Verifyemail(models.Model):
     otp=RandomPinField(length=6,null=True)
     email=models.CharField(max_length=50,null=True)
     created = models.DateTimeField(auto_now_add=True)
+ADDRESS_CHOICES = (
+    ('B', 'Billing'),
+    ('S', 'Shipping'),
+)
+class Address(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    name=models.CharField(max_length=100)
+    address=models.CharField(max_length=100)
+    city=models.CharField(max_length=100)
+    district=models.CharField(max_length=100)
+    town=models.CharField(max_length=100)
+    phone_number=models.CharField(max_length=20)
+    address_choice=models.CharField(max_length=20)
+    address_type = models.CharField(max_length=1, choices=ADDRESS_CHOICES)
+    zip = models.CharField(max_length=100,null=True)
+    default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.user.username
+    class Meta:
+        verbose_name_plural = 'Addresses'

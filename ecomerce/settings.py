@@ -51,28 +51,23 @@ INSTALLED_APPS = [
     'drf_social_oauth2',
     'rest_framework',
     'shop',
-    'checkout',
     'account',
     'category',
-    'cart',
+    'carts',
+    'orders',
     'seller',
-    'discount',
+    'discounts',
     'itemdetail',
     'corsheaders',
     'buyer',
     'city',
-    'actionorder',
-    'chat',
+    'orderactions',
+    'chats',
     'myweb',
     'shipping',
     'channels',
-    
     'mptt',
-    
     'rest_framework_simplejwt',
-    
-    
-    
     
 ]
 
@@ -114,7 +109,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'ecomerce.wsgi.application'
-ASGI_APPLICATION = "ecomerce.routing.application"
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',
     'social_core.backends.facebook.FacebookAppOAuth2',
@@ -318,12 +312,4 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'daipham952@gmail.com'
 EMAIL_HOST_PASSWORD = 'anhdai1234'
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-        # 'CONFIG': {
-        #     'hosts': [('127.0.0.1', 6379)],
-        # }
-    }
-}
 

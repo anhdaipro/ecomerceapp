@@ -35,15 +35,15 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Min, Count, Avg,Sum
 from shop.models import *
 from category.models import *
-from checkout.models import *
-from cart.models import *
-from discount.models import *
-from chat.models import *
+from orders.models import *
+from carts.models import *
+from discounts.models import *
+from chats.models import *
 from city.models import *
 from myweb.models import *
 from account.models import *
 from itemdetail.models import *
-from actionorder.models import *
+from orderactions.models import *
 from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
 from .serializers import (ChangePasswordSerializer,
@@ -235,7 +235,7 @@ class HomeAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
         list_flashsale=Flash_sale.objects.filter(valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
-        list_items=Item.objects.filter(flash_sale__in=list_flashsale).select_related('flash_sale').distinct()
+        list_items=Item.objects.filter(flash_sale__in=list_flashsale).prefetch_related('flash_sale').distinct()
         data={
             'a':[{'item_name':i.name,'item_image':i.get_image_cover(),'number_order':i.number_order(),
             'percent_discount':i.discount_flash_sale(),'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),'item_url':i.get_absolute_url(),
@@ -255,13 +255,13 @@ class Listitemseller(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
-        return Item.objects.prefetch_related('variation__product__order').filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__orderitem__order')).order_by('-count_order')
+        return Item.objects.prefetch_related('variation__product__order').select_related('media_upload').filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__orderitem__order')).order_by('-count_order')
 
 class ListTrendsearch(APIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
-        return Item.objects.filter(variation__orderitem__order__ordered=True).annotate(count_like= Count('liked')).annotate(count_order= Count('variation__orderitem__order')).annotate(count_order= Count('variation__orderitem__order')).annotate(count_review= Count('variation__orderitem__review')).order_by('-count_like','-count_review','-count_order')
+        return Item.objects.filter(variation__orderitem__order__ordered=True).annotate(count_like= Count('liked')).annotate(count_order= Count('variation__orderitem__order')).annotate(count_order= Count('variation__orderitem__order')).annotate(count_review= Count('variation__orderitem__review')).select_related('media_upload').prefetch_related('variation__product__order').order_by('-count_like','-count_review','-count_order')
 
 def search_matching(list_keys):
     q = Q()
@@ -299,7 +299,7 @@ class DetailAPIView(APIView):
             category_children=Category.objects.filter(parent=category)
             category_choice=category.get_descendants(include_self=False).filter(choice=True)
             list_items=Item.objects.filter(category__in=category_choice)
-            items=Item.objects.filter(category__in=category_choice)
+            items=Item.objects.filter(category__in=category_choice).prefetch_related('main_product').prefetch_related('shop_program').prefetch_related('variation').prefetch_related('promotion_combo')
             list_shop=Shop.objects.filter(item__in=list_items)
             if categoryID:
                 items=items.filter(category__id=categoryID)
@@ -418,7 +418,7 @@ class DetailAPIView(APIView):
             main_product=Item.objects.filter(main_product__in=deal_shock)
             promotion_combo=Promotion_combo.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
             item_combo=Item.objects.filter(promotion_combo__in=promotion_combo)
-            items=Item.objects.filter(shop=shop)
+            items=Item.objects.filter(shop=shop).prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation')
             category_children=Category.objects.filter(item__shop=shop).distinct()
             if categoryID:
                 category_choice=Category.objects.get(id=categoryID)
@@ -503,6 +503,7 @@ class DetailAPIView(APIView):
         'is_online':shop.user.profile.is_online,'count_product':shop.count_product(),
         'total_review':shop.total_review(),'averge_review':shop.averge_review()}
         return Response(data)
+
 class Topsearch(APIView):
     def get(self,request):
         from_item=0
@@ -516,7 +517,7 @@ class Topsearch(APIView):
         result_item = dict((i, list_title_item.count(i)) for i in list_title_item)
         list_sort_item={k: v for k, v in sorted(result_item.items(), key=lambda item: item[1],reverse=True)}
         list_name_top_search=sorted(list_sort_item, key=list_sort_item.get, reverse=True)[:20]
-        item_top_search=Item.objects.filter(Q(name__in=list_name_top_search))
+        item_top_search=Item.objects.filter(Q(name__in=list_name_top_search)).select_related('media_upload').select_related('category')
         data={
         'item_top_search':[{'image':item.get_image_cover(),'title':item.category.title,'count':get_count(item.category),'name':item.name,'number_order':item.number_order()} for item in item_top_search]}
         return Response(data)
@@ -805,16 +806,16 @@ class CartAPIView(APIView):
     def get(self,request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         if token:
-            cart_items=OrderItem.objects.filter(ordered=False,user=request.user).select_related('item')
-            cart_item=cart_items[0:5]
-            count=cart_items.count()
-            list_cart_item=[{'item_id':order_item.item_id,'item_name':order_item.item.name,'id':order_item.id,
-            'item_image':order_item.get_image(),
-            'item_url':order_item.item.get_absolute_url(),
-            'price':order_item.product.price-order_item.product.total_discount(),
-            'shock_deal_type':order_item.item.shock_deal_type(),
-            'promotion':order_item.item.get_promotion(),
-            } for order_item in cart_item]
+            list_cart_items=OrderItem.objects.filter(ordered=False,user=request.user).select_related('item__media_upload').select_related('item__main_product').select_related('item__promotion_combo')
+            list_cart_item=list_cart_items[0:5]
+            count=list_cart_items.count()
+            list_cart_item=[{'item_id':cart_item.item_id,'item_name':cart_item.item.name,'id':cart_item.id,
+            'item_image':cart_item.get_image(),
+            'item_url':cart_item.item.get_absolute_url(),
+            'price':cart_item.product.price-cart_item.product.total_discount(),
+            'shock_deal_type':cart_item.item.shock_deal_type(),
+            'promotion':cart_item.item.get_promotion(),
+            } for cart_item in list_cart_item]
             data={
                     'count':count,
                     'a':list_cart_item
@@ -830,7 +831,7 @@ class UpdateCartAPIView(APIView):
         item_id=request.GET.get('item_id')
         page = request.GET.get('page')
         item=Item.objects.get(id=item_id)
-        items=Item.objects.filter(category=item.category)
+        items=Item.objects.filter(category=item.category).select_related('')
         page_no=1
         paginator = Paginator(items,5)  # Show 25 contacts per page.
         page_obj = paginator.get_page(1)
@@ -840,7 +841,7 @@ class UpdateCartAPIView(APIView):
         data={
             'page_count':paginator.num_pages,'page':int(page_no),
             'list_item':[{'item_info':i.item_info(),
-            'item_image':item.media_upload.all()[0].upload_file(),
+            'item_image':item.get_image_cover(),
             'percent_discount':i.percent_discount(),'min_price':i.min_price(),
             'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
             'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
@@ -873,13 +874,13 @@ class UpdateCartAPIView(APIView):
         if item_id and not color_id:
             product=Variation.objects.get(item=item_id)
         if orderitem_id:
-            order_item=OrderItem.objects.get(id=orderitem_id)
-            order_item.product=product
-            order_item.save()
+            cart_item=OrderItem.objects.get(id=orderitem_id)
+            cart_item.product=product
+            cart_item.save()
             data.update({
-            'id':order_item.id,'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
-            'price':order_item.product.price,
-            'total_price':order_item.total_discount_orderitem(),'inventory':order_item.product.inventory,'quantity':order_item.quantity,
+            'id':cart_item.id,'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
+            'price':cart_item.product.price,
+            'total_price':cart_item.total_discount_orderitem(),'inventory':cart_item.product.inventory,'quantity':cart_item.quantity,
             })
         if byproduct_id:
             byproduct=Byproductcart.objects.get(id=byproduct_id)
@@ -961,7 +962,7 @@ class AddToCardBatchAPIView(APIView):
                     by.save()
         byproduct=Byproductcart.objects.bulk_create(
             [
-            Byproductcart(user=user,byproduct=list_variation[i],quantity=int(list_quantity[i]))
+            Byproductcart(user=user,item_id=item_id,byproduct=list_variation[i],quantity=int(list_quantity[i]))
             for i in range(len(variation_id))]
         )
         byproducts=Byproductcart.objects.order_by('-id')[:len(variation_id)]
@@ -1021,28 +1022,28 @@ class AddToCartAPIView(APIView):
         else:
             product=Variation.objects.get(item_id=item_id)
         try:
-            order_item=OrderItem.objects.get(
+            cart_item=OrderItem.objects.get(
                 product=product,
                 user=user,
                 ordered=False,
                 shop=item.shop,
             )
-            order_item.quantity =order_item.quantity+int(quantity)
-            order_item.save()
-            if order_item.quantity>order_item.product.inventory:
-                order_item.quantity-=int(quantity)
-                order_item.save()
+            cart_item.quantity =cart_item.quantity+int(quantity)
+            cart_item.save()
+            if cart_item.quantity>cart_item.product.inventory:
+                cart_item.quantity-=int(quantity)
+                cart_item.save()
                 return Response({'erorr':'over quantity'})
             else:
-                data={'item_info':order_item.item.item_info(),'id':order_item.id,                'item_image':order_item.item.media_upload.all()[0].upload_file(),
-                'item_url':order_item.item.get_absolute_url(),
-                'price':order_item.product.price-order_item.product.total_discount(),
-                'shock_deal_type':order_item.item.shock_deal_type(),
-                'promotion':order_item.item.get_promotion(),
+                data={'item_info':cart_item.item.item_info(),'id':cart_item.id,                'item_image':cart_item.item.media_upload.all()[0].upload_file(),
+                'item_url':cart_item.item.get_absolute_url(),
+                'price':cart_item.product.price-cart_item.product.total_discount(),
+                'shock_deal_type':cart_item.item.shock_deal_type(),
+                'promotion':cart_item.item.get_promotion(),
                 }
                 return Response(data)
         except Exception:
-            order_item=OrderItem.objects.create(
+            cart_item=OrderItem.objects.create(
                 product=product,
                 item_id=item_id,
                 user=user,
@@ -1051,14 +1052,14 @@ class AddToCartAPIView(APIView):
                 shop=item.shop,
                 )
             data={
-                'item_id':order_item.item_id,
-                'item_name':order_item.item_name,
-                'id':order_item.id,
-                'item_image':order_item.get_image(),
-                'item_url':order_item.item.get_absolute_url(),
-                'price':order_item.price-order_item.product.total_discount(),
-                'shock_deal_type':order_item.item.shock_deal_type(),
-                'promotion':order_item.item.get_promotion(),
+                'item_id':cart_item.item_id,
+                'item_name':cart_item.item_name,
+                'id':cart_item.id,
+                'item_image':cart_item.get_image(),
+                'item_url':cart_item.item.get_absolute_url(),
+                'price':cart_item.price-cart_item.product.total_discount(),
+                'shock_deal_type':cart_item.item.shock_deal_type(),
+                'promotion':cart_item.item.get_promotion(),
                 }
             return Response(data)
 
@@ -1066,16 +1067,16 @@ class CartItemAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user = request.user
-        list_order_item=OrderItem.objects.filter(user=user,ordered=False).select_related('product__item')
-        shops=Shop.objects.filter(shop_order__in=list_order_item).select_related('user').distinct()
+        list_cart_item=OrderItem.objects.filter(user=user,ordered=False).select_related('item__media_upload').select_related('item__main_product').select_related('item__promotion_combo').select_related('product').select_related('item')
+        shops=Shop.objects.filter(shop_order__in=list_cart_item).select_related('user').distinct()
         data={
-            'order_item':[{'id':order_item.id,'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
-            'list_voucher':order_item.item.get_voucher(),'count_variation':order_item.item.count_variation(),
-            'price':order_item.product.price,'discount_price':order_item.product.total_discount(),'shop_name':order_item.shop.name,
-            'voucher_user':[True if user in voucher.user.all() else False for voucher in order_item.item.list_voucher()],
-            'size':order_item.item.get_size(),'open':False,
-            'item_image':order_item.get_image(),
-            'variation_url':order_item.product.get_absolute_url(),'byproduct':[{
+            'cart_item':[{'id':cart_item.id,'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
+            'list_voucher':cart_item.item.get_voucher(),'count_variation':cart_item.item.count_variation(),
+            'price':cart_item.product.price,'discount_price':cart_item.product.total_discount(),'shop_name':cart_item.shop.name,
+            'voucher_user':[True if user in voucher.user.all() else False for voucher in cart_item.item.list_voucher()],
+            'size':cart_item.item.get_size(),'open':False,
+            'item_image':cart_item.get_image(),
+            'variation_url':cart_item.product.get_absolute_url(),'byproduct':[{
             'id':byproduct.id,'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
             'color':byproduct.item.get_color_deal(),'percent_discount_deal':byproduct.byproduct.percent_discount_deal_shock,
             'size':byproduct.item.get_size_deal(),'price':byproduct.byproduct.price,
@@ -1085,15 +1086,15 @@ class CartItemAPIView(APIView):
             'total_price':byproduct.total_price(),'open':False,
             'item_image':byproduct.item.get_image_cover(),
             'count_variation':byproduct.item.count_variation(),
-             } for byproduct in order_item.byproduct.all() if byproduct.item.get_count_deal()>0],
-            'color':order_item.item.get_color(),'item_info':order_item.item.item_info(),
-            'item_url':order_item.item.get_absolute_url(),
-            'count_program_valid':order_item.item.count_program_valid(),
-            'promotion':order_item.item.get_promotion(),'check':order_item.check,
-            'variation_id':order_item.product_id,'total_price':order_item.total_discount_orderitem(),
-            'inventory':order_item.product.inventory,'quantity':order_item.quantity,
-            'shock_deal_type':order_item.item.shock_deal_type(),
-            } for order_item in list_order_item],'list_shop':[{'shop_user':shop.user_id,'shop_name':shop.name,'list_voucher_unique':[]} for shop in shops]
+             } for byproduct in cart_item.byproduct.all() if byproduct.item.get_count_deal()>0],
+            'color':cart_item.item.get_color(),'item_info':cart_item.item.item_info(),
+            'item_url':cart_item.item.get_absolute_url(),
+            'count_program_valid':cart_item.item.count_program_valid(),
+            'promotion':cart_item.item.get_promotion(),'check':cart_item.check,
+            'variation_id':cart_item.product_id,'total_price':cart_item.total_discount_orderitem(),
+            'inventory':cart_item.product.inventory,'quantity':cart_item.quantity,
+            'shock_deal_type':cart_item.item.shock_deal_type(),
+            } for cart_item in list_cart_item],'list_shop':[{'shop_user':shop.user_id,'shop_name':shop.name,'list_voucher_unique':[]} for shop in shops]
         }
         return Response(data,status=status.HTTP_200_OK)
     def post(self, request,count_orderitem=0,price=0,total=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0, *args, **kwargs):
@@ -1131,10 +1132,10 @@ class CartItemAPIView(APIView):
                             order.vocher=None
                             order.save()
                     list_shop_order.append(order.shop.name)
-                    list_order_item_remove=OrderItem.objects.filter(shop=order.shop,id__in=id_check)
-                    order.items.remove(*list_order_item_remove)
-                    list_order_item_add=OrderItem.objects.filter(shop=order.shop,id__in=id_checked)
-                    order.items.add(*list_order_item_add) 
+                    list_cart_item_remove=OrderItem.objects.filter(shop=order.shop,id__in=id_check)
+                    order.items.remove(*list_cart_item_remove)
+                    list_cart_item_add=OrderItem.objects.filter(shop=order.shop,id__in=id_checked)
+                    order.items.add(*list_cart_item_add) 
                 list_shop_remainder=list(set(list_shop) - set(list_shop_order))
                 if len(list_shop_remainder)>0:
                     list_shop_remain=Shop.objects.filter(name__in=list_shop_remainder)
@@ -1144,8 +1145,8 @@ class CartItemAPIView(APIView):
                         )
                     orders=Order.objects.filter(user=user)[:len(list_shop_remain)]
                     for order in orders:
-                        list_order_item=OrderItem.objects.filter(shop=order.shop,id__in=id_checked)
-                        order.items.add(*list_order_item)
+                        list_cart_item=OrderItem.objects.filter(shop=order.shop,id__in=id_checked)
+                        order.items.add(*list_cart_item)
             else:    
                 order = Order.objects.bulk_create([
                     Order(
@@ -1153,8 +1154,8 @@ class CartItemAPIView(APIView):
                 )
                 order_s=Order.objects.filter(ordered=False,user=user)
                 for order in order_s:
-                    list_order_item=OrderItem.objects.filter(shop=order.shop,id__in=id_checked)
-                    order.items.add(*list_order_item)
+                    list_cart_item=OrderItem.objects.filter(shop=order.shop,id__in=id_checked)
+                    order.items.add(*list_cart_item)
         else:
             if byproduct_id_delete:
                 Byproductcart.objects.get(id=byproduct_id_delete).delete()
@@ -1292,9 +1293,9 @@ class CheckoutAPIView(APIView):
         'total':order.total_price_order(),'total_final':order.total_final_order(),
         'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),'id':order.id,
         'discount_promotion':order.discount_promotion(),'total_discount':order.total_discount_order(),
-        'order_item':[{'item_info':order_item.item.item_info(),'item_url':order_item.item.get_absolute_url(),
-        'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
-        'item_image':order_item.item.media_upload.all()[0].upload_file(),
+        'cart_item':[{'item_info':cart_item.item.item_info(),'item_url':cart_item.item.get_absolute_url(),
+        'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
+        'item_image':cart_item.item.media_upload.all()[0].upload_file(),
         'byproduct':[{
             'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
             'price':byproduct.byproduct.price,
@@ -1303,11 +1304,11 @@ class CheckoutAPIView(APIView):
             'quantity':byproduct.quantity,'item_url':byproduct.item.get_absolute_url(),
             'count_program_valid':byproduct.item.count_program_valid(),
             'total_price':byproduct.total_price(),
-             } for byproduct in order_item.byproduct.all()],
-        'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
-        'price':order_item.product.price,
-        'total_price':order_item.total_discount_orderitem()
-        } for order_item in order.items.all()]} for order in orders]
+             } for byproduct in cart_item.byproduct.all()],
+        'quantity':cart_item.quantity,'discount_price':cart_item.product.total_discount(),
+        'price':cart_item.product.price,
+        'total_price':cart_item.total_discount_orderitem()
+        } for cart_item in order.items.all()]} for order in orders]
         data={
             'a':list_orders,'c':list(address.values()),
             'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]
@@ -1375,9 +1376,9 @@ class OrderinfoAPIView(APIView):
         'shop':order.shop.name,'shop_url':order.shop.get_absolute_url(),'shop_user':order.shop.user_id,
         'total':order.total_price_order(),'total_final':order.total_final_order(),
         'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),
-        'order_item':[{'item_info':order_item.item.item_info(),'item_url':order_item.item.get_absolute_url(),
-        'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
-        'item_image':order_item.item.media_upload.all()[0].upload_file(),
+        'cart_item':[{'item_info':cart_item.item.item_info(),'item_url':cart_item.item.get_absolute_url(),
+        'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
+        'item_image':cart_item.item.media_upload.all()[0].upload_file(),
         'byproduct':[{
             'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
             'price':byproduct.byproduct.price,
@@ -1386,11 +1387,11 @@ class OrderinfoAPIView(APIView):
             'quantity':byproduct.quantity,'item_url':byproduct.item.get_absolute_url(),
             'count_program_valid':byproduct.item.count_program_valid(),
             'total_price':byproduct.total_price(),
-             } for byproduct in order_item.byproduct.all()],
-        'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
-        'price':order_item.product.price,
-        'total_price':order_item.total_discount_orderitem()
-        } for order_item in order.items.all()]}
+             } for byproduct in cart_item.byproduct.all()],
+        'quantity':cart_item.quantity,'discount_price':cart_item.product.total_discount(),
+        'price':cart_item.product.price,
+        'total_price':cart_item.total_discount_orderitem()
+        } for cart_item in order.items.all()]}
         return Response(data)
 @api_view(['GET', 'POST'])
 def payment_complete(request): 
@@ -1437,7 +1438,7 @@ class DealShockAPIView(APIView):
         variation=Variation.objects.get(id=id)
         quantity=1
         orderitem_id=0
-        order_item=[]
+        cart_item=[]
         list_product=[]
         variation_info={'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'quantity':quantity,'item_info':variation.item.item_info(),'check':True,'main':True,
@@ -1452,7 +1453,7 @@ class DealShockAPIView(APIView):
             quantity=orderitem_last.quantity
             orderitem_id=orderitem_last.id
             for byproduct in orderitem_last.byproduct.all():
-                order_item.append({'variation_id':byproduct.byproduct_id,'color_value':byproduct.byproduct.get_color(),
+                cart_item.append({'variation_id':byproduct.byproduct_id,'color_value':byproduct.byproduct.get_color(),
                 'quantity':byproduct.quantity,'size_value':byproduct.byproduct.get_size(),'item_info':byproduct.item.item_info(),
                 'discount_price':byproduct.byproduct.total_discount(),'byproduct_id':byproduct.id})
         item=Item.objects.get(variation=variation)
@@ -1470,15 +1471,15 @@ class DealShockAPIView(APIView):
                     })
         
         for i in range(len(list_product)):
-            for j in range(len(order_item)):
-                if list_product[i]['item_info']==order_item[j]['item_info'] and list_product[i]['main']==False:
-                    list_product[i]['variation_id']=order_item[j]['variation_id']
-                    list_product[i]['color_value']=order_item[j]['color_value']
-                    list_product[i]['size_value']=order_item[j]['size_value']
-                    list_product[i]['quantity']=order_item[j]['quantity']
-                    list_product[i]['discount_price']=order_item[j]['discount_price']
+            for j in range(len(cart_item)):
+                if list_product[i]['item_info']==cart_item[j]['item_info'] and list_product[i]['main']==False:
+                    list_product[i]['variation_id']=cart_item[j]['variation_id']
+                    list_product[i]['color_value']=cart_item[j]['color_value']
+                    list_product[i]['size_value']=cart_item[j]['size_value']
+                    list_product[i]['quantity']=cart_item[j]['quantity']
+                    list_product[i]['discount_price']=cart_item[j]['discount_price']
                     list_product[i]['check']=True
-                    list_product[i]['byproduct_id']=order_item[j]['byproduct_id']
+                    list_product[i]['byproduct_id']=cart_item[j]['byproduct_id']
         
         data={
             'orderitem_id':orderitem_id,'deal_id':shock_deal.id,
@@ -1608,8 +1609,8 @@ def get_address(request):
     return Response(data)
 def get_count_review(order):
     count=0
-    for order_item in order.items.all():
-        count+= ReView.objects.filter(orderitem=order_item).count()
+    for cart_item in order.items.all():
+        count+= ReView.objects.filter(orderitem=cart_item).count()
     return count
 class PurchaseAPIView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -1625,11 +1626,11 @@ class PurchaseAPIView(APIView):
         if order_id and not review:
             order = Order.objects.get(id=order_id)
             data={
-                'order_item':[{
-                'item_image':order_item.item.media_upload.all()[0].upload_file(),'item_url':order_item.item.get_absolute_url(),
-                'item_name':order_item.item.name,'color_value':order_item.product.get_color(),
-                'size_value':order_item.product.get_size(),'id':order_item.id
-                } for order_item in order.items.all()],'username':user.username
+                'cart_item':[{
+                'item_image':cart_item.item.media_upload.all()[0].upload_file(),'item_url':cart_item.item.get_absolute_url(),
+                'item_name':cart_item.item.name,'color_value':cart_item.product.get_color(),
+                'size_value':cart_item.product.get_size(),'id':cart_item.id
+                } for cart_item in order.items.all()],'username':user.username
             }
             return Response(data)
         elif order_id and review:
@@ -1668,13 +1669,13 @@ class PurchaseAPIView(APIView):
                 'being_delivered':order.being_delivered,'shop_url':order.shop.get_absolute_url(),'id':order.id,
                 'accepted':order.accepted,'amount':order.total_final_order(),
                 'received_date':order.received_date,'review':get_count_review(order),
-                'order_item':[{
-                'item_image':order_item.item.media_upload.all()[0].upload_file(),'item_url':order_item.item.get_absolute_url(),
-                'item_name':order_item.item.name,'color_value':order_item.product.get_color(),
-                'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
-                'size_value':order_item.product.get_size(),'price':order_item.product.price,
-                'id':order_item.id
-                } for order_item in order.items.all()]} for order in order_all]
+                'cart_item':[{
+                'item_image':cart_item.item.media_upload.all()[0].upload_file(),'item_url':cart_item.item.get_absolute_url(),
+                'item_name':cart_item.item.name,'color_value':cart_item.product.get_color(),
+                'quantity':cart_item.quantity,'discount_price':cart_item.product.total_discount(),
+                'size_value':cart_item.product.get_size(),'price':cart_item.product.price,
+                'id':cart_item.id
+                } for cart_item in order.items.all()]} for order in order_all]
             data={
                 'a':list_order,'count_order':count_order,
                 'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]
@@ -1766,9 +1767,9 @@ class PurchaseAPIView(APIView):
                 reason=reason,
                 user=user
             )
-            order_items = order.items.all()
-            order_items.update(ordered=False)
-            for item in order_items:
+            cart_items = order.items.all()
+            cart_items.update(ordered=False)
+            for item in cart_items:
                 item.save()
                 products=Variation.objects.get(orderitem=item)
                 products.inventory += item.quantity

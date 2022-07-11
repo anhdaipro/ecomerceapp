@@ -1,10 +1,10 @@
 from rest_framework import serializers
 from shop.models import *
-from cart.models import *
+from carts.models import *
 from category.models import *
 from myweb.models import *
 from account.models import *
-from chat.models import *
+from chats.models import *
 from django.contrib import auth
 from djoser.serializers import UserCreateSerializer
 from django.contrib.auth.models import User
@@ -243,12 +243,12 @@ class VariationSerializer(serializers.ModelSerializer):
     def get_item(self, obj):
         return ItemSerializer(obj.item).data
 
-class OrderItemSerializer(serializers.ModelSerializer):
+class CartItemSerializer(serializers.ModelSerializer):
     item = serializers.SerializerMethodField()
     final_price = serializers.SerializerMethodField()
 
     class Meta:
-        model = OrderItem
+        model = CartItem
         fields = (
             'id',
             'item_name',

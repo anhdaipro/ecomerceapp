@@ -11,12 +11,12 @@ from category.models import Category
 from django.urls import reverse
 from django.utils import timezone
 from django.db.models import Max, Min, Count, Avg,Sum
-from discount.models import *
+from discounts.models import *
 from shipping.models import *
-from actionorder.models import *
+from orderactions.models import *
 from myweb.models import *
-from cart.models import *
-from checkout.models import *
+from carts.models import *
+from orders.models import *
 from category.models import Category
 import datetime
 import re
@@ -383,20 +383,4 @@ class Variation(models.Model):
                 image=self.color.image.url
         return image
 
-class Byproductcart(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
-    byproduct=models.ForeignKey(Variation,on_delete=models.CASCADE)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    quantity=models.IntegerField()
-    def discount_deal_by(self):
-        return self.quantity * self.byproduct.discount_price_deal_shock()
-    def price_by(self):
-        return self.quantity*self.byproduct.price
-    def discount_by(self):
-        total_discount=0
-        if self.byproduct.item.count_program_valid()>0:
-            total_discount=self.quantity*self.byproduct.price*(self.byproduct.percent_discount/100)
-        return total_discount
-    def total_price(self):
-        return self.price_by()-self.discount_deal_by()-self.discount_by()
    
