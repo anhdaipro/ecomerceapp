@@ -64,7 +64,7 @@ class ActionThread(APIView):
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_product(),
                 })
             if msg:    
-                message=Message.objects.create(thread_id=id,user=request.user,message=msg,story_id=story_id)
+                message=Message.objects.create(thread_id=id,user=request.user,message=msg)
                 listmessage.append({'id':message.id,'message':message.message,'message_type':message.get_message_type(),
                 'user_id':message.user_id,'date_created':message.date_created,'story_id':message.story_id,'media_story':message.get_story(),
                 'list_file':[]})
@@ -136,8 +136,9 @@ class CreateThread(APIView):
         if thread.exists():
             listmember=Member.objects.filter(thread=thread[0]).select_related('user__profile')
             messages=Message.objects.filter(thread=thread.first()).prefetch_related('message_file').order_by('-id')[:10]
-            listmessage=[{'id':message.id,'message':message.message,'story_id':message.story_id,'media_story':message.get_story(),'filetype':message.get_message_filetype(),
-                'user_id':message.user_id,'date_created':message.date_created,
+            listmessage=[{'id':message.id,'message':message.message,'message_type':message.get_message_type(),
+                'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_order(),
+                'message_product':message.message_product(),
                 'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,'file_name':uploadfile.filename(),
                 'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.get_filetype()}
                 for uploadfile in message.message_file.all()
@@ -146,9 +147,9 @@ class CreateThread(APIView):
             data={'messages':listmessage,
             'thread':{'id':thread[0].id,'count_message':thread[0].count_message(),
             'group_name':thread[0].group_name,'emoticon':thread[0].emoticon},
-            'members':[{'nickname':member.nickname,'user_id':member.user_id,'id':member.id,
+            'members':[{'user_id':member.user_id,'id':member.id,
             'avatar':member.user.profile.avatar.url,'username':member.user.username,
-            'name':member.user.profile.name,'online':member.user.profile.online,'is_online':member.user.profile.is_online} for member in listmember]}
+            'online':member.user.profile.online,'is_online':member.user.profile.is_online} for member in listmember]}
             return Response(data)
         else:
             thread=Thread.objects.create(admin=request.user)
@@ -161,7 +162,7 @@ class CreateThread(APIView):
                 for i in range(len(list(listuser)))
             ])
             data={'messages':listmessage,'thread':{'id':thread.id,'count_message':0},'members':[{'user_id':member.id,'avatar':member.profile.avatar.url,'username':member.username,
-            'name':member.profile.name,'online':member.profile.online,'is_online':member.profile.is_online} for member in listuser]}
+            'online':member.profile.online,'is_online':member.profile.is_online} for member in listuser]}
             return Response(data)
 
 class ListThreadAPIView(APIView):

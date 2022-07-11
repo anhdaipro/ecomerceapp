@@ -22,7 +22,7 @@ class ThreadinfoSerializer(serializers.ModelSerializer):
             'user_id':message.user_id,'date_created':message.date_created}
     def get_count_message(self,obj):
         return Message.objects.filter(thread=obj).count()
-        
+
     def get_members(self,obj):
         request=self.context.get("request") 
         listmember=Member.objects.filter(thread=obj).select_related('user__profile')
@@ -70,4 +70,3 @@ class MessageSerializer(serializers.ModelSerializer):
     def get_message_order(self,obj):
         return obj.message_product()
 
-class Thread
