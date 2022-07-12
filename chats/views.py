@@ -104,14 +104,14 @@ class ActionThread(APIView):
 class CountThread(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
-        count=Thread.objects.filter(participants=request.user).exclude(chatmessage_thread=None).count()
+        count=Thread.objects.filter(participants=request.user).count()
         return Response({'count':count})
 
 class ListThreadAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
-        threads=Thread.objects.filter(participants=user).exclude(chatmessage_thread=None)
+        threads=Thread.objects.filter(participants=user)
         serializer = ThreadinfoSerializer(threads,many=True, context={"request": request})
         return Response(serializer.data)
 
