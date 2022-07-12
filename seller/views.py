@@ -52,7 +52,7 @@ class ListvoucherAPI(ListAPIView):
         request = self.request
         user=request.user
         shop=Shop.objects.get(user=user)
-        return Vocher.objects.filter(shop=shop).select_related('product')
+        return Voucher.objects.filter(shop=shop).select_related('product')
 
 class ListcomboAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
@@ -420,7 +420,7 @@ def voucher(request):
     shop=Shop.objects.get(user=user)
     items=Item.objects.filter(shop=shop).order_by('-id')
     
-    vocher=Vocher.objects.filter(shop=shop)
+    vocher=Voucher.objects.filter(shop=shop)
     if vocher.exists():
         vocher=vocher.last()
     order=request.GET.get('order')
@@ -448,7 +448,7 @@ def voucher(request):
         maximum_discount=request.POST.get('maximum_discount')
         minimum_order_value=request.POST.get('minimum_order_value')
         setting_display=request.POST.get('setting_display')
-        vocher,created=Vocher.objects.get_or_create(
+        vocher,created=Voucher.objects.get_or_create(
             code_type=code_type,#Loại mã
             shop=shop,
             name_of_the_discount_program=name_of_the_discount_program,
@@ -539,7 +539,7 @@ def detail_voucher(request,id):
     user=request.user
     shop=Shop.objects.get(user=user)
     items=Item.objects.filter(shop=shop).order_by('-id')
-    vocher=Vocher.objects.get(id=id)
+    vocher=Voucher.objects.get(id=id)
     order=request.GET.get('order')
     price=request.GET.get('price')
     sort=request.GET.get('sort')

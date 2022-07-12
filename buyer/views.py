@@ -359,7 +359,7 @@ class DetailAPIView(APIView):
             item.save()
             items=Item.objects.filter(shop=item.shop)
             item_detail=Detail_Item.objects.filter(item=item).values()
-            vouchers=Vocher.objects.filter(product=item,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
+            vouchers=Voucher.objects.filter(product=item,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
             deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).order_by('valid_to')
             list_hot_sales=Item.objects.filter(shop=item.shop,variation__cartitem__order__ordered=True).annotate(count=Count('variation__cartitem__order__id')).prefetch_related('shop_program').prefetch_related('promotion_combo').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count')
             if deal_shock.exists():
@@ -413,7 +413,7 @@ class DetailAPIView(APIView):
             shop=Shop.objects.get(slug=slug)
             shop.views += 1
             shop.save()
-            list_voucher=Vocher.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
+            list_voucher=Voucher.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
             deal_shock=Buy_with_shock_deal.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
             main_product=Item.objects.filter(main_product__in=deal_shock)
             promotion_combo=Promotion_combo.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
@@ -779,7 +779,7 @@ def save_voucher(request):
         if token:
             user=request.user
             voucher_id=request.POST.get('voucher_id')
-            voucher=Vocher.objects.get(id=voucher_id)
+            voucher=Voucher.objects.get(id=voucher_id)
             voucher.user.add(user)
             data={'ok':'ok'}
             return Response(data)
@@ -1122,15 +1122,15 @@ class CartItemAPIView(APIView):
             if order_qs.count()>0:
                 for order in order_qs:
                     if voucher_id:
-                        voucher=Vocher.objects.get(id=voucher_id)
+                        voucher=Voucher.objects.get(id=voucher_id)
                         if voucher.shop.name==order.shop.name:
-                            order.vocher=voucher
+                            order.voucher=voucher
                             discount_voucher_shop=order.discount_voucher()
                             order.save()
                     if voucher_id_remove:
-                        voucher=Vocher.objects.get(id=voucher_id_remove)
+                        voucher=Voucher.objects.get(id=voucher_id_remove)
                         if voucher.shop.name==order.shop.name:
-                            order.vocher=None
+                            order.voucher=None
                             order.save()
                     list_shop_order.append(order.shop.name)
                     list_cart_item_remove=CartItem.objects.filter(shop=order.shop,id__in=id_check)
