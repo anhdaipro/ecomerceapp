@@ -879,6 +879,7 @@ class UpdateCartAPIView(APIView):
             cart_item.save()
             data.update({'item':{
             'price':cart_item.product.price,
+            'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
             'total_price':cart_item.total_discount_cartitem(),'inventory':cart_item.product.inventory,
             }})
         if byproduct_id:
@@ -888,7 +889,8 @@ class UpdateCartAPIView(APIView):
             data.update({'item':{
             'price':byproduct.byproduct.price,
             'total_price':byproduct.total_price(),
-            'inventory':byproduct.byproduct.inventory
+            'inventory':byproduct.byproduct.inventory,
+            'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size()
             }})
         order_check = Order.objects.filter(user=user, ordered=False).exclude(items=None)
         for order in order_check:
