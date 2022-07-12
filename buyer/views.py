@@ -377,7 +377,7 @@ class DetailAPIView(APIView):
             data.update({'count_variation':item.count_variation(),'item_detail':item_detail,
             'item_name':item.name,'min_price':item.min_price(),'max_price':item.max_price(),
             'id':item.id,'num_like_item':item.num_like(),'percent_discount':item.percent_discount(),
-            'review_rating':item.average_review(),'count_review':item.count_review(),'shop_user':item.shop.user.id,
+            'review_rating':item.average_review(),'count_review':item.count_review(),'user_id':item.shop.user.id,
             'category':item.category.get_full_category(),'media_upload':[{'file':i.get_media(),
             'image_preview':i.file_preview(),'duration':i.duration,'media_type':i.media_type(),
             } for i in item.media_upload.all()],'size':item.get_size(),'color':item.get_color(),
@@ -386,7 +386,7 @@ class DetailAPIView(APIView):
             'program_valid':item.count_program_valid(),
             'shock_deal_type':item.shock_deal_type(),
             'deal_shock':list(deal_shock.values()),'flash_sale':list(flash_sale.values()),
-            'promotion_combo':list(promotion_combo.values()),'shop_user':item.shop.user.id,
+            'promotion_combo':list(promotion_combo.values()),'user_id':item.shop.user_id,
             'voucher':list(vouchers.values()),
             'list_host_sale':[{'item_name':i.name,'item_image':i.get_image_cover(),'max_price':i.max_price(),
             'percent_discount':i.percent_discount(),'min_price':i.min_price(),
@@ -444,7 +444,7 @@ class DetailAPIView(APIView):
             page_obj = paginator.get_page(page)
             count_follow=Shop.objects.filter(followers=shop.user).count()
             data.update({'avatar':shop.user.profile.avatar.url,'shop_url':shop.get_absolute_url(),'count_followings': count_follow,
-                'shop_name':shop.name,'shop':'shop','shop_user':shop.user.id,'created':shop.create_at,
+                'shop_name':shop.name,'shop':'shop','user_id':shop.user_id,'created':shop.create_at,
                 'online':shop.user.profile.online,'num_followers':shop.num_follow(),'slug':shop.slug,
                 'is_online':shop.user.profile.is_online,'count_product':shop.count_product(),
                 'total_review':shop.total_review(),'averge_review':shop.averge_review(),
@@ -1289,7 +1289,7 @@ class CheckoutAPIView(APIView):
         address=Address.objects.filter(user=user,default=True)
         orders = Order.objects.filter(user=user, ordered=False).exclude(items=None)
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
-        list_orders=[{'shop':order.shop.name,'discount_voucher':order.discount_voucher(),'shop_user':order.shop.user_id,
+        list_orders=[{'shop':order.shop.name,'discount_voucher':order.discount_voucher(),'user_id':order.shop.user_id,
         'total':order.total_price_order(),'total_final':order.total_final_order(),
         'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),'id':order.id,
         'discount_promotion':order.discount_promotion(),'total_discount':order.total_discount_order(),
@@ -1377,7 +1377,7 @@ class OrderinfoAPIView(APIView):
         'received':order.received,'canceled':order.canceled,'accepted':order.accepted,'amount':order.total_final_order(),
         'being_delivered':order.being_delivered,'ordered_date':order.ordered_date,'received_date':order.received_date,
         'canceled_date':order.canceled_date,'accepted_date':order.accepted_date,
-        'shop':order.shop.name,'shop_url':order.shop.get_absolute_url(),'shop_user':order.shop.user_id,
+        'shop':order.shop.name,'shop_url':order.shop.get_absolute_url(),'user_id':order.shop.user_id,
         'total':order.total_price_order(),'total_final':order.total_final_order(),
         'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),
         'cart_item':[{'item_id':cart_item.item_id,'item_name':cart_item.item.name,'item_url':cart_item.item.get_absolute_url(),
@@ -1669,7 +1669,7 @@ class PurchaseAPIView(APIView):
                 order_all=order_all.filter(received=True)
             if type_order=='5':
                 order_all=order_all.filter(canceled=True)
-            list_order=[{'shop_name':order.shop.name,'shop_url':order.shop.get_absolute_url(),'shop_user':order.shop.user_id,'received':order.received,'canceled':order.canceled,
+            list_order=[{'shop_name':order.shop.name,'shop_url':order.shop.get_absolute_url(),'user_id':order.shop.user_id,'received':order.received,'canceled':order.canceled,
                 'being_delivered':order.being_delivered,'shop_url':order.shop.get_absolute_url(),'id':order.id,
                 'accepted':order.accepted,'amount':order.total_final_order(),
                 'received_date':order.received_date,'review':get_count_review(order),
@@ -1682,7 +1682,6 @@ class PurchaseAPIView(APIView):
                 } for cart_item in order.items.all()]} for order in order_all]
             data={
                 'a':list_order,'count_order':count_order,
-                'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]
                 }
             return Response(data)
     def post(self,request,*args, **kwargs):
