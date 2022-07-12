@@ -235,7 +235,7 @@ class HomeAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
         list_flashsale=Flash_sale.objects.filter(valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
-        list_items=Item.objects.filter(flash_sale__in=list_flashsale).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation__item__size').prefetch_related('cart_item__order_cartitem').distinct()
+        list_items=Item.objects.filter(flash_sale__in=list_flashsale).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').distinct()
         data={
             'a':[{'item_name':i.name,'item_image':i.get_image_cover(),'number_order':i.number_order(),
             'percent_discount':i.discount_flash_sale(),'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),'item_url':i.get_absolute_url(),
@@ -255,13 +255,13 @@ class Listitemseller(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
-        return Item.objects.filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__cartitem__order')).prefetch_related('cart_item__order_cartitem').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation__item__size').order_by('-count_order')
+        return Item.objects.filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__cartitem__order')).prefetch_related('cart_item__order_cartitem').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count_order')
 
 class ListTrendsearch(APIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
-        return Item.objects.filter(variation__cartitem__order__ordered=True).annotate(count_like= Count('liked')).annotate(count_order= Count('variation__cartitem__order')).annotate(count_order= Count('variation__cartitem__order')).annotate(count_review= Count('variation__cartitem__review')).prefetch_related('media_upload').prefetch_related('cart_item__order_cartitem').prefetch_related('variation_item__color').prefetch_related('variation__item__size').order_by('-count_like','-count_review','-count_order')
+        return Item.objects.filter(variation__cartitem__order__ordered=True).annotate(count_like= Count('liked')).annotate(count_order= Count('variation__cartitem__order')).annotate(count_order= Count('variation__cartitem__order')).annotate(count_review= Count('variation__cartitem__review')).prefetch_related('media_upload').prefetch_related('cart_item__order_cartitem').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count_like','-count_review','-count_order')
 
 def search_matching(list_keys):
     q = Q()
@@ -299,7 +299,7 @@ class DetailAPIView(APIView):
             category_children=Category.objects.filter(parent=category)
             category_choice=category.get_descendants(include_self=False).filter(choice=True)
             list_items=Item.objects.filter(category__in=category_choice)
-            items=Item.objects.filter(category__in=category_choice).prefetch_related('main_product').prefetch_related('shop_program').prefetch_related('promotion_combo').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation__item__size')
+            items=Item.objects.filter(category__in=category_choice).prefetch_related('main_product').prefetch_related('shop_program').prefetch_related('promotion_combo').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size')
             list_shop=Shop.objects.filter(item__in=list_items)
             if categoryID:
                 items=items.filter(category__id=categoryID)
@@ -361,7 +361,7 @@ class DetailAPIView(APIView):
             item_detail=Detail_Item.objects.filter(item=item).values()
             vouchers=Vocher.objects.filter(product=item,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
             deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).order_by('valid_to')
-            list_hot_sales=Item.objects.filter(shop=item.shop,variation__cartitem__order__ordered=True).annotate(count=Count('variation__cartitem__order__id')).prefetch_related('shop_program').prefetch_related('promotion_combo').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation__item__size').order_by('-count')
+            list_hot_sales=Item.objects.filter(shop=item.shop,variation__cartitem__order__ordered=True).annotate(count=Count('variation__cartitem__order__id')).prefetch_related('shop_program').prefetch_related('promotion_combo').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count')
             if deal_shock.exists():
                 byproduct=deal_shock.first().byproduct.all()
                 main_product=item.variation_set.all()[0]
@@ -543,7 +543,7 @@ class SearchitemAPIView(APIView):
         if keyword:
             list_items = Item.objects.filter(Q(name__icontains=keyword)|Q(shop__name=keyword) | Q(brand__in=keyword)|Q(category__title__in=keyword)).order_by('name').distinct()
             items = Item.objects.filter(Q(name__icontains=keyword) | Q(
-            brand__in=keyword)|Q(category__title__in=keyword)).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation__item__size').prefetch_related('cart_item__order_cartitem').distinct()
+            brand__in=keyword)|Q(category__title__in=keyword)).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').distinct()
             category_choice=Category.objects.filter(item__in=list_items).order_by('name').distinct()
             list_shop=Shop.objects.filter(item__in=list_items)
             SearchKey.objects.get_or_create(keyword=keyword)
@@ -722,7 +722,7 @@ class ShopinfoAPIVIew(APIView):
         sortBy=request.GET.get('sortBy')
         if shop_name:
             shop=Shop.objects.get(name=shop_name)
-            items=Item.objects.filter(shop=shop).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation__item__size').prefetch_related('cart_item__order_cartitem')
+            items=Item.objects.filter(shop=shop).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem')
             paginator = Paginator(items,30)  # Show 25 contacts per page.
             page_obj = paginator.get_page(1)
             if page:
@@ -769,7 +769,7 @@ class Listitemhostsale(APIView):
     def get_queryset(self):
         request=self.request
         shop_id=request.GET.get('shop_id')
-        item=Item.objects.filter(shop_id=shop_id).filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__cartitem__order')).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation__item__size').prefetch_related('cart_item__order_cartitem').order_by('-count_order')
+        item=Item.objects.filter(shop_id=shop_id).filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__cartitem__order')).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').order_by('-count_order')
         return ItenReviews.objects.filter(user=user).order_by('-id,item')[:12].distinct()
     
 @api_view(['GET', 'POST'])
@@ -831,7 +831,7 @@ class UpdateCartAPIView(APIView):
         item_id=request.GET.get('item_id')
         page = request.GET.get('page')
         item=Item.objects.get(id=item_id)
-        items=Item.objects.filter(category=item.category).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation__item__size').prefetch_related('cart_item__order_cartitem')
+        items=Item.objects.filter(category=item.category).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem')
         page_no=1
         paginator = Paginator(items,5)  # Show 25 contacts per page.
         page_obj = paginator.get_page(1)
