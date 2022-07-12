@@ -104,14 +104,14 @@ class ActionThread(APIView):
 class CountThread(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
-        count=Thread.objects.filter(participant=request.user).exclude(message_thread=None).count()
+        count=Thread.objects.filter(participants=request.user).exclude(message_thread=None).count()
         return Response({'count':count})
 
 class ListThreadAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
-        threads=Thread.objects.filter(participant=user).exclude(message_thread=None)
+        threads=Thread.objects.filter(participants=user).exclude(message_thread=None)
         serializer = ThreadinfoSerializer(threads,many=True, context={"request": request})
         return Response(serializer.data)
 
@@ -176,13 +176,10 @@ class ShopchatAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
-        thread_id=request.GET.get('thread_id')
         offset=request.GET.get('offset')
         shop_name=request.GET.get('shop_name')
         item=request.GET.get('item')
         order=request.GET.get('order')
-        list_thread=request.GET.get('list_thread')
-        seen=request.GET.get('seen')
         type_chat=request.GET.get('type_chat')
         limit=10
         threads = Thread.objects.filter(participants=user)
@@ -219,7 +216,7 @@ class ShopchatAPIView(APIView):
                     'total_price':order_item.total_discount_cartitem()
                     } for order_item in order.items.all()]} for order in list_orders]
                 })
-        if type_chat:
+        else:
             if type_chat=='2':
                 threads = Thread.objects.filter(Q(participants=user)&Q(chatmessage_thread__seen=False) & ~Q(message__user=user))
                 data.update({
@@ -232,17 +229,7 @@ class ShopchatAPIView(APIView):
                 for message in thread.chatmessage_thread.all().order_by('-id')[:1]]}
                 for thread in threads]
                 })
-        else:
-            data.update({
-            'threads':[{'id':thread.id,'info_thread':thread.info_thread(),'gim':thread.gim,
-            'count_message_not_seen':thread.count_message_not_seen(),'count_message':thread.count_message(),
-            'message':[{'text':message.message,'file':message.message_file(),'read':message.seen,'sender':message.user.username,
-            'created':message.date_created,'message_order':message.message_order(),'message_product':message.message_product(),
-            'list_file':[{'filetype':uploadfile.filetype()}
-            for uploadfile in message.file.all()]}
-            for message in thread.chatmessage_thread.all().order_by('-id')[:1]]}
-            for thread in threads]
-            })
+       
         return Response(data)
     def post(self, request, *args, **kwargs):
         user=request.user
