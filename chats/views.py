@@ -172,7 +172,7 @@ class CreateThread(APIView):
             'online':member.profile.online,'is_online':member.profile.is_online} for member in listuser]}
             return Response(data)
 
-class ListThreadAPIView(APIView):
+class ShopchatAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
