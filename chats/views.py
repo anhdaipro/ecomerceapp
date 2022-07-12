@@ -54,12 +54,12 @@ class ActionThread(APIView):
             order_id=request.POST.getlist('order_id') 
             item_id=request.POST.get('item_id') 
             if order_id:
-                message=Message.objects.create(thread_id=id,user=request.user,message=msg,order_id=order_id)
+                message,created=Message.objects.get_or_create(thread=thread,user=request.user,order_id=order_id)
                 listmessage.append({'id':message.id,'message_type':message.get_message_type(),
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_order(),
                 })
             if item_id:
-                message=Message.objects.create(thread_id=id,user=request.user,message=msg,item_id=item_id)
+                message,created=Message.objects.get_or_create(thread=thread,user=request.user,item_id=item_id)
                 listmessage.append({'id':message.id,'message_type':message.get_message_type(),
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_product(),
                 })
@@ -159,12 +159,12 @@ class CreateThread(APIView):
                 for i in range(len(list(listuser)))
             ])
             if order_id:
-                message=Message.objects.create(thread=thread,user=request.user,message=msg,order_id=order_id)
+                message,created=Message.objects.get_or_create(thread=thread,user=request.user,order_id=order_id)
                 listmessage.append({'id':message.id,'message_type':message.get_message_type(),
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_order(),
                 })
             if item_id:
-                message=Message.objects.create(thread=thread,user=request.user,message=msg,item_id=item_id)
+                message,created=Message.objects.get_or_create(thread=thread,user=request.user,item_id=item_id)
                 listmessage.append({'id':message.id,'message_type':message.get_message_type(),
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_product(),
                 })
