@@ -125,14 +125,12 @@ class MediathreadAPI(APIView):
 class CreateThread(APIView):
     def post(self,request):
         member=request.data.get('member')
-        group=request.data.get('group')
+        
         listmessage=list()
         listuser=User.objects.filter(id__in=member).select_related('profile')
-        thread=Thread.objects.filter(group=False)
-        if group:
-            thread=thread.filter(group=True)
+        thread=Thread.objects.filter(participants=request.user)
         for user in listuser:
-            thread=thread.filter(participant=user)
+            thread=thread.filter(participants=user)
         if thread.exists():
             listmember=Member.objects.filter(thread=thread[0]).select_related('user__profile')
             messages=Message.objects.filter(thread=thread.first()).prefetch_related('message_file').order_by('-id')[:10]
@@ -153,8 +151,6 @@ class CreateThread(APIView):
             return Response(data)
         else:
             thread=Thread.objects.create(admin=request.user)
-            if group:
-                thread.group=True
             thread.participant.add(*member)
             thread.save()
             Member.objects.bulk_create([
