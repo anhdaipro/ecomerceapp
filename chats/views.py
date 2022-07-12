@@ -125,7 +125,8 @@ class MediathreadAPI(APIView):
 class CreateThread(APIView):
     def post(self,request):
         member=request.data.get('member')
-        
+        item_id=request.data.get('item_id')
+        order_id=request.data.get('order_id')
         listmessage=list()
         listuser=User.objects.filter(id__in=member).select_related('profile')
         thread=Thread.objects.filter(participants=request.user)
@@ -151,12 +152,23 @@ class CreateThread(APIView):
             return Response(data)
         else:
             thread=Thread.objects.create(admin=request.user)
-            thread.participant.add(*member)
+            thread.participants.add(*member)
             thread.save()
             Member.objects.bulk_create([
                 Member(user=listuser[i],nickname=listuser[i].profile.name,thread=thread)
                 for i in range(len(list(listuser)))
             ])
+            if order_id:
+                message=Message.objects.create(thread=thread,user=request.user,message=msg,order_id=order_id)
+                listmessage.append({'id':message.id,'message_type':message.get_message_type(),
+                'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_order(),
+                })
+            if item_id:
+                message=Message.objects.create(thread=thread,user=request.user,message=msg,item_id=item_id)
+                listmessage.append({'id':message.id,'message_type':message.get_message_type(),
+                'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_product(),
+                })
+
             data={'messages':listmessage,'thread':{'id':thread.id,'count_message':0},'members':[{'user_id':member.id,'avatar':member.profile.avatar.url,'username':member.username,
             'online':member.profile.online,'is_online':member.profile.is_online} for member in listuser]}
             return Response(data)
