@@ -60,7 +60,9 @@ class CartItem(models.Model):
                 image=self.product.color.image.url
         return image
     def get_review(self):
-        return ReView.objects.filter(cartitem=self).count()
+        review=ReView.objects.filter(cartitem=self)
+        if review.exists():
+            return review.first()
     def count_item_cart(self):
         count=1
         for byproduct in self.byproduct.all():

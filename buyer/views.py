@@ -1173,7 +1173,7 @@ class CartItemAPIView(APIView):
             else:
                 CartItem.objects.get(id=cartitem_id_delete).delete()
                 Byproductcart.objects.filter(cartitem=None).delete()
-        order_check = Order.objects.filter(user=user, ordered=False).exclude(items=None)
+        order_check = Order.objects.filter(user=user, ordered=False).exclude(items=None).select_related('voucher').prefetch_related('items__item__media_upload').prefetch_related('items__byproduct').prefetch_related('items__item__main_product').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__shop_program').prefetch_related('items__product__size').prefetch_related('items__product__color')
         for order in order_check:
             discount_voucher+=order.discount_voucher()
             count_cartitem+=order.count_cartitem()
@@ -1341,9 +1341,13 @@ class CheckoutAPIView(APIView):
                 items.update(ordered=True) 
                 for item in items:
                     item.save()   
-                    products=Variation.objects.get(cartitem=item.id)
+                    products=Variation.objects.get(id=item.product_id)
                     products.inventory -= item.quantity
                     products.save()
+                    for byproduct in item.byproduct.all():
+                        product=Variation.objects.get(id=byproduct.byproduct_id)
+                        product.inventory -= byproduct.quantity
+                        product.save()
                 email_body = f"Hello {user.username}, \n {order.shop.user.username} cảm ơn bạn đã đặt hàng"
                 data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Thanks order!'}
@@ -1414,11 +1418,11 @@ def payment_complete(request):
             items.update(ordered=True) 
             for item in items:
                 item.save()   
-                products=Variation.objects.get(cartitem=item.id)
+                products=Variation.objects.get(id=item.product_id)
                 products.inventory -= item.quantity
                 products.save()
                 for byproduct in item.byproduct.all():
-                    product=Variation.objects.get(byproductcart=byproduct)
+                    product=Variation.objects.get(id=byproduct.byproduct_id)
                     product.inventory -= byproduct.quantity
                     product.save()
         bulk_update(list_orders)
@@ -1685,18 +1689,25 @@ class PurchaseAPIView(APIView):
         user=request.user
         review_id=request.POST.getlist('review_id')
         file=request.FILES.getlist('file_choice')
+        file_update=request.FILES.getlist('file_update')
         reason=request.POST.get('reason')
         order_id=request.POST.get('order_id')
         list_id=request.POST.getlist('id')
-        list_id_remove=request.POST.getlist('id_remove')
+        file_id=request.POST.getlist('file_id')
         file_preview=request.FILES.getlist('file_preview')
+        file_preview_update=request.FILES.getlist('file_preview_update')
         duration=request.POST.getlist('duration')
+        duration_update=request.POST.getlist('duration_update')
         list_preview=[None for  i in range(len(file))]
-        list_duration=[0 for  i in range(len(file))]
+        list_preview_update=[None for  i in range(len(file_update))]
         for i in range(len(list_preview)):
             for j in range(len(file_preview)):
                 if i==j:
                     list_preview[i]=file_preview[j]
+        for i in range(len(list_preview_update)):
+            for j in range(len(file_preview_update)):
+                if i==j:
+                    list_preview_update[i]=file_preview_update[j]
         
         total_xu=request.POST.get('total_xu')
         profile=Profile.objects.get(user=user)
@@ -1708,9 +1719,7 @@ class PurchaseAPIView(APIView):
         rating_anonymous=request.POST.getlist('rating_anonymous')
         list_anonymous_review=[False if rating_anonymous[i]=='false' else True for i in range(len(rating_anonymous))]
         rating_bab_category=request.POST.getlist('rating_bab_category')
-        Media_review.objects.filter(id__in=list_id_remove).delete()
         if review_id:
-            Media_review.objects.filter(review=None).delete()
             reviews=ReView.objects.filter(id__in=review_id).select_related('cartitem__item').select_related('cartitem__product__size').select_related('cartitem__product__color')
             list_media=Media_review.objects.bulk_create(
                 [Media_review(
@@ -1723,10 +1732,19 @@ class PurchaseAPIView(APIView):
                 ]
             )
             list_mediaupload=Media_review.objects.filter(review_id=review_id)
+            list_mediaupload.exclude(id__in=file_id).delete()
+            list_mediaupload_update=list_mediaupload.filter(id__in=file_id)
+            for file in list_mediaupload_update:
+                for i in range(len(file_update)):
+                    if i==list(list_mediaupload_update).index(file):
+                        if file_update[i]:
+                            file.file=file_update[i]
+                        if list_freview_update[i]:
+                            file_preview=list_preview_update[i]
+                        duration=float(duration_update[i])
             for review in reviews:
                 for i in range(len(review_id)):
                     if i==list(reviews).index(review):
-                        review.media_upload.add(*list_mediaupload)
                         review.review_rating=review_rating[i]
                         review.review_text=review_text[i]
                         review.info_more=info_more[i]
@@ -1736,6 +1754,7 @@ class PurchaseAPIView(APIView):
                         review.rating_shipping_service=int(rating_bab_category[i].split(',')[2])
                         review.edited=True
             bulk_update(reviews)
+            bulk_update(list_mediaupload_update)
             data={
                 'list_review':[{'id':review.id,'review_text':review.review_text,'created':review.created,
                 'info_more':review.info_more,'rating_anonymous':review.anonymous_review,'list_file':[{'filetype':file.filetype(),'file':file.get_media(),
@@ -1771,11 +1790,11 @@ class PurchaseAPIView(APIView):
             cart_items.update(ordered=False)
             for item in cart_items:
                 item.save()
-                products=Variation.objects.get(cartitem=item)
+                products=Variation.objects.get(id=item.product_id)
                 products.inventory += item.quantity
                 products.save()
                 for byproduct in item.byproduct.all():
-                    product=Variation.objects.get(byproductcart=byproduct)
+                    product=Variation.objects.get(id=byproduct.byproduct_id)
                     product.inventory+=byproduct.quantity
                     product.save()
             data={
@@ -1810,15 +1829,17 @@ class PurchaseAPIView(APIView):
                     rating_shipping_service=int(rating_bab_category[i].split(',')[2]),
                 ) for i in range(len(cartitem_id))
             ])
+            list_cartview=CartItem.objects.filter(id__in=list_id)
+            list_media=[Media_review(
+                upload_by=user,
+                file=file[i],
+                review=list_cartview[i].get_review(),
+                file_preview=list_preview[i],
+                duration=float(duration[i])
+                )
+                for i in range(len(file))
+                ]
             
-            count_review=ReView.objects.filter(user=user).count()
-            from_review=count_review-len(cartitem_id)
-            list_reviews=ReView.objects.filter(user=user)[from_review:count_review]
-            list_id.reverse()
-            for review in list_reviews:
-                for j in range(len(list_id)):
-                    if int(list_id[j])==review.cartitem.id:
-                        review.media_upload.add(list_mediaupload[j])
             data={'review':'review'}
             return Response(data)
 
