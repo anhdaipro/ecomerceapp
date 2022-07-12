@@ -144,8 +144,7 @@ class CreateThread(APIView):
                 ]} for message in messages
                 ]
             data={'messages':listmessage,
-            'thread':{'id':thread[0].id,'count_message':thread[0].count_message(),
-            'group_name':thread[0].group_name,'emoticon':thread[0].emoticon},
+            'thread':{'id':thread[0].id,'count_message':thread[0].count_message()},
             'members':[{'user_id':member.user_id,'id':member.id,
             'avatar':member.user.profile.avatar.url,'username':member.user.username,
             'online':member.user.profile.online,'is_online':member.user.profile.is_online} for member in listmember]}
@@ -249,7 +248,6 @@ class ListThreadAPIView(APIView):
         user=request.user
         participants=request.POST.getlist('participants')
         thread_id=request.POST.get('thread_id')
-        group_name=request.POST.get('group_name')
         seen=request.POST.get('seen')
         item_id=request.POST.get('item_id')
         order_id=request.POST.get('order_id')
