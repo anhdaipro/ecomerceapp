@@ -1061,8 +1061,8 @@ class AddToCartAPIView(APIView):
             return Response(data)
 class ShoporderAPI(APIView):
     def get(self,request):
-        list_cart_item=CartItem.objects.filter(user=user,ordered=False)
-        shops=Shop.objects.filter(shop_order__in=list_cart_item).select_related('user').distinct()
+        list_cart_item=CartItem.objects.filter(user=request.user,ordered=False)
+        shops=Shop.objects.filter(shop_order__in=list_cart_item).distinct()
         serializer = ShoporderSerializer(shops,many=True, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 class CartItemAPIView(APIView):
