@@ -209,7 +209,7 @@ class ListThreadAPIView(APIView):
                     'item_name':order_item.product.item.name,'color_value':order_item.product.get_color(),
                     'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
                     'size_value':order_item.product.get_size(),'price':order_item.product.price,
-                    'total_price':order_item.total_discount_orderitem()
+                    'total_price':order_item.total_discount_cartitem()
                     } for order_item in order.items.all()]} for order in list_orders]
                 })
         if type_chat:

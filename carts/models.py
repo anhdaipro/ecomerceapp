@@ -60,7 +60,7 @@ class CartItem(models.Model):
                 image=self.product.color.image.url
         return image
     def get_review(self):
-        return ReView.objects.filter(orderitem=self).count()
+        return ReView.objects.filter(cartitem=self).count()
     def count_item_cart(self):
         count=1
         for byproduct in self.byproduct.all():
@@ -109,10 +109,10 @@ class CartItem(models.Model):
         if self.product.percent_discount and self.product.item.count_program_valid()>0:
             total_discount=self.quantity*self.product.price*(self.product.percent_discount/100)
         return total_discount
-    def total_discount_orderitem(self):
+    def total_discount_cartitem(self):
         return self.price_main()-self.discount_main()
 
-    def total_price_orderitem(self):
+    def total_price_cartitem(self):
         total=0
         total+=self.quantity*self.product.price
         if self.deal_shock and self.deal_shock.valid_to>timezone.now():

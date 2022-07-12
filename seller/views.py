@@ -216,7 +216,7 @@ class Listordershop(APIView):
              } for byproduct in order_item.byproduct.all()],
             'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
             'price':order_item.product.price,
-            'total_price':order_item.total_discount_orderitem()
+            'total_price':order_item.total_discount_cartitem()
             } for order_item in order.items.all()]} for order in orders]}
         return Response(data)
 
@@ -229,16 +229,16 @@ class Listordershop(APIView):
 class ShopratingAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
-        list_review=ReView.objects.filter(orderitem__shop=shop).distinct()
+        list_review=ReView.objects.filter(cartitem__shop=shop).distinct()
         page=request.GET.get('page')
         paginator = Paginator(list_review,5)
         page_obj = paginator.get_page(page)
         count_review=list_review.count()
         data={'reviews':[{'id':review.id,'review_text':review.review_text,'created':review.created,
         'info_more':review.info_more,'review_rating':review.review_rating,
-        'color_value':review.orderitem.product.get_color(),'get_reply':review.get_reply(),
-        'size_value':review.orderitem.product.get_size(),
-        'item_name':review.orderitem.product.item.name,'ref_code':review.orderitem.get_ref_code(),
+        'color_value':review.cartitem.product.get_color(),'get_reply':review.get_reply(),
+        'size_value':review.cartitem.product.get_size(),
+        'item_name':review.cartitem.product.item.name,'ref_code':review.cartitem.get_ref_code(),
         'user':review.user.username,'image':review.user.profile.avatar.url,
         } for review in page_obj],'page_count':paginator.num_pages}
         return Response(data) 
@@ -310,9 +310,9 @@ def product(request):
             return Response(data)
         elif order and sort:
             if sort == "sort-asc":
-                product=product.annotate(count=Count('variation__orderitem__order__id')).order_by('count')
+                product=product.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
             else:
-                product=product.annotate(count=Count('variation__orderitem__order__id')).order_by('-count')
+                product=product.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
             obj_paginator = Paginator(product, per_page)
             first_page = obj_paginator.get_page(1)
             variation=Variation.objects.filter(item__in=first_page).order_by('-color__value')
@@ -485,9 +485,9 @@ def voucher(request):
             return Response(data)
         elif order and sort:
             if sort == "sort-asc":
-                items=items.annotate(count=Count('variation__orderitem__order__id')).order_by('count')
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
             else:
-                items=items.annotate(count=Count('variation__orderitem__order__id')).order_by('-count')
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].upload_file(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
                 'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
@@ -587,9 +587,9 @@ def detail_voucher(request,id):
             return Response(data)
         elif order and sort:
             if sort == "sort-asc":
-                items=items.annotate(count=Count('variation__orderitem__order__id')).order_by('count')
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
             else:
-                items=items.annotate(count=Count('variation__orderitem__order__id')).order_by('-count')
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].upload_file(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
                 'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
@@ -738,9 +738,9 @@ def new_combo(request):
             return Response(data)
         elif order and sort:
             if sort == "sort-asc":
-                items=items.annotate(count=Count('variation__orderitem__order__id')).order_by('count')
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
             else:
-                items=items.annotate(count=Count('variation__orderitem__order__id')).order_by('-count')
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].upload_file(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
                 'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
@@ -827,9 +827,9 @@ def detail_combo(request,id):
             return Response(data)
         elif order and sort:
             if sort == "sort-asc":
-                items=items.annotate(count=Count('variation__orderitem__order__id')).order_by('count')
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
             else:
-                items=items.annotate(count=Count('variation__orderitem__order__id')).order_by('-count')
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].upload_file(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
                 'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
@@ -1040,9 +1040,9 @@ def deal_shock(request,id):
             return Response(data)
         elif order and sort:
             if sort == "sort-asc":
-                items=items.annotate(count=Count('variation__orderitem__order__id')).order_by('count')
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
             else:
-                items=items.annotate(count=Count('variation__orderitem__order__id')).order_by('-count')
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].upload_file(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
                 'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
@@ -1231,9 +1231,9 @@ def new_program(request):
             return Response(data)
         elif order and sort:
             if sort == "sort-asc":
-                items=items.filter(variation__orderitem__order__ordered=True).annotate(count=Count('variation__orderitem__order__ordered')).order_by('count')
+                items=items.filter(variation__cartitem__order__ordered=True).annotate(count=Count('variation__cartitem__order__ordered')).order_by('count')
             else:
-                items=items.filter(variation__orderitem__order__ordered=True).annotate(count=Count('variation__orderitem__order__ordered')).order_by('-count')
+                items=items.filter(variation__cartitem__order__ordered=True).annotate(count=Count('variation__cartitem__order__ordered')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].upload_file(),'number_order':i.number_order(),
                 'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
@@ -1344,9 +1344,9 @@ def detail_program(request,id):
             return Response(data)
         elif order and sort:
             if sort == "sort-asc":
-                items=items.filter(variation__orderitem__order__ordered=True).annotate(count=Count('variation__orderitem__order__ordered')).order_by('count')
+                items=items.filter(variation__cartitem__order__ordered=True).annotate(count=Count('variation__cartitem__order__ordered')).order_by('count')
             else:
-                items=items.filter(variation__orderitem__order__ordered=True).annotate(count=Count('variation__orderitem__order__ordered')).order_by('-count')
+                items=items.filter(variation__cartitem__order__ordered=True).annotate(count=Count('variation__cartitem__order__ordered')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].upload_file(),'number_order':i.number_order(),
                 'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
@@ -1446,9 +1446,9 @@ def new_flashsale(request):
             return Response(data)
         elif order and sort:
             if sort == "sort-asc":
-                items=items.annotate(count=Count('variation__orderitem__order__id')).order_by('count')
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
             else:
-                items=items.annotate(count=Count('variation__orderitem__order__id')).order_by('-count')
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].upload_file(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
                 'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
@@ -1550,9 +1550,9 @@ def detail_flashsale(request,id):
             return Response(data)
         elif order and sort:
             if sort == "sort-asc":
-                items=items.annotate(count=Count('variation__orderitem__order__id')).order_by('count')
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
             else:
-                items=items.annotate(count=Count('variation__orderitem__order__id')).order_by('-count')
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].upload_file(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
                 'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()

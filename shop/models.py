@@ -54,10 +54,10 @@ class Shop(models.Model):
     def count_product(self):
         return Item.objects.filter(shop=self).count()
     def total_review(self):
-        return ReView.objects.filter(orderitem__shop=self).count()
+        return ReView.objects.filter(cartitem__shop=self).count()
     def averge_review(self):
         avg = 0
-        reviews = ReView.objects.filter(orderitem__shop=self).aggregate(
+        reviews = ReView.objects.filter(cartitem__shop=self).aggregate(
             average=Avg('review_rating'))
         if reviews["average"] is not None:
             avg = float(reviews["average"])
@@ -134,11 +134,11 @@ class Item(models.Model):
         # was updated to 2. The object's updated value needs to be reloaded
         # from the database.
     def count_review(self):
-        return ReView.objects.filter(orderitem__product__item=self).count()
+        return ReView.objects.filter(cartitem__product__item=self).count()
     def average_review(self):
         # here status = True because in my view i have defined just for those which status is True
         # the aggregate(avarage) --> the word of avarage is up to user
-        reviews = ReView.objects.filter(orderitem__product__item=self).aggregate(
+        reviews = ReView.objects.filter(cartitem__product__item=self).aggregate(
             average=Avg('review_rating'))
         avg = 0
         if reviews["average"] is not None:

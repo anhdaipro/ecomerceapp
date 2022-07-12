@@ -88,7 +88,7 @@ class Order(models.Model):
     def total_price_order(self):
         total=0
         for order_item in self.items.all():
-            total+=order_item.total_price_orderitem()
+            total+=order_item.total_price_cartitem()
         return total
 
     def total_discount_order(self):
@@ -108,7 +108,7 @@ class Order(models.Model):
         for order_item in self.items.all():
             count_cart += order_item.count_item_cart()
         return count_cart
-    def count_orderitem(self):
+    def count_cartitem(self):
         count_cart=0
         for order_item in self.items.all():
             count_cart += 1
@@ -116,7 +116,7 @@ class Order(models.Model):
     def count_review(self):
         count=0
         for order_item in self.items.all():
-            count+= "actionorder.ReView".objects.filter(orderitem=order_item).count()
+            count+= "actionorder.ReView".objects.filter(cartitem=order_item).count()
         return count
     
 ADDRESS_CHOICES = (
