@@ -1096,7 +1096,7 @@ class CartItemAPIView(APIView):
             'inventory':cart_item.product.inventory,'quantity':cart_item.quantity,
             'shock_deal_type':cart_item.item.shock_deal_type(),
             } for cart_item in list_cart_item]
-        }
+        
         return Response(data,status=status.HTTP_200_OK)
     def post(self, request,count_cartitem=0,price=0,total=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0, *args, **kwargs):
         user=request.user
