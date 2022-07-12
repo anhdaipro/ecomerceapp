@@ -877,24 +877,19 @@ class UpdateCartAPIView(APIView):
             cart_item=CartItem.objects.get(id=cartitem_id)
             cart_item.product=product
             cart_item.save()
-            data.update({
-            'id':cart_item.id,'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
+            data.update({'item':{
             'price':cart_item.product.price,
-            'total_price':cart_item.total_discount_cartitem(),'inventory':cart_item.product.inventory,'quantity':cart_item.quantity,
-            })
+            'total_price':cart_item.total_discount_cartitem(),'inventory':cart_item.product.inventory,
+            }})
         if byproduct_id:
             byproduct=Byproductcart.objects.get(id=byproduct_id)
             byproduct.byproduct=product
             byproduct.save()
-            data.update({ 
-            'id':byproduct.id,'color_value':byproduct.byproduct.get_color(),
-            'size_value':byproduct.byproduct.get_size(),
+            data.update({'item':{
             'price':byproduct.byproduct.price,
-            'size':byproduct.item.get_size(),
-            'color':byproduct.item.get_color(),
             'total_price':byproduct.total_price(),
-            'inventory':byproduct.byproduct.inventory,'quantity':byproduct.quantity,
-            })
+            'inventory':byproduct.byproduct.inventory
+            }})
         order_check = Order.objects.filter(user=user, ordered=False).exclude(items=None)
         for order in order_check:
             discount_voucher+=order.discount_voucher()
@@ -905,10 +900,10 @@ class UpdateCartAPIView(APIView):
                 total_discount+=cartitem.discount()
                 discount_deal+=cartitem.discount_deal()
                 discount_promotion+=cartitem.discount_promotion()  
-        data.update({
+        data.update({'orders':{
             'total':total,'total_discount':total_discount,'discount_promotion':discount_promotion,
             'discount_deal':discount_deal,'discount_voucher':discount_voucher,'count':count,'count_cartitem':count_cartitem
-        })
+        }})
         return Response(data)
 
 class AddToCardBatchAPIView(APIView):
