@@ -76,7 +76,7 @@ class UploadItem(models.Model):
     image_preview=models.FileField(upload_to='item/',null=True,storage=RawMediaCloudinaryStorage())
     duration=models.FloatField(null=True)
     upload_date=models.DateTimeField(auto_now_add=True)
-    def get_file(self):
+    def get_media(self):
         if self.file and hasattr(self.file,'url'):
             return self.file.url
     def file_preview(self):

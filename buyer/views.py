@@ -655,9 +655,9 @@ class ProductInfoAPIVIew(APIView):
                         'review_rating':review.review_rating,'num_like':review.num_like(),'user_like':[user.id for user in review.like.all()],
                         'list_file':[{'file_id':file.id,'filetype':file.filetype(),'file':file.get_media(),
                         'media_preview':file.media_preview(),'duration':file.duration,'show':False}
-                        for file in review.media_upload.all()],'color_value':review.cartitem.product.get_color(),
+                        for file in review.media_review.all()],'color_value':review.cartitem.product.get_color(),
                         'size_value':review.cartitem.product.get_size(),
-                        'item_name':review.cartitem.product.item.name,
+                        'item_name':review.cartitem.item.name,
                         'user':review.user.username,'shop':review.shop_name(),
                         'url_shop':review.user.shop.get_absolute_url(),
                         } for review in page_obj],'page_count':paginator.num_pages,
@@ -1036,7 +1036,7 @@ class AddToCartAPIView(APIView):
                 return Response({'erorr':'over quantity'})
             else:
                 data={'item_id':cart_item.item_id,'item_name':cart_item.item.name,'id':cart_item.id,
-                'item_image':cart_item.item.media_upload.all()[0].get_media(),
+                'item_image':cart_item.get_image(),
                 'item_url':cart_item.item.get_absolute_url(),
                 'price':cart_item.product.price-cart_item.product.total_discount(),
                 'shock_deal_type':cart_item.item.shock_deal_type(),
@@ -1295,7 +1295,7 @@ class CheckoutAPIView(APIView):
         'discount_promotion':order.discount_promotion(),'total_discount':order.total_discount_order(),
         'cart_item':[{'item_id':cart_item.item_id,'item_name':cart_item.item.name,'item_url':cart_item.item.get_absolute_url(),
         'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
-        'item_image':cart_item.item.media_upload.all()[0].get_media(),
+        'item_image':cart_item.get_image(),
         'byproduct':[{
             'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
             'price':byproduct.byproduct.price,
@@ -1378,7 +1378,7 @@ class OrderinfoAPIView(APIView):
         'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),
         'cart_item':[{'item_id':cart_item.item_id,'item_name':cart_item.item.name,'item_url':cart_item.item.get_absolute_url(),
         'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
-        'item_image':cart_item.item.media_upload.all()[0].get_media(),
+        'item_image':cart_item.get_image(),
         'byproduct':[{
             'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
             'price':byproduct.byproduct.price,
@@ -1620,7 +1620,6 @@ class PurchaseAPIView(APIView):
         from_item=0
         offset=request.GET.get('offset')
         user=request.user
-        threads = Thread.objects.filter(participants=user).order_by('timestamp')
         order_id=request.GET.get('id')
         type_order=request.GET.get('type')
         review=request.GET.get('review')
@@ -1628,7 +1627,7 @@ class PurchaseAPIView(APIView):
             order = Order.objects.get(id=order_id)
             data={
                 'cart_item':[{
-                'item_image':cart_item.item.media_upload.all()[0].get_media(),'item_url':cart_item.item.get_absolute_url(),
+                'item_image':cart_item.get_image(),'item_url':cart_item.item.get_absolute_url(),
                 'item_name':cart_item.item.name,'color_value':cart_item.product.get_color(),
                 'size_value':cart_item.product.get_size(),'id':cart_item.id
                 } for cart_item in order.items.all()],'username':user.username
@@ -1637,16 +1636,16 @@ class PurchaseAPIView(APIView):
         elif order_id and review:
             order = Order.objects.get(id=order_id)
             cartitem=order.items.all()
-            reviews=ReView.objects.filter(cartitem__in=cartitem)
+            reviews=ReView.objects.filter(cartitem__in=cartitem).select_related('cartitem__item').select_related('cartitem__product__size').select_related('cartitem__product__color')
             data={
                 'list_review':[{'id':review.id,'review_text':review.review_text,'created':review.created,
                 'info_more':review.info_more,'rating_anonymous':review.anonymous_review,'list_file':[{'filetype':file.filetype(),'file':file.get_media(),
                 'media_preview':file.media_preview(),'duration':file.duration,'file_id':file.id,'show':False}
-                 for file in review.media_upload.all()],
+                 for file in review.media_review.all()],
                 'rating_bab_category':[review.rating_product,review.rating_seller_service,review.rating_shipping_service],
                 'review_rating':review.review_rating,'edited':review.edited,
-                'item_image':review.cartitem.product.item.media_upload.all()[0].get_media(),'item_url':review.cartitem.product.item.get_absolute_url(),
-                'item_name':review.cartitem.product.item.name,'color_value':review.cartitem.product.get_color(),
+                'item_image':review.cartitem.get_image(),'item_url':review.cartitem.item.get_absolute_url(),
+                'item_name':review.cartitem.item.name,'color_value':review.cartitem.product.get_color(),
                 'size_value':review.cartitem.product.get_size()
                 } for review in reviews],'username':user.username
             }
@@ -1671,7 +1670,7 @@ class PurchaseAPIView(APIView):
                 'accepted':order.accepted,'amount':order.total_final_order(),
                 'received_date':order.received_date,'review':get_count_review(order),
                 'cart_item':[{
-                'item_image':cart_item.item.media_upload.all()[0].get_media(),'item_url':cart_item.item.get_absolute_url(),
+                'item_image':cart_item.get_image(),'item_url':cart_item.item.get_absolute_url(),
                 'item_name':cart_item.item.name,'color_value':cart_item.product.get_color(),
                 'quantity':cart_item.quantity,'discount_price':cart_item.product.total_discount(),
                 'size_value':cart_item.product.get_size(),'price':cart_item.product.price,
@@ -1712,7 +1711,7 @@ class PurchaseAPIView(APIView):
         Media_review.objects.filter(id__in=list_id_remove).delete()
         if review_id:
             Media_review.objects.filter(review=None).delete()
-            reviews=ReView.objects.filter(id__in=review_id)
+            reviews=ReView.objects.filter(id__in=review_id).select_related('cartitem__item').select_related('cartitem__product__size').select_related('cartitem__product__color')
             list_media=Media_review.objects.bulk_create(
                 [Media_review(
                     upload_by=user,
@@ -1723,7 +1722,7 @@ class PurchaseAPIView(APIView):
                 for i in range(len(file))
                 ]
             )
-            list_mediaupload=Media_review.objects.filter(upload_by=user).order_by('-id')[:len(file)]
+            list_mediaupload=Media_review.objects.filter(review_id=review_id)
             for review in reviews:
                 for i in range(len(review_id)):
                     if i==list(reviews).index(review):
@@ -1741,11 +1740,11 @@ class PurchaseAPIView(APIView):
                 'list_review':[{'id':review.id,'review_text':review.review_text,'created':review.created,
                 'info_more':review.info_more,'rating_anonymous':review.anonymous_review,'list_file':[{'filetype':file.filetype(),'file':file.get_media(),
                 'media_preview':file.media_preview(),'duration':file.duration,'file_id':file.id,'show':False}
-                 for file in review.media_upload.all()],
+                 for file in review.media_review.all()],
                 'rating_bab_category':[review.rating_product,review.rating_seller_service,review.rating_shipping_service],
                 'review_rating':review.review_rating,'edited':review.edited,
-                'item_image':review.cartitem.product.item.media_upload.all()[0].get_media(),'item_url':review.cartitem.product.item.get_absolute_url(),
-                'item_name':review.cartitem.product.item.name,'color_value':review.cartitem.product.get_color(),
+                'item_image':review.cartitem.get_image(),'item_url':review.cartitem.item.get_absolute_url(),
+                'item_name':review.cartitem.item.name,'color_value':review.cartitem.product.get_color(),
                 'size_value':review.cartitem.product.get_size()
                 } for review in reviews]
             }
