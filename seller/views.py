@@ -369,7 +369,7 @@ def get_product(request):
                 'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),
                 'size_value':variation.get_size(),'inventory':variation.inventory,
                 'discount':variation.total_discount(),
-                'num_order':variation.number_order()} for variation in item.variation_set.all()[2:item.variation_set.all().count()]]
+                'num_order':variation.number_order()} for variation in item.variation_item.all()[2:item.variation_item.all().count()]]
             }
             return Response(data)
         else:
@@ -381,11 +381,11 @@ def get_product(request):
             data={'count_product':list_product.count(),
                     'pageitem':[{'item_name':item.name,'item_image':item.media_upload.all()[0].get_media(),
                     'item_id':item.id,'item_sku':item.sku_product,
-                    'count_variation':item.variation_set.all().count(),
+                    'count_variation':item.variation_item.all().count(),
                     'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),
                     'size_value':variation.get_size(),'inventory':variation.inventory,
                     'discount':variation.total_discount(),
-                    'num_order':variation.number_order()} for variation in item.variation_set.all()[0:3]]
+                    'num_order':variation.number_order()} for variation in item.variation_item.all()[0:3]]
                     } for item in pageitem]
                 }
             return Response(data)
@@ -963,7 +963,7 @@ def deal_shock(request,id):
             'item_image':item.media_upload.all()[0].get_media(),'check':False,
             'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,
-            } for variation in item.variation_set.all()
+            } for variation in item.variation_item.all()
             ]} for item in list_byproduct]}
             return Response(data)
         
@@ -1153,7 +1153,7 @@ def deal_shock(request,id):
             'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,'discount_price':variation.price*(1-variation.percent_discount_deal_shock/100),'percent_discount':variation.percent_discount_deal_shock,
             'limit_order':variation.limited_product_bundles
-            } for variation in item.variation_set.all()
+            } for variation in item.variation_item.all()
             ]} for item in deal_shock.byproduct.all()],'items_choice':[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
                 'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
@@ -1192,7 +1192,7 @@ def new_program(request):
             'item_image':item.media_upload.all()[0].get_media(),'check':False,
             'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,
-            } for variation in item.variation_set.all()
+            } for variation in item.variation_item.all()
             ]} for item in list_products]}
             return Response(data)
         else:
@@ -1305,7 +1305,7 @@ def detail_program(request,id):
             'item_image':item.media_upload.all()[0].get_media(),'check':False,
             'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,
-            } for variation in item.variation_set.all()
+            } for variation in item.variation_item.all()
             ]} for item in list_product]}
             return Response(data)
         else:
@@ -1386,7 +1386,7 @@ def detail_program(request,id):
             'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,'discount_price':variation.price*(1-variation.percent_discount/100),'percent_discount':variation.percent_discount,
             'number_of_promotional_products':variation.number_of_promotional_products
-            } for variation in item.variation_set.all()
+            } for variation in item.variation_item.all()
             ]} for item in shop_program.product.all()]}
             return Response(data)
        
@@ -1415,7 +1415,7 @@ def new_flashsale(request):
             'item_image':item.media_upload.all()[0].get_media(),'check':False,
             'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,
-            } for variation in item.variation_set.all()
+            } for variation in item.variation_item.all()
             ]} for item in items]}
             return Response(data)
         else:
@@ -1511,7 +1511,7 @@ def detail_flashsale(request,id):
             'item_image':item.media_upload.all()[0].get_media(),'check':False,
             'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,
-            } for variation in item.variation_set.all()
+            } for variation in item.variation_item.all()
             ]} for item in items]}
             return Response(data)
         elif variation_id and item_id:
@@ -1592,7 +1592,7 @@ def detail_flashsale(request,id):
                 'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
                 'inventory':variation.inventory,'price':variation.price,'discount_price':variation.price*(1-variation.percent_discount_flash_sale/100),'percent_discount':variation.percent_discount_flash_sale,
                 'number_of_promotional_products':variation.quantity_flash_sale_products
-                } for variation in item.variation_set.all()
+                } for variation in item.variation_item.all()
                 ]} for item in flash_sale.product.all()]
             }
             return Response(data)
