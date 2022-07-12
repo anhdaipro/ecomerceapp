@@ -1058,7 +1058,7 @@ class AddToCartAPIView(APIView):
                 'id':cart_item.id,
                 'item_image':cart_item.get_image(),
                 'item_url':cart_item.item.get_absolute_url(),
-                'price':cart_item.price-cart_item.product.total_discount(),
+                'price':cart_item.product.price-cart_item.product.total_discount(),
                 'shock_deal_type':cart_item.item.shock_deal_type(),
                 'promotion':cart_item.item.get_promotion(),
                 }
@@ -1068,7 +1068,7 @@ class CartItemAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user = request.user
-        list_cart_item=CartItem.objects.filter(user=user,ordered=False).select_related('item__media_upload').select_related('item__main_product').select_related('item__promotion_combo').select_related('product').select_related('item')
+        list_cart_item=CartItem.objects.filter(user=user,ordered=False).prefetch_related('item__media_upload').prefetch_related('item__shop_program').prefetch_related('item__main_product').prefetch_related('item__promotion_combo').select_related('product__size').select_related('product__color').prefetch_related('byproduct')
         shops=Shop.objects.filter(shop_order__in=list_cart_item).select_related('user').distinct()
         data={
             'cart_item':[{'id':cart_item.id,'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
