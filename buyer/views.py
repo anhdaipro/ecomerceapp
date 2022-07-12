@@ -255,13 +255,13 @@ class Listitemseller(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
-        return Item.objects.filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__cartitem__order')).prefetch_related('cart_item__order_cartitem').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count_order')
+        return Item.objects.filter(cart_item__order_cartitem__ordered=True).annotate(count_order= Count('cart_item__order_cartitem')).prefetch_related('cart_item__order_cartitem').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count_order')
 
 class ListTrendsearch(APIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
-        return Item.objects.filter(variation__cartitem__order__ordered=True).annotate(count_like= Count('liked')).annotate(count_order= Count('variation__cartitem__order')).annotate(count_order= Count('variation__cartitem__order')).annotate(count_review= Count('variation__cartitem__review')).prefetch_related('media_upload').prefetch_related('cart_item__order_cartitem').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count_like','-count_review','-count_order')
+        return Item.objects.filter(cart_item__order_cartitem__ordered=True).annotate(count_like= Count('liked')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_review= Count('cart_item__review_item')).prefetch_related('media_upload').prefetch_related('cart_item__order_cartitem').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count_like','-count_review','-count_order')
 
 def search_matching(list_keys):
     q = Q()
@@ -313,21 +313,21 @@ class DetailAPIView(APIView):
                 items=items.filter(shop_type=shoptype)
             if rating_score:
                 rating=int(rating_score)
-                items=items.annotate(avg_rating= Avg('variation__cartitem__review__review_rating')).filter(avg_rating__gte=rating)
+                items=items.annotate(avg_rating= Avg('cart_item__review_item__review_rating')).filter(avg_rating__gte=rating)
             if maxprice and minprice:
                 max_price=int(maxprice)
                 min_price=int(minprice)
-                items=items.annotate(min=Min('variation__price')).filter(min__gte=min_price,min__lte=max_price)
+                items=items.annotate(min=Min('variation_item__price')).filter(min__gte=min_price,min__lte=max_price)
             if sortby:
-                items=items.filter(variation__cartitem__order__ordered=True)
+                items=items.filter(cart_item__order_cartitem__ordered=True)
                 if sortby=='pop':
-                    items=items.annotate(count_like= Count('liked')).annotate(count_order= Count('variation__cartitem__order')).annotate(count_review= Count('variation__cartitem__review')).order_by('-count_like','-count_review','-count_order')
+                    items=items.annotate(count_like= Count('liked')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_review= Count('cart_item__review_item')).order_by('-count_like','-count_review','-count_order')
                 elif sortby=='ctime':
-                    items=items.annotate(count_order= Count('variation__cartitem__order__id')).annotate(count_review= Count('variation__cartitem__review')).order_by('-id')
+                    items=items.annotate(count_order= Count('cart_item__order_cartitem__id')).annotate(count_review= Count('cart_item__review_item')).order_by('-id')
                 elif sort_by=='price':
-                    items=items.annotate(avg_price= Avg('variation__price')).order_by('avg_price')
+                    items=items.annotate(avg_price= Avg('variation_item__price')).order_by('avg_price')
                     if order=='desc':
-                        items=items.annotate(avg_price= Avg('variation__price')).order_by('-avg_price')
+                        items=items.annotate(avg_price= Avg('variation_item__price')).order_by('-avg_price')
             paginator = Paginator(items,30)
             page_obj = paginator.get_page(page)
             shoptype=[{'value':shop.shop_type,'name':shop.get_shop_type_display()} for shop in list_shop ]
@@ -361,7 +361,7 @@ class DetailAPIView(APIView):
             item_detail=Detail_Item.objects.filter(item=item).values()
             vouchers=Voucher.objects.filter(product=item,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
             deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).order_by('valid_to')
-            list_hot_sales=Item.objects.filter(shop=item.shop,variation__cartitem__order__ordered=True).annotate(count=Count('variation__cartitem__order__id')).prefetch_related('shop_program').prefetch_related('promotion_combo').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count')
+            list_hot_sales=Item.objects.filter(shop=item.shop,cart_item__order_cartitem__ordered=True).annotate(count=Count('cart_item__order_cartitem__id')).prefetch_related('shop_program').prefetch_related('promotion_combo').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count')
             if deal_shock.exists():
                 byproduct=deal_shock.first().byproduct.all()
                 main_product=item.variation_set.all()[0]
@@ -425,21 +425,21 @@ class DetailAPIView(APIView):
                 items=items.filter(category=category_choice)
             if rating_score:
                 rating=int(rating_score)
-                items=items.annotate(avg_rating= Avg('variation__cartitem__review__review_rating')).filter(avg_rating__gte=rating)
+                items=items.annotate(avg_rating= Avg('cart_item__review_item__review_rating')).filter(avg_rating__gte=rating)
             if maxprice and minprice:
                 max_price=int(maxprice)
                 min_price=int(minprice)
-                items=items.annotate(min=Min('variation__price')).filter(min__gte=min_price,min__lte=max_price)
+                items=items.annotate(min=Min('variation_item__price')).filter(min__gte=min_price,min__lte=max_price)
             if sortby:
-                items=items.filter(variation__cartitem__order__ordered=True)
+                items=items.filter(cart_item__order_cartitem__ordered=True)
                 if sortby=='pop':
-                    items=items.annotate(count_like= Count('liked')).annotate(count_order= Count('variation__cartitem__order')).annotate(count_order= Count('variation__cartitem__order')).annotate(count_review= Count('variation__cartitem__review')).order_by('-count_like','-count_review','-count_order')
+                    items=items.annotate(count_like= Count('liked')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_review= Count('cart_item__review_item')).order_by('-count_like','-count_review','-count_order')
                 elif sortby=='ctime':
-                    items=items.annotate(count_order= Count('variation__cartitem__order__id')).annotate(count_review= Count('variation__cartitem__review')).order_by('-id')
+                    items=items.annotate(count_order= Count('cart_item__order_cartitem__id')).annotate(count_review= Count('cart_item__review_item')).order_by('-id')
                 elif sort_by=='price':
-                    items=items.annotate(avg_price= Avg('variation__price')).order_by('avg_price')
+                    items=items.annotate(avg_price= Avg('variation_item__price')).order_by('avg_price')
                     if order=='desc':
-                        items=items.annotate(avg_price= Avg('variation__price')).order_by('-avg_price')
+                        items=items.annotate(avg_price= Avg('variation_item__price')).order_by('-avg_price')
             paginator = Paginator(items,30)
             page_obj = paginator.get_page(page)
             count_follow=Shop.objects.filter(followers=shop.user).count()
@@ -570,16 +570,16 @@ class SearchitemAPIView(APIView):
             items=items.filter(shop_type=shoptype)
         if rating_score:
             rating=int(rating_score)
-            items=items.annotate(avg_rating= Avg('variation__cartitem__review__review_rating')).filter(avg_rating__gte=rating)
+            items=items.annotate(avg_rating= Avg('cart_item__review_item__review_rating')).filter(avg_rating__gte=rating)
         if sortby:
             if sortby=='pop':
-                items=items.annotate(count_like= Count('liked')).annotate(count_order= Count('variation__cartitem__order')).annotate(count_order= Count('variation__cartitem__order')).annotate(count_review= Count('variation__cartitem__review')).order_by('-count_like','-count_review','-count_order')
+                items=items.annotate(count_like= Count('liked')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_review= Count('cart_item__review_item')).order_by('-count_like','-count_review','-count_order')
             elif sortby=='ctime':
-                items=items.annotate(count_order= Count('variation__cartitem__order__id')).annotate(count_review= Count('variation__cartitem__review')).order_by('-id')
+                items=items.annotate(count_order= Count('cart_item__order_cartitem__id')).annotate(count_review= Count('cart_item__review_item')).order_by('-id')
             elif sortby=='price':
-                items=items.annotate(avg_price= Avg('variation__price')).order_by('avg_price')
+                items=items.annotate(avg_price= Avg('variation_item__price')).order_by('avg_price')
                 if order=='desc':
-                    items=items.annotate(avg_price= Avg('variation__price')).order_by('-avg_price')
+                    items=items.annotate(avg_price= Avg('variation_item__price')).order_by('-avg_price')
         paginator = Paginator(items,30)
         page_obj = paginator.get_page(page)
         shoptype=[{'value':shop.shop_type,'name':shop.get_shop_type_display()} for shop in list_shop]
@@ -769,7 +769,7 @@ class Listitemhostsale(APIView):
     def get_queryset(self):
         request=self.request
         shop_id=request.GET.get('shop_id')
-        item=Item.objects.filter(shop_id=shop_id).filter(variation__product__order__ordered=True).annotate(count_order= Count('variation__cartitem__order')).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').order_by('-count_order')
+        item=Item.objects.filter(shop_id=shop_id).filter(cart_item__order_cartitem__ordered=True).annotate(count_order= Count('cart_item__order_cartitem')).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').order_by('-count_order')
         return ItenReviews.objects.filter(user=user).order_by('-id,item')[:12].distinct()
     
 @api_view(['GET', 'POST'])
