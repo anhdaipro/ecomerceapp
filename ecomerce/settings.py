@@ -68,7 +68,6 @@ INSTALLED_APPS = [
     'channels',
     'mptt',
     'rest_framework_simplejwt',
-    
 ]
 
 MIDDLEWARE = [
@@ -82,8 +81,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware', 
     "corsheaders.middleware.CorsMiddleware",
-   
-    
 ]
 
 ROOT_URLCONF = 'ecomerce.urls'
@@ -132,8 +129,8 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=8),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=2),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
     'UPDATE_LAST_LOGIN': False,
