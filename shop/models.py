@@ -320,7 +320,7 @@ class Size(models.Model):
         ordering=['value']
 
 class Variation(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE,related_name='variation_item')
     color=models.ForeignKey(Color, on_delete=models.CASCADE,null=True,blank=True)
     size=models.ForeignKey(Size, on_delete=models.CASCADE,null=True,blank=True)
     created_date = models.DateTimeField(auto_now_add=True)

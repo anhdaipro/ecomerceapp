@@ -24,7 +24,7 @@ class CancelOrder(models.Model):
 
 class ReView(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
-    orderitem = models.ForeignKey(to="carts.CartItem", on_delete=models.CASCADE)
+    cartitem = models.ForeignKey(to="carts.CartItem", on_delete=models.CASCADE,related_name='review_item')
     review_text = models.CharField(max_length=200,null=True)
     info_more=models.TextField(max_length=2000,null=True)
     review_rating = models.IntegerField(null=True)

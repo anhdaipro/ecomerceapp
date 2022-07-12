@@ -10,8 +10,8 @@ from django.utils import timezone
 # Create your models here.
 class WhishItem(models.Model):
     user=models.ForeignKey(User, on_delete=models.CASCADE)
-    item=models.ForeignKey(to="shop.Item", on_delete=models.CASCADE)
-    product=models.ForeignKey(to="shop.Variation", on_delete=models.CASCADE)
+    item=models.ForeignKey(to="shop.Item", on_delete=models.CASCADE,related_name='whish_item')
+    product=models.ForeignKey(to="shop.Variation", on_delete=models.CASCADE,related_name='whish_product')
     quantity=models.SmallIntegerField(default=1)
     create_at=models.DateTimeField(auto_now=True)
     def __str__(self):
@@ -20,8 +20,8 @@ class WhishItem(models.Model):
 
 class Byproductcart(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
-    byproduct=models.ForeignKey(to="shop.Variation",on_delete=models.CASCADE)
-    item = models.ForeignKey(to="shop.Item", on_delete=models.CASCADE)
+    byproduct=models.ForeignKey(to="shop.Variation",on_delete=models.CASCADE,related_name='byproduct_byproduct')
+    item = models.ForeignKey(to="shop.Item", on_delete=models.CASCADE,related_name='byproduct_item')
     quantity=models.IntegerField()
     def discount_deal_by(self):
         return self.quantity * self.byproduct.discount_price_deal_shock()
@@ -38,8 +38,8 @@ class Byproductcart(models.Model):
 class CartItem(models.Model):
     user=models.ForeignKey(User, on_delete=models.CASCADE)
     shop=models.ForeignKey(to="shop.Shop",on_delete=models.CASCADE,related_name='shop_order')
-    product=models.ForeignKey(to="shop.Variation", on_delete=models.CASCADE)
-    item=models.ForeignKey(to="shop.Item", on_delete=models.CASCADE)
+    product=models.ForeignKey(to="shop.Variation", on_delete=models.CASCADE,related_name='cart_product')
+    item=models.ForeignKey(to="shop.Item", on_delete=models.CASCADE,related_name='cart_item')
     byproduct=models.ManyToManyField(Byproductcart,blank=True)
     deal_shock=models.ForeignKey(to="discounts.Buy_with_shock_deal",on_delete=models.SET_NULL, blank=True, null=True)
     promotion_combo=models.ForeignKey(to="discounts.Promotion_combo",on_delete=models.SET_NULL, blank=True, null=True)
