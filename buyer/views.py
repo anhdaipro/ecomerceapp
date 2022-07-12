@@ -1054,7 +1054,7 @@ class AddToCartAPIView(APIView):
                 )
             data={
                 'item_id':cart_item.item_id,
-                'item_name':cart_item.item_name,
+                'item_name':cart_item.item.name,
                 'id':cart_item.id,
                 'item_image':cart_item.get_image(),
                 'item_url':cart_item.item.get_absolute_url(),
