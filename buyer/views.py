@@ -49,7 +49,7 @@ from bulk_update.helper import bulk_update
 from .serializers import (ChangePasswordSerializer,
 UserSerializer,SMSPinSerializer,
 SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer,UserprofileSerializer,
-ItemSellerSerializer,ItemrecentlySerializer)
+ItemSellerSerializer,ItemrecentlySerializer,ShoporderSerializer,)
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -627,7 +627,6 @@ class ProductInfoAPIVIew(APIView):
         from_item=request.GET.get('from_item')
         if item_id:
             item=Item.objects.get(id=item_id)
-            
             if shop:
                 data={'avatar':item.shop.user.profile.avatar.url,'shop_url':item.shop.get_absolute_url(),
                 'shop_name':item.shop.name,
@@ -1060,18 +1059,21 @@ class AddToCartAPIView(APIView):
                 'promotion':cart_item.item.get_promotion(),
                 }
             return Response(data)
-
+class ShoporderAPI(APIView):
+    def get(self,request):
+        list_cart_item=CartItem.objects.filter(user=user,ordered=False)
+        shops=Shop.objects.filter(shop_order__in=list_cart_item).select_related('user').distinct()
+        serializer = ShoporderSerializer(shops,many=True, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 class CartItemAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user = request.user
         list_cart_item=CartItem.objects.filter(user=user,ordered=False).prefetch_related('item__media_upload').prefetch_related('item__shop_program').prefetch_related('item__main_product').prefetch_related('item__promotion_combo').select_related('product__size').select_related('product__color').prefetch_related('byproduct')
-        shops=Shop.objects.filter(shop_order__in=list_cart_item).select_related('user').distinct()
-        data={
-            'cart_item':[{'id':cart_item.id,'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
-            'list_voucher':cart_item.item.list_voucher(),'count_variation':cart_item.item.count_variation(),
+        
+        data=[{'id':cart_item.id,'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
+            'count_variation':cart_item.item.count_variation(),
             'price':cart_item.product.price,'discount_price':cart_item.product.total_discount(),'shop_name':cart_item.shop.name,
-            'voucher_user':[True if user in voucher.user.all() else False for voucher in cart_item.item.list_voucher()],
             'sizes':cart_item.item.get_size(),'open':False,
             'item_image':cart_item.get_image(),
             'variation_url':cart_item.product.get_absolute_url(),'byproduct':[{
@@ -1093,7 +1095,7 @@ class CartItemAPIView(APIView):
             'variation_id':cart_item.product_id,'total_price':cart_item.total_discount_cartitem(),
             'inventory':cart_item.product.inventory,'quantity':cart_item.quantity,
             'shock_deal_type':cart_item.item.shock_deal_type(),
-            } for cart_item in list_cart_item],'list_shop':[{'user_id':shop.user_id,'shop_name':shop.name,'list_voucher_unique':[]} for shop in shops]
+            } for cart_item in list_cart_item]
         }
         return Response(data,status=status.HTTP_200_OK)
     def post(self, request,count_cartitem=0,price=0,total=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0, *args, **kwargs):

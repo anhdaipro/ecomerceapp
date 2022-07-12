@@ -101,6 +101,8 @@ class LoginSerializer(serializers.ModelSerializer):
             'tokens': user.tokens
         }
 
+
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model=Category
@@ -171,6 +173,22 @@ class ItemrecentlySerializer(serializers.ModelSerializer):
         return obj.item.max_price()
     def get_min_price(self,obj):
         return obj.item.min_price()
+
+class ShoporderSerializer(serializers.ModelSerializer): 
+    listvoucher=serializers.SerializerMethodField()
+    class Meta:
+        model=Shop
+        fields=('id','name','listvoucher','user_id',)
+    def get_listvoucher(self,obj):
+        request=self.context.get("request") 
+        cartview=CartItem.objects.filter(shop=obj,ordered=False)
+        list_voucher=Voucher.object.filter(product__cart_item__in=cartview).distinct()
+        return [{'id':voucher.id,'amount':voucher.amount,'created':voucher.created,
+        'discount_type':voucher.discount_type,'maximum_discount':voucher.maximum_discount,
+        'maximum_usage':voucher.maximum_usage,'minimum_order_value':voucher.minimum_order_value,
+        'percent':voucher.percent,'valid_from':voucher.valid_from,
+        'valid_to':voucher.valid_to,'voucher_type':voucher.voucher_type,
+        'exists':True if request.user in voucher.user.all() else False} for voucher in list_voucher]
 class ItemSellerSerializer(serializers.ModelSerializer):
     image=serializers.SerializerMethodField()
     count_order=serializers.SerializerMethodField()
