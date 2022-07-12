@@ -1071,16 +1071,18 @@ class CartItemAPIView(APIView):
         list_cart_item=CartItem.objects.filter(user=user,ordered=False).prefetch_related('item__media_upload').prefetch_related('item__shop_program').prefetch_related('item__main_product').prefetch_related('item__promotion_combo').select_related('product__size').select_related('product__color').prefetch_related('byproduct')
         shops=Shop.objects.filter(shop_order__in=list_cart_item).select_related('user').distinct()
         data={
-            'cart_item':[{'id':cart_item.id,'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
+            'cart_item':[{'id':cart_item.id,'color_id':cart_item.product.color,'size_id':cart_item.product.size,'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
             'list_voucher':cart_item.item.get_voucher(),'count_variation':cart_item.item.count_variation(),
             'price':cart_item.product.price,'discount_price':cart_item.product.total_discount(),'shop_name':cart_item.shop.name,
             'voucher_user':[True if user in voucher.user.all() else False for voucher in cart_item.item.list_voucher()],
-            'size':cart_item.item.get_size(),'open':False,
+            'sizes':cart_item.item.get_size(),'open':False,
             'item_image':cart_item.get_image(),
             'variation_url':cart_item.product.get_absolute_url(),'byproduct':[{
-            'id':byproduct.id,'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
-            'color':byproduct.item.get_color_deal(),'percent_discount_deal':byproduct.byproduct.percent_discount_deal_shock,
-            'size':byproduct.item.get_size_deal(),'price':byproduct.byproduct.price,
+            'id':byproduct.id,'color_value':byproduct.byproduct.get_color(),
+            'size_value':byproduct.byproduct.get_size(),'size_id':byproduct.byproduct.size,
+            'color_id':byproduct.byproduct.color,
+            'colors':byproduct.item.get_color_deal(),'percent_discount_deal':byproduct.byproduct.percent_discount_deal_shock,
+            'sizes':byproduct.item.get_size_deal(),'price':byproduct.byproduct.price,
             'variation_id':byproduct.byproduct_id,'item_id':byproduct.item_id,'item_name':byproduct.item.name,
             'inventory':byproduct.byproduct.inventory,'quantity':byproduct.quantity,'item_url':byproduct.item.get_absolute_url(),
             'count_program_valid':byproduct.item.count_program_valid(),
@@ -1088,7 +1090,7 @@ class CartItemAPIView(APIView):
             'item_image':byproduct.item.get_image_cover(),
             'count_variation':byproduct.item.count_variation(),
              } for byproduct in cart_item.byproduct.all() if byproduct.item.get_count_deal()>0],
-            'color':cart_item.item.get_color(),'item_id':cart_item.item_id,'item_name':cart_item.item.name,
+            'colors':cart_item.item.get_color(),'item_id':cart_item.item_id,'item_name':cart_item.item.name,
             'item_url':cart_item.item.get_absolute_url(),
             'count_program_valid':cart_item.item.count_program_valid(),
             'promotion':cart_item.item.get_promotion(),'check':cart_item.check,
