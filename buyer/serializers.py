@@ -166,7 +166,7 @@ class ItemrecentlySerializer(serializers.ModelSerializer):
         )
     
     def get_image(self,obj):
-        return obj.item.get_media_cover()
+        return obj.item.get_image_cover()
     def get_max_price(self,obj):
         return obj.item.max_price()
     def get_min_price(self,obj):
@@ -183,7 +183,7 @@ class ItemSellerSerializer(serializers.ModelSerializer):
         )
     
     def get_image(self,obj):
-        return obj.get_media_cover()
+        return obj.get_image_cover()
     def get_count_order(self,obj):
         return obj.number_order()
 class ItemSerializer(serializers.ModelSerializer):

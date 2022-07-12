@@ -54,7 +54,7 @@ class CartItem(models.Model):
         return f"{self.quantity}  {self.product.item} of {self.product.item.shop}"
    
     def get_image(self):
-        image=self.item.get_media_cover()
+        image=self.item.get_image_cover()
         if self.product.color:
             if self.product.color.image:
                 image=self.product.color.image.url

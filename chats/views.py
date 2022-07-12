@@ -189,7 +189,7 @@ class ListThreadAPIView(APIView):
                 from_item=to_item-5
                 list_items=Item.objects.filter(shop=shop).order_by('-id')[from_item:to_item]
                 data.update({'count_product':shop.count_product(),
-                    'list_items':[{'item_name':i.name,'item_image':i.get_media_cover(),'number_order':i.number_order(),
+                    'list_items':[{'item_name':i.name,'item_image':i.get_image_cover(),'number_order':i.number_order(),
                     'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
                     'min_price':i.min_price()
                     } for i in list_items]

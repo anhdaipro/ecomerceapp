@@ -51,7 +51,7 @@ class Message(models.Model):
             return ({'name':self.product.name,'id':self.product_id,'slug':self.product.get_absolute_url(),
             'max_price':self.product.max_price(),'min_price':self.product.min_price(),
             'percent_discount':self.product.percent_discount(),
-            'program_valid':self.product.program_valid(),'image':self.product.get_media_cover()})
+            'program_valid':self.product.program_valid(),'image':self.product.get_image_cover()})
 
     def message_order(self):
         if self.order:
