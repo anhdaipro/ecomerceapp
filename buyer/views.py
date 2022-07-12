@@ -1069,7 +1069,7 @@ class CartItemAPIView(APIView):
         shops=Shop.objects.filter(shop_order__in=list_cart_item).select_related('user').distinct()
         data={
             'cart_item':[{'id':cart_item.id,'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
-            'list_voucher':cart_item.item.get_voucher(),'count_variation':cart_item.item.count_variation(),
+            'list_voucher':cart_item.item.list_voucher(),'count_variation':cart_item.item.count_variation(),
             'price':cart_item.product.price,'discount_price':cart_item.product.total_discount(),'shop_name':cart_item.shop.name,
             'voucher_user':[True if user in voucher.user.all() else False for voucher in cart_item.item.list_voucher()],
             'sizes':cart_item.item.get_size(),'open':False,
