@@ -76,7 +76,7 @@ class UploadItem(models.Model):
     image_preview=models.FileField(upload_to='item/',null=True,storage=RawMediaCloudinaryStorage())
     duration=models.FloatField(null=True)
     upload_date=models.DateTimeField(auto_now_add=True)
-    def upload_file(self):
+    def get_file(self):
         if self.file and hasattr(self.file,'url'):
             return self.file.url
     def file_preview(self):
@@ -152,7 +152,7 @@ class Item(models.Model):
     
     def get_color(self):
         color=Color.objects.filter(variation__item=self,variation__inventory__gt=0)
-        list_color=[{'image':i.image.url,'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in color.distinct()]
+        list_color=[{'image':i.get_file(),'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in color.distinct()]
         return list_color
     
     def get_list_color(self):
@@ -268,10 +268,10 @@ class Item(models.Model):
             'price_special_sale':promotion_combo.price_special_sale}
     
     def get_media(self):
-        return [{'typefile':media.media_type,'file':media.upload_file(),'image_preview':media.file_preview(),'duration':media.duration} for media in self.media_upload.all()]
+        return [{'typefile':media.media_type,'file':media.get_media(),'image_preview':media.file_preview(),'duration':media.duration} for media in self.media_upload.all()]
     
     def get_image_cover(self):
-        media_file=[media for media in self.media_upload.all() if media.media_type()=='image'][0].upload_file()    
+        media_file=[media for media in self.media_upload.all() if media.media_type()=='image'][0].get_media()    
         return media_file
 
     def percent_discount(self):

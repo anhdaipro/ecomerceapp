@@ -378,7 +378,7 @@ class DetailAPIView(APIView):
             'item_name':item.name,'min_price':item.min_price(),'max_price':item.max_price(),
             'id':item.id,'num_like_item':item.num_like(),'percent_discount':item.percent_discount(),
             'review_rating':item.average_review(),'count_review':item.count_review(),'shop_user':item.shop.user.id,
-            'category':item.category.get_full_category(),'media_upload':[{'file':i.upload_file(),
+            'category':item.category.get_full_category(),'media_upload':[{'file':i.get_media(),
             'image_preview':i.file_preview(),'duration':i.duration,'media_type':i.media_type(),
             } for i in item.media_upload.all()],'size':item.get_size(),'color':item.get_color(),
             'item_inventory':item.total_inventory(),
@@ -653,7 +653,7 @@ class ProductInfoAPIVIew(APIView):
                 'reviews':[{'id':review.id,'review_text':review.review_text,'created':review.created,
                         'info_more':review.info_more,'rating_anonymous':review.anonymous_review,
                         'review_rating':review.review_rating,'num_like':review.num_like(),'user_like':[user.id for user in review.like.all()],
-                        'list_file':[{'file_id':file.id,'filetype':file.filetype(),'file':file.upload_file(),
+                        'list_file':[{'file_id':file.id,'filetype':file.filetype(),'file':file.get_media(),
                         'media_preview':file.media_preview(),'duration':file.duration,'show':False}
                         for file in review.media_upload.all()],'color_value':review.cartitem.product.get_color(),
                         'size_value':review.cartitem.product.get_size(),
@@ -1036,7 +1036,7 @@ class AddToCartAPIView(APIView):
                 return Response({'erorr':'over quantity'})
             else:
                 data={'item_id':cart_item.item_id,'item_name':cart_item.item.name,'id':cart_item.id,
-                'item_image':cart_item.item.media_upload.all()[0].upload_file(),
+                'item_image':cart_item.item.media_upload.all()[0].get_media(),
                 'item_url':cart_item.item.get_absolute_url(),
                 'price':cart_item.product.price-cart_item.product.total_discount(),
                 'shock_deal_type':cart_item.item.shock_deal_type(),
@@ -1295,7 +1295,7 @@ class CheckoutAPIView(APIView):
         'discount_promotion':order.discount_promotion(),'total_discount':order.total_discount_order(),
         'cart_item':[{'item_id':cart_item.item_id,'item_name':cart_item.item.name,'item_url':cart_item.item.get_absolute_url(),
         'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
-        'item_image':cart_item.item.media_upload.all()[0].upload_file(),
+        'item_image':cart_item.item.media_upload.all()[0].get_media(),
         'byproduct':[{
             'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
             'price':byproduct.byproduct.price,
@@ -1378,7 +1378,7 @@ class OrderinfoAPIView(APIView):
         'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),
         'cart_item':[{'item_id':cart_item.item_id,'item_name':cart_item.item.name,'item_url':cart_item.item.get_absolute_url(),
         'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
-        'item_image':cart_item.item.media_upload.all()[0].upload_file(),
+        'item_image':cart_item.item.media_upload.all()[0].get_media(),
         'byproduct':[{
             'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
             'price':byproduct.byproduct.price,
@@ -1444,7 +1444,7 @@ class DealShockAPIView(APIView):
             'quantity':quantity,'item_id':variation.item_id,'item_name':variation.item.name,'check':True,'main':True,
             'price':variation.price,'discount_price':variation.total_discount(),'item_url':variation.item.get_absolute_url(),
             'size':variation.item.get_size(),'inventory':variation.inventory,'show':False,
-            'item_image':variation.item.media_upload.all()[0].upload_file(),
+            'item_image':variation.item.media_upload.all()[0].get_media(),
             'color':variation.item.get_color()}
         list_product.append(variation_info)
         cartitem=CartItem.objects.filter(product=variation,ordered=False,user=user)
@@ -1467,7 +1467,7 @@ class DealShockAPIView(APIView):
                     'color':item.get_color_deal(),'get_count_deal':item.get_count_deal(),
                     'color_value':'','quantity':1,'size_value':'',
                     'price':item.max_price(),'show':False,
-                    'item_image':item.media_upload.all()[0].upload_file(),
+                    'item_image':item.media_upload.all()[0].get_media(),
                     'check':False,'main':False,'item_url':item.get_absolute_url(),
                     })
         
@@ -1501,7 +1501,7 @@ class PromotionAPIView(APIView):
             'quantity_to_reduced':promotion.quantity_to_reduced,
             'list_items':[{
             'item_id':item.id,'item_name':item.name,
-            'item_image':item.media_upload.all()[0].upload_file(),
+            'item_image':item.media_upload.all()[0].get_media(),
             'item_url':item.get_absolute_url(),'max_price':item.max_price(),
             'count_program_valid':item.count_program_valid(),'min_price':item.min_price(),
             'size':item.get_size(),'color':item.get_color(),'inventory':item.total_inventory()} for item in items]
@@ -1628,7 +1628,7 @@ class PurchaseAPIView(APIView):
             order = Order.objects.get(id=order_id)
             data={
                 'cart_item':[{
-                'item_image':cart_item.item.media_upload.all()[0].upload_file(),'item_url':cart_item.item.get_absolute_url(),
+                'item_image':cart_item.item.media_upload.all()[0].get_media(),'item_url':cart_item.item.get_absolute_url(),
                 'item_name':cart_item.item.name,'color_value':cart_item.product.get_color(),
                 'size_value':cart_item.product.get_size(),'id':cart_item.id
                 } for cart_item in order.items.all()],'username':user.username
@@ -1640,12 +1640,12 @@ class PurchaseAPIView(APIView):
             reviews=ReView.objects.filter(cartitem__in=cartitem)
             data={
                 'list_review':[{'id':review.id,'review_text':review.review_text,'created':review.created,
-                'info_more':review.info_more,'rating_anonymous':review.anonymous_review,'list_file':[{'filetype':file.filetype(),'file':file.upload_file(),
+                'info_more':review.info_more,'rating_anonymous':review.anonymous_review,'list_file':[{'filetype':file.filetype(),'file':file.get_media(),
                 'media_preview':file.media_preview(),'duration':file.duration,'file_id':file.id,'show':False}
                  for file in review.media_upload.all()],
                 'rating_bab_category':[review.rating_product,review.rating_seller_service,review.rating_shipping_service],
                 'review_rating':review.review_rating,'edited':review.edited,
-                'item_image':review.cartitem.product.item.media_upload.all()[0].upload_file(),'item_url':review.cartitem.product.item.get_absolute_url(),
+                'item_image':review.cartitem.product.item.media_upload.all()[0].get_media(),'item_url':review.cartitem.product.item.get_absolute_url(),
                 'item_name':review.cartitem.product.item.name,'color_value':review.cartitem.product.get_color(),
                 'size_value':review.cartitem.product.get_size()
                 } for review in reviews],'username':user.username
@@ -1671,7 +1671,7 @@ class PurchaseAPIView(APIView):
                 'accepted':order.accepted,'amount':order.total_final_order(),
                 'received_date':order.received_date,'review':get_count_review(order),
                 'cart_item':[{
-                'item_image':cart_item.item.media_upload.all()[0].upload_file(),'item_url':cart_item.item.get_absolute_url(),
+                'item_image':cart_item.item.media_upload.all()[0].get_media(),'item_url':cart_item.item.get_absolute_url(),
                 'item_name':cart_item.item.name,'color_value':cart_item.product.get_color(),
                 'quantity':cart_item.quantity,'discount_price':cart_item.product.total_discount(),
                 'size_value':cart_item.product.get_size(),'price':cart_item.product.price,
@@ -1739,12 +1739,12 @@ class PurchaseAPIView(APIView):
             bulk_update(reviews)
             data={
                 'list_review':[{'id':review.id,'review_text':review.review_text,'created':review.created,
-                'info_more':review.info_more,'rating_anonymous':review.anonymous_review,'list_file':[{'filetype':file.filetype(),'file':file.upload_file(),
+                'info_more':review.info_more,'rating_anonymous':review.anonymous_review,'list_file':[{'filetype':file.filetype(),'file':file.get_media(),
                 'media_preview':file.media_preview(),'duration':file.duration,'file_id':file.id,'show':False}
                  for file in review.media_upload.all()],
                 'rating_bab_category':[review.rating_product,review.rating_seller_service,review.rating_shipping_service],
                 'review_rating':review.review_rating,'edited':review.edited,
-                'item_image':review.cartitem.product.item.media_upload.all()[0].upload_file(),'item_url':review.cartitem.product.item.get_absolute_url(),
+                'item_image':review.cartitem.product.item.media_upload.all()[0].get_media(),'item_url':review.cartitem.product.item.get_absolute_url(),
                 'item_name':review.cartitem.product.item.name,'color_value':review.cartitem.product.get_color(),
                 'size_value':review.cartitem.product.get_size()
                 } for review in reviews]

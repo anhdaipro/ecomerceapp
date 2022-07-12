@@ -205,7 +205,7 @@ class ListThreadAPIView(APIView):
                     'list_orders':[{
                     'id':order.id,'shop':order.shop.name,'total_final_order':order.total_final_order(),
                     'count_item':order.count_item_cart(),
-                    'order_item':[{'item_image':order_item.product.item.media_upload.all()[0].upload_file(),'item_url':order_item.product.item.get_absolute_url(),
+                    'order_item':[{'item_image':order_item.product.item.media_upload.all()[0].get_media(),'item_url':order_item.product.item.get_absolute_url(),
                     'item_name':order_item.product.item.name,'color_value':order_item.product.get_color(),
                     'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
                     'size_value':order_item.product.get_size(),'price':order_item.product.price,

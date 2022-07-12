@@ -16,7 +16,8 @@ message_type_choice=(
     ('5',"Order")
 )
 class Thread(models.Model):
-    participants=models.ManyToManyField(User,blank=True)
+    admin=models.ForeignKey(User, on_delete=models.CASCADE,null=True)
+    participants=models.ManyToManyField(User,blank=True,related_name='participants')
     timestamp = models.DateTimeField(auto_now_add=True)
     def count_message_not_seen(self):
         return Message.objects.filter(seen=False,thread=self).count()
