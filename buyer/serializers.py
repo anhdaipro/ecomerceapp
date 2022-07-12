@@ -182,7 +182,7 @@ class ShoporderSerializer(serializers.ModelSerializer):
     def get_listvoucher(self,obj):
         request=self.context.get("request") 
         cartview=CartItem.objects.filter(shop=obj,ordered=False)
-        list_voucher=Voucher.object.filter(product__cart_item__in=cartview).distinct()
+        list_voucher=Voucher.objects.filter(product__cart_item__in=cartview).distinct()
         return [{'id':voucher.id,'amount':voucher.amount,'created':voucher.created,
         'discount_type':voucher.discount_type,'maximum_discount':voucher.maximum_discount,
         'maximum_usage':voucher.maximum_usage,'minimum_order_value':voucher.minimum_order_value,
