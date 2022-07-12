@@ -1119,7 +1119,7 @@ class CartItemAPIView(APIView):
         ordered_date = timezone.now()
         discount_voucher_shop=0
         if shop_name:
-            if order_qs.count()>0:
+            if order_qs.exists():
                 for order in order_qs:
                     if voucher_id:
                         voucher=Voucher.objects.get(id=voucher_id)
