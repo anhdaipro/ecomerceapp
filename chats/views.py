@@ -99,7 +99,7 @@ class ActionThread(APIView):
             return Response(listmessage)
         else:
             thread.delete()
-        return Response(data)
+        return Response(listmessage)
 
 class CountThread(APIView):
     permission_classes = (IsAuthenticated,)
@@ -155,7 +155,7 @@ class CreateThread(APIView):
             thread.participants.add(*member)
             thread.save()
             Member.objects.bulk_create([
-                Member(user=listuser[i],nickname=listuser[i].profile.name,thread=thread)
+                Member(user=listuser[i],thread=thread)
                 for i in range(len(list(listuser)))
             ])
             if order_id:
