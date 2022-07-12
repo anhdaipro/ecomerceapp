@@ -840,8 +840,8 @@ class UpdateCartAPIView(APIView):
             page_no=page
         data={
             'page_count':paginator.num_pages,'page':int(page_no),
-            'list_item':[{'item_id':i.id,'item_name':i.item.name,
-            'item_image':item.get_image_cover(),
+            'list_item':[{'item_id':i.id,'item_name':i.name,
+            'item_image':i.get_image_cover(),
             'percent_discount':i.percent_discount(),'min_price':i.min_price(),
             'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
             'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
@@ -1095,7 +1095,7 @@ class CartItemAPIView(APIView):
             'variation_id':cart_item.product_id,'total_price':cart_item.total_discount_cartitem(),
             'inventory':cart_item.product.inventory,'quantity':cart_item.quantity,
             'shock_deal_type':cart_item.item.shock_deal_type(),
-            } for cart_item in list_cart_item],'list_shop':[{'shop_user':shop.user_id,'shop_name':shop.name,'list_voucher_unique':[]} for shop in shops]
+            } for cart_item in list_cart_item],'list_shop':[{'user_id':shop.user_id,'shop_name':shop.name,'list_voucher_unique':[]} for shop in shops]
         }
         return Response(data,status=status.HTTP_200_OK)
     def post(self, request,count_cartitem=0,price=0,total=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0, *args, **kwargs):
