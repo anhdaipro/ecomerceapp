@@ -13,7 +13,8 @@ message_type_choice=(
     ('2','Image'),
     ('3','Video'),
     ('4',"Product"),
-    ('5',"Order")
+    ('5',"Order"),
+    ('6','Other')
 )
 class Thread(models.Model):
     admin=models.ForeignKey(User, on_delete=models.CASCADE,null=True)

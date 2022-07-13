@@ -54,22 +54,22 @@ class ActionThread(APIView):
             order_id=request.POST.getlist('order_id') 
             item_id=request.POST.get('item_id') 
             if order_id:
-                message,created=Message.objects.get_or_create(thread=thread,user=request.user,order_id=order_id)
+                message,created=Message.objects.get_or_create(thread=thread,user=request.user,order_id=order_id,message_type='5')
                 listmessage.append({'id':message.id,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_order(),
                 })
             if item_id:
-                message,created=Message.objects.get_or_create(thread=thread,user=request.user,item_id=item_id)
+                message,created=Message.objects.get_or_create(thread=thread,user=request.user,item_id=item_id,message_type='4')
                 listmessage.append({'id':message.id,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_product(),
                 })
             if msg:    
-                message=Message.objects.create(thread_id=id,user=request.user,message=msg)
+                message=Message.objects.create(thread_id=id,user=request.user,message=msg,message_type='1')
                 listmessage.append({'id':message.id,'message':message.message,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,'story_id':message.story_id,'media_story':message.get_story(),
                 'list_file':[]})
             if image:
-                message=Message.objects.create(thread_id=id,user=request.user)
+                message=Message.objects.create(thread_id=id,user=request.user,message_type='2')
                 list_file_chat=Messagemedia.objects.bulk_create([Messagemedia(upload_by=request.user,file=image[i],message=message) for i in range(len(image))])
                 listmessage.append({'id':message.id,'message':message.message,'message_type':message.message_type,
                         'user_id':message.user_id,'date_created':message.date_created,
@@ -86,10 +86,11 @@ class ActionThread(APIView):
                 messages=Message.objects.bulk_create([
                 Message(thread_id=id,
                     id=count+i+1,
-                    user=request.user
+                    user=request.user,
+                    message_type='3'
                 ) for i in range(len(file))]) 
                         
-                Messagemedia.objects.bulk_create([Messagemedia(message_id=messages[i].id,upload_by=request.user,duration=float(duration[i]),file_preview=list_file_preview[i],file=file[i],file_name=name[i]) for i in range(len(file))])
+                Messagemedia.objects.bulk_create([Messagemedia(message_id=messages[i].id,upload_by=request.user,duration=float(duration[i]),file_preview=list_file_preview[i],file=file[i]) for i in range(len(file))])
                 listmessage=[{'id':message.id,'message':message.message,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,
                 'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,'file_name':uploadfile.filename(),
@@ -158,12 +159,12 @@ class CreateThread(APIView):
                 for i in range(len(list(listuser)))
             ])
             if order_id:
-                message,created=Message.objects.get_or_create(thread=thread,user=request.user,order_id=order_id)
+                message,created=Message.objects.get_or_create(thread=thread,user=request.user,order_id=order_id,message_type='5')
                 listmessage.append({'id':message.id,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_order(),
                 })
             if item_id:
-                message,created=Message.objects.get_or_create(thread=thread,user=request.user,item_id=item_id)
+                message,created=Message.objects.get_or_create(thread=thread,user=request.user,item_id=item_id,message_type='4')
                 listmessage.append({'id':message.id,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_product(),
                 })
