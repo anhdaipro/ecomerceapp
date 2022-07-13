@@ -210,7 +210,7 @@ class ItemSerializer(serializers.ModelSerializer):
     category=serializers.SerializerMethodField()
     list_media=serializers.SerializerMethodField()
     list_voucher=serializers.SerializerMethodField()
-    count_program_valid=serializers.SerializerMethodField()
+    program_valid=serializers.SerializerMethodField()
     shock_deal_type=serializers.SerializerMethodField()
     list_promotion=serializers.SerializerMethodField()
     class Meta:
@@ -227,7 +227,7 @@ class ItemSerializer(serializers.ModelSerializer):
             'list_voucher',
             'shock_deal_type',
             'list_promotion',
-            'count_program_valid',
+            'program_valid',
             'max_price',
             'min_price',
             'percent_discount'
@@ -245,8 +245,8 @@ class ItemSerializer(serializers.ModelSerializer):
         return obj.get_voucher()
     def get_list_promotion(self,obj):
         return obj.get_promotion()
-    def get_count_program_valid(self,obj):
-        return obj.count_program_valid()
+    def get_program_valid(self,obj):
+        return obj.program_valid()
     def get_shock_deal_type(self,obj):
         return obj.shock_deal_type()
 class VariationSerializer(serializers.ModelSerializer):

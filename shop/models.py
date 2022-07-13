@@ -160,7 +160,7 @@ class Item(models.Model):
         list_color=[{'file':i.get_file(),'file_preview':None,'filetype':'image','id':i.id,'name':i.name,'value':i.value} for i in color.distinct()]
         return list_color
     
-    def get_count_deal(self):
+    def get_deal(self):
         count_deal=0
         if Buy_with_shock_deal.objects.filter(byproduct=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
             deal_valid=Buy_with_shock_deal.objects.filter(byproduct=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).first()
@@ -254,9 +254,10 @@ class Item(models.Model):
     
     def shipping(self):
         return Shipping.objects.all().last()
-    def count_program_valid(self):
-        return Shop_program.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).count()
-    
+    def program_valid(self):
+        shop_program=Shop_program.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        if shop_program.exists():
+            return True
     def get_promotion(self):
         promotion_combo=Promotion_combo.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if promotion_combo.exists():
@@ -277,7 +278,7 @@ class Item(models.Model):
     def percent_discount(self):
         percent=0
         variations = Variation.objects.filter(item=self).aggregate(avg=Avg('percent_discount'))
-        if variations['avg'] is not None and self.count_program_valid():
+        if variations['avg'] is not None and self.program_valid():
             percent=int(variations['avg'])
         return percent
 
@@ -355,7 +356,7 @@ class Variation(models.Model):
 
     def total_discount(self):
         discount=0
-        if self.percent_discount and self.item.count_program_valid() > 0:
+        if self.percent_discount and self.item.program_valid() > 0:
             discount= self.price*(self.percent_discount)/100
         return discount
     class Meta:

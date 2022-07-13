@@ -346,7 +346,7 @@ class DetailAPIView(APIView):
                 'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
                 'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
-                'program_valid':i.count_program_valid(),'promotion':i.get_promotion(),
+                'program_valid':i.program_valid(),'promotion':i.get_promotion(),
                 'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
                 }
             for i in page_obj],'page_count':paginator.num_pages
@@ -368,7 +368,7 @@ class DetailAPIView(APIView):
                 data.update({'byproduct':[{'item_name':i.name,'item_image':i.get_image_cover(),
                 'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
                 'max_price':i.max_price(),'discount_deal':i.discount_deal(),
-                'program_valid':i.count_program_valid()} for i in byproduct]})
+                'program_valid':i.program_valid()} for i in byproduct]})
             promotion_combo=Promotion_combo.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
             flash_sale=Flash_sale.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
             order=Order.objects.filter(items__product__item=item,received=True)
@@ -383,14 +383,14 @@ class DetailAPIView(APIView):
             } for i in item.media_upload.all()],'size':item.get_size(),'color':item.get_color(),
             'item_inventory':item.total_inventory(),
             'num_order':item.number_order(),'description':item.description,
-            'program_valid':item.count_program_valid(),
+            'program_valid':item.program_valid(),
             'shock_deal_type':item.shock_deal_type(),
             'deal_shock':list(deal_shock.values()),'flash_sale':list(flash_sale.values()),
             'promotion_combo':list(promotion_combo.values()),'user_id':item.shop.user_id,
             'voucher':list(vouchers.values()),
             'list_host_sale':[{'item_name':i.name,'item_image':i.get_image_cover(),'max_price':i.max_price(),
             'percent_discount':i.percent_discount(),'min_price':i.min_price(),
-            'program_valid':i.count_program_valid(),'item_url':i.get_absolute_url()
+            'program_valid':i.program_valid(),'item_url':i.get_absolute_url()
             } for i in list_hot_sales]
             })
             
@@ -460,7 +460,7 @@ class DetailAPIView(APIView):
                 'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
                 'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
-                'program_valid':i.count_program_valid(),'promotion':i.get_promotion(),
+                'program_valid':i.program_valid(),'promotion':i.get_promotion(),
                 'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
                 }
                 for i in page_obj],'page_count':paginator.num_pages,'list_voucher':list_voucher.values(),
@@ -595,7 +595,7 @@ class SearchitemAPIView(APIView):
             'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
             'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
             'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
-            'program_valid':i.count_program_valid(),'promotion':i.get_promotion(),
+            'program_valid':i.program_valid(),'promotion':i.get_promotion(),
             'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
             }
         for i in page_obj],'page_count':paginator.num_pages
@@ -730,7 +730,7 @@ class ShopinfoAPIVIew(APIView):
             'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
             'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
             'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
-            'program_valid':i.count_program_valid(),'promotion':i.get_promotion(),
+            'program_valid':i.program_valid(),'promotion':i.get_promotion(),
             'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
             }
             for i in page_obj]
@@ -748,7 +748,7 @@ class ListItemRecommendAPIView(APIView):
         page_obj = paginator.get_page(page_number)
         list_items_recommend=[{'item_name':i.name,'item_image':i.get_image_cover(),'max_price':i.max_price(),
         'percent_discount':i.percent_discount(),'min_price':i.min_price(),
-        'program_valid':i.count_program_valid(),'item_url':i.get_absolute_url()
+        'program_valid':i.program_valid(),'item_url':i.get_absolute_url()
         }
         for i in page_obj]
         data={'d':list_items_recommend}
@@ -1082,14 +1082,14 @@ class CartItemAPIView(APIView):
             'sizes':byproduct.item.get_size_deal(),'price':byproduct.byproduct.price,
             'variation_id':byproduct.byproduct_id,'item_id':byproduct.item_id,'item_name':byproduct.item.name,
             'inventory':byproduct.byproduct.inventory,'quantity':byproduct.quantity,'item_url':byproduct.item.get_absolute_url(),
-            'count_program_valid':byproduct.item.count_program_valid(),
+            'program_valid':byproduct.item.program_valid(),
             'total_price':byproduct.total_price(),'open':False,
             'item_image':byproduct.item.get_image_cover(),
             'count_variation':byproduct.item.count_variation(),
-             } for byproduct in cart_item.byproduct.all() if byproduct.item.get_count_deal()>0],
+             } for byproduct in cart_item.byproduct.all() if byproduct.item.get_deal()],
             'colors':cart_item.item.get_color(),'item_id':cart_item.item_id,'item_name':cart_item.item.name,
             'item_url':cart_item.item.get_absolute_url(),
-            'count_program_valid':cart_item.item.count_program_valid(),
+            'program_valid':cart_item.item.program_valid(),
             'promotion':cart_item.item.get_promotion(),'check':cart_item.check,
             'variation_id':cart_item.product_id,'total_price':cart_item.total_discount_cartitem(),
             'inventory':cart_item.product.inventory,'quantity':cart_item.quantity,
@@ -1301,7 +1301,7 @@ class CheckoutAPIView(APIView):
             'item_image':byproduct.item.get_image_cover(),
             'item_id':byproduct.item_id,'item_name':byproduct.item.name,
             'quantity':byproduct.quantity,'item_url':byproduct.item.get_absolute_url(),
-            'count_program_valid':byproduct.item.count_program_valid(),
+            'program_valid':byproduct.item.program_valid(),
             'total_price':byproduct.total_price(),
              } for byproduct in cart_item.byproduct.all()],
         'quantity':cart_item.quantity,'discount_price':cart_item.product.total_discount(),
@@ -1388,7 +1388,7 @@ class OrderinfoAPIView(APIView):
             'item_image':byproduct.item.get_image_cover(),
             'item_id':byproduct.item_id,'item_name':byproduct.item.name,
             'quantity':byproduct.quantity,'item_url':byproduct.item.get_absolute_url(),
-            'count_program_valid':byproduct.item.count_program_valid(),
+            'program_valid':byproduct.item.program_valid(),
             'total_price':byproduct.total_price(),
              } for byproduct in cart_item.byproduct.all()],
         'quantity':cart_item.quantity,'discount_price':cart_item.product.total_discount(),
@@ -1464,10 +1464,10 @@ class DealShockAPIView(APIView):
         shock_deal=Buy_with_shock_deal.objects.get(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         byproducts=shock_deal.byproduct.all()
         for item in byproducts:
-            if item.get_count_deal()>0:
+            if item.get_deal():
                 list_product.append({
                     'item_id':item.id,'item_name':item.name,'size':item.get_size_deal(),
-                    'color':item.get_color_deal(),'get_count_deal':item.get_count_deal(),
+                    'color':item.get_color_deal(),'get_deal':item.get_deal(),
                     'color_value':'','quantity':1,'size_value':'',
                     'price':item.max_price(),'show':False,
                     'item_image':item.media_upload.all()[0].get_media(),
@@ -1506,7 +1506,7 @@ class PromotionAPIView(APIView):
             'item_id':item.id,'item_name':item.name,
             'item_image':item.media_upload.all()[0].get_media(),
             'item_url':item.get_absolute_url(),'max_price':item.max_price(),
-            'count_program_valid':item.count_program_valid(),'min_price':item.min_price(),
+            'program_valid':item.program_valid(),'min_price':item.min_price(),
             'size':item.get_size(),'color':item.get_color(),'inventory':item.total_inventory()} for item in items]
         }
         return Response(data)

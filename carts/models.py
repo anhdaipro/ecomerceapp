@@ -29,7 +29,7 @@ class Byproductcart(models.Model):
         return self.quantity*self.byproduct.price
     def discount_by(self):
         total_discount=0
-        if self.byproduct.item.count_program_valid()>0:
+        if self.byproduct.item.program_valid():
             total_discount=self.quantity*self.byproduct.price*(self.byproduct.percent_discount/100)
         return total_discount
     def total_price(self):
@@ -66,7 +66,7 @@ class CartItem(models.Model):
     def count_item_cart(self):
         count=1
         for byproduct in self.byproduct.all():
-            if byproduct.byproduct.item.get_count_deal()>0:
+            if byproduct.byproduct.item.get_deal():
                 count+=1
         return count
 
@@ -81,7 +81,7 @@ class CartItem(models.Model):
     def discount_promotion(self):
         discount_promotion=0
         discount_price=self.product.price
-        if self.product.percent_discount and self.product.item.count_program_valid()>0:
+        if self.product.percent_discount and self.product.item.program_valid():
             discount_price=self.product.price*(100-self.product.percent_discount)/100
         if self.promotion_combo and self.promotion_combo.valid_to>timezone.now():
             quantity_in=self.quantity//self.promotion_combo.quantity_to_reduced
@@ -95,11 +95,11 @@ class CartItem(models.Model):
         return discount_promotion
     def discount(self):
         total_discount=0
-        if self.product.percent_discount and self.product.item.count_program_valid()>0:
+        if self.product.percent_discount and self.product.item.program_valid():
             total_discount+=self.quantity*self.product.price*(self.product.percent_discount/100)
         if self.deal_shock and self.deal_shock.valid_to>timezone.now():
             for byproduct in self.byproduct.all():
-                if byproduct.byproduct.item.count_program_valid()>0:
+                if byproduct.byproduct.item.program_valid():
                     total_discount+=byproduct.discount_by()
                 else:
                     total_discount+=0
@@ -108,7 +108,7 @@ class CartItem(models.Model):
         return self.quantity*self.product.price
     def discount_main(self):
         total_discount=0
-        if self.product.percent_discount and self.product.item.count_program_valid()>0:
+        if self.product.percent_discount and self.product.item.program_valid():
             total_discount=self.quantity*self.product.price*(self.product.percent_discount/100)
         return total_discount
     def total_discount_cartitem(self):
