@@ -65,19 +65,18 @@ class ActionThread(APIView):
                 Member.objects.filter(user_id=send_to,thread_id=id).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1)
                 message,created=Message.objects.get_or_create(thread=thread,user=request.user,item_id=item_id,message_type='4')
                 listmessage.append({'id':message.id,'message_type':message.message_type,
-                'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_product(),
+                'user_id':message.user_id,'date_created':message.date_created,'message_product':message.message_product(),
                 })
             if msg:   
                 Member.objects.filter(user_id=send_to,thread_id=id).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1) 
                 message=Message.objects.create(thread_id=id,user=request.user,message=msg,message_type='1')
                 listmessage.append({'id':message.id,'message':message.message,'message_type':message.message_type,
-                'user_id':message.user_id,'date_created':message.date_created,'story_id':message.story_id,'media_story':message.get_story(),
-                'list_file':[]})
+                'user_id':message.user_id,'date_created':message.date_created})
             if image:
                 Member.objects.filter(user_id=send_to,thread_id=id).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1)
                 message=Message.objects.create(thread_id=id,user=request.user,message_type='2')
                 list_file_chat=Messagemedia.objects.bulk_create([Messagemedia(upload_by=request.user,file=image[i],message=message) for i in range(len(image))])
-                listmessage.append({'id':message.id,'message':message.message,'message_type':message.message_type,
+                listmessage.append({'id':message.id,'message_type':message.message_type,
                         'user_id':message.user_id,'date_created':message.date_created,
                         'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,}
                 for uploadfile in list_file_chat
@@ -98,7 +97,7 @@ class ActionThread(APIView):
                 ) for i in range(len(file))]) 
                         
                 Messagemedia.objects.bulk_create([Messagemedia(message_id=messages[i].id,upload_by=request.user,duration=float(duration[i]),file_preview=list_file_preview[i],file=file[i]) for i in range(len(file))])
-                listmessage=[{'id':message.id,'message':message.message,'message_type':message.message_type,
+                listmessage=[{'id':message.id,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,
                 'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,
                 'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration,}
