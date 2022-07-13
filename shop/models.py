@@ -64,12 +64,8 @@ class Shop(models.Model):
         return avg
     def total_order(self):
         return Order.objects.filter(shop=self,ordered=True).count()
-class Buy_more_discount(models.Model):
-    from_quantity=models.IntegerField()
-    to_quantity=models.IntegerField()
-    price=models.IntegerField()
-    def __str__(self):
-        return str(self.id)
+
+    
 class UploadItem(models.Model):
     upload_by=models.ForeignKey(Shop, on_delete=models.CASCADE)
     file=models.FileField(upload_to='item/',storage=RawMediaCloudinaryStorage())
@@ -103,7 +99,6 @@ class Item(models.Model):
     media_upload=models.ManyToManyField(UploadItem,blank=True)
     shipping_choice=models.ManyToManyField(to="shipping.Shipping",blank=True,related_name='shipping_choice')
     description=models.TextField(max_length=3000)
-    buy_more_discount=models.ManyToManyField(Buy_more_discount,blank=True)
     quantity_limit=models.IntegerField(null=True)#shop_program
     quantity_limit_flash_sale=models.IntegerField(null=True)
     sku_product=models.CharField(max_length=20,null=True)
@@ -161,18 +156,11 @@ class Item(models.Model):
         return list_color
     
     def get_deal(self):
-        count_deal=0
-        if Buy_with_shock_deal.objects.filter(byproduct=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
-            deal_valid=Buy_with_shock_deal.objects.filter(byproduct=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).first()
+        deal_valid=Buy_with_shock_deal.objects.filter(byproduct=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        if deal_valid.exists():
+            deal_valid=deal_valid.first()
             if self in deal_valid.byproduct.all():
-                count_deal=Variation.objects.filter(item=self,percent_discount_deal_shock__gt=0).count()
-        return count_deal
-    
-    def deal_valid(self):
-        count_deal=0
-        if Buy_with_shock_deal.objects.filter(main_product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
-            count_deal=Buy_with_shock_deal.objects.filter(main_product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).count()
-        return count_deal
+                return True
     
     def get_color_deal(self):
         color=Color.objects.filter(variation__item=self,variation__percent_discount_deal_shock__gt=0)
@@ -244,10 +232,6 @@ class Item(models.Model):
         if vouchers.exists():
             return list(vouchers.values())[0]
 
-    def list_voucher(self):
-        voucher=Voucher.objects.filter(product=self,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
-        return voucher
-
     def shock_deal_type(self):
         if Buy_with_shock_deal.objects.filter(main_product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
             return Buy_with_shock_deal.objects.filter(main_product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).last().shock_deal_type
@@ -282,6 +266,14 @@ class Item(models.Model):
             percent=int(variations['avg'])
         return percent
 
+class BuyMoreDiscount(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE,related_name='buymore_item')
+    from_quantity=models.IntegerField()
+    to_quantity=models.IntegerField()
+    price=models.FloatField()
+    def __str__(self):
+        return str(self.id)
+        
 class ShopViews(models.Model):
     shop = models.ForeignKey(
         Shop, related_name="shop_views", on_delete=models.CASCADE

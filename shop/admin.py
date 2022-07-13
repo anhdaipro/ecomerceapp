@@ -24,7 +24,5 @@ admin.site.register(Item,ItemAdmin)
 admin.site.register(Variation,VariationAdmin)
 admin.site.register(Color)
 admin.site.register(Size)
-admin.site.register(Buy_more_discount)
-admin.site.register(Byproductcart)
 admin.site.register(UploadItem)
 

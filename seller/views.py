@@ -1670,15 +1670,6 @@ def add_item(request):
         price_range=request.POST.getlist('price_range')
         category= Category.objects.get(id=category_id)
         
-        buy_more=Buy_more_discount.objects.bulk_create([
-            Buy_more_discount(
-               from_quantity=from_quantity[i],
-               to_quantity=to_quantity[i],
-               price=price_range[i],
-            )
-            for i in range(len(from_quantity))
-        ])
-        
         name=request.POST.get('name')
         description = request.POST.get('description')
         item = Item.objects.create(shop = shop,name = name,category=category,description=description)
@@ -1691,9 +1682,16 @@ def add_item(request):
         item.length=request.POST.get('length')
         item.width=request.POST.get('width')
         item.save()
-        if len(from_quantity)>0:
-            list_buy_more=Buy_more_discount.objects.all().order_by('-id')[:len(from_quantity)]
-            item.buy_more_discount.add(*list_buy_more)
+        BuyMoreDiscount.objects.bulk_create([
+            BuyMoreDiscount(
+               from_quantity=from_quantity[i],
+               to_quantity=to_quantity[i],
+               price=price_range[i],
+               item=item
+            )
+            for i in range(len(from_quantity))
+        ])
+
         shipping_method=request.POST.get('method')
         shipping=Shipping.objects.filter(method=shipping_method)
         list_upload=UploadItem.objects.filter(id__in=file_id)
@@ -1876,14 +1874,15 @@ def update_item(request,id):
         price_range=request.POST.getlist('price_range')
         category= Category.objects.get(id=category_id)
         
-        buy_more=Buy_more_discount.objects.bulk_create([
-            Buy_more_discount(
+        BuyMoreDiscount.objects.bulk_create([
+            BuyMoreDiscount(
                from_quantity=from_quantity[i],
                to_quantity=to_quantity[i],
                price=price_range[i],
+               item_id=id
             )
             for i in range(len(from_quantity))
-            ])
+        ])
         
         name=request.POST.get('name')
         category_id=request.POST.get('category_id')
@@ -1901,16 +1900,6 @@ def update_item(request,id):
         to_quantity=request.POST.getlist('to_quantity')
         price_range=request.POST.getlist('price_range')
         buy_more_id=request.POST.getlist('buy_more_id')
-        Buy_more_discount.objects.filter(item=item).delete()
-       
-        buy_more=Buy_more_discount.objects.bulk_create([
-            Buy_more_discount(
-               from_quantity=from_quantity[i],
-               to_quantity=to_quantity[i],
-               price=price_range[i],
-            )
-            for i in range(len(from_quantity))
-            ])
         # item 
         shipping_method=request.POST.getlist('method')
         item.brand= request.POST.get('brand')
@@ -2089,7 +2078,7 @@ def update_item(request,id):
     else:
         list_color=Color.objects.filter(variation__item=item).distinct()
         detail_item=Detail_Item.objects.filter(item=item).values()
-        buymore=item.buy_more_discount.all()
+        buymore=BuyMoreDiscount.objects.filter(item_id=id)
         variations=Variation.objects.filter(item=item,size=None)
         list_variation=[{'value':color.value,'price':'','sku':'','inventory':'',
         'list_variation':[{'value':variation.size.value,'price':variation.price,'id':variation.id,
