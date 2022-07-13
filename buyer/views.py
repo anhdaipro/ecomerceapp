@@ -1748,7 +1748,7 @@ class PurchaseAPIView(APIView):
                 [Media_review(
                     upload_by=user,
                     file=file[i],
-                    review=list_cartview[i].get_review(),
+                    review=CartItem.objects.get(id=list_id[i]).get_review(),
                     file_preview=list_preview[i],
                     duration=float(duration[i])
                 )
@@ -1817,11 +1817,11 @@ class PurchaseAPIView(APIView):
                     rating_shipping_service=int(rating_bab_category[i].split(',')[2]),
                 ) for i in range(len(cartitem_id))
             ])
-            list_cartview=CartItem.objects.filter(id__in=list_id)
+
             list_media=[Media_review(
                 upload_by=user,
                 file=file[i],
-                review=list_cartview[i].get_review(),
+                review=CartItem.objects.get(id=list_id[i]).get_review(),
                 file_preview=list_preview[i],
                 duration=float(duration[i])
                 )
