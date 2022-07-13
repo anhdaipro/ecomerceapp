@@ -18,7 +18,7 @@ class ThreadinfoSerializer(serializers.ModelSerializer):
         message=Message.objects.filter(thread=obj)
         if message.exists():
             message=message.last()
-            return {'message':message.message,'message_type':message.get_message_type(),
+            return {'message':message.message,'message_type':message.message_type,
             'user_id':message.user_id,'date_created':message.date_created}
     def get_count_message(self,obj):
         return Message.objects.filter(thread=obj).count()
