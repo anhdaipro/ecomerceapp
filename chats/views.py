@@ -50,7 +50,7 @@ class ActionThread(APIView):
                 if offset:
                     item_from=int(offset)
                 to_item=item_from+5
-                if item_from>=count_product:
+                if item_from+5>=count_product:
                     to_item=count_product
                 list_items=list_items[item_from:to_item]
                 data={'count_product':shop.count_product(),
