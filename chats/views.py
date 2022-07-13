@@ -23,7 +23,7 @@ class ActionThread(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request,id):
         listmessage=Message.objects.filter(thread_id=id).prefetch_related('message_media').select_related('order').select_related('product').order_by('-id')
-        Member.objects.filter(thread_id=id,user=request.user).update(is_seen=True)
+        Member.objects.filter(thread_id=id,user=request.user).update(is_seen=True,count_message_unseen=0)
         count_message=listmessage.count()
         item_from=0
         offset=request.GET.get('offset') 
