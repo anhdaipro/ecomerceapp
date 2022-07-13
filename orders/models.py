@@ -49,11 +49,9 @@ class Order(models.Model):
         return reverse("order", kwargs={"id": self.id})
     
     def get_voucher(self):
-        id_voucher=None
-        vouchers=Voucher.objects.filter(order=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        vouchers=Voucher.objects.filter(order_voucher=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if vouchers.exists():
-            id_voucher=vouchers.first().id
-        return id_voucher
+            return vouchers.first().id
         
     def discount_voucher(self):
         discount_voucher=0
@@ -113,11 +111,6 @@ class Order(models.Model):
         for order_item in self.items.all():
             count_cart += 1
         return count_cart
-    def count_review(self):
-        count=0
-        for order_item in self.items.all():
-            count+= "actionorder.ReView".objects.filter(cartitem=order_item).count()
-        return count
     
 ADDRESS_CHOICES = (
     ('B', 'Billing'),
