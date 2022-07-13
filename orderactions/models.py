@@ -60,10 +60,8 @@ class Media_review(models.Model):
     review=models.ForeignKey(ReView,on_delete=models.CASCADE,related_name='media_review')
     duration=models.IntegerField(null=True)
     file_preview=models.FileField(null=True)
-    def upload_file(self):
-        if self.file and hasattr(self.file,'url'):
-            return self.file.url
-    def media_preview(self):
+
+    def get_media_preview(self):
         if self.file_preview and hasattr(self.file_preview,'url'):
             return self.file_preview.url
     def filetype(self):

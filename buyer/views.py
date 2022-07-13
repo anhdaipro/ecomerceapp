@@ -652,8 +652,8 @@ class ProductInfoAPIVIew(APIView):
                 'reviews':[{'id':review.id,'review_text':review.review_text,'created':review.created,
                         'info_more':review.info_more,'rating_anonymous':review.anonymous_review,
                         'review_rating':review.review_rating,'num_like':review.num_like(),'user_like':[user.id for user in review.like.all()],
-                        'list_file':[{'file_id':file.id,'filetype':file.filetype(),'file':file.get_media(),
-                        'media_preview':file.media_preview(),'duration':file.duration,'show':False}
+                        'list_file':[{'file_id':file.id,'filetype':file.filetype(),'file':file.file.url,
+                        'media_preview':file.get_media_preview(),'duration':file.duration,'show':False}
                         for file in review.media_review.all()],'color_value':review.cartitem.product.get_color(),
                         'size_value':review.cartitem.product.get_size(),
                         'item_name':review.cartitem.item.name,
@@ -1642,15 +1642,15 @@ class PurchaseAPIView(APIView):
             reviews=ReView.objects.filter(cartitem__in=cartitem).select_related('cartitem__item').select_related('cartitem__product__size').select_related('cartitem__product__color')
             data={
                 'list_review':[{'id':review.id,'review_text':review.review_text,'created':review.created,
-                'info_more':review.info_more,'rating_anonymous':review.anonymous_review,'list_file':[{'filetype':file.filetype(),'file':file.get_media(),
-                'media_preview':file.media_preview(),'duration':file.duration,'file_id':file.id,'show':False}
+                'info_more':review.info_more,'rating_anonymous':review.anonymous_review,'list_file':[{'filetype':file.filetype(),'file':file.file.url,
+                'media_preview':file.get_media_preview(),'duration':file.duration,'file_id':file.id,'show':False}
                  for file in review.media_review.all()],
                 'rating_bab_category':[review.rating_product,review.rating_seller_service,review.rating_shipping_service],
                 'review_rating':review.review_rating,'edited':review.edited,
                 'item_image':review.cartitem.get_image(),'item_url':review.cartitem.item.get_absolute_url(),
                 'item_name':review.cartitem.item.name,'color_value':review.cartitem.product.get_color(),
                 'size_value':review.cartitem.product.get_size()
-                } for review in reviews],'username':user.username
+                } for review in reviews]
             }
             return Response(data)
         else:
@@ -1757,8 +1757,8 @@ class PurchaseAPIView(APIView):
             )
             data={
                 'list_review':[{'id':review.id,'review_text':review.review_text,'created':review.created,
-                'info_more':review.info_more,'rating_anonymous':review.anonymous_review,'list_file':[{'filetype':file.filetype(),'file':file.get_media(),
-                'media_preview':file.media_preview(),'duration':file.duration,'file_id':file.id,'show':False}
+                'info_more':review.info_more,'rating_anonymous':review.anonymous_review,'list_file':[{'filetype':file.filetype(),'file':file.file.url,
+                'media_preview':file.get_media_preview(),'duration':file.duration,'file_id':file.id,'show':False}
                  for file in review.media_review.all()],
                 'rating_bab_category':[review.rating_product,review.rating_seller_service,review.rating_shipping_service],
                 'review_rating':review.review_rating,'edited':review.edited,
