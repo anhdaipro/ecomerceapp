@@ -70,7 +70,7 @@ class ListdealshockAPI(ListAPIView):
         request = self.request
         user=request.user
         shop=Shop.objects.get(user=user)
-        return Buy_with_shock_deal.objects.filter(shop=shop).prefetch_related('main_product__meida_upload').prefetch_related('byproduct_media_upload')
+        return Buy_with_shock_deal.objects.filter(shop=shop).prefetch_related('main_product__media_upload').prefetch_related('byproduct__media_upload')
 
 class ListprogramAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
@@ -202,11 +202,11 @@ class Listordershop(APIView):
             'total_final':order.total_final_order(),'payment_choice':order.payment_choice,
             'order_item':[{'item_id':order_item.item_id,'item_name':order_item.item.name,'item_url':order_item.product.item.get_absolute_url(),
             'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
-            'item_image':order_item.product.item.media_upload.all()[0].get_media(),
+            'item_image':order_item.product.item.get_image_cover(),
             'byproduct':[{
             'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
             'price':byproduct.byproduct.price,
-            'item_image':byproduct.byproduct.item.media_upload.all()[0].get_media(),
+            'item_image':byproduct.byproduct.item.get_image_cover(),
             'item_id':byproduct.item_id,'item_name':byproduct.item.name,
             'quantity':byproduct.quantity,'item_url':byproduct.byproduct.item.get_absolute_url(),
             'count_program_valid':byproduct.byproduct.item.count_program_valid(),
@@ -349,7 +349,7 @@ def get_product(request):
     shop=Shop.objects.get(user=user)
     page=1
     pagesize=12
-    list_product=Item.objects.filter(shop=shop)
+    list_product=Item.objects.filter(shop=shop).prefetch_related('media_upload').prefetch_related('variation_item').prefetch_related('cart_item__order_cartitem')
     page_no=request.GET.get('page')
     per_page=request.GET.get('pagesize')
     item_id=request.GET.get('item_id')
@@ -377,7 +377,7 @@ def get_product(request):
             obj_paginator = Paginator(list_product, pagesize)
             pageitem = obj_paginator.get_page(page)
             data={'count_product':list_product.count(),
-                    'pageitem':[{'item_name':item.name,'item_image':item.media_upload.all()[0].get_media(),
+                    'pageitem':[{'item_name':item.name,'item_image':item.get_image_cover(),
                     'item_id':item.id,'item_sku':item.sku_product,
                     'count_variation':item.variation_item.all().count(),
                     'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),
@@ -958,7 +958,7 @@ def deal_shock(request,id):
                 variation_byproduct.update(percent_discount_deal_shock=100)
             Variation.objects.filter(id__in=variation_id_off).update(percent_discount_deal_shock=0)
             data={'list_byproduct':[{'item_id':item.id,'item_name':item.name,
-            'item_image':item.media_upload.all()[0].get_media(),'check':False,
+            'item_image':item.get_image_cover(),'check':False,
             'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,
             } for variation in item.variation_item.all()
@@ -1147,7 +1147,7 @@ def deal_shock(request,id):
             'limited_product_bundles':deal_shock.limited_product_bundles,
             'minimum_price_to_receive_gift':deal_shock.minimum_price_to_receive_gift,
             'number_gift':deal_shock.number_gift},'byproduct_choice':[{'item_id':item.id,'item_name':item.name,
-            'item_image':item.media_upload.all()[0].get_media(),'check':False,
+            'item_image':item.get_image_cover(),'check':False,
             'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,'discount_price':variation.price*(1-variation.percent_discount_deal_shock/100),'percent_discount':variation.percent_discount_deal_shock,
             'limit_order':variation.limited_product_bundles
@@ -1187,7 +1187,7 @@ def new_program(request):
         Variation.objects.filter(item__shop_program__in=program_expire).update(percent_discount=0)
         if item_id and not variation_id:
             data={'list_product':[{'item_id':item.id,'item_name':item.name,
-            'item_image':item.media_upload.all()[0].get_media(),'check':False,
+            'item_image':item.get_image_cover(),'check':False,
             'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,
             } for variation in item.variation_item.all()
@@ -1300,7 +1300,7 @@ def detail_program(request,id):
         list_variation=Variation.objects.filter(id__in=variation_id)
         if item_id and not variation_id:
             data={'list_product':[{'item_id':item.id,'item_name':item.name,
-            'item_image':item.media_upload.all()[0].get_media(),'check':False,
+            'item_image':item.get_image_cover(),'check':False,
             'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,
             } for variation in item.variation_item.all()
@@ -1380,7 +1380,7 @@ def detail_program(request,id):
             data={'program':{'valid_from':shop_program.valid_from,'name_program':shop_program.name_program,
             'valid_to':shop_program.valid_to},'list_product':[{'item_id':item.id,'item_name':item.name,
             'limit_order':item.quantity_limit,
-            'item_image':item.media_upload.all()[0].get_media(),'check':False,
+            'item_image':item.get_image_cover(),'check':False,
             'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,'discount_price':variation.price*(1-variation.percent_discount/100),'percent_discount':variation.percent_discount,
             'number_of_promotional_products':variation.number_of_promotional_products
@@ -1410,7 +1410,7 @@ def new_flashsale(request):
         items=Item.objects.filter(id__in=item_id).order_by(preserved)
         if item_id and not variation_id:
             data={'list_product':[{'item_id':item.id,'item_name':item.name,
-            'item_image':item.media_upload.all()[0].get_media(),'check':False,
+            'item_image':item.get_image_cover(),'check':False,
             'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,
             } for variation in item.variation_item.all()
@@ -1506,7 +1506,7 @@ def detail_flashsale(request,id):
         variations=Variation.objects.filter(id__in=variation_id)
         if item_id and not variation_id:
             data={'list_product':[{'item_id':item.id,'item_name':item.name,
-            'item_image':item.media_upload.all()[0].get_media(),'check':False,
+            'item_image':item.get_image_cover(),'check':False,
             'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,
             } for variation in item.variation_item.all()
@@ -1586,7 +1586,7 @@ def detail_flashsale(request,id):
             data={
                 'flashsale':{'valid_from':flash_sale.valid_from,'valid_to':flash_sale.valid_to},
                 'list_product':[{'item_id':item.id,'item_name':item.name,
-                'item_image':item.media_upload.all()[0].get_media(),'check':False,
+                'item_image':item.get_image_cover(),'check':False,
                 'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
                 'inventory':variation.inventory,'price':variation.price,'discount_price':variation.price*(1-variation.percent_discount_flash_sale/100),'percent_discount':variation.percent_discount_flash_sale,
                 'number_of_promotional_products':variation.quantity_flash_sale_products
