@@ -237,7 +237,7 @@ class CreateThread(APIView):
                 Member.objects.filter(user_id=send_to,thread=thread).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1)
                 message,created=Message.objects.get_or_create(thread=thread,user=request.user,product_id=item_id,message_type='4')
                 listmessage.append({'id':message.id,'message_type':message.message_type,
-                'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_product(),
+                'user_id':message.user_id,'date_created':message.date_created,'message_product':message.message_product(),
                 })
 
             data={'messages':listmessage,'thread':{'id':thread.id,'count_message':0},'members':[{'user_id':member.user_id,'avatar':member.user.profile.avatar.url,'username':member.user.username,
