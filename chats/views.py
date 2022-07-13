@@ -95,7 +95,7 @@ class ActionThread(APIView):
                 'user_id':message.user_id,'date_created':message.date_created,
                 'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,'file_name':uploadfile.filename(),
                 'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.get_filetype()}
-                for uploadfile in message.message_file.all()
+                for uploadfile in message.message_media.all()
                 ]} for message in messages]
             return Response(listmessage)
         else:
@@ -135,13 +135,13 @@ class CreateThread(APIView):
             thread=thread.filter(participants=user)
         if thread.exists():
             listmember=Member.objects.filter(thread=thread[0]).select_related('user__profile')
-            messages=Message.objects.filter(thread=thread.first()).prefetch_related('message_file').order_by('-id')[:10]
+            messages=Message.objects.filter(thread=thread.first()).prefetch_related('message_media').order_by('-id')[:10]
             listmessage=[{'id':message.id,'message':message.message,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_order(),
                 'message_product':message.message_product(),
                 'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,'file_name':uploadfile.filename(),
                 'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.get_filetype()}
-                for uploadfile in message.message_file.all()
+                for uploadfile in message.message_media.all()
                 ]} for message in messages
                 ]
             data={'messages':listmessage,
@@ -223,7 +223,7 @@ class ShopchatAPIView(APIView):
                 data.update({
                 'threads':[{'id':thread.id,'info_thread':thread.info_thread(),'gim':thread.gim,
                 'count_message_not_seen':thread.count_message_not_seen(),'count_message':thread.count_message(),
-                'message':[{'text':message.message,'file':message.message_file(),'read':message.seen,'sender':message.user.username,
+                'message':[{'text':message.message,'file':message.message_media(),'read':message.seen,'sender':message.user.username,
                 'created':message.date_created,'message_order':message.message_order(),'message_product':message.message_product(),
                 'list_file':[{'filetype':uploadfile.filetype()}
                 for uploadfile in message.file.all()]}
@@ -246,7 +246,7 @@ class ShopchatAPIView(APIView):
             message_count=messages.count()
             messages=messages[message_count-10:message_count]
             data={
-            'messages':[{'text':message.message,'file':message.message_file(),'filetype':message.message_filetype(),
+            'messages':[{'text':message.message,'file':message.message_media(),'filetype':message.message_mediatype(),
                 'sender':message.user.username,'created':message.date_created,
                 'message_order':message.message_order(),'message_product':message.message_product(),
                 'list_file':[{'file':uploadfile.file.url,'file_name':uploadfile.filename(),
@@ -292,7 +292,7 @@ class ShopchatAPIView(APIView):
             ]} for message in messages],
             'threads':[{'id':thread.id,'info_thread':thread.info_thread(),'gim':thread.gim,
             'count_message_not_seen':thread.count_message_not_seen(),'count_message':thread.count_message(),
-            'message':[{'text':message.message,'file':message.message_file(),'read':message.seen,'sender':message.user.username,
+            'message':[{'text':message.message,'file':message.message_media(),'read':message.seen,'sender':message.user.username,
             'created':message.date_created,'message_order':message.message_order(),'message_product':message.message_product(),
             'list_file':[{'filetype':uploadfile.filetype()}
             for uploadfile in message.file.all()]}
