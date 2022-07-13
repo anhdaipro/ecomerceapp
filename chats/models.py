@@ -46,7 +46,6 @@ class Message(models.Model):
     product=models.ForeignKey(to='shop.Item', on_delete=models.CASCADE,null=True,related_name='message_product')
     order=models.ForeignKey(to='orders.Order', on_delete=models.CASCADE,null=True,related_name='message_order')
     date_created = models.DateTimeField(auto_now=True)
-    
     def message_product(self):
         if self.product:
             return ({'name':self.product.name,'id':self.product_id,'slug':self.product.get_absolute_url(),
