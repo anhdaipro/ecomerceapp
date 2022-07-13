@@ -62,8 +62,8 @@ class MessageSerializer(serializers.ModelSerializer):
         fields=('thread','id','user_id','date_created','message_type','message','list_file','order','product',)
     def get_list_file(self,obj):
         return [{'id':uploadfile.id,'file':uploadfile.file.url,
-        'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.get_filetype()}
-        for uploadfile in obj.message_file.all()]
+        'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration}
+        for uploadfile in obj.message_media.all()]
 
     def get_message_product(self,obj):
         return obj.message_product()

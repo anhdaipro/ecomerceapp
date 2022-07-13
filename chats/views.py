@@ -73,7 +73,7 @@ class ActionThread(APIView):
                 list_file_chat=Messagemedia.objects.bulk_create([Messagemedia(upload_by=request.user,file=image[i],message=message) for i in range(len(image))])
                 listmessage.append({'id':message.id,'message':message.message,'message_type':message.message_type,
                         'user_id':message.user_id,'date_created':message.date_created,
-                        'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,'filetype':uploadfile.get_filetype()}
+                        'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,}
                 for uploadfile in list_file_chat
                 ]})
             if file: 
@@ -94,7 +94,7 @@ class ActionThread(APIView):
                 listmessage=[{'id':message.id,'message':message.message,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,
                 'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,'file_name':uploadfile.filename(),
-                'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.get_filetype()}
+                'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration,}
                 for uploadfile in message.message_media.all()
                 ]} for message in messages]
             return Response(listmessage)
@@ -140,7 +140,7 @@ class CreateThread(APIView):
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_order(),
                 'message_product':message.message_product(),
                 'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,'file_name':uploadfile.filename(),
-                'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.get_filetype()}
+                'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration,}
                 for uploadfile in message.message_media.all()
                 ]} for message in messages
                 ]
