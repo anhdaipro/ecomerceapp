@@ -55,11 +55,11 @@ class MediathreadSerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     list_file=serializers.SerializerMethodField()
-    product=serializers.SerializerMethodField()
-    order=serializers.SerializerMethodField()
+    message_product=serializers.SerializerMethodField()
+    message_order=serializers.SerializerMethodField()
     class Meta:
         model=Message
-        fields=('thread','id','user_id','date_created','message_type','message','list_file','order','product',)
+        fields=('thread','id','user_id','date_created','message_type','message','list_file','message_order','message_product',)
     def get_list_file(self,obj):
         return [{'id':uploadfile.id,'file':uploadfile.file.url,
         'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration}

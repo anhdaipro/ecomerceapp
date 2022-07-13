@@ -179,11 +179,9 @@ def homeseller(request):
 class Listordershop(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
-        orders=Order.objects.filter(shop=shop,ordered=True).prefetch_related('items__item__media_upload').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__by_product').prefetch_related('items__item__shop_program').prefetch_related('items__product__color').prefetch_related('items__product__size').prefetch_related('items__byproduct')
+        orders=Order.objects.filter(shop=shop,ordered=True).prefetch_related('items__item__media_upload').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__byproduct').prefetch_related('items__item__shop_program').prefetch_related('items__product__color').prefetch_related('items__product__size').prefetch_related('items__byproduct')
         type_order=request.GET.get('type')
         source=request.GET.get('source')
-        threads=Thread.objects.filter(participants=request.user)
-        list_user=User.objects.filter(thread__in=threads).distinct()
         if type_order:
             if type_order=='toship':
                 orders=orders.filter(accepted_date__lt=timezone.now())
@@ -200,7 +198,7 @@ class Listordershop(APIView):
         data={'list_orders':[{'received':order.received,'canceled':order.canceled,'accepted':order.accepted,'amount':order.total_final_order(),
             'being_delivered':order.being_delivered,'ordered_date':order.ordered_date,'received_date':order.received_date,
             'canceled_date':order.canceled_date,'accepted_date':order.accepted_date,'id':order.id,'ref_code':order.ref_code,
-            'user':{'username':order.user.username,'image':order.user.profile.avatar.url,'id':order.user_id},'exist':True if order.user in list_user else False,
+            'user':{'username':order.user.username,'image':order.user.profile.avatar.url,'id':order.user_id},
             'total_final':order.total_final_order(),'payment_choice':order.payment_choice,
             'order_item':[{'item_id':order_item.item_id,'item_name':order_item.item.name,'item_url':order_item.product.item.get_absolute_url(),
             'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
