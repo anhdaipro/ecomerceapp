@@ -25,9 +25,9 @@ class ThreadinfoSerializer(serializers.ModelSerializer):
 
     def get_members(self,obj):
         request=self.context.get("request") 
-        listmember=Member.objects.filter(thread=obj).select_related('user__profile')
-        return [{'id':member.id,'avatar':member.user.profile.avatar.url,'username':member.user.username,'user_id':member.user_id,
-        'count_message_unseen':member.count_message_unseen} for member in listmember]
+        listmember=Member.objects.filter(thread=obj).select_related('user__profile').select_related('user__shop')
+        return [{'avatar':member.user.profile.avatar.url,'username':member.user.username,'user_id':member.user_id,'gim':member.gim,
+        'count_product_shop':member.user.shop.count_product(),'count_message_unseen':member.count_message_unseen} for member in listmember]
 
 class MediathreadSerializer(serializers.ModelSerializer):
     file=serializers.SerializerMethodField()

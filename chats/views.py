@@ -22,22 +22,61 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 class ActionThread(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request,id):
-        listmessage=Message.objects.filter(thread_id=id).prefetch_related('message_media').select_related('order').select_related('product').order_by('-id')
-        Member.objects.filter(thread_id=id,user=request.user).update(is_seen=True,count_message_unseen=0)
-        count_message=listmessage.count()
-        item_from=0
+        action=request.GET.get('action')
+        user_id=request.GET.get('user_id')
         offset=request.GET.get('offset') 
-        if offset:
-            item_from=int(offset)
-        to_item=item_from+10
-        if item_from>=count_message:
-            to_item=count_message
-        listmessage=listmessage[item_from:to_item]
-        serializer = MessageSerializer(listmessage,many=True, context={"request": request})
-        return Response(serializer.data)
+        if action=='showmessage':
+            listmessage=Message.objects.filter(thread_id=id).prefetch_related('message_media').select_related('order').select_related('product').order_by('-id')
+            Member.objects.filter(thread_id=id,user=request.user).update(is_seen=True,count_message_unseen=0)
+            count_message=listmessage.count()
+            item_from=0
+            if offset:
+                item_from=int(offset)
+            to_item=item_from+10
+            if item_from>=count_message:
+                to_item=count_message
+            listmessage=listmessage[item_from:to_item]
+            serializer = MessageSerializer(listmessage,many=True, context={"request": request})
+            return Response(serializer.data)
+        else:
+            shop=Shop.objects.get(user_id=user_id)
+            if action=='showitem':
+                to_item=shop.count_product()
+                if offset:
+                    to_item=int(offset)
+                from_item=to_item-5
+                list_items=Item.objects.filter(shop=shop).order_by('-id')[from_item:to_item]
+                data={'count_product':shop.count_product(),
+                    'list_items':[{'item_name':i.name,'item_image':i.get_image_cover(),'number_order':i.number_order(),
+                    'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                    'min_price':i.min_price()
+                    } for i in list_items]
+                }
+                return Response(data)
+            else:
+                count_order=Order.objects.filter(shop=shop,user=request.user,ordered=True).count()
+                to_item=count_order
+                if offset:
+                    to_item=int(offset)
+                from_item=to_item-5
+                list_orders=Order.objects.filter(shop=shop,user=request.user).order_by('-id')[from_item:to_item]
+                data={'count_order':count_order,
+                    'list_orders':[{
+                    'id':order.id,'total_final_order':order.total_final_order(),
+                    'count_item':order.count_item_cart(),
+                    'cartitems':[{'item_image':cartitem.get_image(),'item_url':cartitem.product.item.get_absolute_url(),
+                    'item_name':cartitem.product.item.name,'color_value':cartitem.product.get_color(),
+                    'quantity':cartitem.quantity,'discount_price':cartitem.product.total_discount(),
+                    'size_value':cartitem.product.get_size(),'price':cartitem.product.price,
+                    'total_price':cartitem.total_discount_cartitem()
+                    } for cartitem in order.items.all()]} for order in list_orders]
+                }
+                return Response(data)
+
     def post(self,request,id,*args, **kwargs):
         action=request.POST.get('action')
         send_to=request.POST.get('send_to')
+        seen=request.POST.get('seen')
         member=Member.objects.get(thread_id=id,user=request.user)
         listmessage=list()
         thread=Thread.objects.get(id=id)
@@ -104,6 +143,11 @@ class ActionThread(APIView):
                 for uploadfile in message.message_media.all()
                 ]} for message in messages]
             return Response(listmessage)
+        elif action=='seen':
+            if seen=='false':
+                Member.objects.filter(user=request.user,thread_id=id).update(is_seen=False,count_message_unseen=1)
+            else:
+                Member.objects.filter(user=request.user,thread_id=id).update(is_seen=True,count_message_unseen=0)
         else:
             thread.delete()
         return Response(listmessage)
@@ -117,8 +161,14 @@ class CountThread(APIView):
 class ListThreadAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
-        user=request.user
-        threads=Thread.objects.filter(participants=user)
+        type_chat=request.GET.get('type_chat')
+        member=Member.objects.filter(user=request.user)
+        if type_chat:
+            if type_chat=='3':
+                member=member.filter(gim=True)
+            if type_chat=='2':
+                member=member.filter(is_seen=False)
+        threads=Thread.objects.filter(member_thread__in=member).prefetch_related('member_thread').prefetch_related('chatmessage_thread')
         serializer = ThreadinfoSerializer(threads,many=True, context={"request": request})
         return Response(serializer.data)
 
@@ -153,7 +203,7 @@ class CreateThread(APIView):
                 ]
             data={'messages':listmessage,
             'thread':{'id':thread[0].id,'count_message':thread[0].count_message()},
-            'members':[{'user_id':member.user_id,'count_message_unseen':member.count_message_unseen,
+            'members':[{'gim':member.gim,'count_product_shop':member.user.shop.count_product(),'user_id':member.user_id,'count_message_unseen':member.count_message_unseen,
             'avatar':member.user.profile.avatar.url,'username':member.user.username} for member in listmember]}
             return Response(data)
         else:
@@ -178,7 +228,7 @@ class CreateThread(APIView):
                 })
 
             data={'messages':listmessage,'thread':{'id':thread.id,'count_message':0},'members':[{'user_id':member.user_id,'avatar':member.user.profile.avatar.url,'username':member.user.username,
-            'count_message_unseen':member.count_message_unseen} for member in members]}
+            'gim':False,'count_product_shop':member.user.shop.count_product(),'count_message_unseen':member.count_message_unseen} for member in members]}
             return Response(data)
 
 class ShopchatAPIView(APIView):
@@ -218,12 +268,12 @@ class ShopchatAPIView(APIView):
                     'list_orders':[{
                     'id':order.id,'shop':order.shop.name,'total_final_order':order.total_final_order(),
                     'count_item':order.count_item_cart(),
-                    'order_item':[{'item_image':order_item.product.item.media_upload.all()[0].get_media(),'item_url':order_item.product.item.get_absolute_url(),
-                    'item_name':order_item.product.item.name,'color_value':order_item.product.get_color(),
-                    'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
-                    'size_value':order_item.product.get_size(),'price':order_item.product.price,
-                    'total_price':order_item.total_discount_cartitem()
-                    } for order_item in order.items.all()]} for order in list_orders]
+                    'cartitem':[{'item_image':cartitem.get_image(),'item_url':cartitem.product.item.get_absolute_url(),
+                    'item_name':cartitem.product.item.name,'color_value':cartitem.product.get_color(),
+                    'quantity':cartitem.quantity,'discount_price':cartitem.product.total_discount(),
+                    'size_value':cartitem.product.get_size(),'price':cartitem.product.price,
+                    'total_price':cartitem.total_discount_cartitem()
+                    } for cartitem in order.items.all()]} for order in list_orders]
                 })
         else:
             if type_chat=='2':
