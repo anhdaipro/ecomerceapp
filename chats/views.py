@@ -24,7 +24,8 @@ class ActionThread(APIView):
     def get(self,request,id):
         action=request.GET.get('action')
         user_id=request.GET.get('user_id')
-        offset=request.GET.get('offset') 
+        offset=request.GET.get('offset')
+        keyword=request.GET.get('keyword') 
         if action=='showmessage':
             listmessage=Message.objects.filter(thread_id=id).prefetch_related('message_media').select_related('order').select_related('product').order_by('-id')
             Member.objects.filter(thread_id=id,user=request.user).update(is_seen=True,count_message_unseen=0)
@@ -42,6 +43,8 @@ class ActionThread(APIView):
             shop=Shop.objects.get(user_id=user_id)
             if action=='showitem':
                 list_items=Item.objects.filter(shop=shop).order_by('-id')
+                if keyword:
+                    list_items=list_items.filter(name__startswith=keyword)
                 count_product=list_items.count()
                 item_from=0
                 if offset:
