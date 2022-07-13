@@ -88,7 +88,7 @@ class ListflashsaleAPI(ListAPIView):
         request = self.request
         user=request.user
         shop=Shop.objects.get(user=user)
-        return Flashsale.objects.filter(shop=shop).prefetch_related('product__meida_upload')
+        return Flash_sale.objects.filter(shop=shop).prefetch_related('product__meida_upload')
 
 class ShopprofileAPIView(APIView):
     def get(self,request):
