@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.db.models import  Q
+from django.db.models import F
 from django.utils import timezone
 # Create your views here.
 from .models import *
@@ -36,6 +37,7 @@ class ActionThread(APIView):
         return Response(serializer.data)
     def post(self,request,id,*args, **kwargs):
         action=request.POST.get('action')
+        send_to=request.POST.get('send_to')
         member=Member.objects.get(thread_id=id,user=request.user)
         listmessage=list()
         thread=Thread.objects.get(id=id)
@@ -52,23 +54,27 @@ class ActionThread(APIView):
             file_preview=request.FILES.getlist('file_preview')
             duration=request.POST.getlist('duration')
             order_id=request.POST.getlist('order_id') 
-            item_id=request.POST.get('item_id') 
+            item_id=request.POST.get('item_id')  
             if order_id:
+                Member.objects.filter(user_id=send_to,thread_id=id).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1)
                 message,created=Message.objects.get_or_create(thread=thread,user=request.user,order_id=order_id,message_type='5')
                 listmessage.append({'id':message.id,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_order(),
                 })
             if item_id:
+                Member.objects.filter(user_id=send_to,thread_id=id).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1)
                 message,created=Message.objects.get_or_create(thread=thread,user=request.user,item_id=item_id,message_type='4')
                 listmessage.append({'id':message.id,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_product(),
                 })
-            if msg:    
+            if msg:   
+                Member.objects.filter(user_id=send_to,thread_id=id).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1) 
                 message=Message.objects.create(thread_id=id,user=request.user,message=msg,message_type='1')
                 listmessage.append({'id':message.id,'message':message.message,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,'story_id':message.story_id,'media_story':message.get_story(),
                 'list_file':[]})
             if image:
+                Member.objects.filter(user_id=send_to,thread_id=id).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1)
                 message=Message.objects.create(thread_id=id,user=request.user,message_type='2')
                 list_file_chat=Messagemedia.objects.bulk_create([Messagemedia(upload_by=request.user,file=image[i],message=message) for i in range(len(image))])
                 listmessage.append({'id':message.id,'message':message.message,'message_type':message.message_type,
@@ -77,6 +83,7 @@ class ActionThread(APIView):
                 for uploadfile in list_file_chat
                 ]})
             if file: 
+                Member.objects.filter(user_id=send_to,thread_id=id).update(is_seen=False,count_message_unseen=F('count_message_unseen')+len(file))
                 list_file_preview=[None for i in range(len(file))]
                 for i in range(len(list_file_preview)):
                     for j in range(len(file_preview)):
@@ -93,7 +100,7 @@ class ActionThread(APIView):
                 Messagemedia.objects.bulk_create([Messagemedia(message_id=messages[i].id,upload_by=request.user,duration=float(duration[i]),file_preview=list_file_preview[i],file=file[i]) for i in range(len(file))])
                 listmessage=[{'id':message.id,'message':message.message,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,
-                'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,'file_name':uploadfile.filename(),
+                'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,
                 'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration,}
                 for uploadfile in message.message_media.all()
                 ]} for message in messages]
@@ -128,6 +135,7 @@ class CreateThread(APIView):
         member=request.data.get('member')
         item_id=request.data.get('item_id')
         order_id=request.data.get('order_id')
+        send_to=request.data.get('send_to')
         listmessage=list()
         listuser=User.objects.filter(id__in=member).select_related('profile')
         thread=Thread.objects.filter(participants=request.user)
@@ -139,38 +147,39 @@ class CreateThread(APIView):
             listmessage=[{'id':message.id,'message':message.message,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_order(),
                 'message_product':message.message_product(),
-                'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,'file_name':uploadfile.filename(),
+                'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,
                 'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration,}
                 for uploadfile in message.message_media.all()
                 ]} for message in messages
                 ]
             data={'messages':listmessage,
             'thread':{'id':thread[0].id,'count_message':thread[0].count_message()},
-            'members':[{'user_id':member.user_id,'id':member.id,
-            'avatar':member.user.profile.avatar.url,'username':member.user.username,
-            'online':member.user.profile.online,'is_online':member.user.profile.is_online} for member in listmember]}
+            'members':[{'user_id':member.user_id,'count_message_unseen':member.count_message_unseen,
+            'avatar':member.user.profile.avatar.url,'username':member.user.username} for member in listmember]}
             return Response(data)
         else:
             thread=Thread.objects.create(admin=request.user)
             thread.participants.add(*member)
             thread.save()
-            Member.objects.bulk_create([
+            members=Member.objects.bulk_create([
                 Member(user=listuser[i],thread=thread)
                 for i in range(len(list(listuser)))
             ])
             if order_id:
+                Member.objects.filter(user_id=send_to,thread_id=id).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1)
                 message,created=Message.objects.get_or_create(thread=thread,user=request.user,order_id=order_id,message_type='5')
                 listmessage.append({'id':message.id,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_order(),
                 })
             if item_id:
+                Member.objects.filter(user_id=send_to,thread_id=id).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1)
                 message,created=Message.objects.get_or_create(thread=thread,user=request.user,item_id=item_id,message_type='4')
                 listmessage.append({'id':message.id,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_product(),
                 })
 
-            data={'messages':listmessage,'thread':{'id':thread.id,'count_message':0},'members':[{'user_id':member.id,'avatar':member.profile.avatar.url,'username':member.username,
-            'online':member.profile.online,'is_online':member.profile.is_online} for member in listuser]}
+            data={'messages':listmessage,'thread':{'id':thread.id,'count_message':0},'members':[{'user_id':member.user_id,'avatar':member.user.profile.avatar.url,'username':member.user.username,
+            'count_message_unseen':member.count_message_unseen} for member in members]}
             return Response(data)
 
 class ShopchatAPIView(APIView):
@@ -249,7 +258,7 @@ class ShopchatAPIView(APIView):
             'messages':[{'text':message.message,'file':message.message_media(),'filetype':message.message_mediatype(),
                 'sender':message.user.username,'created':message.date_created,
                 'message_order':message.message_order(),'message_product':message.message_product(),
-                'list_file':[{'file':uploadfile.file.url,'file_name':uploadfile.filename(),
+                'list_file':[{'file':uploadfile.file.url,
                 'file_preview':uploadfile.file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.filetype()}
                 for uploadfile in message.file.all()
                 ]} for message in messages
@@ -286,7 +295,7 @@ class ShopchatAPIView(APIView):
             'messages':[{'text':message.message,
             'sender':message.user.username,'created':message.date_created,
             'message_order':message.message_order(),'message_product':message.message_product(),
-            'list_file':[{'file':uploadfile.file.url,'file_name':uploadfile.filename(),
+            'list_file':[{'file':uploadfile.file.url,
             'file_preview':uploadfile.file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.filetype()}
             for uploadfile in message.file.all()
             ]} for message in messages],
