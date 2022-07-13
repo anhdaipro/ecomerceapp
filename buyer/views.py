@@ -1719,19 +1719,10 @@ class PurchaseAPIView(APIView):
         rating_bab_category=request.POST.getlist('rating_bab_category')
         if review_id:
             reviews=ReView.objects.filter(id__in=review_id).select_related('cartitem__item').select_related('cartitem__product__size').select_related('cartitem__product__color')
-            list_media=Media_review.objects.bulk_create(
-                [Media_review(
-                    upload_by=user,
-                    file=file[i],
-                    file_preview=list_preview[i],
-                    duration=float(duration[i])
-                )
-                for i in range(len(file))
-                ]
-            )
             list_mediaupload=Media_review.objects.filter(review_id=review_id)
             list_mediaupload.exclude(id__in=file_id).delete()
             list_mediaupload_update=list_mediaupload.filter(id__in=file_id)
+            list_cartview=CartItem.objects.filter(id__in=list_id)
             for file in list_mediaupload_update:
                 for i in range(len(file_update)):
                     if i==list(list_mediaupload_update).index(file):
@@ -1753,6 +1744,17 @@ class PurchaseAPIView(APIView):
                         review.edited=True
             bulk_update(reviews)
             bulk_update(list_mediaupload_update)
+            list_media=Media_review.objects.bulk_create(
+                [Media_review(
+                    upload_by=user,
+                    file=file[i],
+                    review=list_cartview[i].get_review(),
+                    file_preview=list_preview[i],
+                    duration=float(duration[i])
+                )
+                for i in range(len(file))
+                ]
+            )
             data={
                 'list_review':[{'id':review.id,'review_text':review.review_text,'created':review.created,
                 'info_more':review.info_more,'rating_anonymous':review.anonymous_review,'list_file':[{'filetype':file.filetype(),'file':file.get_media(),
@@ -1802,18 +1804,6 @@ class PurchaseAPIView(APIView):
         else:
             profile.xu=total_xu
             profile.save()
-            list_media=Media_review.objects.bulk_create(
-                [Media_review(
-                    upload_by=user,
-                    file=file[i],
-                    file_preview=list_preview[i],
-                    duration=float(duration[i])
-                )
-                for i in range(len(file))
-                ]
-            )
-        
-            list_mediaupload=Media_review.objects.filter(upload_by=user).order_by('-id')[:len(file)]
             reviews=ReView.objects.bulk_create([
                 ReView(
                     user=user,
