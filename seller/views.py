@@ -52,7 +52,7 @@ class ListvoucherAPI(ListAPIView):
         request = self.request
         user=request.user
         shop=Shop.objects.get(user=user)
-        return Voucher.objects.filter(shop=shop).select_related('product')
+        return Voucher.objects.filter(shop=shop).prefetch_related('product').prefetch_related('order_voucher')
 
 class ListcomboAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
@@ -61,7 +61,7 @@ class ListcomboAPI(ListAPIView):
         request = self.request
         user=request.user
         shop=Shop.objects.get(user=user)
-        return Promotion_combo.objects.filter(shop=shop).select_related('product')
+        return Promotion_combo.objects.filter(shop=shop).prefetch_related('product__media_upload')
 
 class ListdealshockAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
@@ -70,7 +70,7 @@ class ListdealshockAPI(ListAPIView):
         request = self.request
         user=request.user
         shop=Shop.objects.get(user=user)
-        return Buy_with_shock_deal.objects.filter(shop=shop).select_related('main_product').select_related('by_product')
+        return Buy_with_shock_deal.objects.filter(shop=shop).prefetch_related('main_product__meida_upload').prefetch_related('byproduct_media_upload')
 
 class ListprogramAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
@@ -79,7 +79,7 @@ class ListprogramAPI(ListAPIView):
         request = self.request
         user=request.user
         shop=Shop.objects.get(user=user)
-        return Shop_program.objects.filter(shop=shop).select_related('product')
+        return Shop_program.objects.filter(shop=shop).prefetch_related('product__meida_upload')
 
 class ListflashsaleAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
@@ -88,7 +88,7 @@ class ListflashsaleAPI(ListAPIView):
         request = self.request
         user=request.user
         shop=Shop.objects.get(user=user)
-        return Flashsale.objects.filter(shop=shop).select_related('product')
+        return Flashsale.objects.filter(shop=shop).prefetch_related('product__meida_upload')
 
 class ShopprofileAPIView(APIView):
     def get(self,request):

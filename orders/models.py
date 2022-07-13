@@ -30,10 +30,10 @@ class Order(models.Model):
     received_date = models.DateTimeField(null=True)
     canceled_date = models.DateTimeField(null=True)
     shipping_start_date = models.DateTimeField(null=True)
-    shipping=models.ForeignKey(to='shipping.Shipping',on_delete=models.SET_NULL,null=True,blank=True)
+    shipping=models.ForeignKey(to='shipping.Shipping',on_delete=models.SET_NULL,null=True,blank=True,related_name='order_shipping')
     shipping_address = models.ForeignKey(
     'account.Address', related_name='shipping_address', on_delete=models.SET_NULL, blank=True, null=True)
-    voucher=models.ForeignKey(to='discounts.Voucher',on_delete=models.SET_NULL,null=True,blank=True)
+    voucher=models.ForeignKey(to='discounts.Voucher',on_delete=models.SET_NULL,null=True,blank=True,related_name='order_voucher')
     being_delivered = models.BooleanField(default=False)
     accepted=models.BooleanField(default=False)
     received = models.BooleanField(default=False)

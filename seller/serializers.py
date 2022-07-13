@@ -23,7 +23,7 @@ class ComboSerializer(serializers.ModelSerializer):
         fields = ['id','promotion_combo_name','valid_from','valid_to','combo_type','list_product',
             'discount_percent','discount_price','price_special_sale','quantity_to_reduced']
     def get_list_product(self,obj):
-        return [{'image':item.media_upload.all()[0].get_media()} for item in obj.product.all()]
+        return [{'image':item.get_image_cover()} for item in obj.product.all()]
        
 class ProgramSerializer(serializers.ModelSerializer):
     list_product=serializers.SerializerMethodField()
@@ -32,7 +32,7 @@ class ProgramSerializer(serializers.ModelSerializer):
         fields = ['id','name_program','valid_from','valid_to','list_product']
 
     def get_list_product(self,obj):
-        return [{'image':item.media_upload.all()[0].get_media()} for item in obj.product.all()]
+        return [{'image':item.get_image_cover()} for item in obj.product.all()]
 
 class DealsockSerializer(serializers.ModelSerializer):
     list_mainproduct=serializers.SerializerMethodField()
@@ -42,9 +42,9 @@ class DealsockSerializer(serializers.ModelSerializer):
         fields = ['id','shock_deal_type','program_name_buy_with_shock_deal','valid_from','valid_to',
         'list_mainproduct','list_byproduct']
     def get_list_byproduct(self,obj):
-        return [{'image':item.media_upload.all()[0].get_media()} for item in obj.product.all()]
+        return [{'image':item.get_image_cover()} for item in obj.product.all()]
     def get_list_mainproduct(self,obj):
-        return [{'image':item.media_upload.all()[0].get_media()} for item in obj.product.all()]
+        return [{'image':item.get_image_cover()} for item in obj.product.all()]
 
 class FlashsaleSerializer(serializers.ModelSerializer):
     list_product=serializers.SerializerMethodField()
@@ -53,7 +53,7 @@ class FlashsaleSerializer(serializers.ModelSerializer):
         fields = ['id','valid_from','valid_to','list_product']
         
     def get_list_product(self,obj):
-        return [{'image':item.media_upload.all()[0].get_media()} for item in obj.product.all()]
+        return [{'image':item.get_image_cover()} for item in obj.product.all()]
 
         
 
