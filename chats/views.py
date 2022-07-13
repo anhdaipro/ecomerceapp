@@ -228,13 +228,13 @@ class CreateThread(APIView):
                 for i in range(len(list(listuser)))
             ])
             if order_id:
-                Member.objects.filter(user_id=send_to,thread_id=id).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1)
+                Member.objects.filter(user_id=send_to,thread=thread).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1)
                 message,created=Message.objects.get_or_create(thread=thread,user=request.user,order_id=order_id,message_type='5')
                 listmessage.append({'id':message.id,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_order(),
                 })
             if item_id:
-                Member.objects.filter(user_id=send_to,thread_id=id).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1)
+                Member.objects.filter(user_id=send_to,thread=thread).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1)
                 message,created=Message.objects.get_or_create(thread=thread,user=request.user,item_id=item_id,message_type='4')
                 listmessage.append({'id':message.id,'message_type':message.message_type,
                 'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_product(),
