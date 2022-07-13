@@ -45,7 +45,7 @@ class ActionThread(APIView):
                 list_items=Item.objects.filter(shop=shop).order_by('-id')
                 if keyword:
                     list_items=list_items.filter(name__startswith=keyword)
-                count_product=list_items.count()
+                count_product=shop.count_product()
                 item_from=0
                 if offset:
                     item_from=int(offset)
