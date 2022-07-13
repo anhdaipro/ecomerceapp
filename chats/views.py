@@ -41,11 +41,15 @@ class ActionThread(APIView):
         else:
             shop=Shop.objects.get(user_id=user_id)
             if action=='showitem':
-                to_item=shop.count_product()
+                list_items=Item.objects.filter(shop=shop).order_by('-id')
+                count_product=list_items.count()
+                item_from=0
                 if offset:
-                    to_item=int(offset)
-                from_item=to_item-5
-                list_items=Item.objects.filter(shop=shop).order_by('-id')[from_item:to_item]
+                    item_from=int(offset)
+                to_item=item_from+5
+                if item_from>=count_product:
+                    to_item=count_product
+                list_items=list_items[item_from:to_item]
                 data={'count_product':shop.count_product(),
                     'list_items':[{'item_name':i.name,'item_image':i.get_image_cover(),'number_order':i.number_order(),
                     'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
@@ -54,12 +58,15 @@ class ActionThread(APIView):
                 }
                 return Response(data)
             else:
-                count_order=Order.objects.filter(shop=shop,user=request.user,ordered=True).count()
-                to_item=count_order
+                list_orders=Order.objects.filter(shop=shop,user=request.user,ordered=True).order_by('-id')
+                count_order=list_orders.count()
+                item_from=0
                 if offset:
-                    to_item=int(offset)
-                from_item=to_item-5
-                list_orders=Order.objects.filter(shop=shop,user=request.user).order_by('-id')[from_item:to_item]
+                    item_from=int(offset)
+                to_item=item_from+5
+                if item_from>=count_order:
+                    to_item=count_order
+                list_orders=list_orders[item_from:to_item]
                 data={'count_order':count_order,
                     'list_orders':[{
                     'id':order.id,'total_final_order':order.total_final_order(),
