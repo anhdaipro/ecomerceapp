@@ -54,8 +54,8 @@ class ActionThread(APIView):
                     to_item=count_product
                 list_items=list_items[item_from:to_item]
                 data={'count_product':shop.count_product(),
-                    'list_items':[{'item_name':i.name,'item_image':i.get_image_cover(),'number_order':i.number_order(),
-                    'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                    'list_items':[{'name':i.name,'image':i.get_image_cover(),'number_order':i.number_order(),
+                    'id':i.id,'inventory':i.total_inventory(),'max_price':i.max_price(),'percent_discount':i.percent_discount(),
                     'min_price':i.min_price()
                     } for i in list_items]
                 }
