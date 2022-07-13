@@ -1069,8 +1069,7 @@ class CartItemAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user = request.user
-        list_cart_item=CartItem.objects.filter(user=user,ordered=False).prefetch_related('item__media_upload').prefetch_related('item__shop_program').prefetch_related('item__main_product').prefetch_related('item__promotion_combo').select_related('product__size').select_related('product__color').prefetch_related('byproduct')
-        
+        list_cart_item=CartItem.objects.filter(user=user,ordered=False).select_related('shop').prefetch_related('item__media_upload').prefetch_related('item__shop_program').prefetch_related('item__main_product').prefetch_related('item__promotion_combo').select_related('product').select_related('product__size').select_related('product__color').prefetch_related('byproduct')
         data=[{'id':cart_item.id,'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
             'count_variation':cart_item.item.count_variation(),
             'price':cart_item.product.price,'discount_price':cart_item.product.total_discount(),'shop_name':cart_item.shop.name,
@@ -1195,7 +1194,7 @@ class ListorderAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
-        order_check = Order.objects.filter(user=user, ordered=False).select_related('user').select_related('voucher').prefetch_related('items__item__media_upload').prefetch_related('items__byproduct').prefetch_related('items__item__main_product').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__shop_program').prefetch_related('items__product__size').prefetch_related('items__product__color').exclude(items=None)
+        order_check = Order.objects.filter(user=user, ordered=False).select_related('shop').select_related('voucher').prefetch_related('items__byproduct').prefetch_related('items__item__main_product').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__shop_program').prefetch_related('items__product').exclude(items=None)
         data={
         'orders':[{'discount_voucher_shop':order.discount_voucher(),'total':order.total_price_order(),
             'discount_deal':order.discount_deal(),'count':order.count_item_cart(),
@@ -1287,7 +1286,7 @@ class CheckoutAPIView(APIView):
     def get(self,request):
         user=request.user
         address=Address.objects.filter(user=user,default=True)
-        orders = Order.objects.filter(user=user, ordered=False).exclude(items=None)
+        orders = Order.objects.filter(user=user, ordered=False).select_related('shop').select_related('voucher').prefetch_related('items__byproduct').prefetch_related('items__item__media_upload').prefetch_related('items__item__main_product').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__shop_program').prefetch_related('items__product__size').prefetch_related('items__product__color').exclude(items=None)
         threads = Thread.objects.filter(participants=user).order_by('timestamp')
         list_orders=[{'shop':order.shop.name,'discount_voucher':order.discount_voucher(),'user_id':order.shop.user_id,
         'total':order.total_price_order(),'total_final':order.total_final_order(),
