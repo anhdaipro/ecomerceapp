@@ -42,9 +42,9 @@ class DealsockSerializer(serializers.ModelSerializer):
         fields = ['id','shock_deal_type','program_name_buy_with_shock_deal','valid_from','valid_to',
         'list_mainproduct','list_byproduct']
     def get_list_byproduct(self,obj):
-        return [{'image':item.get_image_cover()} for item in obj.product.all()]
+        return [{'image':item.get_image_cover()} for item in obj.byproduct.all()]
     def get_list_mainproduct(self,obj):
-        return [{'image':item.get_image_cover()} for item in obj.product.all()]
+        return [{'image':item.get_image_cover()} for item in obj.main_product.all()]
 
 class FlashsaleSerializer(serializers.ModelSerializer):
     list_product=serializers.SerializerMethodField()
