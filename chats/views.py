@@ -144,10 +144,13 @@ class ActionThread(APIView):
                 ]} for message in messages]
             return Response(listmessage)
         elif action=='seen':
-            if seen=='false':
-                Member.objects.filter(user=request.user,thread_id=id).update(is_seen=False,count_message_unseen=1)
+            if member.is_seen:
+                member.is_seen=False
+                member.count_message_unseen=1
             else:
-                Member.objects.filter(user=request.user,thread_id=id).update(is_seen=True,count_message_unseen=0)
+                member.is_seen=True
+                member.count_message_unseen=0
+            member.save()
         else:
             thread.delete()
         return Response(listmessage)
