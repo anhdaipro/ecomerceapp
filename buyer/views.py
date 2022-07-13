@@ -1818,7 +1818,7 @@ class PurchaseAPIView(APIView):
                 ) for i in range(len(cartitem_id))
             ])
 
-            list_media=[Media_review(
+            list_media=Media_review.objects.bulk_create([Media_review(
                 upload_by=user,
                 file=file[i],
                 review=CartItem.objects.get(id=list_id[i]).get_review(),
@@ -1826,7 +1826,7 @@ class PurchaseAPIView(APIView):
                 duration=float(duration[i])
                 )
                 for i in range(len(file))
-                ]
+                ])
             
             data={'review':'review'}
             return Response(data)
