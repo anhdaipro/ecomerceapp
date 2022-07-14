@@ -1586,12 +1586,8 @@ class PurchaseAPIView(APIView):
         user=request.user
         reason=request.POST.get('reason')
         order_id=request.POST.get('order_id')
-        image=request.FILES.getlist('image')
         list_id_image=request.POST.getlist('id_image')
         list_id_video=request.POST.getlist('id_video')
-        video_preview=request.FILES.getlist('video_preview')
-        duration=request.POST.getlist('duration')
-        video=request.FILES.getlist('video')
         total_xu=request.POST.get('total_xu')
         profile=Profile.objects.get(user=user)
         cartitem_id=request.POST.getlist('cartitem_id')
@@ -1636,6 +1632,10 @@ class PurchaseAPIView(APIView):
             }
             return Response(data)
         else:
+            image=request.FILES.getlist('image')
+            video_preview=request.FILES.getlist('video_preview')
+            duration=request.POST.getlist('duration')
+            video=request.FILES.getlist('video')
             profile.xu=total_xu
             profile.save()
             reviews=ReView.objects.bulk_create([
