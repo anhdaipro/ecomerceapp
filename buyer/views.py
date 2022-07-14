@@ -1231,13 +1231,6 @@ class ActionReviewAPI(APIView):
             review.save()
             list_mediaupload=Media_review.objects.filter(review_id=id)
             list_mediaupload.exclude(id__in=file_id).delete()
-            list_image=[Media_review(
-                upload_by=user,
-                file=image[i],
-                review_id=id
-                )
-                for i in range(len(image))
-                ]
             list_video=[Media_review(
                 upload_by=user,
                 file=video[i],
@@ -1247,7 +1240,15 @@ class ActionReviewAPI(APIView):
                 )
                 for i in range(len(video))
             ]
-            listmedia=list_image+list_video
+            list_image=[Media_review(
+                upload_by=user,
+                file=image[i],
+                review_id=id
+                )
+                for i in range(len(image))
+                ]
+            
+            listmedia=list_video+list_image
             Media_review.objects.bulk_create(listmedia)
             serializer = ReviewSerializer(review,context={"request": request})
             data=serializer.data
@@ -1652,23 +1653,20 @@ class PurchaseAPIView(APIView):
                 ) for i in range(len(cartitem_id))
             ])
             
-            list_image=[Media_review(
-                upload_by=user,
-                file=image[i],
-                review=CartItem.objects.get(id=list_id_image[i]).get_review()
-                )
-                for i in range(len(image))
-                ]
-            list_video=[Media_review(
+            listmedia=list()
+            for i in range(len(video)):
+                listmedia.append(Media_review(
                 upload_by=user,
                 file=video[i],
                 review=CartItem.objects.get(id=list_id_video[i]).get_review(),
                 media_preview=video_preview[i],
                 duration=float(duration[i])
-                )
-                for i in range(len(video))
-            ]
-            listmedia=list_image+list_video
+                ))
+            
+            for i in range(len(image)):
+                listmedia.append(Media_review(upload_by=user,file=image[i],
+                review=CartItem.objects.get(id=list_id_image[i]).get_review()
+                ))
             Media_review.objects.bulk_create(listmedia)
             data={'review':'review'}
             return Response(data)
