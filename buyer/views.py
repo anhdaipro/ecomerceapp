@@ -1202,6 +1202,7 @@ class ActionReviewAPI(APIView):
         serializer = ReviewSerializer(review,context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     def post(self,request,id):
+        user=request.user
         image=request.FILES.getlist('image')
         file_id=request.POST.getlist('file_id')
         video=request.FILES.getlist('video')
@@ -1216,7 +1217,6 @@ class ActionReviewAPI(APIView):
         action=request.POST.get('action')
         data={}
         if action=='update':
-            
             review.review_rating=review_rating
             review.review_text=review_text
             review.info_more=info_more
