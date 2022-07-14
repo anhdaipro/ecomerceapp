@@ -7,6 +7,24 @@ from django.contrib.auth.models import User
 from datetime import timedelta
 import datetime,jwt
 
+class MemberSerializer(serializers.ModelSerializer):
+    count_product_shop=serializers.SerializerMethodField()
+    url=serializers.SerializerMethodField()
+    avatar=serializers.SerializerMethodField()
+    username=serializers.SerializerMethodField()
+    class Meta:
+        model=Member
+        fields=('user_id','count_product_shop','gim','block','url','avatar',
+        'count_message_unseen','username')
+    def get_count_product_shop(self,obj):
+        return obj.user.shop.count_product()
+    def get_avatar(self,obj):
+        return obj.user.profile.avatar.url
+    def get_username(self,obj):
+        return obj.user.username
+    def get_url(self,obj):
+        return obj.user.shop.get_absolute()
+
 class ThreadinfoSerializer(serializers.ModelSerializer):
     message_last=serializers.SerializerMethodField()
     count_message=serializers.SerializerMethodField()
@@ -26,8 +44,7 @@ class ThreadinfoSerializer(serializers.ModelSerializer):
     def get_members(self,obj):
         request=self.context.get("request") 
         listmember=Member.objects.filter(thread=obj).select_related('user__profile').select_related('user__shop')
-        return [{'avatar':member.user.profile.avatar.url,'username':member.user.username,'user_id':member.user_id,'gim':member.gim,
-        'count_product_shop':member.user.shop.count_product(),'count_message_unseen':member.count_message_unseen} for member in listmember]
+        return MemberSerializer(listmember,many=True).data
 
 class MediathreadSerializer(serializers.ModelSerializer):
     file=serializers.SerializerMethodField()

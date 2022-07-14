@@ -1653,20 +1653,23 @@ class PurchaseAPIView(APIView):
                 ) for i in range(len(cartitem_id))
             ])
             
-            listmedia=list()
-            for i in range(len(video)):
-                listmedia.append(Media_review(
+            list_video=[Media_review(
                 upload_by=user,
                 file=video[i],
                 review=CartItem.objects.get(id=list_id_video[i]).get_review(),
                 media_preview=video_preview[i],
                 duration=float(duration[i])
-                ))
-            
-            for i in range(len(image)):
-                listmedia.append(Media_review(upload_by=user,file=image[i],
+                )
+                for i in range(len(video))
+            ]
+            list_image=[Media_review(
+                upload_by=user,
+                file=image[i],
                 review=CartItem.objects.get(id=list_id_image[i]).get_review()
-                ))
+                )
+                for i in range(len(image))
+            ]
+            listmedia=list_video+list_image
             Media_review.objects.bulk_create(listmedia)
             data={'review':'review'}
             return Response(data)

@@ -39,6 +39,13 @@ class Sticker(models.Model):
     image=models.ImageField()
     date_created = models.DateTimeField(auto_now=True)
     parent_id=models.IntegerField(blank=True,null=True)
+
+class Reportuser(models.Model):
+    thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name='report_thread')
+    user=models.ForeignKey(User, on_delete=models.CASCADE,related_name='reporter')
+    reported=models.ForeignKey(User, on_delete=models.CASCADE,related_name='reported_person')
+    created = models.DateTimeField(auto_now=True)
+
 class Message(models.Model):
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name='chatmessage_thread')
     user = models.ForeignKey(User, on_delete=models.CASCADE,null=True)
