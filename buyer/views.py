@@ -1234,7 +1234,7 @@ class ActionReviewAPI(APIView):
             list_image=[Media_review(
                 upload_by=user,
                 file=image[i],
-                review_id=id,
+                review_id=id
                 )
                 for i in range(len(image))
                 ]
@@ -1655,7 +1655,7 @@ class PurchaseAPIView(APIView):
             list_image=[Media_review(
                 upload_by=user,
                 file=image[i],
-                review=CartItem.objects.get(id=list_id_image[i]).get_review(),
+                review=CartItem.objects.get(id=list_id_image[i]).get_review()
                 )
                 for i in range(len(image))
                 ]
