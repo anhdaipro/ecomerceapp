@@ -658,37 +658,17 @@ class ProductInfoAPIVIew(APIView):
                 }
             return Response(data)
 
-    def post(self, request, *args, **kwargs):
-        item_id=request.POST.get('item_id')
-        review_id=request.POST.get('review_id')
-        reason=request.POST.get('reason')
+    def post(self, request,id, *args, **kwargs):
         user=request.user
         like_item=True
-        like_review=False
         data={}
-        if review_id:
-            review=ReView.objects.get(id=review_id)
-            if reason:
-                if Report.objects.filter(user=user,review=review).exists():
-                    Report.objects.filter(user=user,review=review).update(reson=reason)
-                else:
-                    Report.objects.create(user=user,reson=reason,review=review)
-                data.update({'report':True})
-            else:
-                if user in review.like.all():
-                    like_review=False
-                    review.like.remove(user)  
-                else:
-                    review.like.add(user)  
-            data.update({'like_review':like_review,'num_like_review':review.num_like()})  
-        if item_id:
-            item=Item.objects.get(id=item_id)
-            if user in item.liked.all():
-                item.liked.remove(user)
-                like_item=False
-            else:
-                item.liked.add(user) 
-            data.update({'num_like_item':item.num_like(),'like_item':like_item})  
+        item=Item.objects.get(id=id)
+        if user in item.liked.all():
+            item.liked.remove(user)
+            like_item=False
+        else:
+            item.liked.add(user) 
+        data.update({'num_like_item':item.num_like(),'like_item':like_item})  
         return Response(data)
 
 class ShopinfoAPIVIew(APIView):

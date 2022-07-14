@@ -77,7 +77,7 @@ urlpatterns = [
     path('order/<int:id>',  OrderinfoAPIView.as_view()),
     path('detail/<slug>',DetailAPIView.as_view()),
     path('shopinfo',ShopinfoAPIVIew.as_view()),
-    path('productinfo',ProductInfoAPIVIew.as_view()),
+    path('productinfo/<int:id>',ProductInfoAPIVIew.as_view()),
     path('addon-deal-cart-selection/<int:id>', DealShockAPIView.as_view()),
     path('bundle-deal/<int:id>', PromotionAPIView.as_view()),
     path('add-to-cart-batch',AddToCardBatchAPIView.as_view()),
