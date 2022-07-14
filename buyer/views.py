@@ -19,10 +19,8 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 
 from rest_framework.generics import (
-    ListAPIView, RetrieveAPIView, CreateAPIView,
-    UpdateAPIView, DestroyAPIView,GenericAPIView,
+    ListAPIView, RetrieveAPIView,GenericAPIView,
 )
-from rest_auth.serializers import PasswordResetConfirmSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_multiple_model.views import ObjectMultipleModelAPIView
@@ -46,8 +44,7 @@ from itemdetail.models import *
 from orderactions.models import *
 from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
-from .serializers import (ChangePasswordSerializer,
-UserSerializer,SMSPinSerializer,
+from .serializers import (ChangePasswordSerializer,UserSerializer,SMSPinSerializer,
 SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer,
 UserprofileSerializer,ShopinfoSerializer,ItemSerializer,
 ItemSellerSerializer,ItemrecentlySerializer,ShoporderSerializer,ImagehomeSerializer,
@@ -56,7 +53,6 @@ ReviewSerializer,CartitemcartSerializer,
 )
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from .send_email import send_register_mail, send_reset_password_email
 import random
 import string
@@ -744,7 +740,7 @@ class Itemrecently(ListAPIView):
     def get_queryset(self):
         request=self.request
         user=request.user
-        return ItenReviews.objects.filter(user=user).order_by('-id,item')[:12].distinct()
+        return ItemViews.objects.filter(user=user).order_by('-id,item')[:12].distinct()
 
 class Listitemhostsale(ListAPIView):
     permission_classes = (AllowAny,)
@@ -753,7 +749,7 @@ class Listitemhostsale(ListAPIView):
         request=self.request
         shop_id=request.GET.get('shop_id')
         item=Item.objects.filter(shop_id=shop_id).filter(cart_item__order_cartitem__ordered=True).annotate(count_order= Count('cart_item__order_cartitem')).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').order_by('-count_order')
-        return ItenReviews.objects.filter(user=user).order_by('-id,item')[:12].distinct()
+        return ItemViews.objects.filter(user=user).order_by('-id,item')[:12].distinct()
     
 @api_view(['GET', 'POST'])
 def save_voucher(request):
