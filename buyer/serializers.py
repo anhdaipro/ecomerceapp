@@ -437,10 +437,9 @@ class ReviewSerializer(serializers.ModelSerializer):
     rating_bab_category=serializers.SerializerMethodField()
     class Meta:
         model=ReView
-        fields=('id','review_text','created',
-                'info_more','rating_anonymous','list_file',
-                'rating_bab_category',
-                'review_rating','edited',)
+        fields=('id','review_text','created','item_name','color_value','size_value',
+                'info_more','rating_anonymous','list_file','item_url','item_image',
+                'rating_bab_category','review_rating','edited',)
     def get_list_file(self,obj):
         return MediareviewSerializer(obj.media_review.all(),many=True).data  
     def get_color_value(self,obj):

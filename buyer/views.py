@@ -691,7 +691,6 @@ class ProductInfoAPIVIew(APIView):
             data.update({'num_like_item':item.num_like(),'like_item':like_item})  
         return Response(data)
 
-
 class ShopinfoAPIVIew(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
@@ -1227,6 +1226,89 @@ class AddressAPIView(APIView):
             }
             return Response(data)
 
+class ActionReviewAPI(APIView):
+    def get(self,request,id):
+        review=Review.objects.get(id=id)
+        serializer = ReviewSerializer(review,context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def post(self,request,id):
+        file=request.FILES.getlist('file_choice')
+        file_update=request.FILES.getlist('file_update')
+        file_id=request.POST.getlist('file_id')
+        file_preview=request.FILES.getlist('file_preview')
+        file_preview_update=request.FILES.getlist('file_preview_update')
+        duration=request.POST.getlist('duration')
+        duration_update=request.POST.getlist('duration_update')
+        review_rating=request.POST.get('review_rating')
+        review_text=request.POST.get('review_text')
+        info_more=request.POST.get('info_more')
+        rating_anonymous=request.POST.get('rating_anonymous')
+        rating_bab_category=request.POST.getlist('rating_bab_category')
+        reason=request.POST.get('reason')
+        action=request.POST.get('action')
+        data={}
+        if action=='update':
+            for i in range(len(list_preview)):
+                for j in range(len(file_preview)):
+                    if i==j:
+                        list_preview[i]=file_preview[j]
+            for i in range(len(list_preview_update)):
+                for j in range(len(file_preview_update)):
+                    if i==j:
+                        list_preview_update[i]=file_preview_update[j]
+        
+            review.review_rating=review_rating
+            review.review_text=review_text
+            review.info_more=info_more
+            if anonymous_review=='true':
+                review.anonymous_review=True
+            else:
+                review.anonymous_review=False
+            review.rating_product=int(rating_bab_category.split(',')[0])
+            review.rating_seller_service=int(rating_bab_category.split(',')[1])
+            review.rating_shipping_service=int(rating_bab_category.split(',')[2])
+            review.edited=True
+            review.save()
+            list_mediaupload=Media_review.objects.filter(review_id=id)
+            list_mediaupload.exclude(id__in=file_id).delete()
+            list_mediaupload_update=list_mediaupload.filter(id__in=file_id)
+            for file in list_mediaupload_update:
+                for i in range(len(file_update)):
+                    if i==list(list_mediaupload_update).index(file):
+                        if file_update[i]:
+                            file.file=file_update[i]
+                        if list_freview_update[i]:
+                            file_preview=list_preview_update[i]
+                        duration=float(duration_update[i])
+            bulk_update(list_mediaupload_update)
+            list_media=Media_review.objects.bulk_create(
+                [Media_review(
+                    upload_by=user,
+                    file=file[i],
+                    review=review,
+                    file_preview=list_preview[i],
+                    duration=float(duration[i])
+                )
+                for i in range(len(file))
+                ]
+            )
+            serializer = ReviewSerializer(review,context={"request": request})
+            data=serializer.data
+        elif action=='report':
+            if Report.objects.filter(user=user,review=review).exists():
+                Report.objects.filter(user=user,review=review).update(reson=reason)
+            else:
+                Report.objects.create(user=user,reson=reason,review=review)
+            data.update({'report':True})
+        else:
+            like_review=True
+            if user in review.like.all():
+                like_review=False
+                review.like.remove(user)  
+            else:
+                review.like.add(user)  
+            data.update({'like_review':like_review,'num_like_review':review.num_like()}) 
+        return Response(data) 
 
 class CheckoutAPIView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -1545,7 +1627,6 @@ class PurchaseAPIView(APIView):
             return Response(data)
     def post(self,request,*args, **kwargs):
         user=request.user
-        review_id=request.POST.getlist('review_id')
         file=request.FILES.getlist('file_choice')
         file_update=request.FILES.getlist('file_update')
         reason=request.POST.get('reason')
@@ -1562,10 +1643,6 @@ class PurchaseAPIView(APIView):
             for j in range(len(file_preview)):
                 if i==j:
                     list_preview[i]=file_preview[j]
-        for i in range(len(list_preview_update)):
-            for j in range(len(file_preview_update)):
-                if i==j:
-                    list_preview_update[i]=file_preview_update[j]
         
         total_xu=request.POST.get('total_xu')
         profile=Profile.objects.get(user=user)
@@ -1577,47 +1654,7 @@ class PurchaseAPIView(APIView):
         rating_anonymous=request.POST.getlist('rating_anonymous')
         list_anonymous_review=[False if rating_anonymous[i]=='false' else True for i in range(len(rating_anonymous))]
         rating_bab_category=request.POST.getlist('rating_bab_category')
-        if review_id:
-            reviews=ReView.objects.filter(id__in=review_id).select_related('cartitem__item').select_related('cartitem__product__size').select_related('cartitem__product__color')
-            list_mediaupload=Media_review.objects.filter(review_id=review_id)
-            list_mediaupload.exclude(id__in=file_id).delete()
-            list_mediaupload_update=list_mediaupload.filter(id__in=file_id)
-            list_cartview=CartItem.objects.filter(id__in=list_id)
-            for file in list_mediaupload_update:
-                for i in range(len(file_update)):
-                    if i==list(list_mediaupload_update).index(file):
-                        if file_update[i]:
-                            file.file=file_update[i]
-                        if list_freview_update[i]:
-                            file_preview=list_preview_update[i]
-                        duration=float(duration_update[i])
-            for review in reviews:
-                for i in range(len(review_id)):
-                    if i==list(reviews).index(review):
-                        review.review_rating=review_rating[i]
-                        review.review_text=review_text[i]
-                        review.info_more=info_more[i]
-                        review.anonymous_review=list_anonymous_review[i]
-                        review.rating_product=int(rating_bab_category[i].split(',')[0])
-                        review.rating_seller_service=int(rating_bab_category[i].split(',')[1])
-                        review.rating_shipping_service=int(rating_bab_category[i].split(',')[2])
-                        review.edited=True
-            bulk_update(reviews)
-            bulk_update(list_mediaupload_update)
-            list_media=Media_review.objects.bulk_create(
-                [Media_review(
-                    upload_by=user,
-                    file=file[i],
-                    review=CartItem.objects.get(id=list_id[i]).get_review(),
-                    file_preview=list_preview[i],
-                    duration=float(duration[i])
-                )
-                for i in range(len(file))
-                ]
-            )
-            serializer = ReviewSerializer(reviews,many=True,context={"request": request})
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        elif reason:
+        if reason:
             order=Order.objects.get(id=order_id)
             order.canceled=True
             order.canceled_date=timezone.now()

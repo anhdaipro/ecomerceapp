@@ -36,7 +36,8 @@ from .views import (
     Sendotp,VerifySMSView,
     Topsearch,
     RegisterView, LoginView, LogoutView ,
-    UpdateOnline
+    UpdateOnline,
+    ActionReviewAPI
 )
 
 urlpatterns = [
@@ -66,6 +67,7 @@ urlpatterns = [
     path('item/recently',Itemrecently.as_view()),
     path('item/bestseller', Listitemseller.as_view()),
     path('product/recommend', ListItemRecommendAPIView.as_view()),
+    path('review/<int:id>', ActionReviewAPI.as_view()),
     
     path('imagehome', ImageHomeAPIView.as_view()),
     path('categories', CategoryListView.as_view()),
