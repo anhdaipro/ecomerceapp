@@ -364,16 +364,13 @@ class DetailAPIView(APIView):
             list_hot_sales=Item.objects.filter(shop=item.shop,cart_item__order_cartitem__ordered=True).annotate(count=Count('cart_item__order_cartitem__id')).prefetch_related('shop_program').prefetch_related('promotion_combo').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count')
             if deal_shock.exists():
                 byproduct=deal_shock.first().byproduct.all()
-                main_product=item.variation_set.all()[0]
+                main_product=item.variation_item.all()[0]
                 data.update({'byproduct':[{'item_name':i.name,'item_image':i.get_image_cover(),
                 'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
                 'max_price':i.max_price(),'discount_deal':i.discount_deal()
                 } for i in byproduct]})
             promotion_combo=Promotion_combo.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
             flash_sale=Flash_sale.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
-            order=Order.objects.filter(items__product__item=item,received=True)
-            reviews=ReView.objects.filter(cartitem__product__item=item)
-            variation=Variation.objects.filter(item=item)
             data.update({'count_variation':item.count_variation(),'item_detail':item_detail,
             'item_name':item.name,'min_price':item.min_price(),'max_price':item.max_price(),
             'id':item.id,'num_like_item':item.num_like(),'percent_discount':item.percent_discount(),
@@ -383,7 +380,6 @@ class DetailAPIView(APIView):
             } for i in item.media_upload.all()],'size':item.get_size(),'color':item.get_color(),
             'item_inventory':item.total_inventory(),
             'num_order':item.number_order(),'description':item.description,
-            
             'shock_deal_type':item.shock_deal_type(),
             'deal_shock':list(deal_shock.values()),'flash_sale':list(flash_sale.values()),
             'promotion_combo':list(promotion_combo.values()),'user_id':item.shop.user_id,
@@ -1206,13 +1202,11 @@ class ActionReviewAPI(APIView):
         serializer = ReviewSerializer(review,context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     def post(self,request,id):
-        file=request.FILES.getlist('file_choice')
-        file_update=request.FILES.getlist('file_update')
+        image=request.FILES.getlist('image')
         file_id=request.POST.getlist('file_id')
-        file_preview=request.FILES.getlist('file_preview')
-        file_preview_update=request.FILES.getlist('file_preview_update')
+        video=request.FILES.getlist('video')
+        video_preview=request.FILES.getlist('video_preview')
         duration=request.POST.getlist('duration')
-        duration_update=request.POST.getlist('duration_update')
         review_rating=request.POST.get('review_rating')
         review_text=request.POST.get('review_text')
         info_more=request.POST.get('info_more')
@@ -1222,15 +1216,7 @@ class ActionReviewAPI(APIView):
         action=request.POST.get('action')
         data={}
         if action=='update':
-            for i in range(len(list_preview)):
-                for j in range(len(file_preview)):
-                    if i==j:
-                        list_preview[i]=file_preview[j]
-            for i in range(len(list_preview_update)):
-                for j in range(len(file_preview_update)):
-                    if i==j:
-                        list_preview_update[i]=file_preview_update[j]
-        
+            
             review.review_rating=review_rating
             review.review_text=review_text
             review.info_more=info_more
@@ -1245,27 +1231,24 @@ class ActionReviewAPI(APIView):
             review.save()
             list_mediaupload=Media_review.objects.filter(review_id=id)
             list_mediaupload.exclude(id__in=file_id).delete()
-            list_mediaupload_update=list_mediaupload.filter(id__in=file_id)
-            for file in list_mediaupload_update:
-                for i in range(len(file_update)):
-                    if i==list(list_mediaupload_update).index(file):
-                        if file_update[i]:
-                            file.file=file_update[i]
-                        if list_freview_update[i]:
-                            file_preview=list_preview_update[i]
-                        duration=float(duration_update[i])
-            bulk_update(list_mediaupload_update)
-            list_media=Media_review.objects.bulk_create(
-                [Media_review(
-                    upload_by=user,
-                    file=file[i],
-                    review_id=id,
-                    file_preview=list_preview[i],
-                    duration=float(duration[i])
+            list_image=[Media_review(
+                upload_by=user,
+                image=image[i],
+                review_id=id,
                 )
-                for i in range(len(file))
+                for i in range(len(image))
                 ]
-            )
+            list_video=[Media_review(
+                upload_by=user,
+                video=video[i],
+                review_id=id,
+                video_preview=video_preview[i],
+                duration=float(duration[i])
+                )
+                for i in range(len(video))
+            ]
+            list_image.extend(list_video)
+            Media_review.objects.bulk_create(list_image)
             serializer = ReviewSerializer(review,context={"request": request})
             data=serializer.data
         elif action=='report':
@@ -1601,23 +1584,14 @@ class PurchaseAPIView(APIView):
             return Response(data)
     def post(self,request,*args, **kwargs):
         user=request.user
-        file=request.FILES.getlist('file_choice')
-        file_update=request.FILES.getlist('file_update')
         reason=request.POST.get('reason')
         order_id=request.POST.get('order_id')
-        list_id=request.POST.getlist('id')
-        file_id=request.POST.getlist('file_id')
-        file_preview=request.FILES.getlist('file_preview')
-        file_preview_update=request.FILES.getlist('file_preview_update')
+        image=request.FILES.getlist('image')
+        list_id_image=request.POST.getlist('id_image')
+        list_id_video=request.POST.getlist('id_video')
+        video_preview=request.FILES.getlist('video_preview')
         duration=request.POST.getlist('duration')
-        duration_update=request.POST.getlist('duration_update')
-        list_preview=[None for  i in range(len(file))]
-        list_preview_update=[None for  i in range(len(file_update))]
-        for i in range(len(list_preview)):
-            for j in range(len(file_preview)):
-                if i==j:
-                    list_preview[i]=file_preview[j]
-        
+        video=request.FILES.getlist('video')
         total_xu=request.POST.get('total_xu')
         profile=Profile.objects.get(user=user)
         cartitem_id=request.POST.getlist('cartitem_id')
@@ -1677,17 +1651,25 @@ class PurchaseAPIView(APIView):
                     rating_shipping_service=int(rating_bab_category[i].split(',')[2]),
                 ) for i in range(len(cartitem_id))
             ])
-
-            list_media=Media_review.objects.bulk_create([Media_review(
+            
+            list_image=[Media_review(
                 upload_by=user,
-                file=file[i],
-                review=CartItem.objects.get(id=list_id[i]).get_review(),
-                file_preview=list_preview[i],
+                image=image[i],
+                review=CartItem.objects.get(id=list_id_image[i]).get_review(),
+                )
+                for i in range(len(image))
+                ]
+            list_video=[Media_review(
+                upload_by=user,
+                video=video[i],
+                review=CartItem.objects.get(id=list_id_video[i]).get_review(),
+                video_preview=video_preview[i],
                 duration=float(duration[i])
                 )
-                for i in range(len(file))
-                ])
-            
+                for i in range(len(video))
+            ]
+            list_image.extend(list_video)
+            Media_review.objects.bulk_create(list_image)
             data={'review':'review'}
             return Response(data)
 
