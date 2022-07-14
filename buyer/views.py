@@ -643,7 +643,7 @@ class ProductInfoAPIVIew(APIView):
             page_obj = paginator.get_page(page_number)
             data={
             'reviews':[{'id':review.id,'review_text':review.review_text,'created':review.created,
-                'info_more':review.info_more,'rating_anonymous':review.anonymous_review,
+                'info_more':review.info_more,'anonymous_review':review.anonymous_review,
                 'review_rating':review.review_rating,'num_like':review.num_like(),'user_like':[user.id for user in review.like.all()],
                 'list_file':[{'file_id':file.id,'filetype':file.filetype(),'file':file.file.url,
                 'media_preview':file.get_media_preview(),'duration':file.duration,'show':False}
@@ -1242,7 +1242,7 @@ class ActionReviewAPI(APIView):
         review_rating=request.POST.get('review_rating')
         review_text=request.POST.get('review_text')
         info_more=request.POST.get('info_more')
-        rating_anonymous=request.POST.get('rating_anonymous')
+        anonymous_review=request.POST.get('anonymous_review')
         rating_bab_category=request.POST.getlist('rating_bab_category')
         reason=request.POST.get('reason')
         action=request.POST.get('action')
@@ -1285,7 +1285,7 @@ class ActionReviewAPI(APIView):
                 [Media_review(
                     upload_by=user,
                     file=file[i],
-                    review=review,
+                    review_id=id,
                     file_preview=list_preview[i],
                     duration=float(duration[i])
                 )
@@ -1651,8 +1651,8 @@ class PurchaseAPIView(APIView):
         review_rating=request.POST.getlist('review_rating')
         review_text=request.POST.getlist('review_text')
         info_more=request.POST.getlist('info_more')
-        rating_anonymous=request.POST.getlist('rating_anonymous')
-        list_anonymous_review=[False if rating_anonymous[i]=='false' else True for i in range(len(rating_anonymous))]
+        anonymous_review=request.POST.getlist('anonymous_review')
+        list_anonymous_review=[False if anonymous_review[i]=='false' else True for i in range(len(anonymous_review))]
         rating_bab_category=request.POST.getlist('rating_bab_category')
         if reason:
             order=Order.objects.get(id=order_id)
