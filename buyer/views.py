@@ -1369,7 +1369,7 @@ class OrderinfoAPIView(APIView):
     def get(self,request,id):
         user=request.user
         order=Order.objects.get(id=id)
-        serializer = OrderdetailSerializer(orders,context={"request": request})
+        serializer = OrderdetailSerializer(order,context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
         
 @api_view(['GET', 'POST'])
