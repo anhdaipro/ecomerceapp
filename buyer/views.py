@@ -333,7 +333,7 @@ class DetailAPIView(APIView):
             shoptype=[{'value':shop.shop_type,'name':shop.get_shop_type_display()} for shop in list_shop ]
             status=[{'value':item.status,'name':item.get_status_display()} for item in list_items]
             data.update({
-                'image_home':[{'image':i.image.url,'url':i.url_field} for i in category.image_category.all()],
+                'image_home':[{'image':i.image.url,'url_field':i.url_field} for i in category.image_category.all()],
                 'shoptype':list({item['value']:item for item in shoptype}.values()),
                 'cities':list(set([shop.city for shop in list_shop if shop.city!=None])),
                 'unitdelivery':list(set(['Nhanh','Hỏa tốc'])),
