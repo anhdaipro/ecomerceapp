@@ -413,7 +413,6 @@ class MediareviewSerializer(serializers.ModelSerializer):
     filetype = serializers.SerializerMethodField()
     file = serializers.SerializerMethodField()
     media_preview = serializers.SerializerMethodField()
-    item_url = serializers.SerializerMethodField()
     show=serializers.SerializerMethodField()
     class Meta:
         model=Media_review
