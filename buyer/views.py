@@ -249,7 +249,7 @@ class CategoryListView(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class=CategoryhomeSerializer
     def get_queryset(self):
-        return Category.objects.exclude(image=None)
+        return Category.objects.exclude(image='')
 
 class Listitemseller(ListAPIView):
     permission_classes = (AllowAny,)
@@ -383,7 +383,7 @@ class DetailAPIView(APIView):
             } for i in item.media_upload.all()],'size':item.get_size(),'color':item.get_color(),
             'item_inventory':item.total_inventory(),
             'num_order':item.number_order(),'description':item.description,
-            'program_valid':item.program_valid(),
+            
             'shock_deal_type':item.shock_deal_type(),
             'deal_shock':list(deal_shock.values()),'flash_sale':list(flash_sale.values()),
             'promotion_combo':list(promotion_combo.values()),'user_id':item.shop.user_id,
@@ -1400,7 +1400,7 @@ class PromotionAPIView(APIView):
             'item_id':item.id,'item_name':item.name,
             'item_image':item.media_upload.all()[0].get_media(),
             'item_url':item.get_absolute_url(),'max_price':item.max_price(),
-            'program_valid':item.program_valid(),'min_price':item.min_price(),
+            'min_price':item.min_price(),
             'size':item.get_size(),'color':item.get_color(),'inventory':item.total_inventory()} for item in items]
         }
         return Response(data)
@@ -1504,7 +1504,7 @@ class PurchaseAPIView(APIView):
                 'item_image':cart_item.get_image(),'item_url':cart_item.item.get_absolute_url(),
                 'item_name':cart_item.item.name,'color_value':cart_item.product.get_color(),
                 'size_value':cart_item.product.get_size(),'id':cart_item.id
-                } for cart_item in order.items.all()],'username':user.username
+                } for cart_item in order.items.all()]
             }
             return Response(data)
         elif order_id and review:
