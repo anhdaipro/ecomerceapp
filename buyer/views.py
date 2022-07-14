@@ -48,8 +48,12 @@ from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
 from .serializers import (ChangePasswordSerializer,
 UserSerializer,SMSPinSerializer,
-SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer,UserprofileSerializer,
-ItemSellerSerializer,ItemrecentlySerializer,ShoporderSerializer,)
+SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer,
+UserprofileSerializer,ShopinfoSerializer,ItemSerializer,
+ItemSellerSerializer,ItemrecentlySerializer,ShoporderSerializer,ImagehomeSerializer,
+CategoryhomeSerializer,AddressSerializer,OrderSerializer,OrderdetailSerializer,
+ReviewSerializer,
+)
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -93,6 +97,7 @@ class UserView(APIView):
         user=request.user
         serializer = UserprofileSerializer(user)
         return Response(serializer.data)
+
 class UpdateOnline(APIView):
     permission_classes = (IsAuthenticated,)
     def post(self,request):
@@ -100,6 +105,7 @@ class UpdateOnline(APIView):
         if online=='false':
             Profile.objects.filter(user=request.user).update(online=False,is_online=timezone.now())
         return Response({'pk':'ki'})
+
 class RegisterView(APIView):
     permission_classes = (AllowAny,)
     serializers_class=UserSerializer
@@ -221,7 +227,6 @@ class LoginView(APIView):
         except Exception:
             raise AuthenticationFailed('Unauthenticated!')
 
-
 class LogoutView(APIView):
     def post(self, request):
         response = Response()
@@ -246,10 +251,9 @@ class HomeAPIView(APIView):
 
 class CategoryListView(APIView):
     permission_classes = (AllowAny,)
-    def get(self,request):
-        category_parent=Category.objects.all()
-        list_category_parent=[{'title':i.title,'image':i.image.url,'url':i.get_absolute_url()} for i in category_parent if i.image]
-        return Response(list_category_parent)
+    serializer_class=CategoryhomeSerializer
+    def get_queryset(self):
+        return Category.objects.exclude(image=None)
 
 class Listitemseller(ListAPIView):
     permission_classes = (AllowAny,)
@@ -602,18 +606,15 @@ class SearchitemAPIView(APIView):
         }
         return Response(data)
         
-class ImageHomeAPIView(APIView):
+class ImageHomeAPIView(ListAPIView):
     permission_classes = (AllowAny,)
-    def get(self,request):
-        image_home=Image_home.objects.all()
-        list_image_home=[{'image':i.image.url,'url':i.url_field} for i in image_home]
-        data={'c':list_image_home}
-        return Response(data)
+    serializer_class = ImagehomeSerializer
+    def get_queryset(self):
+        return Image_home.objects.all()
 
 class ProductInfoAPIVIew(APIView):
     permission_classes = (AllowAny,)
-    def get(self,request):
-        item_id=request.GET.get('item_id')
+    def get(self,request,id):
         media=request.GET.get('media')
         review_rating=request.GET.get('review_rating')
         comment=request.GET.get('comment')
@@ -625,45 +626,42 @@ class ProductInfoAPIVIew(APIView):
         review=request.GET.get('review')
         order=request.GET.get('order')
         from_item=request.GET.get('from_item')
-        if item_id:
-            item=Item.objects.get(id=item_id)
-            if shop:
-                data={'avatar':item.shop.user.profile.avatar.url,'shop_url':item.shop.get_absolute_url(),
-                'shop_name':item.shop.name,
-                'online':item.shop.user.profile.online,'num_follow':item.shop.num_follow(),
-                'is_online':item.shop.user.profile.is_online,'count_product':item.shop.count_product(),
-                'total_order':item.shop.total_order()}
-                return Response(data)
-            elif review:
-                list_review=ReView.objects.filter(cartitem__product__item=item)
-                reviews=ReView.objects.filter(cartitem__product__item=item)
-                count_comment= list_review.exclude(info_more='').count()
-                count_media= list_review.exclude(media_upload=None).count()
-                if review_rating:
-                    reviews=reviews.filter(review_rating=review_rating)
-                elif comment:
-                    reviews=reviews.exclude(info_more='')
-                elif media:
-                    reviews=reviews.exclude(media_upload=None)
-                paginator = Paginator(reviews, 10)  # Show 25 contacts per page.
-                page_number = request.GET.get('page')
-                page_obj = paginator.get_page(page_number)
-                data={
-                'reviews':[{'id':review.id,'review_text':review.review_text,'created':review.created,
-                        'info_more':review.info_more,'rating_anonymous':review.anonymous_review,
-                        'review_rating':review.review_rating,'num_like':review.num_like(),'user_like':[user.id for user in review.like.all()],
-                        'list_file':[{'file_id':file.id,'filetype':file.filetype(),'file':file.file.url,
-                        'media_preview':file.get_media_preview(),'duration':file.duration,'show':False}
-                        for file in review.media_review.all()],'color_value':review.cartitem.product.get_color(),
-                        'size_value':review.cartitem.product.get_size(),
-                        'item_name':review.cartitem.item.name,
-                        'user':review.user.username,'shop':review.shop_name(),
-                        'url_shop':review.user.shop.get_absolute_url(),
-                        } for review in page_obj],'page_count':paginator.num_pages,
-                        'rating':[review.review_rating for review in list_review],'has_comment':count_comment,
-                        'has_media':count_media
-                        }
-                return Response(data)
+        item=Item.objects.get(id=id)
+        if shop_id:
+            shop=Shop.objects.get(id=id)
+            serializer = ShopinfoSerializer(shop,context={"request": request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif review:
+            list_review=ReView.objects.filter(cartitem__product__item=item)
+            reviews=list_review
+            count_comment= list_review.exclude(info_more='').count()
+            count_media= list_review.exclude(media_upload=None).count()
+            if review_rating:
+                reviews=reviews.filter(review_rating=review_rating)
+            elif comment:
+                reviews=reviews.exclude(info_more='')
+            elif media:
+                reviews=reviews.exclude(media_upload=None)
+            paginator = Paginator(reviews, 10)  # Show 25 contacts per page.
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+            data={
+            'reviews':[{'id':review.id,'review_text':review.review_text,'created':review.created,
+                'info_more':review.info_more,'rating_anonymous':review.anonymous_review,
+                'review_rating':review.review_rating,'num_like':review.num_like(),'user_like':[user.id for user in review.like.all()],
+                'list_file':[{'file_id':file.id,'filetype':file.filetype(),'file':file.file.url,
+                'media_preview':file.get_media_preview(),'duration':file.duration,'show':False}
+                for file in review.media_review.all()],'color_value':review.cartitem.product.get_color(),
+                'size_value':review.cartitem.product.get_size(),
+                'item_name':review.cartitem.item.name,
+                'user':review.user.username,'shop':review.shop_name(),
+                'url_shop':review.user.shop.get_absolute_url(),
+                } for review in page_obj],'page_count':paginator.num_pages,
+                'rating':[review.review_rating for review in list_review],'has_comment':count_comment,
+                'has_media':count_media
+                }
+            return Response(data)
+
     def post(self, request, *args, **kwargs):
         item_id=request.POST.get('item_id')
         review_id=request.POST.get('review_id')
@@ -697,15 +695,6 @@ class ProductInfoAPIVIew(APIView):
             data.update({'num_like_item':item.num_like(),'like_item':like_item})  
         return Response(data)
 
-class Getshopinfo(APIView):
-    def get(self,request):
-        shop_id=request.GET.get('shop_id')
-        data={'avatar':item.shop.user.profile.avatar.url,'shop_url':item.shop.get_absolute_url(),
-            'shop_name':item.shop.name,
-            'online':item.shop.user.profile.online,'num_follow':item.shop.num_follow(),
-            'is_online':item.shop.user.profile.is_online,'count_product':item.shop.count_product(),
-            'total_order':item.shop.total_order()}
-        return Response(data)
 
 class ShopinfoAPIVIew(APIView):
     permission_classes = (AllowAny,)
@@ -746,14 +735,9 @@ class ListItemRecommendAPIView(APIView):
         page_number = request.GET.get('page')
         paginator = Paginator(items_recommend, 30)
         page_obj = paginator.get_page(page_number)
-        list_items_recommend=[{'item_name':i.name,'item_image':i.get_image_cover(),'max_price':i.max_price(),
-        'percent_discount':i.percent_discount(),'min_price':i.min_price(),
-        'program_valid':i.program_valid(),'item_url':i.get_absolute_url()
-        }
-        for i in page_obj]
-        data={'d':list_items_recommend}
-        return Response(data)
-
+        serializer = ItemSerializer(page_obj,many=True, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
 class Itemrecently(APIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemrecentlySerializer
@@ -794,6 +778,7 @@ def update_image(request):
             ) for i in file]
         )
         return Response({'ok':'ok'})
+
 class Category_home(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = CategorySerializer
@@ -1065,6 +1050,7 @@ class ShoporderAPI(APIView):
         shops=Shop.objects.filter(shop_order__in=list_cart_item).distinct()
         serializer = ShoporderSerializer(shops,many=True, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 class CartItemAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
@@ -1082,14 +1068,12 @@ class CartItemAPIView(APIView):
             'sizes':byproduct.item.get_size_deal(),'price':byproduct.byproduct.price,
             'variation_id':byproduct.byproduct_id,'item_id':byproduct.item_id,'item_name':byproduct.item.name,
             'inventory':byproduct.byproduct.inventory,'quantity':byproduct.quantity,'item_url':byproduct.item.get_absolute_url(),
-            'program_valid':byproduct.item.program_valid(),
-            'total_price':byproduct.total_price(),'open':False,
+            'total_price':byproduct.total_price(),
             'item_image':byproduct.item.get_image_cover(),
             'count_variation':byproduct.item.count_variation(),
              } for byproduct in cart_item.byproduct.all() if byproduct.item.get_deal()],
             'colors':cart_item.item.get_color(),'item_id':cart_item.item_id,'item_name':cart_item.item.name,
             'item_url':cart_item.item.get_absolute_url(),
-            'program_valid':cart_item.item.program_valid(),
             'promotion':cart_item.item.get_promotion(),'check':cart_item.check,
             'variation_id':cart_item.product_id,'total_price':cart_item.total_discount_cartitem(),
             'inventory':cart_item.product.inventory,'quantity':cart_item.quantity,
@@ -1208,16 +1192,20 @@ class ListorderAPIView(APIView):
 @api_view(['GET', 'POST'])
 def get_city(request):
     list_city=City.objects.all()
-    data={'a':list_city.values()}
-    return Response(data)
+    return Response(list_city.values())
 
 class AddressAPIView(APIView):
     permission_classes = (IsAuthenticated,)
+    serializer_class = AddressSerializer
     def get(self,request):
         user=request.user
+        default=request.GET.get('default')
         addresses = Address.objects.filter(user=user)
-        data={'a':list(addresses.values())}
-        return Response(data)
+        if default:
+            addresses=addresses.filter(default=True)
+        serializer = AddressSerializer(addresses,many=True, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def post(self, request, *args, **kwargs):
         user=request.user
         city=request.POST.get('city')
@@ -1281,38 +1269,15 @@ class AddressAPIView(APIView):
             }
             return Response(data)
 
+
 class CheckoutAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
-        address=Address.objects.filter(user=user,default=True)
         orders = Order.objects.filter(user=user, ordered=False).select_related('shop').select_related('voucher').prefetch_related('items__byproduct').prefetch_related('items__item__media_upload').prefetch_related('items__item__main_product').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__shop_program').prefetch_related('items__product__size').prefetch_related('items__product__color').exclude(items=None)
-        threads = Thread.objects.filter(participants=user).order_by('timestamp')
-        list_orders=[{'shop':order.shop.name,'discount_voucher':order.discount_voucher(),'user_id':order.shop.user_id,
-        'total':order.total_price_order(),'total_final':order.total_final_order(),
-        'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),'id':order.id,
-        'discount_promotion':order.discount_promotion(),'total_discount':order.total_discount_order(),
-        'cart_item':[{'item_id':cart_item.item_id,'item_name':cart_item.item.name,'item_url':cart_item.item.get_absolute_url(),
-        'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
-        'item_image':cart_item.get_image(),
-        'byproduct':[{
-            'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
-            'price':byproduct.byproduct.price,
-            'item_image':byproduct.item.get_image_cover(),
-            'item_id':byproduct.item_id,'item_name':byproduct.item.name,
-            'quantity':byproduct.quantity,'item_url':byproduct.item.get_absolute_url(),
-            'program_valid':byproduct.item.program_valid(),
-            'total_price':byproduct.total_price(),
-             } for byproduct in cart_item.byproduct.all()],
-        'quantity':cart_item.quantity,'discount_price':cart_item.product.total_discount(),
-        'price':cart_item.product.price,
-        'total_price':cart_item.total_discount_cartitem()
-        } for cart_item in order.items.all()]} for order in orders]
-        data={
-            'a':list_orders,'c':list(address.values()),
-            'list_threads':[{'id':thread.id,'count_message':thread.count_message(),'list_participants':[user.id for user in thread.participants.all() ]} for thread in threads]
-        }
-        return Response(data)
+        serializer = OrderSerializer(orders,many=True, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def post(self, request, *args, **kwargs):
         user=request.user
         id=request.POST.get('id')
@@ -1364,38 +1329,9 @@ class OrderinfoAPIView(APIView):
     def get(self,request,id):
         user=request.user
         order=Order.objects.get(id=id)
-        shop=order.shop.user
-        threads = Thread.objects.filter(participants=user).order_by('timestamp')
-        list_user=[thread.participants.all() for thread in threads]
-        exist=False
-        if shop in list_user:
-            exist=True
-        data={'exist':exist,
-        'district':order.shipping_address.district,'town':order.shipping_address.town,'ref_code':order.ref_code,
-        'name':order.shipping_address.name,'phone_number':order.shipping_address.phone_number,'city':order.shipping_address.city,'address':order.shipping_address.address,
-        'received':order.received,'canceled':order.canceled,'accepted':order.accepted,'amount':order.total_final_order(),
-        'being_delivered':order.being_delivered,'ordered_date':order.ordered_date,'received_date':order.received_date,
-        'canceled_date':order.canceled_date,'accepted_date':order.accepted_date,
-        'shop':order.shop.name,'shop_url':order.shop.get_absolute_url(),'user_id':order.shop.user_id,
-        'total':order.total_price_order(),'total_final':order.total_final_order(),
-        'count':order.count_item_cart(),'fee_shipping':order.fee_shipping(),
-        'cart_item':[{'item_id':cart_item.item_id,'item_name':cart_item.item.name,'item_url':cart_item.item.get_absolute_url(),
-        'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
-        'item_image':cart_item.get_image(),
-        'byproduct':[{
-            'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
-            'price':byproduct.byproduct.price,
-            'item_image':byproduct.item.get_image_cover(),
-            'item_id':byproduct.item_id,'item_name':byproduct.item.name,
-            'quantity':byproduct.quantity,'item_url':byproduct.item.get_absolute_url(),
-            'program_valid':byproduct.item.program_valid(),
-            'total_price':byproduct.total_price(),
-             } for byproduct in cart_item.byproduct.all()],
-        'quantity':cart_item.quantity,'discount_price':cart_item.product.total_discount(),
-        'price':cart_item.product.price,
-        'total_price':cart_item.total_discount_cartitem()
-        } for cart_item in order.items.all()]}
-        return Response(data)
+        serializer = OrderdetailSerializer(orders,context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
 @api_view(['GET', 'POST'])
 def payment_complete(request): 
     user=request.user
@@ -1546,25 +1482,6 @@ def upload_file(request):
             }
             return Response(data)
 
-@api_view(['GET', 'POST'])
-def update_message(request):
-    if request.method=="POST":
-        thread_id=request.POST.get('thread_id')
-        seen=request.POST.get('seen')
-        thread=Thread.objects.get(id=thread_id)
-        Message.objects.filter(thread=thread,seen=False).update(seen=True)
-        messages=Message.objects.filter(thread=thread).order_by('-id')[:10]
-        data={
-            'messages':[{'text':message.message,'file':message.message_file(),'filetype':message.message_filetype(),
-            'user_id':message.user_id,'created':message.date_created,'item':message.message_product(),
-            'message_order':message.message_order(),
-            'list_file':[{'file':uploadfile.file.url,'file_name':uploadfile.filename(),
-            'file_preview':uploadfile.file_preview(),'duration':uploadfile.duration,'filetype':uploadfile.filetype()}
-            for uploadfile in message.file.all()
-            ]} for message in messages]
-            }
-        return Response(data)
-
 class ProfileAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
@@ -1605,17 +1522,13 @@ class ProfileAPIView(APIView):
         profile.save()
         shop.save()
         return Response({'ol':'ooo'})
-@api_view(['GET', 'POST'])
-def get_address(request):
-    user=request.user
-    addresses = Address.objects.filter(user=user)
-    data={'a':list(addresses.values())}
-    return Response(data)
+
 def get_count_review(order):
     count=0
     for cart_item in order.items.all():
         count+= ReView.objects.filter(cartitem=cart_item).count()
     return count
+
 class PurchaseAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
@@ -1639,20 +1552,9 @@ class PurchaseAPIView(APIView):
         elif order_id and review:
             order = Order.objects.get(id=order_id)
             cartitem=order.items.all()
-            reviews=ReView.objects.filter(cartitem__in=cartitem).select_related('cartitem__item').select_related('cartitem__product__size').select_related('cartitem__product__color')
-            data={
-                'list_review':[{'id':review.id,'review_text':review.review_text,'created':review.created,
-                'info_more':review.info_more,'rating_anonymous':review.anonymous_review,'list_file':[{'filetype':file.filetype(),'file':file.file.url,
-                'media_preview':file.get_media_preview(),'duration':file.duration,'file_id':file.id,'show':False}
-                 for file in review.media_review.all()],
-                'rating_bab_category':[review.rating_product,review.rating_seller_service,review.rating_shipping_service],
-                'review_rating':review.review_rating,'edited':review.edited,
-                'item_image':review.cartitem.get_image(),'item_url':review.cartitem.item.get_absolute_url(),
-                'item_name':review.cartitem.item.name,'color_value':review.cartitem.product.get_color(),
-                'size_value':review.cartitem.product.get_size()
-                } for review in reviews]
-            }
-            return Response(data)
+            reviews=ReView.objects.filter(cartitem__in=cartitem).prefetch_related('cartitem__item__media_upload').select_related('cartitem__item').select_related('cartitem__product__size').select_related('cartitem__product__color')
+            serializer = ReviewSerializer(reviews,many=True,context={"request": request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             if offset:
                 from_item=int(offset)
@@ -1668,7 +1570,7 @@ class PurchaseAPIView(APIView):
                 order_all=order_all.filter(received=True)
             if type_order=='5':
                 order_all=order_all.filter(canceled=True)
-            list_order=[{'shop_name':order.shop.name,'shop_url':order.shop.get_absolute_url(),'user_id':order.shop.user_id,'received':order.received,'canceled':order.canceled,
+            list_order=[{'shop':{'name':order.shop.name,'url':order.shop.get_absolute_url(),'user_id':order.shop.user_id},'received':order.received,'canceled':order.canceled,
                 'being_delivered':order.being_delivered,'shop_url':order.shop.get_absolute_url(),'id':order.id,
                 'accepted':order.accepted,'amount':order.total_final_order(),
                 'received_date':order.received_date,'review':get_count_review(order),
@@ -1755,19 +1657,8 @@ class PurchaseAPIView(APIView):
                 for i in range(len(file))
                 ]
             )
-            data={
-                'list_review':[{'id':review.id,'review_text':review.review_text,'created':review.created,
-                'info_more':review.info_more,'rating_anonymous':review.anonymous_review,'list_file':[{'filetype':file.filetype(),'file':file.file.url,
-                'media_preview':file.get_media_preview(),'duration':file.duration,'file_id':file.id,'show':False}
-                 for file in review.media_review.all()],
-                'rating_bab_category':[review.rating_product,review.rating_seller_service,review.rating_shipping_service],
-                'review_rating':review.review_rating,'edited':review.edited,
-                'item_image':review.cartitem.get_image(),'item_url':review.cartitem.item.get_absolute_url(),
-                'item_name':review.cartitem.item.name,'color_value':review.cartitem.product.get_color(),
-                'size_value':review.cartitem.product.get_size()
-                } for review in reviews]
-            }
-            return Response(data)
+            serializer = ReviewSerializer(reviews,many=True,context={"request": request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
         elif reason:
             order=Order.objects.get(id=order_id)
             order.canceled=True
@@ -1896,11 +1787,4 @@ class ChangePasswordView(generics.UpdateAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
 

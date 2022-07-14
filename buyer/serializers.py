@@ -32,20 +32,16 @@ class UserprofileSerializer(serializers.ModelSerializer):
         return obj.profile.count_notifi_unseen
     def get_count_message_unseen(self,obj):
         return Member.objects.filter(user=obj,is_seen=False).count()
+
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model=Profile
         fields = ('phone',)
+
 class Verifyemail(serializers.ModelSerializer):
     model = Verifyemail
     fields=['otp','email']
-class Verifyemailuser(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'password','verifyemail']
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
+
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer()
     class Meta:
@@ -73,42 +69,22 @@ class SMSVerificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = SMSVerification
         exclude = "modified"
-class LoginSerializer(serializers.ModelSerializer):
-    tokens = serializers.SerializerMethodField()
-    def get_tokens(self, obj):
-        user = User.objects.get(email=obj['email'])
-
-        return {
-            'refresh': user.tokens()['refresh'],
-            'access': user.tokens()['access']
-        }
-
-    class Meta:
-        model = User
-        fields = ['email', 'password', 'username', 'tokens']
-
-    def validate(self, attrs):
-        email = attrs.get('email', '')
-        password = attrs.get('password', '')
-        password = attrs.get('username', '')
-        filtered_user_by_email = User.objects.filter(email=email)
-        filtered_user_by_username = User.objects.filter(username=username)
-        user = auth.authenticate(email=email, password=password)
-
-        return {
-            'email': user.email,
-            'username': user.username,
-            'tokens': user.tokens
-        }
-
-
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model=Category
-        fields=(
-            'title',
-        )
+        fields=('title',)
+
+class CategoryhomeSerializer(serializers.ModelSerializer):
+    image=serializers.SerializerMethodField()
+    url=serializers.SerializerMethodField()
+    class Meta:
+        model=Category
+        fields=('title','url','image',)
+    def get_url(self,obj):
+        return obj.get_absolute_url()
+    def get_image(self,obj):
+        return obj.image.url
 
 class ChangePasswordSerializer(serializers.Serializer):
     model = User
@@ -144,7 +120,7 @@ class SetNewPasswordSerializer(serializers.Serializer):
             raise AuthenticationFailed('The reset link is invalid', 401)
         return super().validate(attrs)
         
-class Image_homeSerializer(serializers.ModelSerializer):
+class ImagehomeSerializer(serializers.ModelSerializer):
     image=serializers.SerializerMethodField()
     class Meta:
         model=Image_home
@@ -154,6 +130,7 @@ class Image_homeSerializer(serializers.ModelSerializer):
         )
     def get_image(self,obj):
         return obj.image.url
+
 class ItemrecentlySerializer(serializers.ModelSerializer):
     image=serializers.SerializerMethodField()
     max_price=serializers.SerializerMethodField()
@@ -164,7 +141,7 @@ class ItemrecentlySerializer(serializers.ModelSerializer):
             'id',
             'image',
             'max_price',
-            'min_price'
+            'min_price',
         )
     
     def get_image(self,obj):
@@ -174,21 +151,58 @@ class ItemrecentlySerializer(serializers.ModelSerializer):
     def get_min_price(self,obj):
         return obj.item.min_price()
 
+class ShopinfoSerializer(serializers.ModelSerializer): 
+    avatar=serializers.SerializerMethodField()
+    url=serializers.SerializerMethodField()
+    online=serializers.SerializerMethodField()
+    num_follow=serializers.SerializerMethodField()
+    count_product=serializers.SerializerMethodField()
+    is_online=serializers.SerializerMethodField()
+    total_order=serializers.SerializerMethodField()
+    class Meta:
+        model=Shop
+        fields=('id','avatar','url','name','online','num_follow','is_online',
+        'count_product','total_order',)
+    def get_avatar(self,obj):
+        return obj.user.profile.avatar.url
+    def get_url(self,obj):
+        return obj.get_absolute_url()
+    def get_online(self,obj):
+        return obj.user.profile.online
+    def get_is_online(self,obj):
+        return obj.user.profile.online
+    def get_count_product(self,obj):
+        return obj.count_product()
+    def get_total_order(self,obj):
+        return obj.total_order()
+    def get_num_follow(self,obj):
+        return obj.num_follow()
+
+class VoucherSerializer(serializers.ModelSerializer): 
+    exists=serializers.SerializerMethodField()
+    class Meta:
+        model=Voucher
+        fields=('id','amount','created','discount_type','maximum_discount','maximum_usage',
+        'minimum_order_value','percent','valid_from','valid_to','voucher_type','exists',)
+    def get_exists(self,obj):
+        request=self.context.get("request")
+        if request.user in obj.user.all():
+            return True
 class ShoporderSerializer(serializers.ModelSerializer): 
     listvoucher=serializers.SerializerMethodField()
     class Meta:
         model=Shop
         fields=('id','name','listvoucher','user_id',)
     def get_listvoucher(self,obj):
-        request=self.context.get("request") 
         cartview=CartItem.objects.filter(shop=obj,ordered=False)
         list_voucher=Voucher.objects.filter(product__cart_item__in=cartview).distinct()
-        return [{'id':voucher.id,'amount':voucher.amount,'created':voucher.created,
-        'discount_type':voucher.discount_type,'maximum_discount':voucher.maximum_discount,
-        'maximum_usage':voucher.maximum_usage,'minimum_order_value':voucher.minimum_order_value,
-        'percent':voucher.percent,'valid_from':voucher.valid_from,
-        'valid_to':voucher.valid_to,'voucher_type':voucher.voucher_type,
-        'exists':True if request.user in voucher.user.all() else False} for voucher in list_voucher]
+        return VoucherSerializer(list_voucher,many=True).data
+
+class AddressSerializer(serializers.ModelSerializer): 
+    class Meta:
+        model=Address
+        fields = '__all__'
+
 class ItemSellerSerializer(serializers.ModelSerializer):
     image=serializers.SerializerMethodField()
     count_order=serializers.SerializerMethodField()
@@ -199,12 +213,43 @@ class ItemSellerSerializer(serializers.ModelSerializer):
             'image',
             'count_order',
         )
-    
     def get_image(self,obj):
         return obj.get_image_cover()
     def get_count_order(self,obj):
         return obj.number_order()
+
 class ItemSerializer(serializers.ModelSerializer):
+    image=serializers.SerializerMethodField()
+    url=serializers.SerializerMethodField()
+    max_price=serializers.SerializerMethodField()
+    min_price=serializers.SerializerMethodField()
+    percent_discount=serializers.SerializerMethodField()
+    number_order=serializers.SerializerMethodField()
+    class Meta:
+        model = Item
+        fields = (
+            'id',
+            'image',
+            'max_price',
+            'min_price',
+            'url',
+            'number_order'
+            'percent_discount'
+        )
+    def get_url(self,obj):
+        return obj.get_absolute_url()
+    def get_image(self,obj):
+        return obj.get_image_cover()
+    def get_max_price(self,obj):
+        return obj.max_price()
+    def get_min_price(self,obj):
+        return obj.min_price()
+    def get_percent_discount(self,obj):
+        return obj.percent_discount()
+    def get_number_order(self,obj):
+        return obj.number_order()
+
+class ItemdetailSerializer(serializers.ModelSerializer):
     shop=serializers.SerializerMethodField()
     percent_discount = serializers.SerializerMethodField()
     category=serializers.SerializerMethodField()
@@ -249,6 +294,7 @@ class ItemSerializer(serializers.ModelSerializer):
         return obj.program_valid()
     def get_shock_deal_type(self,obj):
         return obj.shock_deal_type()
+
 class VariationSerializer(serializers.ModelSerializer):
     item = serializers.SerializerMethodField()
     class Meta:
@@ -261,21 +307,192 @@ class VariationSerializer(serializers.ModelSerializer):
     def get_item(self, obj):
         return ItemSerializer(obj.item).data
 
-class CartItemSerializer(serializers.ModelSerializer):
-    item = serializers.SerializerMethodField()
-    final_price = serializers.SerializerMethodField()
+class ByproductSerializer(serializers.ModelSerializer):
+    color_value = serializers.SerializerMethodField()
+    size_value = serializers.SerializerMethodField()
+    item_image = serializers.SerializerMethodField()
+    item_name = serializers.SerializerMethodField()
+    item_url = serializers.SerializerMethodField()
+    total_price = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
+    class Meta:
+        model=Byproductcart
+        fields=('id','byproduct_id','color_value','size_value','price','item_image','item_id',
+        'item_name','quantity','item_url','total_price',)
+    def get_color_value(self,obj):
+        return obj.byproduct.get_color()
+    def get_size_value(self,obj):
+        return obj.byproduct.get_size()
+    def get_item_image(self,obj):
+        return obj.item.get_image_cover()
+    def get_price(self,obj):
+        return obj.byproduct.price
+    def get_item_name(self,obj):
+        return obj.item.name
+    def get_item_url(self,obj):
+        return obj.item.get_absolute_url()
+    def get_total_price(self,obj):
+        return obj.total_price()
 
+class ShopSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Shop
+        fields=('id','name','user_id',)
+
+class OrderdetailSerializer(serializers.ModelSerializer):
+    address=serializers.SerializerMethodField()
+    shop=serializers.SerializerMethodField()
+    total=serializers.SerializerMethodField()
+    cart_item=serializers.SerializerMethodField()
+    discount_voucher=serializers.SerializerMethodField()
+    total_final=serializers.SerializerMethodField()
+    count=serializers.SerializerMethodField()
+    fee_shipping=serializers.SerializerMethodField()
+    discount_promotion=serializers.SerializerMethodField()
+    total_discount=serializers.SerializerMethodField()
+    class Meta:
+        model=Order
+        fields=('cart_item','discount_voucher','total','total_final','shop',
+        'address','received','canceled','accepted','amount',
+        'being_delivered','ordered_date','received_date',
+        'canceled_date','accepted_date',
+        'count','fee_shipping','id','discount_promotion','total_discount',)
+    def get_shop(self,obj):
+        return ShopSerializer(obj.shop).data
+    def get_address(self,obj):
+        return AddressSerializer(obj.shipping_address).data
+    def get_cart_item(self,obj):
+        return CartItemSerializer(obj.items.all(),many=True).data
+    def get_discount_voucher(self,obj):
+        return obj.discount_voucher()
+    def get_total(self,obj):
+        return obj.total_price_order()
+    def get_total_final(self,obj):
+        return obj.total_final_order()
+    def get_count(self,obj):
+        return obj.count_item_cart()
+    def get_fee_shipping(self,obj):
+        return obj.fee_shipping()
+    def get_discount_promotion(self,obj):
+        return obj.discount_promotion()
+    def get_total_discount(self,obj):
+        return obj.total_discount_order()
+
+class OrderSerializer(serializers.ModelSerializer):
+    shop=serializers.SerializerMethodField()
+    total=serializers.SerializerMethodField()
+    cart_item=serializers.SerializerMethodField()
+    discount_voucher=serializers.SerializerMethodField()
+    total_final=serializers.SerializerMethodField()
+    count=serializers.SerializerMethodField()
+    fee_shipping=serializers.SerializerMethodField()
+    discount_promotion=serializers.SerializerMethodField()
+    total_discount=serializers.SerializerMethodField()
+    class Meta:
+        model=Order
+        fields=('cart_item','discount_voucher','total','total_final','shop','amount',
+        'count','fee_shipping','id','discount_promotion','total_discount',)
+    def get_shop(self,obj):
+        return ShopSerializer(obj.shop).data
+    
+    def get_cart_item(self,obj):
+        return CartItemSerializer(obj.items.all(),many=True).data
+    def get_discount_voucher(self,obj):
+        return obj.discount_voucher()
+    def get_total(self,obj):
+        return obj.total_price_order()
+    def get_total_final(self,obj):
+        return obj.total_final_order()
+    def get_count(self,obj):
+        return obj.count_item_cart()
+    def get_fee_shipping(self,obj):
+        return obj.fee_shipping()
+    def get_discount_promotion(self,obj):
+        return obj.discount_promotion()
+    def get_total_discount(self,obj):
+        return obj.total_discount_order()
+
+class MediareviewSerializer(serializers.ModelSerializer):
+    filetype = serializers.SerializerMethodField()
+    file = serializers.SerializerMethodField()
+    media_preview = serializers.SerializerMethodField()
+    item_url = serializers.SerializerMethodField()
+    show=serializers.SerializerMethodField()
+    class Meta:
+        model=Media_review
+        fields=('id','duration','filetype','media_preview','file','show',)
+    def get_filetype(self,obj):
+        return obj.filetype()
+    def get_file(self,obj):
+        return obj.file.url
+    def get_media_preview(self,obj):
+        return obj.get_media_preview()
+    def get_show(self,obj):
+        return False
+
+class ReviewSerializer(serializers.ModelSerializer):
+    color_value = serializers.SerializerMethodField()
+    size_value = serializers.SerializerMethodField()
+    item_image = serializers.SerializerMethodField()
+    item_name = serializers.SerializerMethodField()
+    item_url = serializers.SerializerMethodField()
+    list_file=serializers.SerializerMethodField()
+    rating_bab_category=serializers.SerializerMethodField()
+    class Meta:
+        model=ReView
+        fields=('id','review_text','created',
+                'info_more','rating_anonymous','list_file',
+                'rating_bab_category',
+                'review_rating','edited',)
+    def get_list_file(self,obj):
+        return MediareviewSerializer(obj.media_review.all(),many=True).data  
+    def get_color_value(self,obj):
+        return obj.cartitem.product.get_color()
+    def get_rating_bab_category(self,obj):
+        return [obj.rating_product,obj.rating_seller_service,obj.rating_shipping_service]
+    def get_size_value(self,obj):
+        return obj.cartitem.product.get_size()
+    def get_item_image(self,obj):
+        return obj.cartitem.get_image()
+    def get_item_name(self,obj):
+        return obj.cartitem.item.name
+    def get_item_url(self,obj):
+        return obj.cartitem.item.get_absolute_url()
+
+
+class CartItemSerializer(serializers.ModelSerializer):
+    item_name = serializers.SerializerMethodField()
+    item_url=serializers.SerializerMethodField()
+    color_value=serializers.SerializerMethodField()
+    size_value=serializers.SerializerMethodField()
+    item_image=serializers.SerializerMethodField()
+    discount_price=serializers.SerializerMethodField()
+    total_price=serializers.SerializerMethodField()
+    price=serializers.SerializerMethodField()
+    byproduct=serializers.SerializerMethodField()
     class Meta:
         model = CartItem
-        fields = (
-            'id',
-            'item_name',
-            'quantity',
-            'final_price'
+        fields = ('id','item_id','item_name','item_url','product_id',
+        'color_value','size_value','quantity','discount_price',
+        'price','total_price','byproduct'
         )
-
-    def get_item(self, obj):
-        return ItemSerializer(obj.item).data
-
+    def get_color_value(self,obj):
+        return obj.product.get_color()
+    def get_size_value(self,obj):
+        return obj.product.get_size()
+    def get_item_image(self,obj):
+        return obj.get_image()
+    def get_price(self,obj):
+        return obj.product.price
+    def get_item_name(self,obj):
+        return obj.item.name
+    def get_item_url(self,obj):
+        return obj.item.get_absolute_url()
+    def get_total_price(self,obj):
+        return obj.total_discount_cartitem()
+    def get_discount_price(self,obj):
+        return obj.product.total_discount()
+    def get_byproduct(self,obj):
+        return ByproductSerializer(obj.byproduct.all(), many=True).data
     def get_final_price(self, obj):
         return obj.get_final_price()
