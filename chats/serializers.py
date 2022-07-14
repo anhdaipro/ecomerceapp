@@ -86,3 +86,19 @@ class MessageSerializer(serializers.ModelSerializer):
     def get_message_order(self,obj):
         return obj.message_product()
 
+class ThreaddetailSerializer(serializers.ModelSerializer):
+    members=serializers.SerializerMethodField()
+    messages=serializers.SerializerMethodField()
+    thread=serializers.SerializerMethodField()
+    class Meta:
+        model=Thread
+        fields=('thread','members','messages',)
+    def get_thread(self,obj):
+        return{'id':obj.id,'count_message':obj.count_message()}
+    
+    def get_members(self,obj):
+        listmember=Member.objects.filter(thread=obj).select_related('user__profile').select_related('user__shop')
+        return MemberSerializer(listmember,many=True).data
+    def get_messages(self,obj):
+        return MessageSerializer(obj.chatmessage_thread.all(),many=True).data
+

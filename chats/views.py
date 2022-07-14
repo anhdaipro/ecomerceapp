@@ -12,7 +12,7 @@ from rest_framework.generics import (
     ListAPIView, RetrieveAPIView, CreateAPIView,
     UpdateAPIView, DestroyAPIView,GenericAPIView,
 )
-from .serializers import ThreadinfoSerializer,MessageSerializer
+from .serializers import ThreadinfoSerializer,MessageSerializer,ThreaddetailSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -218,20 +218,8 @@ class CreateThread(APIView):
             if order_id:
                 Member.objects.filter(user_id=send_to,thread=thread).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1)
                 message,created=Message.objects.get_or_create(thread=thread,user=request.user,order_id=order_id,message_type='5')
-            messages=Message.objects.filter(thread=thread.first()).prefetch_related('message_media').order_by('-id')[:10]
-            listmessage=[{'id':message.id,'message':message.message,'message_type':message.message_type,
-                'user_id':message.user_id,'date_created':message.date_created,'message_order':message.message_order(),
-                'message_product':message.message_product(),
-                'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,
-                'file_preview':uploadfile.get_file_preview(),'duration':uploadfile.duration,}
-                for uploadfile in message.message_media.all()
-                ]} for message in messages
-                ]
-            data={'messages':listmessage,
-            'thread':{'id':thread[0].id,'count_message':thread[0].count_message()},
-            'members':[{'block':member.block,'url':member.user.shop.get_absolute(),'gim':member.gim,'count_product_shop':member.user.shop.count_product(),'user_id':member.user_id,'count_message_unseen':member.count_message_unseen,
-            'avatar':member.user.profile.avatar.url,'username':member.user.username} for member in listmember]}
-            return Response(data)
+            serializer = ThreaddetailSerializer(thread.first(),context={"request": request})
+            return Response(serializer.data)
         else:
             thread=Thread.objects.create(admin=request.user)
             thread.participants.add(*member)
@@ -253,9 +241,8 @@ class CreateThread(APIView):
                 'user_id':message.user_id,'date_created':message.date_created,'message_product':message.message_product(),
                 })
 
-            data={'messages':listmessage,'thread':{'id':thread.id,'count_message':0},'members':[{'user_id':member.user_id,'avatar':member.user.profile.avatar.url,'username':member.user.username,
-            'gim':False,'block':False,'url':member.user.shop.get_absolute(),'count_product_shop':member.user.shop.count_product(),'count_message_unseen':member.count_message_unseen} for member in members]}
-            return Response(data)
+            serializer = ThreaddetailSerializer(thread,context={"request": request})
+            return Response(serializer.data)
 
 
 

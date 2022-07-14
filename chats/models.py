@@ -23,7 +23,6 @@ class Thread(models.Model):
     def count_message_not_seen(self):
         return Message.objects.filter(seen=False,thread=self).count()
     def count_message(self):
-        count=0
         return Message.objects.filter(thread=self).count()
    
 class Member(models.Model):
