@@ -1668,8 +1668,9 @@ class PurchaseAPIView(APIView):
                 )
                 for i in range(len(video))
             ]
-            listmedia=list_image+list_video
-            Media_review.objects.bulk_create(listmedia)
+            
+            Media_review.objects.bulk_create(list_image)
+            Media_review.objects.bulk_create(list_video)
             data={'review':'review'}
             return Response(data)
 
