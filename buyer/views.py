@@ -623,8 +623,8 @@ class ProductInfoAPIVIew(APIView):
         order=request.GET.get('order')
         from_item=request.GET.get('from_item')
         item=Item.objects.get(id=id)
-        if shop_id:
-            shop=Shop.objects.get(id=id)
+        if shop:
+            shop=item.shop
             serializer = ShopinfoSerializer(shop,context={"request": request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         elif review:
