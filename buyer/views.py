@@ -625,13 +625,13 @@ class ProductInfoAPIVIew(APIView):
             list_review=ReView.objects.filter(cartitem__product__item=item)
             reviews=list_review
             count_comment= list_review.exclude(info_more='').count()
-            count_media= list_review.exclude(media_upload=None).count()
+            count_media= list_review.exclude(media_review=None).count()
             if review_rating:
                 reviews=reviews.filter(review_rating=review_rating)
             elif comment:
                 reviews=reviews.exclude(info_more='')
             elif media:
-                reviews=reviews.exclude(media_upload=None)
+                reviews=reviews.exclude(media_review=None)
             paginator = Paginator(reviews, 10)  # Show 25 contacts per page.
             page_number = request.GET.get('page')
             page_obj = paginator.get_page(page_number)
