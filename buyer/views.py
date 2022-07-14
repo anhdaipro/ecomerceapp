@@ -49,7 +49,7 @@ SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSeri
 UserprofileSerializer,ShopinfoSerializer,ItemSerializer,
 ItemSellerSerializer,ItemrecentlySerializer,ShoporderSerializer,ImagehomeSerializer,
 CategoryhomeSerializer,AddressSerializer,OrderSerializer,OrderdetailSerializer,
-ReviewSerializer,CartitemcartSerializer,
+ReviewSerializer,CartitemcartSerializer,CartviewSerializer,
 )
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
@@ -346,7 +346,7 @@ class DetailAPIView(APIView):
                 'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
                 'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
-                'program_valid':i.program_valid(),'promotion':i.get_promotion(),
+                'promotion':i.get_promotion(),
                 'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
                 }
             for i in page_obj],'page_count':paginator.num_pages
@@ -367,8 +367,8 @@ class DetailAPIView(APIView):
                 main_product=item.variation_set.all()[0]
                 data.update({'byproduct':[{'item_name':i.name,'item_image':i.get_image_cover(),
                 'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
-                'max_price':i.max_price(),'discount_deal':i.discount_deal(),
-                'program_valid':i.program_valid()} for i in byproduct]})
+                'max_price':i.max_price(),'discount_deal':i.discount_deal()
+                } for i in byproduct]})
             promotion_combo=Promotion_combo.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
             flash_sale=Flash_sale.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
             order=Order.objects.filter(items__product__item=item,received=True)
@@ -390,7 +390,7 @@ class DetailAPIView(APIView):
             'voucher':list(vouchers.values()),
             'list_host_sale':[{'item_name':i.name,'item_image':i.get_image_cover(),'max_price':i.max_price(),
             'percent_discount':i.percent_discount(),'min_price':i.min_price(),
-            'program_valid':i.program_valid(),'item_url':i.get_absolute_url()
+            'item_url':i.get_absolute_url()
             } for i in list_hot_sales]
             })
             
@@ -460,7 +460,7 @@ class DetailAPIView(APIView):
                 'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
                 'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
                 'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
-                'program_valid':i.program_valid(),'promotion':i.get_promotion(),
+                'promotion':i.get_promotion(),
                 'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
                 }
                 for i in page_obj],'page_count':paginator.num_pages,'list_voucher':list_voucher.values(),
@@ -595,7 +595,7 @@ class SearchitemAPIView(APIView):
             'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
             'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
             'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
-            'program_valid':i.program_valid(),'promotion':i.get_promotion(),
+            'promotion':i.get_promotion(),
             'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
             }
         for i in page_obj],'page_count':paginator.num_pages
@@ -715,7 +715,7 @@ class ShopinfoAPIVIew(APIView):
             'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
             'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
             'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
-            'program_valid':i.program_valid(),'promotion':i.get_promotion(),
+            'promotion':i.get_promotion(),
             'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
             }
             for i in page_obj]
@@ -1012,14 +1012,9 @@ class AddToCartAPIView(APIView):
                 cart_item.save()
                 return Response({'erorr':'over quantity'})
             else:
-                data={'item_id':cart_item.item_id,'item_name':cart_item.item.name,'id':cart_item.id,
-                'item_image':cart_item.get_image(),
-                'item_url':cart_item.item.get_absolute_url(),
-                'price':cart_item.product.price-cart_item.product.total_discount(),
-                'shock_deal_type':cart_item.item.shock_deal_type(),
-                'promotion':cart_item.item.get_promotion(),
-                }
-                return Response(data)
+                serializer = CartviewSerializer(cart_item,context={"request": request})
+                return Response(serializer.data, status=status.HTTP_200_OK)
+                
         except Exception:
             cart_item=CartItem.objects.create(
                 product=product,
@@ -1029,17 +1024,8 @@ class AddToCartAPIView(APIView):
                 quantity=int(quantity),
                 shop=item.shop,
                 )
-            data={
-                'item_id':cart_item.item_id,
-                'item_name':cart_item.item.name,
-                'id':cart_item.id,
-                'item_image':cart_item.get_image(),
-                'item_url':cart_item.item.get_absolute_url(),
-                'price':cart_item.product.price-cart_item.product.total_discount(),
-                'shock_deal_type':cart_item.item.shock_deal_type(),
-                'promotion':cart_item.item.get_promotion(),
-                }
-            return Response(data)
+            serializer = CartviewSerializer(cart_item,context={"request": request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
 class ShoporderAPI(APIView):
     def get(self,request):
         list_cart_item=CartItem.objects.filter(user=request.user,ordered=False)

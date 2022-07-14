@@ -86,7 +86,8 @@ class CategoryhomeSerializer(serializers.ModelSerializer):
     def get_url(self,obj):
         return obj.get_absolute_url()
     def get_image(self,obj):
-        return obj.image.url
+        if obj.image:
+            return obj.image.url
 
 class ChangePasswordSerializer(serializers.Serializer):
     model = User
@@ -258,7 +259,6 @@ class ItemdetailSerializer(serializers.ModelSerializer):
     category=serializers.SerializerMethodField()
     list_media=serializers.SerializerMethodField()
     list_voucher=serializers.SerializerMethodField()
-    program_valid=serializers.SerializerMethodField()
     shock_deal_type=serializers.SerializerMethodField()
     list_promotion=serializers.SerializerMethodField()
     class Meta:
@@ -275,7 +275,6 @@ class ItemdetailSerializer(serializers.ModelSerializer):
             'list_voucher',
             'shock_deal_type',
             'list_promotion',
-            'program_valid',
             'max_price',
             'min_price',
             'percent_discount'
@@ -293,8 +292,6 @@ class ItemdetailSerializer(serializers.ModelSerializer):
         return obj.get_voucher()
     def get_list_promotion(self,obj):
         return obj.get_promotion()
-    def get_program_valid(self,obj):
-        return obj.program_valid()
     def get_shock_deal_type(self,obj):
         return obj.shock_deal_type()
 
@@ -310,6 +307,29 @@ class VariationSerializer(serializers.ModelSerializer):
     def get_item(self, obj):
         return ItemSerializer(obj.item).data
 
+class CartviewSerializer(serializers.ModelSerializer):
+    item_name = serializers.SerializerMethodField()
+    item_url=serializers.SerializerMethodField()
+    item_image=serializers.SerializerMethodField()
+    price=serializers.SerializerMethodField()
+    promotion=serializers.SerializerMethodField()
+    shock_deal_type=serializers.SerializerMethodField()
+    class Meta:
+        model=('id','item_id','item_name','item_image','item_url',
+                'price','shock_deal_type','promotion',)
+    
+    def get_item_image(self,obj):
+        return obj.get_image()
+    def get_item_name(self,obj):
+        return obj.item.name
+    def get_item_url(self,obj):
+        return obj.item.get_absolute_url()
+    def get_price(self,obj):
+        return obj.product.price-obj.product.total_discount()
+    def get_promotion(self,obj):
+        return obj.item.get_promotion()
+    def get_shock_deal_type(self,obj):
+        return obj.item.shock_deal_type()
 
 class ShopSerializer(serializers.ModelSerializer):
     class Meta:

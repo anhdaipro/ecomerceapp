@@ -209,7 +209,7 @@ class Listordershop(APIView):
             'item_image':byproduct.byproduct.item.get_image_cover(),
             'item_id':byproduct.item_id,'item_name':byproduct.item.name,
             'quantity':byproduct.quantity,'item_url':byproduct.byproduct.item.get_absolute_url(),
-            'program_valid':byproduct.byproduct.item.program_valid(),
+            
             'total_price':byproduct.total_price(),
              } for byproduct in order_item.byproduct.all()],
             'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
