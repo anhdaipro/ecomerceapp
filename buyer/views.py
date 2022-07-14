@@ -1233,16 +1233,16 @@ class ActionReviewAPI(APIView):
             list_mediaupload.exclude(id__in=file_id).delete()
             list_image=[Media_review(
                 upload_by=user,
-                image=image[i],
+                file=image[i],
                 review_id=id,
                 )
                 for i in range(len(image))
                 ]
             list_video=[Media_review(
                 upload_by=user,
-                video=video[i],
+                file=video[i],
                 review_id=id,
-                video_preview=video_preview[i],
+                file_preview=video_preview[i],
                 duration=float(duration[i])
                 )
                 for i in range(len(video))
@@ -1654,16 +1654,16 @@ class PurchaseAPIView(APIView):
             
             list_image=[Media_review(
                 upload_by=user,
-                image=image[i],
+                file=image[i],
                 review=CartItem.objects.get(id=list_id_image[i]).get_review(),
                 )
                 for i in range(len(image))
                 ]
             list_video=[Media_review(
                 upload_by=user,
-                video=video[i],
+                file=video[i],
                 review=CartItem.objects.get(id=list_id_video[i]).get_review(),
-                video_preview=video_preview[i],
+                file_preview=video_preview[i],
                 duration=float(duration[i])
                 )
                 for i in range(len(video))
