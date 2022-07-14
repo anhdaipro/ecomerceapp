@@ -783,7 +783,7 @@ class Category_home(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = CategorySerializer
     def get_queryset(self):
-        return Category.objects.exclude(item=None).order_by('title').values('title').distinct()[:8]
+        return Category.objects.exclude(image=None).order_by('title').values('title').distinct()[:8]
     
 class CartAPIView(APIView):
     permission_classes = (AllowAny,)

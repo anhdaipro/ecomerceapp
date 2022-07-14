@@ -194,9 +194,10 @@ class ShoporderSerializer(serializers.ModelSerializer):
         model=Shop
         fields=('id','name','listvoucher','user_id',)
     def get_listvoucher(self,obj):
+        request=self.context.get("request")
         cartview=CartItem.objects.filter(shop=obj,ordered=False)
         list_voucher=Voucher.objects.filter(product__cart_item__in=cartview).distinct()
-        return VoucherSerializer(list_voucher,many=True).data
+        return VoucherSerializer(list_voucher,many=True,context={"request": request}).data
 
 class AddressSerializer(serializers.ModelSerializer): 
     class Meta:
@@ -333,6 +334,11 @@ class ByproductSerializer(serializers.ModelSerializer):
         return obj.item.get_absolute_url()
     def get_total_price(self,obj):
         return obj.total_price()
+
+class ByproductcartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Byproduct
+        fields=('byproduct')
 
 class ShopSerializer(serializers.ModelSerializer):
     class Meta:
