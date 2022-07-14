@@ -249,7 +249,7 @@ class HomeAPIView(APIView):
         }
         return Response(data)
 
-class CategoryListView(APIView):
+class CategoryListView(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class=CategoryhomeSerializer
     def get_queryset(self):
@@ -261,7 +261,7 @@ class Listitemseller(ListAPIView):
     def get_queryset(self):
         return Item.objects.filter(cart_item__order_cartitem__ordered=True).annotate(count_order= Count('cart_item__order_cartitem')).prefetch_related('cart_item__order_cartitem').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count_order')
 
-class ListTrendsearch(APIView):
+class ListTrendsearch(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSellerSerializer
     def get_queryset(self):
@@ -738,7 +738,7 @@ class ListItemRecommendAPIView(APIView):
         serializer = ItemSerializer(page_obj,many=True, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
         
-class Itemrecently(APIView):
+class Itemrecently(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemrecentlySerializer
     def get_queryset(self):
@@ -746,7 +746,7 @@ class Itemrecently(APIView):
         user=request.user
         return ItenReviews.objects.filter(user=user).order_by('-id,item')[:12].distinct()
 
-class Listitemhostsale(APIView):
+class Listitemhostsale(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemrecentlySerializer
     def get_queryset(self):
