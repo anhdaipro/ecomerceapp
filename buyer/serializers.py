@@ -480,7 +480,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartItem
         fields = ('id','item_id','item_name','item_url','product_id',
-        'color_value','size_value','quantity','discount_price',
+        'color_value','size_value','quantity','discount_price','item_image',
         'price','total_price','byproduct'
         )
     def get_color_value(self,obj):

@@ -36,6 +36,12 @@ class Byproductcart(models.Model):
     def total_price(self):
         return self.price_by()-self.discount_deal_by()-self.discount_by()
 
+    def get_image(self):
+        image=self.item.get_image_cover()
+        if self.byproduct.color:
+            if self.byproduct.color.image:
+                image=self.byproduct.color.image.url
+        return image
 class CartItem(models.Model):
     user=models.ForeignKey(User, on_delete=models.CASCADE)
     shop=models.ForeignKey(to="shop.Shop",on_delete=models.CASCADE,related_name='shop_order')
