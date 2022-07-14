@@ -59,11 +59,12 @@ class Media_review(models.Model):
     file=models.FileField(storage=RawMediaCloudinaryStorage())
     review=models.ForeignKey(ReView,on_delete=models.CASCADE,related_name='media_review')
     duration=models.IntegerField(null=True)
-    file_preview=models.FileField(null=True)
+    media_preview=models.ImageField(null=True)
+
 
     def get_media_preview(self):
-        if self.file_preview and hasattr(self.file_preview,'url'):
-            return self.file_preview.url
+        if self.media_preview and hasattr(self.media_preview,'url'):
+            return self.media_preview.url
     def filetype(self):
         type_tuple = guess_type(self.file.url, strict=True)
         if (type_tuple[0]).__contains__("image"):

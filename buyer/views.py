@@ -1242,7 +1242,7 @@ class ActionReviewAPI(APIView):
                 upload_by=user,
                 file=video[i],
                 review_id=id,
-                file_preview=video_preview[i],
+                media_preview=video_preview[i],
                 duration=float(duration[i])
                 )
                 for i in range(len(video))
@@ -1663,14 +1663,13 @@ class PurchaseAPIView(APIView):
                 upload_by=user,
                 file=video[i],
                 review=CartItem.objects.get(id=list_id_video[i]).get_review(),
-                file_preview=video_preview[i],
+                media_preview=video_preview[i],
                 duration=float(duration[i])
                 )
                 for i in range(len(video))
             ]
-            
-            Media_review.objects.bulk_create(list_image)
-            Media_review.objects.bulk_create(list_video)
+            listmedia=list_image+list_video
+            Media_review.objects.bulk_create(listmedia)
             data={'review':'review'}
             return Response(data)
 
