@@ -615,19 +615,13 @@ class ProductInfoAPIVIew(APIView):
         review_rating=request.GET.get('review_rating')
         comment=request.GET.get('comment')
         all_review=request.GET.get('all')
-        review=request.GET.get('review')
-        name=request.GET.get('name')
-        shop=request.GET.get('shop')
-        product_detail=request.GET.get('product_detail')
-        review=request.GET.get('review')
-        order=request.GET.get('order')
-        from_item=request.GET.get('from_item')
+        choice=request.GET.get('choice')
         item=Item.objects.get(id=id)
-        if shop:
+        if choice=='shop':
             shop=item.shop
             serializer = ShopinfoSerializer(shop,context={"request": request})
             return Response(serializer.data, status=status.HTTP_200_OK)
-        elif review:
+        elif choice=='review':
             list_review=ReView.objects.filter(cartitem__product__item=item)
             reviews=list_review
             count_comment= list_review.exclude(info_more='').count()
