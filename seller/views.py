@@ -364,7 +364,7 @@ def get_product(request):
         if item_id:
             item=Item.objects.get(id=item_id)
             data={
-                'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),
+                'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),
                 'size_value':variation.get_size(),'inventory':variation.inventory,
                 'discount':variation.total_discount(),
                 'num_order':variation.number_order()} for variation in item.variation_item.all()[2:item.variation_item.all().count()]]
@@ -380,7 +380,7 @@ def get_product(request):
                     'pageitem':[{'item_name':item.name,'item_image':item.get_image_cover(),
                     'item_id':item.id,'item_sku':item.sku_product,
                     'count_variation':item.variation_item.all().count(),
-                    'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),
+                    'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),
                     'size_value':variation.get_size(),'inventory':variation.inventory,
                     'discount':variation.total_discount(),
                     'num_order':variation.number_order()} for variation in item.variation_item.all()[0:3]]
@@ -912,15 +912,15 @@ def deal_shock(request,id):
     sku=request.GET.get('sku')
     item=request.GET.get('item')
     title=request.GET.get('title')
-    variation_id=request.GET.getlist('variation_id')
+    product_id=request.GET.getlist('product_id')
     page_no = request.GET.get('page_no')
     q=request.GET.get('q')
     if request.method=="POST":
         edit=request.POST.get('edit')
         item_id=request.POST.getlist('item_id')
         byproduct_id=request.POST.getlist('byproduct_id')
-        variation_id=request.POST.getlist('variation_id')
-        variation_id_off=request.POST.getlist('variation_id_off')
+        product_id=request.POST.getlist('product_id')
+        product_id_off=request.POST.getlist('product_id_off')
         percent_discount=request.POST.getlist('percent_discount')
         limited_product_bundles=request.POST.getlist('limit_order')
         if edit:
@@ -946,7 +946,7 @@ def deal_shock(request,id):
             deal_shock.byproduct.add(*list_byproduct)
             item_main=Item.objects.filter(id__in=item_id).order_by(preserved)
             deal_shock.main_product.add(*item_main)
-            variation_byproduct=Variation.objects.filter(id__in=variation_id).order_by(preserved)
+            variation_byproduct=Variation.objects.filter(id__in=product_id).order_by(preserved)
             if deal_shock.shock_deal_type=='1':   
                 for variation in variation_byproduct:
                     for i in range(len(percent_discount)):
@@ -956,10 +956,10 @@ def deal_shock(request,id):
                 bulk_update(variation_byproduct)
             else:
                 variation_byproduct.update(percent_discount_deal_shock=100)
-            Variation.objects.filter(id__in=variation_id_off).update(percent_discount_deal_shock=0)
+            Variation.objects.filter(id__in=product_id_off).update(percent_discount_deal_shock=0)
             data={'list_byproduct':[{'item_id':item.id,'item_name':item.name,
             'item_image':item.get_image_cover(),'check':False,
-            'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
+            'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,
             } for variation in item.variation_item.all()
             ]} for item in list_byproduct]}
@@ -1072,12 +1072,12 @@ def deal_shock(request,id):
                 } for i in items]
             data={'c':list_item_main}
             return Response(data)
-        elif item_id and variation_id and not q:
+        elif item_id and product_id and not q:
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
             items=Item.objects.filter(id__in=item_id).order_by(preserved)
             obj_paginator = Paginator(items,per_page)
-            preserved_variation = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(variation_id)])
-            variation=Variation.objects.filter(id__in=variation_id).order_by(preserved_variation)
+            preserved_variation = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(product_id)])
+            variation=Variation.objects.filter(id__in=product_id).order_by(preserved_variation)
             first_page=obj_paginator.get_page(page_no)
             list_by_page=[{'name':first_page[i].name,'image_cover':first_page[i].media_upload.all()[0].get_media(),'id':first_page[i].id,'item_shipping':i.shipping_choice.all()[0].method,
             } for i in range(len(first_page))]
@@ -1085,12 +1085,12 @@ def deal_shock(request,id):
             } for i in variation]
             data={'shock_deal_type':deal_shock.shock_deal_type,'a':list_by_page,'b':list_variation}
             return Response(data)
-        elif item_id and variation_id and q and name:
+        elif item_id and product_id and q and name:
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
             items=Item.objects.filter(id__in=item_id,name__contains=q).order_by(preserved)
             obj_paginator = Paginator(items,per_page)
-            preserved_variation = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(variation_id)])
-            variation=Variation.objects.filter(id__in=variation_id).order_by(preserved_variation)
+            preserved_variation = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(product_id)])
+            variation=Variation.objects.filter(id__in=product_id).order_by(preserved_variation)
             first_page=obj_paginator.get_page(page_no)
             list_by_page=[{'name':first_page[i].name,'image_cover':first_page[i].media_upload.all()[0].get_media(),'id':first_page[i].id,'item_shipping':i.shipping_choice.all()[0].method
             } for i in range(len(first_page))]
@@ -1098,12 +1098,12 @@ def deal_shock(request,id):
             } for i in variation]
             data={'shock_deal_type':deal_shock.shock_deal_type,'a':list_by_page,'b':list_variation}
             return Response(data)
-        elif item_id and variation_id and sku and q:
+        elif item_id and product_id and sku and q:
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
             items=Item.objects.filter(id__in=item_id,sku=q).order_by(preserved)
             obj_paginator = Paginator(items,per_page)
-            preserved_variation = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(variation_id)])
-            variation=Variation.objects.filter(id__in=variation_id).order_by(preserved_variation)
+            preserved_variation = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(product_id)])
+            variation=Variation.objects.filter(id__in=product_id).order_by(preserved_variation)
             first_page=obj_paginator.get_page(page_no)
             list_by_page=[{'name':first_page[i].name,'image_cover':first_page[i].media_upload.all()[0].get_media(),'id':first_page[i].id,'item_shipping':i.shipping_choice.all()[0].method,
             } for i in range(len(first_page))]
@@ -1148,7 +1148,7 @@ def deal_shock(request,id):
             'minimum_price_to_receive_gift':deal_shock.minimum_price_to_receive_gift,
             'number_gift':deal_shock.number_gift},'byproduct_choice':[{'item_id':item.id,'item_name':item.name,
             'item_image':item.get_image_cover(),'check':False,
-            'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
+            'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,'discount_price':variation.price*(1-variation.percent_discount_deal_shock/100),'percent_discount':variation.percent_discount_deal_shock,
             'limit_order':variation.limited_product_bundles
             } for variation in item.variation_item.all()
@@ -1177,18 +1177,18 @@ def new_program(request):
         valid_from=request.POST.get('valid_from')
         valid_to=request.POST.get('valid_from')
         item_id=request.POST.getlist('item_id')
-        variation_id=request.POST.getlist('variation_id')
+        product_id=request.POST.getlist('product_id')
         percent_discount=request.POST.getlist('percent_discount')
         number_of_promotional_products=request.POST.getlist('number_of_promotional_products')
         limit_order=request.POST.getlist('limit_order')
         preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
         list_products=Item.objects.filter(id__in=item_id).order_by(preserved)
-        list_variation=Variation.objects.filter(id__in=variation_id)
+        list_variation=Variation.objects.filter(id__in=product_id)
         Variation.objects.filter(item__shop_program__in=program_expire).update(percent_discount=0)
-        if item_id and not variation_id:
+        if item_id and not product_id:
             data={'list_product':[{'item_id':item.id,'item_name':item.name,
             'item_image':item.get_image_cover(),'check':False,
-            'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
+            'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,
             } for variation in item.variation_item.all()
             ]} for item in list_products]}
@@ -1290,18 +1290,18 @@ def detail_program(request,id):
         valid_from=request.POST.get('valid_from')
         valid_to=request.POST.get('valid_from')
         item_id=request.POST.getlist('item_id')
-        variation_id=request.POST.getlist('variation_id')
-        variation_id_off=request.POST.getlist('variation_id_off')
+        product_id=request.POST.getlist('product_id')
+        product_id_off=request.POST.getlist('product_id_off')
         percent_discount=request.POST.getlist('percent_discount')
         number_of_promotional_products=request.POST.getlist('number_of_promotional_products')
         limit_order=request.POST.getlist('limit_order')
         preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
         list_products=Item.objects.filter(id__in=item_id).order_by(preserved)
-        list_variation=Variation.objects.filter(id__in=variation_id)
-        if item_id and not variation_id:
+        list_variation=Variation.objects.filter(id__in=product_id)
+        if item_id and not product_id:
             data={'list_product':[{'item_id':item.id,'item_name':item.name,
             'item_image':item.get_image_cover(),'check':False,
-            'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
+            'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,
             } for variation in item.variation_item.all()
             ]} for item in list_product]}
@@ -1325,7 +1325,7 @@ def detail_program(request,id):
                         item.quantity_limit=limit_order[i]
             bulk_update(list_products)
             bulk_update(variation_byproduct)
-            Variation.objects.filter(id__in=variation_id_off).update(percent_discount_deal_shock=0)
+            Variation.objects.filter(id__in=product_id_off).update(percent_discount_deal_shock=0)
             data={'ok':'ok'}
             return Response(data)
     else:
@@ -1381,7 +1381,7 @@ def detail_program(request,id):
             'valid_to':shop_program.valid_to},'list_product':[{'item_id':item.id,'item_name':item.name,
             'limit_order':item.quantity_limit,
             'item_image':item.get_image_cover(),'check':False,
-            'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
+            'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,'discount_price':variation.price*(1-variation.percent_discount/100),'percent_discount':variation.percent_discount,
             'number_of_promotional_products':variation.number_of_promotional_products
             } for variation in item.variation_item.all()
@@ -1405,13 +1405,13 @@ def new_flashsale(request):
     q=request.GET.get('q')
     if request.method=="POST":
         item_id=request.POST.getlist('item_id')
-        variation_id=request.POST.get('variation_id')
+        product_id=request.POST.get('product_id')
         preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
         items=Item.objects.filter(id__in=item_id).order_by(preserved)
-        if item_id and not variation_id:
+        if item_id and not product_id:
             data={'list_product':[{'item_id':item.id,'item_name':item.name,
             'item_image':item.get_image_cover(),'check':False,
-            'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
+            'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,
             } for variation in item.variation_item.all()
             ]} for item in items]}
@@ -1497,22 +1497,22 @@ def detail_flashsale(request,id):
     q=request.GET.get('q')
     if request.method=="POST":
         item_id=request.POST.getlist('item_id')
-        variation_id=request.POST.getlist('variation_id')
+        product_id=request.POST.getlist('product_id')
         percent_discount=request.POST.getlist('percent_discount')
         number_flash_sale_products=request.POST.getlist('number_flash_sale_products')
         quantity_limit_flash_sale=request.POST.getlist('limit_order')
         preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
         items=Item.objects.filter(id__in=item_id).order_by(preserved)
-        variations=Variation.objects.filter(id__in=variation_id)
-        if item_id and not variation_id:
+        variations=Variation.objects.filter(id__in=product_id)
+        if item_id and not product_id:
             data={'list_product':[{'item_id':item.id,'item_name':item.name,
             'item_image':item.get_image_cover(),'check':False,
-            'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
+            'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'inventory':variation.inventory,'price':variation.price,
             } for variation in item.variation_item.all()
             ]} for item in items]}
             return Response(data)
-        elif variation_id and item_id:
+        elif product_id and item_id:
             flash_sale.product.set([])
             flash_sale.product.add(*items)
             for item in items:
@@ -1587,7 +1587,7 @@ def detail_flashsale(request,id):
                 'flashsale':{'valid_from':flash_sale.valid_from,'valid_to':flash_sale.valid_to},
                 'list_product':[{'item_id':item.id,'item_name':item.name,
                 'item_image':item.get_image_cover(),'check':False,
-                'list_variation':[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
+                'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
                 'inventory':variation.inventory,'price':variation.price,'discount_price':variation.price*(1-variation.percent_discount_flash_sale/100),'percent_discount':variation.percent_discount_flash_sale,
                 'number_of_promotional_products':variation.quantity_flash_sale_products
                 } for variation in item.variation_item.all()
@@ -2058,8 +2058,8 @@ def update_item(request,id):
         for i,j in variant_list:
             size_variation.append(i),color_variation.append(j)
         variation_content=list(zip(size_variation,color_variation,price,inventory,sku))
-        variation_id_remove=request.POST.getlist('variation_id_remove')
-        Variation.objects.filter(id__in=variation_id_remove).delete()
+        product_id_remove=request.POST.getlist('product_id_remove')
+        Variation.objects.filter(id__in=product_id_remove).delete()
         list_variation = [
             Variation(
             item=item,

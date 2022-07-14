@@ -28,7 +28,7 @@ for(let i=0 ;i<obj1.data.list_shop.length;i++){
             }
             for(let j=0;j<list_item_promotion_unique.length;j++){
                 for(let k=0;k<list_item_promotions.length;k++){
-                    if(list_item_promotion_unique[j].promotion.id==list_item_promotions[k].promotion.id && list_item_promotion_unique[j].variation_id!==list_item_promotions[k].variation_id){
+                    if(list_item_promotion_unique[j].promotion.id==list_item_promotions[k].promotion.id && list_item_promotion_unique[j].product_id!==list_item_promotions[k].product_id){
                         list_item_promotion_unique[j].byproduct.push(list_item_promotions[k])
                     }
                 }

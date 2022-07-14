@@ -7,6 +7,8 @@ from account.models import *
 from chats.models import *
 from django.contrib import auth
 from djoser.serializers import UserCreateSerializer
+import datetime
+from datetime import timedelta
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
 from rest_framework.authtoken.models import Token
@@ -308,38 +310,6 @@ class VariationSerializer(serializers.ModelSerializer):
     def get_item(self, obj):
         return ItemSerializer(obj.item).data
 
-class ByproductSerializer(serializers.ModelSerializer):
-    color_value = serializers.SerializerMethodField()
-    size_value = serializers.SerializerMethodField()
-    item_image = serializers.SerializerMethodField()
-    item_name = serializers.SerializerMethodField()
-    item_url = serializers.SerializerMethodField()
-    total_price = serializers.SerializerMethodField()
-    price = serializers.SerializerMethodField()
-    class Meta:
-        model=Byproductcart
-        fields=('id','byproduct_id','color_value','size_value','price','item_image','item_id',
-        'item_name','quantity','item_url','total_price',)
-    def get_color_value(self,obj):
-        return obj.byproduct.get_color()
-    def get_size_value(self,obj):
-        return obj.byproduct.get_size()
-    def get_item_image(self,obj):
-        return obj.item.get_image_cover()
-    def get_price(self,obj):
-        return obj.byproduct.price
-    def get_item_name(self,obj):
-        return obj.item.name
-    def get_item_url(self,obj):
-        return obj.item.get_absolute_url()
-    def get_total_price(self,obj):
-        return obj.total_price()
-
-class ByproductcartSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Byproductcart
-        fields=('byproduct',)
-    
 
 class ShopSerializer(serializers.ModelSerializer):
     class Meta:
@@ -466,8 +436,77 @@ class ReviewSerializer(serializers.ModelSerializer):
     def get_item_url(self,obj):
         return obj.cartitem.item.get_absolute_url()
 
+class ByproductSerializer(serializers.ModelSerializer):
+    color_value = serializers.SerializerMethodField()
+    size_value = serializers.SerializerMethodField()
+    item_image = serializers.SerializerMethodField()
+    item_name = serializers.SerializerMethodField()
+    item_url = serializers.SerializerMethodField()
+    total_price = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
+    class Meta:
+        model=Byproductcart
+        fields=('id','color_value','size_value','price','item_image','item_id',
+        'item_name','quantity','item_url','total_price',)
+    def get_color_value(self,obj):
+        return obj.product.get_color()
+    def get_size_value(self,obj):
+        return obj.product.get_size()
+    def get_item_image(self,obj):
+        return obj.item.get_image_cover()
+    def get_price(self,obj):
+        return obj.product.price
+    def get_item_name(self,obj):
+        return obj.item.name
+    def get_item_url(self,obj):
+        return obj.item.get_absolute_url()
+    def get_total_price(self,obj):
+        return obj.total_price()
 
-class CartItemSerializer(serializers.ModelSerializer):
+class ByproductcartSerializer(serializers.ModelSerializer):
+    color_value = serializers.SerializerMethodField()
+    size_value = serializers.SerializerMethodField()
+    item_image = serializers.SerializerMethodField()
+    item_name = serializers.SerializerMethodField()
+    item_url = serializers.SerializerMethodField()
+    total_price = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
+    percent_discount_deal=serializers.SerializerMethodField()
+    sizes=serializers.SerializerMethodField()
+    colors=serializers.SerializerMethodField()
+    count_variation=serializers.SerializerMethodField()
+    inventory=serializers.SerializerMethodField()
+    class Meta:
+        model=Byproductcart
+        fields=('id','product_id','color_value','size_value','price','item_image','item_id',
+        'item_name','quantity','item_url','total_price','colors','inventory',
+        'percent_discount_deal','sizes','count_variation',)
+    def get_color_value(self,obj):
+        return obj.product.get_color()
+    def get_size_value(self,obj):
+        return obj.product.get_size()
+    def get_item_image(self,obj):
+        return obj.item.get_image_cover()
+    def get_price(self,obj):
+        return obj.product.price
+    def get_item_name(self,obj):
+        return obj.item.name
+    def get_item_url(self,obj):
+        return obj.item.get_absolute_url()
+    def get_total_price(self,obj):
+        return obj.total_price()
+    def get_colors(self,obj):
+        return obj.item.get_color_deal()
+    def get_sizes(self,obj):
+        return obj.item.get_size_deal()
+    def get_percent_discount_deal(self,obj):
+        return obj.product.percent_discount_deal_shock
+    def get_count_variation(self,obj):
+        return obj.item.count_variation()
+    def get_inventory(self,obj):
+        return obj.product.inventory
+
+class CartitemcartSerializer(serializers.ModelSerializer):
     item_name = serializers.SerializerMethodField()
     item_url=serializers.SerializerMethodField()
     color_value=serializers.SerializerMethodField()
@@ -477,11 +516,19 @@ class CartItemSerializer(serializers.ModelSerializer):
     total_price=serializers.SerializerMethodField()
     price=serializers.SerializerMethodField()
     byproduct=serializers.SerializerMethodField()
+    sizes=serializers.SerializerMethodField()
+    colors=serializers.SerializerMethodField()
+    shop_name=serializers.SerializerMethodField()
+    count_variation=serializers.SerializerMethodField()
+    inventory=serializers.SerializerMethodField()
+    promotion=serializers.SerializerMethodField()
+    shock_deal_type=serializers.SerializerMethodField()
     class Meta:
         model = CartItem
         fields = ('id','item_id','item_name','item_url','product_id',
         'color_value','size_value','quantity','discount_price','item_image',
-        'price','total_price','byproduct'
+        'price','total_price','byproduct','colors','sizes','count_variation',
+        'promotion','shop_name','check','inventory','shock_deal_type',
         )
     def get_color_value(self,obj):
         return obj.product.get_color()
@@ -500,6 +547,53 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_discount_price(self,obj):
         return obj.product.total_discount()
     def get_byproduct(self,obj):
-        return ByproductSerializer(obj.byproduct.all(), many=True).data
-    def get_final_price(self, obj):
-        return obj.get_final_price()
+        return ByproductcartSerializer(obj.byproduct.all().filter(item__byproduct__valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)), many=True).data
+    def get_colors(self,obj):
+        return obj.item.get_color()
+    def get_sizes(self,obj):
+        return obj.item.get_size()
+    def get_count_variation(self,obj):
+        return obj.item.count_variation()
+    def get_inventory(self,obj):
+        return obj.product.inventory
+    def get_promotion(self,obj):
+        return obj.item.get_promotion()
+    def get_shock_deal_type(self,obj):
+        return obj.item.shock_deal_type()
+    def get_shop_name(self,obj):
+        return obj.shop.name
+class CartItemSerializer(serializers.ModelSerializer):
+    item_name = serializers.SerializerMethodField()
+    item_url=serializers.SerializerMethodField()
+    color_value=serializers.SerializerMethodField()
+    size_value=serializers.SerializerMethodField()
+    item_image=serializers.SerializerMethodField()
+    discount_price=serializers.SerializerMethodField()
+    total_price=serializers.SerializerMethodField()
+    price=serializers.SerializerMethodField()
+    byproduct=serializers.SerializerMethodField()
+    class Meta:
+        model = CartItem
+        fields = ('id','item_id','item_name','item_url','product_id',
+        'color_value','size_value','quantity','discount_price','item_image',
+        'price','total_price','byproduct',
+        )
+    def get_color_value(self,obj):
+        return obj.product.get_color()
+    def get_size_value(self,obj):
+        return obj.product.get_size()
+    def get_item_image(self,obj):
+        return obj.get_image()
+    def get_price(self,obj):
+        return obj.product.price
+    def get_item_name(self,obj):
+        return obj.item.name
+    def get_item_url(self,obj):
+        return obj.item.get_absolute_url()
+    def get_total_price(self,obj):
+        return obj.total_discount_cartitem()
+    def get_discount_price(self,obj):
+        return obj.product.total_discount()
+    def get_byproduct(self,obj):
+        return ByproductSerializer(obj.byproduct.all().filter(item__byproduct__valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)), many=True).data
+    

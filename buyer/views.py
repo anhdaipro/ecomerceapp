@@ -52,7 +52,7 @@ SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSeri
 UserprofileSerializer,ShopinfoSerializer,ItemSerializer,
 ItemSellerSerializer,ItemrecentlySerializer,ShoporderSerializer,ImagehomeSerializer,
 CategoryhomeSerializer,AddressSerializer,OrderSerializer,OrderdetailSerializer,
-ReviewSerializer,
+ReviewSerializer,CartitemcartSerializer,
 )
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
@@ -912,7 +912,7 @@ class AddToCardBatchAPIView(APIView):
         elif item_id and not size_id and not color_id:
             product=Variation.objects.get(item=item_id)
         
-        data={'variation_id':product.id,'color_value':product.get_color(),'size_value':product.get_size(),
+        data={'product_id':product.id,'color_value':product.get_color(),'size_value':product.get_size(),
             'price':product.price,'discount_price':product.total_discount(),'inventory':product.inventory,
             }
         if byproduct_id:
@@ -920,19 +920,19 @@ class AddToCardBatchAPIView(APIView):
         return Response(data)
     def post(self, request, *args, **kwargs):
         user=request.user
-        variation_id_choice=request.POST.get('variation_id_chocie')
+        product_id_choice=request.POST.get('product_id_chocie')
         quantity_product=request.POST.get('quantity_product')
         item_id=request.POST.get('item_id')
         deal_id=request.POST.get('deal_id')
-        variation_id=request.POST.getlist('variation_id')
+        product_id=request.POST.getlist('product_id')
         byproduct_id_delete=request.POST.getlist('byproduct_id_delete')
         Byproductcart.objects.filter(id__in=byproduct_id_delete).delete()
         list_quantity=request.POST.getlist('quantity')
         quantity_byproduct=request.POST.getlist('quantity_byproduct')
         byproduct_id=request.POST.getlist('byproduct_id')
         cartitem_id=request.POST.get('cartitem_id')
-        variation_choice=Variation.objects.get(id=variation_id_choice)
-        list_variation=Variation.objects.filter(id__in=variation_id)
+        variation_choice=Variation.objects.get(id=product_id_choice)
+        list_variation=Variation.objects.filter(id__in=product_id)
         item=Item.objects.get(id=item_id)
         deal_shock=Buy_with_shock_deal.objects.get(id=deal_id)
         byproduct=Byproductcart.objects.filter(id__in=byproduct_id)
@@ -944,9 +944,9 @@ class AddToCardBatchAPIView(APIView):
         byproduct=Byproductcart.objects.bulk_create(
             [
             Byproductcart(user=user,item_id=item_id,byproduct=list_variation[i],quantity=int(list_quantity[i]))
-            for i in range(len(variation_id))]
+            for i in range(len(product_id))]
         )
-        byproducts=Byproductcart.objects.order_by('-id')[:len(variation_id)]
+        byproducts=Byproductcart.objects.order_by('-id')[:len(product_id)]
         cartitem=CartItem.objects.filter(id=cartitem_id)
         if cartitem.exists():
             cartitem_last=cartitem.last()
@@ -1054,33 +1054,9 @@ class ShoporderAPI(APIView):
 class CartItemAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
-        user = request.user
-        list_cart_item=CartItem.objects.filter(user=user,ordered=False).select_related('shop').prefetch_related('item__media_upload').prefetch_related('item__shop_program').prefetch_related('item__main_product').prefetch_related('item__promotion_combo').select_related('product').select_related('product__size').select_related('product__color').prefetch_related('byproduct')
-        data=[{'id':cart_item.id,'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
-            'count_variation':cart_item.item.count_variation(),
-            'price':cart_item.product.price,'discount_price':cart_item.product.total_discount(),'shop_name':cart_item.shop.name,
-            'sizes':cart_item.item.get_size(),'open':False,
-            'item_image':cart_item.get_image(),
-            'variation_url':cart_item.product.get_absolute_url(),'byproduct':[{
-            'id':byproduct.id,'color_value':byproduct.byproduct.get_color(),
-            'size_value':byproduct.byproduct.get_size(),
-            'colors':byproduct.item.get_color_deal(),'percent_discount_deal':byproduct.byproduct.percent_discount_deal_shock,
-            'sizes':byproduct.item.get_size_deal(),'price':byproduct.byproduct.price,
-            'variation_id':byproduct.byproduct_id,'item_id':byproduct.item_id,'item_name':byproduct.item.name,
-            'inventory':byproduct.byproduct.inventory,'quantity':byproduct.quantity,'item_url':byproduct.item.get_absolute_url(),
-            'total_price':byproduct.total_price(),
-            'item_image':byproduct.item.get_image_cover(),
-            'count_variation':byproduct.item.count_variation(),
-             } for byproduct in cart_item.byproduct.all() if byproduct.item.get_deal()],
-            'colors':cart_item.item.get_color(),'item_id':cart_item.item_id,'item_name':cart_item.item.name,
-            'item_url':cart_item.item.get_absolute_url(),
-            'promotion':cart_item.item.get_promotion(),'check':cart_item.check,
-            'variation_id':cart_item.product_id,'total_price':cart_item.total_discount_cartitem(),
-            'inventory':cart_item.product.inventory,'quantity':cart_item.quantity,
-            'shock_deal_type':cart_item.item.shock_deal_type(),
-            } for cart_item in list_cart_item]
-        
-        return Response(data,status=status.HTTP_200_OK)
+        list_cart_item=CartItem.objects.filter(user=request.user,ordered=False).select_related('shop').prefetch_related('item__media_upload').prefetch_related('item__shop_program').prefetch_related('item__main_product').prefetch_related('item__promotion_combo').select_related('product').select_related('product__size').select_related('product__color').prefetch_related('byproduct')
+        serializer = CartitemcartSerializer(list_cart_item,many=True, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
     def post(self, request,count_cartitem=0,price=0,total=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0, *args, **kwargs):
         user=request.user
         byproduct_id_delete=request.POST.get('byproduct_id_delete')
@@ -1379,7 +1355,7 @@ class DealShockAPIView(APIView):
         cartitem_id=0
         cart_item=[]
         list_product=[]
-        variation_info={'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
+        variation_info={'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'quantity':quantity,'item_id':variation.item_id,'item_name':variation.item.name,'check':True,'main':True,
             'price':variation.price,'discount_price':variation.total_discount(),'item_url':variation.item.get_absolute_url(),
             'size':variation.item.get_size(),'inventory':variation.inventory,'show':False,
@@ -1392,7 +1368,7 @@ class DealShockAPIView(APIView):
             quantity=cartitem_last.quantity
             cartitem_id=cartitem_last.id
             for byproduct in cartitem_last.byproduct.all():
-                cart_item.append({'variation_id':byproduct.byproduct_id,'color_value':byproduct.byproduct.get_color(),
+                cart_item.append({'product_id':byproduct.byproduct_id,'color_value':byproduct.byproduct.get_color(),
                 'quantity':byproduct.quantity,'size_value':byproduct.byproduct.get_size(),'item_id':byproduct.item_id,
                 'item_name':byproduct.item.name,
                 'discount_price':byproduct.byproduct.total_discount(),'byproduct_id':byproduct.id})
@@ -1413,7 +1389,7 @@ class DealShockAPIView(APIView):
         for i in range(len(list_product)):
             for j in range(len(cart_item)):
                 if list_product[i]['item_id']==cart_item[j]['item_id'] and list_product[i]['main']==False:
-                    list_product[i]['variation_id']=cart_item[j]['variation_id']
+                    list_product[i]['product_id']=cart_item[j]['product_id']
                     list_product[i]['color_value']=cart_item[j]['color_value']
                     list_product[i]['size_value']=cart_item[j]['size_value']
                     list_product[i]['quantity']=cart_item[j]['quantity']

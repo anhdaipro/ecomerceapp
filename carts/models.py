@@ -21,7 +21,7 @@ class WhishItem(models.Model):
 
 class Byproductcart(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
-    byproduct=models.ForeignKey(to="shop.Variation",on_delete=models.CASCADE,related_name='byproduct_byproduct')
+    product=models.ForeignKey(to="shop.Variation",on_delete=models.CASCADE,related_name='byproduct_byproduct')
     item = models.ForeignKey(to="shop.Item", on_delete=models.CASCADE,related_name='byproduct_item')
     quantity=models.IntegerField()
     def discount_deal_by(self):
@@ -30,17 +30,17 @@ class Byproductcart(models.Model):
         return self.quantity*self.byproduct.price
     def discount_by(self):
         total_discount=0
-        if self.byproduct.item.program_valid():
-            total_discount=self.quantity*self.byproduct.price*(self.byproduct.percent_discount/100)
+        if self.item.program_valid():
+            total_discount=self.quantity*self.product.price*(self.product.percent_discount/100)
         return total_discount
     def total_price(self):
         return self.price_by()-self.discount_deal_by()-self.discount_by()
 
     def get_image(self):
         image=self.item.get_image_cover()
-        if self.byproduct.color:
-            if self.byproduct.color.image:
-                image=self.byproduct.color.image.url
+        if self.product.color:
+            if self.product.color.image:
+                image=self.product.color.image.url
         return image
 class CartItem(models.Model):
     user=models.ForeignKey(User, on_delete=models.CASCADE)
@@ -72,7 +72,7 @@ class CartItem(models.Model):
     def count_item_cart(self):
         count=1
         for byproduct in self.byproduct.all():
-            if byproduct.byproduct.item.get_deal():
+            if byproduct.item.get_deal():
                 count+=1
         return count
 
