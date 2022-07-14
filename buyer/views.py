@@ -1247,8 +1247,8 @@ class ActionReviewAPI(APIView):
                 )
                 for i in range(len(video))
             ]
-            list_image.extend(list_video)
-            Media_review.objects.bulk_create(list_image)
+            listmedia=list_image+list_video
+            Media_review.objects.bulk_create(listmedia)
             serializer = ReviewSerializer(review,context={"request": request})
             data=serializer.data
         elif action=='report':
@@ -1668,8 +1668,8 @@ class PurchaseAPIView(APIView):
                 )
                 for i in range(len(video))
             ]
-            list_image.extend(list_video)
-            Media_review.objects.bulk_create(list_image)
+            listmedia=list_image+list_video
+            Media_review.objects.bulk_create(listmedia)
             data={'review':'review'}
             return Response(data)
 
