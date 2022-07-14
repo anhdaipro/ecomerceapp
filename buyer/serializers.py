@@ -337,8 +337,9 @@ class ByproductSerializer(serializers.ModelSerializer):
 
 class ByproductcartSerializer(serializers.ModelSerializer):
     class Meta:
-        model=Byproduct
-        fields=('byproduct')
+        model=Byproductcart
+        fields=('byproduct',)
+    
 
 class ShopSerializer(serializers.ModelSerializer):
     class Meta:
