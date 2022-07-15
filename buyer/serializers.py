@@ -536,7 +536,6 @@ class CartitemcartSerializer(serializers.ModelSerializer):
     byproduct=serializers.SerializerMethodField()
     sizes=serializers.SerializerMethodField()
     colors=serializers.SerializerMethodField()
-    shop_name=serializers.SerializerMethodField()
     count_variation=serializers.SerializerMethodField()
     inventory=serializers.SerializerMethodField()
     promotion=serializers.SerializerMethodField()
@@ -546,7 +545,7 @@ class CartitemcartSerializer(serializers.ModelSerializer):
         fields = ('id','item_id','item_name','item_url','product_id',
         'color_value','size_value','quantity','discount_price','item_image',
         'price','total_price','byproduct','colors','sizes','count_variation',
-        'promotion','shop_name','check','inventory','shock_deal_type',
+        'promotion','shop_id','check','inventory','shock_deal_type',
         )
     def get_color_value(self,obj):
         return obj.product.get_color()
@@ -578,8 +577,7 @@ class CartitemcartSerializer(serializers.ModelSerializer):
         return obj.item.get_promotion()
     def get_shock_deal_type(self,obj):
         return obj.item.shock_deal_type()
-    def get_shop_name(self,obj):
-        return obj.shop.name
+    
 class CartItemSerializer(serializers.ModelSerializer):
     item_name = serializers.SerializerMethodField()
     item_url=serializers.SerializerMethodField()
