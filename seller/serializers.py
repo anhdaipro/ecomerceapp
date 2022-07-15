@@ -56,5 +56,25 @@ class FlashsaleSerializer(serializers.ModelSerializer):
         return [{'image':item.get_image_cover()} for item in obj.product.all()]
 
         
-
+class ItemsellerSerializer(serializers.ModelSerializer):
+    image=serializers.SerializerMethodField()
+    max_price=serializers.SerializerMethodField()
+    min_price=serializers.SerializerMethodField()
+    inventory=serializers.SerializerMethodField()
+    number_order=serializers.SerializerMethodField()
+    class Meta:
+        model = Item
+        fields = (
+            'id','image','max_price','min_price','number_order','inventory',
+        )
+    def get_inventory(self,obj):
+        return obj.total_inventory()
+    def get_image(self,obj):
+        return obj.get_image_cover()
+    def get_max_price(self,obj):
+        return obj.max_price()
+    def get_min_price(self,obj):
+        return obj.min_price()
+    def get_number_order(self,obj):
+        return obj.number_order()
     

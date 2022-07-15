@@ -193,17 +193,15 @@ class VoucherSerializer(serializers.ModelSerializer):
             return True
 class ShoporderSerializer(serializers.ModelSerializer): 
     listvoucher=serializers.SerializerMethodField()
-    cart_item=serializers.SerializerMethodField()
     class Meta:
         model=Shop
-        fields=('id','name','listvoucher','user_id','cart_item',)
+        fields=('id','name','listvoucher','user_id',)
     def get_listvoucher(self,obj):
         request=self.context.get("request")
         cartview=CartItem.objects.filter(shop=obj,ordered=False)
         list_voucher=Voucher.objects.filter(product__cart_item__in=cartview).distinct()
         return VoucherSerializer(list_voucher,many=True,context={"request": request}).data
-    def get_cart_item(self,obj):
-        return CartitemcartSerializer(obj.shop_order.all(),many=True).data
+   
 class AddressSerializer(serializers.ModelSerializer): 
     class Meta:
         model=Address
