@@ -68,7 +68,7 @@ class CartItem(models.Model):
         return image
     def get_review(self):
         if self.review_item.all():
-            return self.review_item.all().first().id
+            return self.review_item.all().first()
     def count_item_cart(self):
         count=1
         for byproduct in self.byproduct.all():
