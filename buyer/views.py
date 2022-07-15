@@ -1534,7 +1534,7 @@ class BuyagainAPI(APIView):
         for cart in cartuser:
             cart.quantity+=1
             list_id.append(cart.product_id)
-        productremain=product.filter(id__in=list_id)
+        productremain=product.exclude(id__in=list_id)
         bulk_update(cartuser)
         CartItem.objects.bulk_create([CartItem(
             product=product,
