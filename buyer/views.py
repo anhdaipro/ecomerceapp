@@ -46,10 +46,11 @@ from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
 from .serializers import (ChangePasswordSerializer,UserSerializer,SMSPinSerializer,
 SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer,
-UserprofileSerializer,ShopinfoSerializer,ItemSerializer,
+UserprofileSerializer,ShopinfoSerializer,ItemSerializer,ItemdetailSerializer,
 ItemSellerSerializer,ItemrecentlySerializer,ShoporderSerializer,ImagehomeSerializer,
 CategoryhomeSerializer,AddressSerializer,OrderSerializer,OrderdetailSerializer,
 ReviewSerializer,CartitemcartSerializer,CartviewSerializer,DealshockSerializer,
+ItemdetailSerializer
 )
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
@@ -357,38 +358,11 @@ class DetailAPIView(APIView):
             item=Item.objects.get(slug=slug)
             item.views += 1
             item.save()
-            items=Item.objects.filter(shop=item.shop)
-            item_detail=Detail_Item.objects.filter(item=item).values()
-            vouchers=Voucher.objects.filter(product=item,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
-            list_hot_sales=Item.objects.filter(shop=item.shop,cart_item__order_cartitem__ordered=True).annotate(count=Count('cart_item__order_cartitem__id')).prefetch_related('shop_program').prefetch_related('promotion_combo').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count')
-            data.update({'count_variation':item.count_variation(),'item_detail':item_detail,
-            'item_name':item.name,'min_price':item.min_price(),'max_price':item.max_price(),
-            'id':item.id,'num_like_item':item.num_like(),'percent_discount':item.percent_discount(),
-            'review_rating':item.average_review(),'count_review':item.count_review(),'user_id':item.shop.user.id,
-            'category':item.category.get_full_category(),'media_upload':[{'file':i.get_media(),
-            'image_preview':i.file_preview(),'duration':i.duration,'media_type':i.media_type(),
-            } for i in item.media_upload.all()],'size':item.get_size(),'color':item.get_color(),
-            'item_inventory':item.total_inventory(),
-            'num_order':item.number_order(),'description':item.description,
-            'shock_deal_type':item.shock_deal_type(),'promotion':item.check_promotion(),
-            'user_id':item.shop.user_id,'flash_sale':item.get_flash_sale(),
-            'voucher':list(vouchers.values()),
-            'list_host_sale':[{'item_name':i.name,'item_image':i.get_image_cover(),'max_price':i.max_price(),
-            'percent_discount':i.percent_discount(),'min_price':i.min_price(),
-            'item_url':i.get_absolute_url()
-            } for i in list_hot_sales]
-            })
-            
             if token:
-                user=request.user
-                if ItemViews.objects.filter(item=item,user=user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
+                if ItemViews.objects.filter(item=item,user=request.user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
                     ItemViews.objects.create(item=item,user=user)
-                like=False
-                if user in item.liked.all():
-                    like=True
-                data.update({'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
-                })
-            return Response(data)
+            serializer =ItemdetailSerializer(item,context={"request": request})
+            return Response(serializer.data, status=status.HTTP_200_OK)  
         elif shop.exists():
             shop=Shop.objects.get(slug=slug)
             shop.views += 1
@@ -594,18 +568,19 @@ class ProductInfoAPIVIew(APIView):
         all_review=request.GET.get('all')
         choice=request.GET.get('choice')
         item=Item.objects.get(id=id)
+        data={}
         if chocie=='deal':
             deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).order_by('valid_to').first()
-            serializer =DealshockSerializer(deal_shock,context={"request": request})
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            data =DealshockSerializer(deal_shock,context={"request": request}).data
         elif choice=='combo':
             promotion_combo=Promotion_combo.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
-            serializer =ComboSerializer(promotion_combo,context={"request": request})
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            data =ComboSerializer(promotion_combo,context={"request": request}).data
         elif choice=='shop':
             shop=item.shop
-            serializer = ShopinfoSerializer(shop,context={"request": request})
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            data = ShopinfoSerializer(shop,context={"request": request}).data 
+        elif choice=='hotsale':
+            list_hot_sales=Item.objects.filter(shop_id=item.shop_id,cart_item__order_cartitem__ordered=True).annotate(count=Count('cart_item__order_cartitem__id')).prefetch_related('shop_program').prefetch_related('promotion_combo').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count')
+            data = ShopinfoSerializer(list_hot_sales,context={"request": request}).data
         elif choice=='review':
             list_review=ReView.objects.filter(cartitem__product__item=item)
             reviews=list_review
@@ -620,22 +595,12 @@ class ProductInfoAPIVIew(APIView):
             paginator = Paginator(reviews, 10)  # Show 25 contacts per page.
             page_number = request.GET.get('page')
             page_obj = paginator.get_page(page_number)
-            data={
-            'reviews':[{'id':review.id,'review_text':review.review_text,'created':review.created,
-                'info_more':review.info_more,'anonymous_review':review.anonymous_review,
-                'review_rating':review.review_rating,'num_like':review.num_like(),'user_like':[user.id for user in review.like.all()],
-                'list_file':[{'file_id':file.id,'filetype':file.filetype(),'file':file.file.url,
-                'media_preview':file.get_media_preview(),'duration':file.duration,'show':False}
-                for file in review.media_review.all()],'color_value':review.cartitem.product.get_color(),
-                'size_value':review.cartitem.product.get_size(),
-                'item_name':review.cartitem.item.name,
-                'user':review.user.username,'shop':review.shop_name(),
-                'url_shop':review.user.shop.get_absolute_url(),
-                } for review in page_obj],'page_count':paginator.num_pages,
-                'rating':[review.review_rating for review in list_review],'has_comment':count_comment,
-                'has_media':count_media
-                }
-            return Response(data)
+            data={'reviews':ReviewSerializer(page_obj,many=True,context={"request": request}).data,
+            'page_count':paginator.num_pages,
+            'rating':[review.review_rating for review in list_review],'has_comment':count_comment,
+            'has_media':count_media
+            }
+        return Response(data)
 
     def post(self, request,id, *args, **kwargs):
         user=request.user
@@ -694,20 +659,20 @@ class ListItemRecommendAPIView(APIView):
         
 class Itemrecently(ListAPIView):
     permission_classes = (AllowAny,)
-    serializer_class = ItemrecentlySerializer
+    serializer_class = ItemSerializer
     def get_queryset(self):
         request=self.request
         user=request.user
-        return ItemViews.objects.filter(user=user).order_by('-id','item')[:12]
+        itemview=ItemViews.objects.filter(user=user).order_by('-id')
+        return Item.objects.filter(item_views__in=itemview)[:12]
 
 class Listitemhostsale(ListAPIView):
     permission_classes = (AllowAny,)
-    serializer_class = ItemrecentlySerializer
+    serializer_class = ItemSerializer
     def get_queryset(self):
         request=self.request
-        shop_id=request.GET.get('shop_id')
         item=Item.objects.filter(shop_id=shop_id).filter(cart_item__order_cartitem__ordered=True).annotate(count_order= Count('cart_item__order_cartitem')).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').order_by('-count_order')
-        return ItemViews.objects.filter(user=user).order_by('-id','item')[:12]
+        return item[:10]
     
 @api_view(['GET', 'POST'])
 def save_voucher(request):
