@@ -333,9 +333,9 @@ class ItemdetailSerializer(ItemSerializer):
         return obj.get_color()
     def get_sizes(self,obj):
         return obj.get_size()
-    def review_rating(self,obj):
+    def get_review_rating(self,obj):
         return obj.average_review()
-    def count_review(self,obj):
+    def get_count_review(self,obj):
         return obj.count_review()
     def get_num_like(self,obj):
         return obj.num_like()
