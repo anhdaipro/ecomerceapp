@@ -438,7 +438,7 @@ class OrderdetailSerializer(serializers.ModelSerializer):
         fields=OrderSerializer.Meta.fields+(
         'address','received','canceled','accepted',
         'being_delivered','ordered_date','received_date',
-        'canceled_date','accepted_date','shop_url',,)
+        'canceled_date','accepted_date','shop_url',)
     
     def get_shop_url(self,obj):
         return obj.shop.get_absolute_url()
