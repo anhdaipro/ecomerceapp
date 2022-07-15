@@ -125,12 +125,13 @@ class SetNewPasswordSerializer(serializers.Serializer):
 
 class ItemcomboSerializer(serializers.ModelSerializer):
     image=serializers.SerializerMethodField()
+    url=serializers.SerializerMethodField()
     max_price=serializers.SerializerMethodField()
     min_price=serializers.SerializerMethodField()
     percent_discount=serializers.SerializerMethodField()
     class Meta:
         model=Item
-        fields=('id','name','image','percent_discount','min_price','max_price',)
+        fields=('id','name','image','percent_discount','min_price','max_price','url',)
     def get_image(self,obj):
         return obj.item.get_image_cover()
     def get_max_price(self,obj):
@@ -139,14 +140,16 @@ class ItemcomboSerializer(serializers.ModelSerializer):
         return obj.item.min_price()
     def get_percent_discount(self,obj):
         return obj.percent_discount()
-        
+    def get_url(self,obj):
+        return obj.get_absolute_url() 
+
 class ComboSerializer(serializers.ModelSerializer):
     products=serializers.SerializerMethodField()
     class Meta:
         fields=('id','combo_type','products',
             'discount_percent','discount_price','price_special_sale','quantity_to_reduced',)
     def get_products(self,obj):
-        return ItemcomboSerializer(obj.product.all(),many=True).data
+        return ItemcomboSerializer(obj.product.all(),many=True).data.pops
 
 class ItemdealSerializer(serializers.ModelSerializer):
     image=serializers.SerializerMethodField()
@@ -173,6 +176,7 @@ class ItemdealSerializer(serializers.ModelSerializer):
         return obj.get_size()
     def get_colors(self,obj):
         return obj.get_color()
+
 class DealshockSerializer(serializers.ModelSerializer):
     class Meta:
         model=Buy_with_shock_deal
@@ -248,6 +252,7 @@ class VoucherSerializer(serializers.ModelSerializer):
         request=self.context.get("request")
         if request.user in obj.user.all():
             return True
+
 class ShoporderSerializer(serializers.ModelSerializer): 
     listvoucher=serializers.SerializerMethodField()
     class Meta:
@@ -585,60 +590,6 @@ class ByproductcartSerializer(serializers.ModelSerializer):
     def get_inventory(self,obj):
         return obj.product.inventory
 
-class CartitemcartSerializer(serializers.ModelSerializer):
-    item_name = serializers.SerializerMethodField()
-    item_url=serializers.SerializerMethodField()
-    color_value=serializers.SerializerMethodField()
-    size_value=serializers.SerializerMethodField()
-    item_image=serializers.SerializerMethodField()
-    discount_price=serializers.SerializerMethodField()
-    total_price=serializers.SerializerMethodField()
-    price=serializers.SerializerMethodField()
-    byproduct=serializers.SerializerMethodField()
-    sizes=serializers.SerializerMethodField()
-    colors=serializers.SerializerMethodField()
-    count_variation=serializers.SerializerMethodField()
-    inventory=serializers.SerializerMethodField()
-    promotion=serializers.SerializerMethodField()
-    shock_deal_type=serializers.SerializerMethodField()
-    class Meta:
-        model = CartItem
-        fields = ('id','item_id','item_name','item_url','product_id',
-        'color_value','size_value','quantity','discount_price','item_image',
-        'price','total_price','byproduct','colors','sizes','count_variation',
-        'promotion','shop_id','check','inventory','shock_deal_type',
-        )
-    def get_color_value(self,obj):
-        return obj.product.get_color()
-    def get_size_value(self,obj):
-        return obj.product.get_size()
-    def get_item_image(self,obj):
-        return obj.get_image()
-    def get_price(self,obj):
-        return obj.product.price
-    def get_item_name(self,obj):
-        return obj.item.name
-    def get_item_url(self,obj):
-        return obj.item.get_absolute_url()
-    def get_total_price(self,obj):
-        return obj.total_discount_cartitem()
-    def get_discount_price(self,obj):
-        return obj.product.total_discount()
-    def get_byproduct(self,obj):
-        return ByproductcartSerializer(obj.byproduct_cart.all().filter(item__byproduct__valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)), many=True).data
-    def get_colors(self,obj):
-        return obj.item.get_color()
-    def get_sizes(self,obj):
-        return obj.item.get_size()
-    def get_count_variation(self,obj):
-        return obj.item.count_variation()
-    def get_inventory(self,obj):
-        return obj.product.inventory
-    def get_promotion(self,obj):
-        return obj.item.get_promotion()
-    def get_shock_deal_type(self,obj):
-        return obj.item.shock_deal_type()
-    
 class CartItemSerializer(serializers.ModelSerializer):
     item_name = serializers.SerializerMethodField()
     item_url=serializers.SerializerMethodField()
@@ -673,4 +624,29 @@ class CartItemSerializer(serializers.ModelSerializer):
         return obj.product.total_discount()
     def get_byproduct(self,obj):
         return ByproductSerializer(obj.byproduct_cart.all().filter(item__byproduct__valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)), many=True).data
-    
+
+
+class CartitemcartSerializer(CartItemSerializer):
+    sizes=serializers.SerializerMethodField()
+    colors=serializers.SerializerMethodField()
+    count_variation=serializers.SerializerMethodField()
+    inventory=serializers.SerializerMethodField()
+    promotion=serializers.SerializerMethodField()
+    shock_deal_type=serializers.SerializerMethodField()
+    class Meta(CartItemSerializer.Meta):
+        fields = CartItemSerializer.Meta.fields + ('colors','sizes','count_variation',
+        'promotion','shop_id','check','inventory','shock_deal_type',)
+    def get_colors(self,obj):
+        return obj.item.get_color()
+    def get_sizes(self,obj):
+        return obj.item.get_size()
+    def get_count_variation(self,obj):
+        return obj.item.count_variation()
+    def get_inventory(self,obj):
+        return obj.product.inventory
+    def get_promotion(self,obj):
+        return obj.item.get_promotion()
+    def get_shock_deal_type(self,obj):
+        return obj.item.shock_deal_type()
+
+
