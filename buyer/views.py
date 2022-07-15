@@ -1649,14 +1649,11 @@ class PurchaseAPIView(APIView):
                     rating_shipping_service=int(rating_bab_category[i].split(',')[2]),
                 ) for i in range(len(cartitem_id))
             ])
-            list_id_cart=list_id_image+list_id_video
-            listcartitem=CartItem.objects.filter(Q(id__in=list_id_cart))
-            listcartitem_video=listcartitem.filter(Q(id__in=list_id_video))
-            listcartitem_image=listcartitem.filter(id__in=list_id_image)
+            
             list_video=[Media_review(
                 upload_by=user,
                 file=video[i],
-                review=listcartitem_video[i].get_review(),
+                review=CartItem.objects.get(id=list_id_video[i]).get_review(),
                 media_preview=video_preview[i],
                 duration=float(duration[i])
                 )
@@ -1665,7 +1662,7 @@ class PurchaseAPIView(APIView):
             list_image=[Media_review(
                 upload_by=user,
                 file=image[i],
-                review=listcartitem_image[i].get_review()
+                review=CartItem.objects.get(id=list_id_image[i]).get_review()
                 )
                 for i in range(len(image))
             ]
