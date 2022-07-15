@@ -1538,6 +1538,7 @@ class BuyagainAPI(APIView):
         bulk_update(cartuser)
         CartItem.objects.bulk_create([CartItem(
             product=product,
+            user=request.user,
             item_id=product.item_id,
             shop_id=shop_id,
             quantity=1
