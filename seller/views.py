@@ -211,7 +211,7 @@ class Listordershop(APIView):
             'quantity':byproduct.quantity,'item_url':byproduct.byproduct.item.get_absolute_url(),
             
             'total_price':byproduct.total_price(),
-             } for byproduct in order_item.byproduct.all()],
+             } for byproduct in order_item.byproduct_cart.all()],
             'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
             'price':order_item.product.price,
             'total_price':order_item.total_discount_cartitem()

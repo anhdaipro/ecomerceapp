@@ -19,35 +19,11 @@ class WhishItem(models.Model):
         return f"(self.quantity) of (self.variany)"
 
 
-class Byproductcart(models.Model):
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
-    product=models.ForeignKey(to="shop.Variation",on_delete=models.CASCADE,related_name='byproduct_byproduct')
-    item = models.ForeignKey(to="shop.Item", on_delete=models.CASCADE,related_name='byproduct_item')
-    quantity=models.IntegerField()
-    def discount_deal_by(self):
-        return self.quantity * self.byproduct.discount_price_deal_shock()
-    def price_by(self):
-        return self.quantity*self.byproduct.price
-    def discount_by(self):
-        total_discount=0
-        if self.item.program_valid():
-            total_discount=self.quantity*self.product.price*(self.product.percent_discount/100)
-        return total_discount
-    def total_price(self):
-        return self.price_by()-self.discount_deal_by()-self.discount_by()
-
-    def get_image(self):
-        image=self.item.get_image_cover()
-        if self.product.color:
-            if self.product.color.image:
-                image=self.product.color.image.url
-        return image
 class CartItem(models.Model):
     user=models.ForeignKey(User, on_delete=models.CASCADE)
     shop=models.ForeignKey(to="shop.Shop",on_delete=models.CASCADE,related_name='shop_order')
     product=models.ForeignKey(to="shop.Variation", on_delete=models.CASCADE,related_name='cart_product')
     item=models.ForeignKey(to="shop.Item", on_delete=models.CASCADE,related_name='cart_item')
-    byproduct=models.ManyToManyField(Byproductcart,blank=True)
     deal_shock=models.ForeignKey(to="discounts.Buy_with_shock_deal",on_delete=models.SET_NULL, blank=True, null=True)
     promotion_combo=models.ForeignKey(to="discounts.Promotion_combo",on_delete=models.SET_NULL, blank=True, null=True)
     flash_sale=models.ForeignKey(to="discounts.Flash_sale",on_delete=models.SET_NULL, blank=True, null=True)
@@ -71,7 +47,7 @@ class CartItem(models.Model):
             return self.review_item.all().first()
     def count_item_cart(self):
         count=1
-        for byproduct in self.byproduct.all():
+        for byproduct in self.byproduct_cart.all():
             if byproduct.item.get_deal():
                 count+=1
         return count
@@ -79,7 +55,7 @@ class CartItem(models.Model):
     def discount_deal(self):
         discount_deal=0
         if self.deal_shock and self.deal_shock.valid_to>timezone.now():
-            for byproduct in self.byproduct.all():
+            for byproduct in self.byproduct_cart.all():
                 discount_deal+=byproduct.discount_deal_by()
         return discount_deal
     def get_ref_code(self):
@@ -104,7 +80,7 @@ class CartItem(models.Model):
         if self.product.percent_discount and self.product.item.program_valid():
             total_discount+=self.quantity*self.product.price*(self.product.percent_discount/100)
         if self.deal_shock and self.deal_shock.valid_to>timezone.now():
-            for byproduct in self.byproduct.all():
+            for byproduct in self.byproduct_cart.all():
                 if byproduct.byproduct.item.program_valid():
                     total_discount+=byproduct.discount_by()
                 else:
@@ -124,6 +100,32 @@ class CartItem(models.Model):
         total=0
         total+=self.quantity*self.product.price
         if self.deal_shock and self.deal_shock.valid_to>timezone.now():
-            for byproduct in self.byproduct.all():
+            for byproduct in self.byproduct_cart.all():
                 total+=byproduct.price_by()
         return total
+
+class Byproduct(models.Model):
+    cartitem=models.ForeignKey(CartItem, on_delete=models.CASCADE,related_name='byproduct_cart')
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    product=models.ForeignKey(to="shop.Variation",on_delete=models.CASCADE,related_name='byproduct_product')
+    item = models.ForeignKey(to="shop.Item", on_delete=models.CASCADE,related_name='byproduct_item')
+    quantity=models.IntegerField()
+    updated_at = models.DateField(auto_now=True)
+    def discount_deal_by(self):
+        return self.quantity * self.byproduct.discount_price_deal_shock()
+    def price_by(self):
+        return self.quantity*self.byproduct.price
+    def discount_by(self):
+        total_discount=0
+        if self.item.program_valid():
+            total_discount=self.quantity*self.product.price*(self.product.percent_discount/100)
+        return total_discount
+    def total_price(self):
+        return self.price_by()-self.discount_deal_by()-self.discount_by()
+
+    def get_image(self):
+        image=self.item.get_image_cover()
+        if self.product.color:
+            if self.product.color.image:
+                image=self.product.color.image.url
+        return image

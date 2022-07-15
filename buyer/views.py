@@ -832,7 +832,7 @@ class UpdateCartAPIView(APIView):
             'total_price':cart_item.total_discount_cartitem(),'inventory':cart_item.product.inventory,
             }})
         if byproduct_id:
-            byproduct=Byproductcart.objects.get(id=byproduct_id)
+            byproduct=Byproduct.objects.get(id=byproduct_id)
             byproduct.product=product
             byproduct.save()
             data.update({'item':{
@@ -891,7 +891,7 @@ class AddToCardBatchAPIView(APIView):
         deal_id=request.POST.get('deal_id')
         product_id=request.POST.getlist('product_id')
         byproduct_id_delete=request.POST.getlist('byproduct_id_delete')
-        Byproductcart.objects.filter(id__in=byproduct_id_delete).delete()
+        Byproduct.objects.filter(id__in=byproduct_id_delete).delete()
         list_quantity=request.POST.getlist('quantity')
         quantity_byproduct=request.POST.getlist('quantity_byproduct')
         byproduct_id=request.POST.getlist('byproduct_id')
@@ -900,29 +900,17 @@ class AddToCardBatchAPIView(APIView):
         list_variation=Variation.objects.filter(id__in=product_id)
         item=Item.objects.get(id=item_id)
         deal_shock=Buy_with_shock_deal.objects.get(id=deal_id)
-        byproduct=Byproductcart.objects.filter(id__in=byproduct_id)
-        for by in byproduct:
-            for i in range(len(quantity_byproduct)):
-                if list(byproduct).index(by)==i:
-                    by.quantity=int(quantity_byproduct[i])
-                    by.save()
-        byproduct=Byproductcart.objects.bulk_create(
-            [
-            Byproductcart(user=user,item_id=item_id,byproduct=list_variation[i],quantity=int(list_quantity[i]))
-            for i in range(len(product_id))]
-        )
-        byproducts=Byproductcart.objects.order_by('-id')[:len(product_id)]
+        byproduct=Byproduct.objects.filter(id__in=byproduct_id) 
         cartitem=CartItem.objects.filter(id=cartitem_id)
+        data={}
         if cartitem.exists():
-            cartitem_last=cartitem.last()
-            cartitem_last.byproduct.add(*byproducts)
-            cartitem_last.deal_shock=deal_shock
-            cartitem_last.quantity=int(quantity_product)
-            if cartitem_last.product!=variation_choice:
-                cartitem_last.product=variation_choice
-            cartitem_last.save()
-            data={'o':'o'}
-            return Response(data)
+            cartitem=cartitem.last()
+            cartitem.deal_shock=deal_shock
+            cartitem.quantity=int(quantity_product)
+            if cartitem.product!=variation_choice:
+                cartitem.product=variation_choice
+            cartitem.save()
+            data.update({'o':'o'})
         else:
             cartitem=CartItem.objects.create(
                 product=variation_choice,
@@ -932,10 +920,19 @@ class AddToCardBatchAPIView(APIView):
                 deal_shock=deal_shock,
                 quantity=int(quantity_product)
                 )
-            cartitem.byproduct.add(*byproducts)
-            data={'o':'o'}
-            return Response(data)
-
+            data.update({'ow':'ow'})
+        for by in byproduct:
+            by.cartitem=cartitem
+            for i in range(len(quantity_byproduct)):
+                if list(byproduct).index(by)==i:
+                    by.quantity=int(quantity_byproduct[i])
+        bulk_update(byproduct)
+        Byproduct.objects.bulk_create(
+            [
+            Byproduct(user=user,cartitem=cartitem,item_id=item_id,product=list_variation[i],quantity=int(list_quantity[i]))
+            for i in range(len(product_id))]
+        )
+        return Response(data)
 class AddToCartAPIView(APIView):
     def get(self,request):
         item_id=request.GET.get('item_id')
@@ -1066,9 +1063,9 @@ class CartItemAPIView(APIView):
                     order.items.add(*list_cart_item)
         else:
             if byproduct_id_delete:
-                Byproductcart.objects.get(id=byproduct_id_delete).delete()
+                Byproduct.objects.get(id=byproduct_id_delete).delete()
             elif byproduct_id :
-                byproduct=Byproductcart.objects.get(id=byproduct_id)
+                byproduct=Byproduct.objects.get(id=byproduct_id)
                 byproduct.quantity=int(quantity)
                 byproduct.save()
                 price=byproduct.total_price()
@@ -1079,7 +1076,7 @@ class CartItemAPIView(APIView):
                 price=cartitem.total_discount_cartitem()
             else:
                 CartItem.objects.get(id=cartitem_id_delete).delete()
-                Byproductcart.objects.filter(cartitem=None).delete()
+                Byproduct.objects.filter(cartitem=None).delete()
         order_check = Order.objects.filter(user=user, ordered=False).exclude(items=None).select_related('voucher').prefetch_related('items__item__media_upload').prefetch_related('items__byproduct').prefetch_related('items__item__main_product').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__shop_program').prefetch_related('items__product__size').prefetch_related('items__product__color')
         for order in order_check:
             discount_voucher+=order.discount_voucher()
@@ -1304,7 +1301,7 @@ class CheckoutAPIView(APIView):
                     products=Variation.objects.get(id=item.product_id)
                     products.inventory -= item.quantity
                     products.save()
-                    for byproduct in item.byproduct.all():
+                    for byproduct in item.byproduct_cart.all():
                         product=Variation.objects.get(id=byproduct.product_id)
                         product.inventory -= byproduct.quantity
                         product.save()
@@ -1352,7 +1349,7 @@ def payment_complete(request):
                 products=Variation.objects.get(id=item.product_id)
                 products.inventory -= item.quantity
                 products.save()
-                for byproduct in item.byproduct.all():
+                for byproduct in item.byproduct_cart.all():
                     product=Variation.objects.get(id=byproduct.product_id)
                     product.inventory -= byproduct.quantity
                     product.save()
@@ -1387,7 +1384,7 @@ class DealShockAPIView(APIView):
             cartitem=cartitem.last()
             quantity=cartitem.quantity
             cartitem_id=cartitem.id
-            for byproduct in cartitem.byproduct.all():
+            for byproduct in cartitem.byproduct_cart.all():
                 cart_item.append({'product_id':byproduct.product_id,'color_value':byproduct.product.get_color(),
                 'quantity':byproduct.quantity,'size_value':byproduct.product.get_size(),'item_id':byproduct.item_id,
                 'item_name':byproduct.item.name,
@@ -1643,7 +1640,7 @@ class PurchaseAPIView(APIView):
                 products=Variation.objects.get(id=item.product_id)
                 products.inventory += item.quantity
                 products.save()
-                for byproduct in item.byproduct.all():
+                for byproduct in item.byproduct_cart.all():
                     product=Variation.objects.get(id=byproduct.product_id)
                     product.inventory+=byproduct.quantity
                     product.save()

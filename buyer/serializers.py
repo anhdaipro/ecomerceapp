@@ -467,7 +467,7 @@ class ByproductSerializer(serializers.ModelSerializer):
     total_price = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
     class Meta:
-        model=Byproductcart
+        model=Byproduct
         fields=('id','color_value','size_value','price','item_image','item_id',
         'item_name','quantity','item_url','total_price',)
     def get_color_value(self,obj):
@@ -499,7 +499,7 @@ class ByproductcartSerializer(serializers.ModelSerializer):
     count_variation=serializers.SerializerMethodField()
     inventory=serializers.SerializerMethodField()
     class Meta:
-        model=Byproductcart
+        model=Byproduct
         fields=('id','product_id','color_value','size_value','price','item_image','item_id',
         'item_name','quantity','item_url','total_price','colors','inventory',
         'percent_discount_deal','sizes','count_variation',)
@@ -568,7 +568,7 @@ class CartitemcartSerializer(serializers.ModelSerializer):
     def get_discount_price(self,obj):
         return obj.product.total_discount()
     def get_byproduct(self,obj):
-        return ByproductcartSerializer(obj.byproduct.all().filter(item__byproduct__valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)), many=True).data
+        return ByproductcartSerializer(obj.byproduct_cart.all().filter(item__byproduct__valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)), many=True).data
     def get_colors(self,obj):
         return obj.item.get_color()
     def get_sizes(self,obj):
@@ -615,5 +615,5 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_discount_price(self,obj):
         return obj.product.total_discount()
     def get_byproduct(self,obj):
-        return ByproductSerializer(obj.byproduct.all().filter(item__byproduct__valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)), many=True).data
+        return ByproductSerializer(obj.byproduct_cart.all().filter(item__byproduct__valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)), many=True).data
     
