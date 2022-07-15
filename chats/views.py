@@ -74,7 +74,7 @@ class ActionThread(APIView):
                     'list_orders':[{
                     'id':order.id,'total_final_order':order.total_final_order(),
                     'count_item':order.count_item_cart(),
-                    'cartitems':[{'item_image':cartitem.get_image(),'item_url':cartitem.product.item.get_absolute_url(),
+                    'cart_item':[{'item_image':cartitem.get_image(),'item_url':cartitem.product.item.get_absolute_url(),
                     'item_name':cartitem.product.item.name,'color_value':cartitem.product.get_color(),
                     'quantity':cartitem.quantity,'discount_price':cartitem.product.total_discount(),
                     'size_value':cartitem.product.get_size(),'price':cartitem.product.price,
