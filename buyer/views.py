@@ -1045,8 +1045,8 @@ class CartItemAPIView(APIView):
                     order.items.remove(*list_cart_item_remove)
                     list_cart_item_add=CartItem.objects.filter(shop_id=order.shop_id,id__in=id_checked)
                     order.items.add(*list_cart_item_add) 
-                list_shop_remainder=list(set(shop_id) - set(list_shop_order))
-                if len(list_shop_remainder)>0:
+                list_shop_remain=list(set(shop_id) - set(list_shop_order))
+                if len(list_shop_remain)>0:
                     order = Order.objects.bulk_create([
                     Order(
                         user=user, ordered_date=ordered_date,shop_id=shop) for shop in list_shop_remain]
