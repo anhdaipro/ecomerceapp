@@ -328,7 +328,7 @@ class ItemdetailSerializer(ItemSerializer):
     def get_vouchers(self,obj):
         request=self.context.get("request")
         vouchers=Voucher.objects.filter(product=obj,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
-        VoucherSerializer(list_voucher,many=True,context={"request": request}).data
+        VoucherSerializer(vouchers,many=True,context={"request": request}).data
     def get_colors(self,obj):
         return obj.get_color()
     def get_sizes(self,obj):
