@@ -1015,20 +1015,18 @@ class CartItemAPIView(APIView):
         cartitem_id=request.POST.get('cartitem_id')
         cartitem_id_delete=request.POST.get('cartitem_id_delete')
         quantity=request.POST.get('quantity')
-        shop_name=request.POST.getlist('shop_name')
+        shop_id=request.POST.getlist('shop_id')
         id_checked=request.POST.getlist('id_checked')
         id_check=request.POST.getlist('id_check')
         voucher_id=request.POST.get('voucher_id')
         voucher_id_remove=request.POST.get('voucher_id_remove')
-        shops=Shop.objects.filter(name__in=shop_name).distinct()
-        order_qs = Order.objects.filter(user=user,ordered=False,shop__in=shops).distinct()
-        list_shop=[shop.name for shop in shops]
+        order_qs = Order.objects.filter(user=user,ordered=False,shop_id__in=shop_id)
         list_shop_order=[]
         CartItem.objects.filter(id__in=id_checked).update(check=True)
         CartItem.objects.filter(id__in=id_check).update(check=False)
         ordered_date = timezone.now()
         discount_voucher_shop=0
-        if shop_name:
+        if shop_id:
             if order_qs.exists():
                 for order in order_qs:
                     if voucher_id:
@@ -1042,26 +1040,25 @@ class CartItemAPIView(APIView):
                         if voucher.shop_id==order.shop_id:
                             order.voucher=None
                             order.save()
-                    list_shop_order.append(order.shop.name)
+                    list_shop_order.append(order.shop_id)
                     list_cart_item_remove=CartItem.objects.filter(shop_id=order.shop_id,id__in=id_check)
                     order.items.remove(*list_cart_item_remove)
                     list_cart_item_add=CartItem.objects.filter(shop_id=order.shop_id,id__in=id_checked)
                     order.items.add(*list_cart_item_add) 
-                list_shop_remainder=list(set(list_shop) - set(list_shop_order))
+                list_shop_remainder=list(set(shop_id) - set(list_shop_order))
                 if len(list_shop_remainder)>0:
-                    list_shop_remain=Shop.objects.filter(name__in=list_shop_remainder)
                     order = Order.objects.bulk_create([
                     Order(
-                        user=user, ordered_date=ordered_date,shop=shop) for shop in list_shop_remain]
+                        user=user, ordered_date=ordered_date,shop_id=shop) for shop in list_shop_remain]
                         )
-                    orders=Order.objects.filter(user=user)[:len(list_shop_remain)]
+                    orders=Order.objects.filter(user=user,ordered=False)[:len(list_shop_remain)]
                     for order in orders:
                         list_cart_item=CartItem.objects.filter(shop_id=order.shop_id,id__in=id_checked)
                         order.items.add(*list_cart_item)
             else:    
                 order = Order.objects.bulk_create([
                     Order(
-                    user=user, ordered_date=ordered_date,shop=shop) for shop in shops]
+                    user=user, ordered_date=ordered_date,shop_id=shop) for shop in shop_id]
                 )
                 order_s=Order.objects.filter(ordered=False,user=user)
                 for order in order_s:
