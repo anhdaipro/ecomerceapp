@@ -49,7 +49,7 @@ SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSeri
 UserprofileSerializer,ShopinfoSerializer,ItemSerializer,
 ItemSellerSerializer,ItemrecentlySerializer,ShoporderSerializer,ImagehomeSerializer,
 CategoryhomeSerializer,AddressSerializer,OrderSerializer,OrderdetailSerializer,
-ReviewSerializer,CartitemcartSerializer,CartviewSerializer,
+ReviewSerializer,CartitemcartSerializer,CartviewSerializer,DealshockSerializer,
 )
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
@@ -360,17 +360,7 @@ class DetailAPIView(APIView):
             items=Item.objects.filter(shop=item.shop)
             item_detail=Detail_Item.objects.filter(item=item).values()
             vouchers=Voucher.objects.filter(product=item,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
-            deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).order_by('valid_to')
             list_hot_sales=Item.objects.filter(shop=item.shop,cart_item__order_cartitem__ordered=True).annotate(count=Count('cart_item__order_cartitem__id')).prefetch_related('shop_program').prefetch_related('promotion_combo').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count')
-            if deal_shock.exists():
-                byproduct=deal_shock.first().byproduct.all()
-                main_product=item.variation_item.all()[0]
-                data.update({'byproduct':[{'item_name':i.name,'item_image':i.get_image_cover(),
-                'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
-                'max_price':i.max_price(),'discount_deal':i.discount_deal()
-                } for i in byproduct]})
-            promotion_combo=Promotion_combo.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
-            flash_sale=Flash_sale.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
             data.update({'count_variation':item.count_variation(),'item_detail':item_detail,
             'item_name':item.name,'min_price':item.min_price(),'max_price':item.max_price(),
             'id':item.id,'num_like_item':item.num_like(),'percent_discount':item.percent_discount(),
@@ -380,9 +370,8 @@ class DetailAPIView(APIView):
             } for i in item.media_upload.all()],'size':item.get_size(),'color':item.get_color(),
             'item_inventory':item.total_inventory(),
             'num_order':item.number_order(),'description':item.description,
-            'shock_deal_type':item.shock_deal_type(),
-            'deal_shock':list(deal_shock.values()),'flash_sale':list(flash_sale.values()),
-            'promotion_combo':list(promotion_combo.values()),'user_id':item.shop.user_id,
+            'shock_deal_type':item.shock_deal_type(),'promotion':item.check_promotion(),
+            'user_id':item.shop.user_id,'flash_sale':item.get_flash_sale(),
             'voucher':list(vouchers.values()),
             'list_host_sale':[{'item_name':i.name,'item_image':i.get_image_cover(),'max_price':i.max_price(),
             'percent_discount':i.percent_discount(),'min_price':i.min_price(),
@@ -397,13 +386,8 @@ class DetailAPIView(APIView):
                 like=False
                 if user in item.liked.all():
                     like=True
-                exist_thread=False
-                threads = Thread.objects.filter(participants=user).filter(participants=item.shop.user)
-                if threads.exists():
-                    data.update({'thread_id':threads.first().id})
-                    exist_thread=True
-                data.update({'user':user.id,'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
-                'exist_thread':exist_thread})
+                data.update({'like':like,'voucher_user':[True if user in voucher.user.all() else False for voucher in vouchers],
+                })
             return Response(data)
         elif shop.exists():
             shop=Shop.objects.get(slug=slug)
@@ -473,12 +457,8 @@ class DetailAPIView(APIView):
                 follow=False
                 if user in shop.followers.all():
                     follow=True
-                exist_thread=False
-                threads = Thread.objects.filter(participants=user).filter(participants=shop.user)
-                if threads.exists():
-                    data.update({'thread_id':threads.first().id})
-                    exist_thread=True
-                data.update({'follow':follow,'user':user.id})
+                
+                data.update({'follow':follow})
                 
             return Response(data)
            
@@ -610,10 +590,19 @@ class ProductInfoAPIVIew(APIView):
         media=request.GET.get('media')
         review_rating=request.GET.get('review_rating')
         comment=request.GET.get('comment')
+        deal=request.GET.get('deal')
         all_review=request.GET.get('all')
         choice=request.GET.get('choice')
         item=Item.objects.get(id=id)
-        if choice=='shop':
+        if chocie=='deal':
+            deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).order_by('valid_to').first()
+            serializer =DealshockSerializer(deal_shock,context={"request": request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif choice=='combo':
+            promotion_combo=Promotion_combo.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+            serializer =ComboSerializer(promotion_combo,context={"request": request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif choice=='shop':
             shop=item.shop
             serializer = ShopinfoSerializer(shop,context={"request": request})
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -992,6 +981,7 @@ class AddToCartAPIView(APIView):
                 )
             serializer = CartviewSerializer(cart_item,context={"request": request})
             return Response(serializer.data, status=status.HTTP_200_OK)
+
 class ShoporderAPI(APIView):
     def get(self,request):
         list_cart_item=CartItem.objects.filter(user=request.user,ordered=False)
@@ -1541,7 +1531,6 @@ class BuyagainAPI(APIView):
             quantity=1
         ) for product in productremain])
         return Response({'ok':'ok'})
-
 
 class PurchaseAPIView(APIView):
     permission_classes = (IsAuthenticated,)

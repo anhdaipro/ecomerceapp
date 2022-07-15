@@ -122,7 +122,64 @@ class SetNewPasswordSerializer(serializers.Serializer):
         except Exception as e:
             raise AuthenticationFailed('The reset link is invalid', 401)
         return super().validate(attrs)
+
+class ItemcomboSerializer(serializers.ModelSerializer):
+    image=serializers.SerializerMethodField()
+    max_price=serializers.SerializerMethodField()
+    min_price=serializers.SerializerMethodField()
+    percent_discount=serializers.SerializerMethodField()
+    class Meta:
+        model=Item
+        fields=('id','name','image','percent_discount','min_price','max_price',)
+    def get_image(self,obj):
+        return obj.item.get_image_cover()
+    def get_max_price(self,obj):
+        return obj.item.max_price()
+    def get_min_price(self,obj):
+        return obj.item.min_price()
+    def get_percent_discount(self,obj):
+        return obj.percent_discount()
         
+class ComboSerializer(serializers.ModelSerializer):
+    products=serializers.SerializerMethodField()
+    class Meta:
+        fields=('id','combo_type','products',
+            'discount_percent','discount_price','price_special_sale','quantity_to_reduced',)
+    def get_products(self,obj):
+        return ItemcomboSerializer(obj.product.all(),many=True).data
+
+class ItemdealSerializer(serializers.ModelSerializer):
+    image=serializers.SerializerMethodField()
+    max_price=serializers.SerializerMethodField()
+    min_price=serializers.SerializerMethodField()
+    percent_discount=serializers.SerializerMethodField()
+    colors=serializers.SerializerMethodField()
+    sizes=serializers.SerializerMethodField()
+    discount_deal=serializers.SerializerMethodField()
+    class Meta:
+        model=Item
+        fields=('id','name','image','discount_deal','colors','sizes','percent_discount','min_price','max_price',)
+    def get_discount_deal(self,obj):
+        return obj.discount_deal()
+    def get_image(self,obj):
+        return obj.item.get_image_cover()
+    def get_max_price(self,obj):
+        return obj.item.max_price()
+    def get_min_price(self,obj):
+        return obj.item.min_price()
+    def get_percent_discount(self,obj):
+        return obj.percent_discount()
+    def get_sizes(self,obj):
+        return obj.get_size()
+    def get_colors(self,obj):
+        return obj.get_color()
+class DealshockSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Buy_with_shock_deal
+        fields=('byproduct',)
+    def get_byproduct(self,obj):
+        return ItemdealSerializer(obj.byproduct.all(),many=True).data
+
 class ImagehomeSerializer(serializers.ModelSerializer):
     image=serializers.SerializerMethodField()
     class Meta:

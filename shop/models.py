@@ -252,6 +252,17 @@ class Item(models.Model):
             'discount_price':promotion_combo.discount_price,
             'price_special_sale':promotion_combo.price_special_sale}
     
+    def check_promotion(self):
+        promotion_combo=Promotion_combo.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        if promotion_combo.exists():
+            return True
+
+    def get_flash_sale(self):
+        flash_sale=Flash_sale.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        if flash_sale.exists():
+            flash_sale=flash_sale.first()
+            return {'id':flash_sale.id,'valid_to':flash_sale.valid_to}
+
     def get_media(self):
         return [{'typefile':media.media_type,'file':media.get_media(),'image_preview':media.file_preview(),'duration':media.duration} for media in self.media_upload.all()]
     
