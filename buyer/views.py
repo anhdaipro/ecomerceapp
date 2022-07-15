@@ -1526,8 +1526,8 @@ def get_review(order):
 
 class BuyagainAPI(APIView):
     def post(self,request):
-        product_id=request.data.get('product_id')
-        shop_id=request.data.get('shop_id')
+        product_id=request.POST.getlist('product_id')
+        shop_id=request.POST.get('shop_id')
         product=Variation.objects.filter(id__in=product_id)
         cartuser=CartItem.objects.filter(user=request.user,ordered=False,product_id__in=product_id)
         list_id=list()
