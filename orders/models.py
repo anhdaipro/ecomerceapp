@@ -112,6 +112,7 @@ class Order(models.Model):
             count_cart += 1
         return count_cart
     
+    
 ADDRESS_CHOICES = (
     ('B', 'Billing'),
     ('S', 'Shipping'),
