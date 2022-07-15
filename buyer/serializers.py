@@ -315,7 +315,8 @@ class CartviewSerializer(serializers.ModelSerializer):
     promotion=serializers.SerializerMethodField()
     shock_deal_type=serializers.SerializerMethodField()
     class Meta:
-        model=('id','item_id','item_name','item_image','item_url',
+        model=CartItem
+        fields=('id','item_id','item_name','item_image','item_url',
                 'price','shock_deal_type','promotion',)
     
     def get_item_image(self,obj):
