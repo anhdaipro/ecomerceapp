@@ -1210,7 +1210,7 @@ class ActionReviewAPI(APIView):
         review_text=request.POST.get('review_text')
         info_more=request.POST.get('info_more')
         anonymous_review=request.POST.get('anonymous_review')
-        rating_bab_category=request.POST.getlist('rating_bab_category')
+        rating_bab_category=request.POST.get('rating_bab_category')
         reason=request.POST.get('reason')
         action=request.POST.get('action')
         data={}
