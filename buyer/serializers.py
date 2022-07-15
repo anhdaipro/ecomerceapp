@@ -340,6 +340,7 @@ class ShopSerializer(serializers.ModelSerializer):
 class OrderdetailSerializer(serializers.ModelSerializer):
     address=serializers.SerializerMethodField()
     shop=serializers.SerializerMethodField()
+    shop_url=serializers.SerializerMethodField()
     total=serializers.SerializerMethodField()
     cart_item=serializers.SerializerMethodField()
     discount_voucher=serializers.SerializerMethodField()
@@ -353,10 +354,12 @@ class OrderdetailSerializer(serializers.ModelSerializer):
         fields=('cart_item','discount_voucher','total','total_final','shop',
         'address','received','canceled','accepted','amount',
         'being_delivered','ordered_date','received_date',
-        'canceled_date','accepted_date',
+        'canceled_date','accepted_date','shop_url',
         'count','fee_shipping','id','discount_promotion','total_discount',)
     def get_shop(self,obj):
         return ShopSerializer(obj.shop).data
+    def get_shop_url(self,obj):
+        return obj.shop.get_absolute_url()
     def get_address(self,obj):
         return AddressSerializer(obj.shipping_address).data
     def get_cart_item(self,obj):
