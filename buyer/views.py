@@ -1524,6 +1524,27 @@ def get_review(order):
     if review.exists():
         return True
 
+class BuyagainAPI(APIView):
+    def post(self,request):
+        product_id=request.data.get('product_id')
+        shop_id=request.data.get('shop_id')
+        product=Variation.objects.filter(id__in=product_id)
+        cartuser=CartItem.objects.filter(user=request.user,ordered=False,product_id__in=product_id)
+        list_id=list()
+        for cart in cartuser:
+            cart.quantity+=1
+            list_id.append(cart.product_id)
+        productremain=product.filter(id__in=list_id)
+        bulk_update(cartuser)
+        CartItem.objects.bulk_create([CartItem(
+            product=product,
+            item_id=product.item_id,
+            shop_id=shop_id,
+            quantity=1
+        ) for product in productremain])
+        return Response({'ok':'ok'})
+
+
 class PurchaseAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
@@ -1565,11 +1586,11 @@ class PurchaseAPIView(APIView):
                 order_all=order_all.filter(received=True)
             if type_order=='5':
                 order_all=order_all.filter(canceled=True)
-            list_order=[{'shop':{'name':order.shop.name,'url':order.shop.get_absolute_url(),'user_id':order.shop.user_id},'received':order.received,'canceled':order.canceled,
+            list_order=[{'shop':{'id':order.shop_id,'name':order.shop.name,'url':order.shop.get_absolute_url(),'user_id':order.shop.user_id},'received':order.received,'canceled':order.canceled,
                 'being_delivered':order.being_delivered,'shop_url':order.shop.get_absolute_url(),'id':order.id,
                 'accepted':order.accepted,'amount':order.total_final_order(),
                 'received_date':order.received_date,'review':get_review(order),
-                'cart_item':[{
+                'cart_item':[{'product_id':cart_item.product_id,
                 'item_image':cart_item.get_image(),'item_url':cart_item.item.get_absolute_url(),
                 'item_name':cart_item.item.name,'color_value':cart_item.product.get_color(),
                 'quantity':cart_item.quantity,'discount_price':cart_item.product.total_discount(),

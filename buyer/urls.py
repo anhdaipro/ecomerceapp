@@ -37,7 +37,8 @@ from .views import (
     Topsearch,
     RegisterView, LoginView, LogoutView ,
     UpdateOnline,
-    ActionReviewAPI
+    ActionReviewAPI,
+    BuyagainAPI
 )
 
 urlpatterns = [
@@ -68,7 +69,7 @@ urlpatterns = [
     path('item/bestseller', Listitemseller.as_view()),
     path('product/recommend', ListItemRecommendAPIView.as_view()),
     path('review/<int:id>', ActionReviewAPI.as_view()),
-    
+    path('buy_again', BuyagainAPI.as_view()),
     path('imagehome', ImageHomeAPIView.as_view()),
     path('categories', CategoryListView.as_view()),
     path('add-to-cart', AddToCartAPIView.as_view()),
