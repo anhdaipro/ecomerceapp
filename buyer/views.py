@@ -709,7 +709,7 @@ class Itemrecently(ListAPIView):
     def get_queryset(self):
         request=self.request
         user=request.user
-        return ItemViews.objects.filter(user=user).order_by('-id','item')[:12].distinct()
+        return ItemViews.objects.filter(user=user).order_by('-id','item')[:12]
 
 class Listitemhostsale(ListAPIView):
     permission_classes = (AllowAny,)
@@ -718,7 +718,7 @@ class Listitemhostsale(ListAPIView):
         request=self.request
         shop_id=request.GET.get('shop_id')
         item=Item.objects.filter(shop_id=shop_id).filter(cart_item__order_cartitem__ordered=True).annotate(count_order= Count('cart_item__order_cartitem')).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').order_by('-count_order')
-        return ItemViews.objects.filter(user=user).order_by('-id','item')[:12].distinct()
+        return ItemViews.objects.filter(user=user).order_by('-id','item')[:12]
     
 @api_view(['GET', 'POST'])
 def save_voucher(request):
