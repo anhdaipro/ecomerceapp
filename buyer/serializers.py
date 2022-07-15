@@ -321,16 +321,18 @@ class ItemdetailSerializer(ItemSerializer):
         request=self.context.get("request")
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         like=False
-        if request.user in obj.liked.all():
-            like=True
+        if token:
+            
+            if request.user in obj.liked.all():
+                like=True
     def get_vouchers(self,obj):
         request=self.context.get("request")
-        vouchers=Voucher.objects.filter(product=item,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        vouchers=Voucher.objects.filter(product=obj,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
         VoucherSerializer(list_voucher,many=True,context={"request": request}).data
     def get_colors(self,obj):
-        return item.get_color()
+        return obj.get_color()
     def get_sizes(self,obj):
-        return item.get_size()
+        return obj.get_size()
     def review_rating(self,obj):
         return obj.average_review()
     def count_review(self,obj):
