@@ -43,7 +43,15 @@ class Reportuser(models.Model):
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name='report_thread')
     user=models.ForeignKey(User, on_delete=models.CASCADE,related_name='reporter')
     reported=models.ForeignKey(User, on_delete=models.CASCADE,related_name='reported_person')
+    reason=models.CharField(max_length=100,default='Khác')
+    description=models.TextField(blank=True)
     created = models.DateTimeField(auto_now=True)
+
+class Mediareport(models.Model):
+    image=models.ImageField()
+    created = models.DateTimeField(auto_now=True)
+    report=models.ForeignKey(Reportuser, on_delete=models.CASCADE)
+
 
 class Message(models.Model):
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name='chatmessage_thread')

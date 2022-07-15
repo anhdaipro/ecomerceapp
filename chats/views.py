@@ -107,7 +107,7 @@ class ActionThread(APIView):
                 file=request.FILES.getlist('file')
                 file_preview=request.FILES.getlist('file_preview')
                 duration=request.POST.getlist('duration')
-                order_id=request.POST.getlist('order_id') 
+                order_id=request.POST.get('order_id') 
                 item_id=request.POST.get('item_id')  
                 if order_id:
                     Member.objects.filter(user_id=send_to,thread_id=id).update(is_seen=False,count_message_unseen=F('count_message_unseen')+1)
