@@ -204,7 +204,7 @@ class ItemSellerSerializer(ItemSerializer):
         my_tuple = tuple(my_list)
         fields =my_tuple+ ('count_order','total_inventory','shipping',)
     def get_total_inventory(self,obj):
-        return obj.get_total_inventory()
+        return obj.total_inventory()
     def get_count_order(self,obj):
         return obj.number_order()
     def get_shipping(self,obj):
