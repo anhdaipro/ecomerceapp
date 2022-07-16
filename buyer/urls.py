@@ -42,6 +42,7 @@ from .views import (
     ShopinfoAPI,
     ProfileAPI,
     CategoryinfoAPI,
+    SearchitemshopAPI
 )
 
 urlpatterns = [
@@ -75,6 +76,8 @@ urlpatterns = [
     path('buy_again', BuyagainAPI.as_view()),
     path('imagehome', ImageHomeAPIView.as_view()),
     path('categories', CategoryListView.as_view()),
+    path('shop/search', SearchitemshopAPI.as_view()),
+    
     path('add-to-cart', AddToCartAPIView.as_view()),
     path('cart', CartAPIView.as_view()),
     path('listorder',  ListorderAPIView.as_view()),

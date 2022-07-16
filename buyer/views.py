@@ -292,6 +292,31 @@ class Topsearch(APIView):
         'item_top_search':[{'image':item.get_image_cover(),'title':item.category.title,'count':get_count(item.category),'name':item.name,'number_order':item.number_order()} for item in item_top_search]}
         return Response(data)
 
+class SearchitemshopAPI(APIView):
+    def get(self,id):
+        shop_id=request.GET.get('shop_id')
+        minprice=request.GET.get('minPrice')
+        maxprice=request.GET.get('maxPrice')
+        order=request.GET.get('order')
+        sortby=request.GET.get('sortby')
+        categoryID=request.GET.get('categoryID')
+        items=Item.objects.filter(shop_id=shop_id)
+        if categoryID:
+            categoryID=int(categoryID)
+            items=items.filter(category__id=categoryID)
+        if sortby:
+            if sortby=='pop':
+                items=items.annotate(count_like= Count('liked')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_review= Count('cart_item__review_item')).order_by('-count_like','-count_review','-count_order')
+            elif sortby=='ctime':
+                items=items.annotate(count_order= Count('cart_item__order_cartitem__id')).annotate(count_review= Count('cart_item__review_item')).order_by('-id')
+            elif sortby=='price':
+                items=items.annotate(avg_price= Avg('variation_item__price')).order_by('avg_price')
+                if order=='desc':
+                    items=items.annotate(avg_price= Avg('variation_item__price')).order_by('-avg_price')
+        paginator = Paginator(items,30)
+        page_obj = paginator.get_page(page)
+        data={'list_item_page':ItempageSerializer(page_obj,many=True).data,'page_count':paginator.num_pages}
+        return Response(data)
 class SearchitemAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request):
@@ -313,6 +338,7 @@ class SearchitemAPIView(APIView):
         list_items=Item.objects.all()
         items=Item.objects.all()
         list_shop=Shop.objects.all()
+        category_choice=Category.objects.filter(choice=True)
         if keyword:
             list_items = list_items.filter(Q(name__icontains=keyword)|Q(shop__name=keyword) | Q(brand__in=keyword)|Q(category__title__in=keyword)).order_by('name').distinct()
             items = Item.objects.filter(Q(name__icontains=keyword) | Q(
@@ -363,14 +389,8 @@ class SearchitemAPIView(APIView):
             'brands':list(set([item.brand for item in list_items])),
             'status':list({item['value']:item for item in status}.values()),
             'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.get_absolute_url()} for i in category_choice],
-            'list_item_page':[{'item_name':i.name,'item_image':i.get_image_cover(),
-            'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
-            'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-            'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
-            'promotion':i.get_promotion(),
-            'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
-            }
-        for i in page_obj],'page_count':paginator.num_pages
+            'list_item_page':ItempageSerializer(page_obj,many=True).data
+            ,'page_count':paginator.num_pages
         }
         return Response(data)
         
