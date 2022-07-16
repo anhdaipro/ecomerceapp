@@ -264,7 +264,7 @@ class Item(models.Model):
             return {'id':flash_sale.id,'valid_to':flash_sale.valid_to}
 
     def get_media(self):
-        return [{'typefile':media.media_type,'file':media.get_media(),'image_preview':media.file_preview(),'duration':media.duration} for media in self.media_upload.all()]
+        return [{'typefile':media.media_type(),'file':media.get_media(),'image_preview':media.file_preview(),'duration':media.duration} for media in self.media_upload.all()]
     
     def get_image_cover(self):
         media_file=[media for media in self.media_upload.all() if media.media_type()=='image'][0].get_media()    
