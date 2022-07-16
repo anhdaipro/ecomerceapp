@@ -229,6 +229,7 @@ class ItemdetailSerializer(ItemcomboSerializer):
     count_review=serializers.SerializerMethodField()
     vouchers=serializers.SerializerMethodField()
     like=serializers.SerializerMethodField()
+    user_id=serializers.SerializerMethodField()
     class Meta(ItemcomboSerializer.Meta):
         fields =ItemcomboSerializer.Meta.fields+ (
             'user_id','category','count_variation','description','media_upload',
