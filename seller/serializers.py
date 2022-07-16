@@ -3,7 +3,7 @@ from orders.models import *
 from shop.models import *
 from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer
-from buyer.serializers import *
+from buyer.serializers import OrderSerializer,UserorderSerializer,ItemSerializer
 class VoucherSerializer(serializers.ModelSerializer):
     number_used= serializers.SerializerMethodField()
     count_product=serializers.SerializerMethodField()
