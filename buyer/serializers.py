@@ -143,6 +143,8 @@ class CategorydetailSerializer(CategorySerializer):
         image_category=obj.image_category.all()
         return [{'image':i.image.url,'url_field':i.url_field} for i in image_category]
 
+
+
 class ItemSerializer(serializers.ModelSerializer):
     url=serializers.SerializerMethodField()
     image=serializers.SerializerMethodField()
@@ -192,21 +194,21 @@ class ItempageSerializer(ItemSerializer):
     def get_number_order(self,obj):
         return obj.number_order()
 
-class ItemSellerSerializer(serializers.ModelSerializer):
-    image=serializers.SerializerMethodField()
+class ItemSellerSerializer(ItemSerializer):
+    total_inventory=serializers.SerializerMethodField()
     count_order=serializers.SerializerMethodField()
-    class Meta:
-        model = Item
-        fields = (
-            'id',
-            'image',
-            'count_order',
-        )
-    def get_image(self,obj):
-        return obj.get_image_cover()
+    shipping=serializers.SerializerMethodField()
+    class Meta(ItemSerializer.Meta):
+        my_list=list(ItemSerializer.Meta.fields)
+        my_list.remove('percent_discount')
+        my_tuple = tuple(my_list)
+        fields =my_tuple+ ('count_order','total_inventory','shipping',)
+    def get_total_inventory(self,obj):
+        return obj.get_total_inventory()
     def get_count_order(self,obj):
         return obj.number_order()
-
+    def get_shipping(self,obj):
+        return obj.shipping_choice.all()[0].method
 class ItemcomboSerializer(ItemSerializer):
     total_inventory=serializers.SerializerMethodField()
     colors=serializers.SerializerMethodField()
@@ -219,6 +221,8 @@ class ItemcomboSerializer(ItemSerializer):
         return obj.get_color()
     def get_sizes(self,obj):
         return obj.get_size()
+
+
 
 class ItemdetailSerializer(ItemcomboSerializer):
     category=serializers.SerializerMethodField()

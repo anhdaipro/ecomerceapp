@@ -45,7 +45,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from .serializers import (VoucherSerializer,ComboSerializer,
 ProgramSerializer,DealsockSerializer,FlashsaleSerializer)
-from buyer.serializers import OrdersellerSerializer
+from buyer.serializers import OrdersellerSerializer,ItemSellerSerializer
 class ListvoucherAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = VoucherSerializer
@@ -456,47 +456,28 @@ def voucher(request):
                 items=items.order_by('variation__price').distinct()
             else:
                 items=items.order_by('-variation__price').distinct()
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
+            data=ItemSellerSerializer(items,many=True).data
             return Response(data)
         elif order and sort:
             if sort == "sort-asc":
                 items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
             else:
                 items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
+            data=ItemSellerSerializer(items,many=True).data
             return Response(data)
         elif name and q:
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(name__contains=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
+            data=ItemSellerSerializer(items,many=True).data
             return Response(data)
         elif sku and q:
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(sku_product=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
+            
+            data=ItemSellerSerializer(items,many=True).data
             return Response(data)
         elif item:
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
+            data=ItemSellerSerializer(items,many=True).data
             return Response(data)
         else:
             category=Category.objects.filter(item__in=items,choice=True).distinct()
@@ -505,12 +486,7 @@ def voucher(request):
             list_category=[{'category':i.__str__()} for i in category]
             list_category_parent=[{'category':i.title} for i in category_parent]
             list_category_child=[{'category':i.__str__()} for i in category_child]
-            list_item_main=[
-                {'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main,'a':list_category,'b':list_category_parent,'d':list_category_child}
+            data={'c':ItemSellerSerializer(items,many=True).data,'a':list_category,'b':list_category_parent,'d':list_category_child}
             return Response(data) 
 
 @api_view(['GET', 'POST'])
@@ -709,54 +685,29 @@ def new_combo(request):
                 items=items.order_by('variation__price').distinct()
             else:
                 items=items.order_by('-variation__price').distinct()
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
+            data=ItemSellerSerializer(items,many=True).data
             return Response(data)
         elif order and sort:
             if sort == "sort-asc":
                 items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
             else:
                 items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
+            data=ItemSellerSerializer(items,many=True).data
             return Response(data)
         elif name and q:
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(name__contains=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
+            data=ItemSellerSerializer(items,many=True).data
             return Response(data)
         elif sku and q:
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(sku_product=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
+            data=ItemSellerSerializer(items,many=True).data
             return Response(data)
         elif item:
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
+            data=ItemSellerSerializer(items,many=True).data
         else:
-            list_item_main=[
-            {'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'number_order':i.number_order(),
-            'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-            'min_price':i.min_price()
-            } for i in items]
-            data={'c':list_item_main}
+            data=ItemSellerSerializer(items,many=True).data
     return Response(data) 
 
 @api_view(['GET', 'POST'])
@@ -1047,7 +998,8 @@ def deal_shock(request,id):
             data={'c':list_item_main}
             return Response(data)
         elif item:
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
+            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,
+            'number_order':i.number_order(),
                 'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
