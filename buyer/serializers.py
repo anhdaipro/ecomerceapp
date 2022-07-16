@@ -126,13 +126,16 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class CategoryhomeSerializer(CategorySerializer):
     image=serializers.SerializerMethodField()
+    url=serializers.SerializerMethodField()
     class Meta(CategorySerializer.Meta):
         fields=CategorySerializer.Meta.fields+('url','image',)
     def get_image(self,obj):
         if obj.image:
             return obj.image.url
-
+    def get_url(self,obj):
+        return obj.get_absolute_url()
 class ItemSerializer(serializers.ModelSerializer):
+    url=serializers.SerializerMethodField()
     image=serializers.SerializerMethodField()
     max_price=serializers.SerializerMethodField()
     min_price=serializers.SerializerMethodField()
@@ -143,6 +146,8 @@ class ItemSerializer(serializers.ModelSerializer):
         fields = (
         'id','image','max_price','min_price','url','number_order','percent_discount')
     
+    def get_url(self,obj):
+        return obj.get_absolute_url()
     def get_image(self,obj):
         return obj.get_image_cover()
     def get_max_price(self,obj):
@@ -282,29 +287,6 @@ class DealshockSerializer(serializers.ModelSerializer):
     def get_byproduct(self,obj):
         return ItemdealSerializer(obj.byproduct.all(),many=True).data
 
-
-class ItemrecentlySerializer(serializers.ModelSerializer):
-    image=serializers.SerializerMethodField()
-    max_price=serializers.SerializerMethodField()
-    min_price=serializers.SerializerMethodField()
-    class Meta:
-        model = ItemViews
-        fields = (
-            'id',
-            'image',
-            'max_price',
-            'min_price',
-            'percent_discount',
-            'url'
-        )
-    
-    def get_image(self,obj):
-        return obj.item.get_image_cover()
-    def get_max_price(self,obj):
-        return obj.item.max_price()
-    def get_min_price(self,obj):
-        return obj.item.min_price()
-
 class ItemdetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model=Detail_Item
@@ -399,7 +381,7 @@ class CartviewSerializer(serializers.ModelSerializer):
     def get_item_name(self,obj):
         return obj.item.name
     def get_item_url(self,obj):
-        return obj.item.url
+        return obj.item.get_absolute_url()
     def get_price(self,obj):
         return obj.product.price-obj.product.total_discount()
     def get_promotion(self,obj):
@@ -455,7 +437,7 @@ class OrderdetailSerializer(serializers.ModelSerializer):
         'canceled_date','accepted_date','shop_url',)
     
     def get_shop_url(self,obj):
-        return obj.shop.url
+        return obj.shop.get_absolute_url()
     def get_address(self,obj):
         return AddressSerializer(obj.shipping_address).data
 
@@ -502,7 +484,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     def get_item_name(self,obj):
         return obj.cartitem.item.name
     def get_item_url(self,obj):
-        return obj.cartitem.item.url
+        return obj.cartitem.item.get_absolute_url()
 
 class ByproductSerializer(serializers.ModelSerializer):
     color_value = serializers.SerializerMethodField()
@@ -527,7 +509,7 @@ class ByproductSerializer(serializers.ModelSerializer):
     def get_item_name(self,obj):
         return obj.item.name
     def get_item_url(self,obj):
-        return obj.item.url
+        return obj.item.get_absolute_url()
     def get_total_price(self,obj):
         return obj.total_price()
 
@@ -578,7 +560,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_item_name(self,obj):
         return obj.item.name
     def get_item_url(self,obj):
-        return obj.item.url
+        return obj.item.get_absolute_url()
     def get_total_price(self,obj):
         return obj.total_discount_cartitem()
     def get_discount_price(self,obj):

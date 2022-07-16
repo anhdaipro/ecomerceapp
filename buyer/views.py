@@ -47,7 +47,7 @@ from bulk_update.helper import bulk_update
 from .serializers import (ChangePasswordSerializer,UserSerializer,SMSPinSerializer,
 SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer,
 UserprofileSerializer,ShopinfoSerializer,ItemSerializer,ItemdetailSerializer,
-ItemSellerSerializer,ItemrecentlySerializer,ShoporderSerializer,ImagehomeSerializer,
+ItemSellerSerializer,ShoporderSerializer,ImagehomeSerializer,
 CategoryhomeSerializer,AddressSerializer,OrderSerializer,OrderdetailSerializer,
 ReviewSerializer,CartitemcartSerializer,CartviewSerializer,DealshockSerializer,
 ItemdetailsSerializer
@@ -391,7 +391,6 @@ class ItemdetailAPI(APIView):
 
 class Getlistitem(APIView):
     def get(self,request):
-        page_no=1
         page = request.GET.get('page')
         sort_price=request.GET.get('price_sort')
         minprice=request.GET.get('minPrice')
@@ -405,8 +404,6 @@ class Getlistitem(APIView):
         unitdelivery=request.GET.get('unitdelivery')
         shoptype=request.GET.get('shoptype')
         categoryID=request.GET.get('categoryID')
-
-
 
 class DetailAPIView(APIView):
     permission_classes = (AllowAny,)
@@ -414,20 +411,6 @@ class DetailAPIView(APIView):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         category=Category.objects.filter(slug=slug)
         shop=Shop.objects.filter(slug=slug)
-        page_no=1
-        page = request.GET.get('page')
-        sort_price=request.GET.get('price_sort')
-        minprice=request.GET.get('minPrice')
-        maxprice=request.GET.get('maxPrice')
-        rating_score=request.GET.get('rating')
-        order=request.GET.get('order')
-        sortby=request.GET.get('sortby')
-        brand=request.GET.get('brand')
-        status=request.GET.get('status')
-        locations=request.GET.get('locations')
-        unitdelivery=request.GET.get('unitdelivery')
-        shoptype=request.GET.get('shoptype')
-        categoryID=request.GET.get('categoryID')
         data={}
         if category.exists():
             category=category.first()
