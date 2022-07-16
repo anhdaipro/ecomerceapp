@@ -245,6 +245,8 @@ class ItemdetailSerializer(ItemcomboSerializer):
             if request.user in obj.liked.all():
                 like=True
         return like
+    def get_user_id(self,obj):
+        return obj.shop.user_id
     def get_vouchers(self,obj):
         request=self.context.get("request")
         vouchers=Voucher.objects.filter(product=obj,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
