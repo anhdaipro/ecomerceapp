@@ -295,7 +295,6 @@ class ItemdetailSerializer(ItemSerializer):
     shop=serializers.SerializerMethodField()
     category=serializers.SerializerMethodField()
     media_upload=serializers.SerializerMethodField()
-    list_voucher=serializers.SerializerMethodField()
     shock_deal_type=serializers.SerializerMethodField()
     promotion=serializers.SerializerMethodField()
     total_inventory=serializers.SerializerMethodField()
@@ -311,7 +310,7 @@ class ItemdetailSerializer(ItemSerializer):
     class Meta(ItemSerializer.Meta):
         fields =ItemSerializer.Meta.fields+ (
             'shop','category','count_variation','description','media_upload',
-            'list_voucher','shock_deal_type','promotion','flash_sale','num_like',
+            'shock_deal_type','promotion','flash_sale','num_like',
             'total_inventory','review_rating','count_review','sizes','colors',
             'vouchers','choice','like',
         )
@@ -322,9 +321,9 @@ class ItemdetailSerializer(ItemSerializer):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         like=False
         if token:
-            
             if request.user in obj.liked.all():
                 like=True
+        return like
     def get_vouchers(self,obj):
         request=self.context.get("request")
         vouchers=Voucher.objects.filter(product=obj,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
@@ -344,15 +343,13 @@ class ItemdetailSerializer(ItemSerializer):
     def get_shop(self,obj):
         return ShopSerializer(obj.shop).data
     def get_total_inventory(self,obj):
-        return obj.total_inventory
+        return obj.total_inventory()
     def get_flash_sale(self,obj):
         return ShopSerializer(obj.shop).data
     def get_category(self,obj):
         return obj.category.get_full_category()
     def get_media_upload(self,obj):
         return obj.get_media()
-    def get_list_voucher(self,obj):
-        return obj.get_voucher()
     def get_promotion(self,obj):
         return obj.get_promotion()
     def get_shock_deal_type(self,obj):
