@@ -78,11 +78,6 @@ class ItemsellerSerializer(serializers.ModelSerializer):
         return obj.min_price()
     def get_number_order(self,obj):
         return obj.number_order()
-class UsersellerSerializer(UserSerializer):
-    class Meta(UserSerializer.Meta):
-        my_list = list(OrderSerializer.Meta.fields)
-        my_list.remove('count_message_unseen')
-        my_tuple = tuple(my_list)
 
 class OrdersellerSerializer(OrderSerializer):
     user=serializers.SerializerMethodField()
@@ -92,5 +87,5 @@ class OrdersellerSerializer(OrderSerializer):
         my_tuple = tuple(my_list)
         fields=my_tuple+('user',)
     def get_user(self,obj):
-        return UsersellerSerializer(obj.user).data
+        return UserorderSerializer(obj.user).data
     

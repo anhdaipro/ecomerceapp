@@ -22,7 +22,7 @@ class UserCreateSerializer(UserCreateSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'password')
-class UserSerializer(serializers.ModelSerializer):
+class UserorderSerializer(serializers.ModelSerializer):
     avatar=serializers.SerializerMethodField()
     class Meta:
         model=User
