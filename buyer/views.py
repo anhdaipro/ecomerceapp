@@ -241,7 +241,7 @@ class HomeAPIView(APIView):
         list_items=Item.objects.filter(flash_sale__in=list_flashsale).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').distinct()
         data={
             'a':[{'item_name':i.name,'item_image':i.get_image_cover(),'number_order':i.number_order(),
-            'percent_discount':i.discount_flash_sale(),'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),'item_url':i.get_absolute_url(),
+            'percent_discount':i.discount_flash_sale(),'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),'item_url':i.get_absolute_url(),
             'min_price':i.min_price(),'quantity_limit_flash_sale':i.quantity_limit_flash_sale} for i in list_items],
             'list_flashsale':list_flashsale.values('valid_from','valid_to')
         }

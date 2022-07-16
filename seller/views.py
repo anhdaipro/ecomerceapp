@@ -43,7 +43,8 @@ from rest_framework.generics import (
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
-from .serializers import VoucherSerializer,ComboSerializer,ProgramSerializer,DealsockSerializer,FlashsaleSerializer
+from .serializers import VoucherSerializer,ComboSerializer,
+ProgramSerializer,DealsockSerializer,FlashsaleSerializer,OrdersellerSerializer
 
 class ListvoucherAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
@@ -195,27 +196,7 @@ class Listordershop(APIView):
                 orders=orders.filter(canceled=True) 
             if type_order=='refund':
                 orders=orders.exclude(refund=None)
-        data={'list_orders':[{'received':order.received,'canceled':order.canceled,'accepted':order.accepted,'amount':order.total_final_order(),
-            'being_delivered':order.being_delivered,'ordered_date':order.ordered_date,'received_date':order.received_date,
-            'canceled_date':order.canceled_date,'accepted_date':order.accepted_date,'id':order.id,'ref_code':order.ref_code,
-            'user':{'username':order.user.username,'image':order.user.profile.avatar.url,'id':order.user_id},
-            'total_final':order.total_final_order(),'payment_choice':order.payment_choice,
-            'order_item':[{'item_id':order_item.item_id,'item_name':order_item.item.name,'item_url':order_item.product.item.get_absolute_url(),
-            'color_value':order_item.product.get_color(),'size_value':order_item.product.get_size(),
-            'item_image':order_item.product.item.get_image_cover(),
-            'byproduct':[{
-            'color_value':byproduct.byproduct.get_color(),'size_value':byproduct.byproduct.get_size(),
-            'price':byproduct.byproduct.price,
-            'item_image':byproduct.byproduct.item.get_image_cover(),
-            'item_id':byproduct.item_id,'item_name':byproduct.item.name,
-            'quantity':byproduct.quantity,'item_url':byproduct.byproduct.item.get_absolute_url(),
-            
-            'total_price':byproduct.total_price(),
-             } for byproduct in order_item.byproduct_cart.all()],
-            'quantity':order_item.quantity,'discount_price':order_item.product.total_discount(),
-            'price':order_item.product.price,
-            'total_price':order_item.total_discount_cartitem()
-            } for order_item in order.items.all()]} for order in orders]}
+        data=OrdersellerSerializer(orders,many=True).data
         return Response(data)
 
     def post(self,request):
@@ -476,7 +457,7 @@ def voucher(request):
             else:
                 items=items.order_by('-variation__price').distinct()
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -487,7 +468,7 @@ def voucher(request):
             else:
                 items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -496,7 +477,7 @@ def voucher(request):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(name__contains=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -505,14 +486,14 @@ def voucher(request):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(sku_product=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
             return Response(data)
         elif item:
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -526,7 +507,7 @@ def voucher(request):
             list_category_child=[{'category':i.__str__()} for i in category_child]
             list_item_main=[
                 {'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main,'a':list_category,'b':list_category_parent,'d':list_category_child}
@@ -578,7 +559,7 @@ def detail_voucher(request,id):
             else:
                 items=items.order_by('-variation__price').distinct()
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -589,7 +570,7 @@ def detail_voucher(request,id):
             else:
                 items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -598,7 +579,7 @@ def detail_voucher(request,id):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(name__contains=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -607,14 +588,14 @@ def detail_voucher(request,id):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(sku_product=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
             return Response(data)
         elif item:
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -635,7 +616,7 @@ def detail_voucher(request,id):
                 'minimum_order_value':vocher.minimum_order_value,
                 'setting_display':vocher.setting_display},
                 'items_choice':[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in vocher.product.all()]
             }
@@ -729,7 +710,7 @@ def new_combo(request):
             else:
                 items=items.order_by('-variation__price').distinct()
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -740,7 +721,7 @@ def new_combo(request):
             else:
                 items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -749,7 +730,7 @@ def new_combo(request):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(name__contains=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -758,21 +739,21 @@ def new_combo(request):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(sku_product=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
             return Response(data)
         elif item:
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
         else:
             list_item_main=[
             {'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'number_order':i.number_order(),
-            'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+            'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
             'min_price':i.min_price()
             } for i in items]
             data={'c':list_item_main}
@@ -818,7 +799,7 @@ def detail_combo(request,id):
             else:
                 items=items.order_by('-variation__price').distinct()
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -829,7 +810,7 @@ def detail_combo(request,id):
             else:
                 items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -838,7 +819,7 @@ def detail_combo(request,id):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(name__contains=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -847,14 +828,14 @@ def detail_combo(request,id):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(sku_product=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
             return Response(data)
         elif item:
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -868,7 +849,7 @@ def detail_combo(request,id):
             'price_special_sale':promotion_combo.price_special_sale,'limit_order':promotion_combo.limit_order,
             'quantity_to_reduced':promotion_combo.quantity_to_reduced},
             'items_choice':[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'number_order':i.number_order(),
-            'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+            'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
             'min_price':i.min_price(),'enable':True
             } for i in promotion_combo.product.all()]}
             return Response(data) 
@@ -977,7 +958,7 @@ def deal_shock(request,id):
                         check[i]=check_on[j]
 
             list_item_main=[{'item_name':items[i].name,'item_image':items[i].media_upload.all()[0].get_media(),'check':check[i],
-                'item_id':items[i].id,'item_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),
+                'item_id':items[i].id,'total_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),
                 'min_price':items[i].min_price(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':items[i].number_order()
                 } for i in range(len(items))]
            
@@ -994,7 +975,7 @@ def deal_shock(request,id):
                     if item_id_off[j]==item_id[i]:
                         check[i]=check_on[j]
             list_item_main=[{'item_name':items[i].name,'item_image':items[i].media_upload.all()[0].get_media(),'check':check[i],
-                'item_id':items[i].id,'item_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),
+                'item_id':items[i].id,'total_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),
                 'min_price':items[i].min_price(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':items[i].number_order()
                 } for i in range(len(items))]
            
@@ -1011,7 +992,7 @@ def deal_shock(request,id):
                     if item_id_off[j]==item_id[i]:
                         check[i]=check_on[j]
             list_item_main=[{'item_name':items[i].name,'item_image':items[i].media_upload.all()[0].get_media(),'check':check[i],
-                'item_id':items[i].id,'item_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),
+                'item_id':items[i].id,'total_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),
                 'min_price':items[i].min_price(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':items[i].number_order()
                 } for i in range(len(items))]
            
@@ -1031,7 +1012,7 @@ def deal_shock(request,id):
             else:
                 items=items.order_by('-variation__price').distinct()
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1042,7 +1023,7 @@ def deal_shock(request,id):
             else:
                 items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1051,7 +1032,7 @@ def deal_shock(request,id):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(name__contains=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1060,14 +1041,14 @@ def deal_shock(request,id):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(sku_product=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
             return Response(data)
         elif item:
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1116,7 +1097,7 @@ def deal_shock(request,id):
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
             items=Item.objects.filter(id__in=item_id).order_by(preserved)
             list_item_main=[{'item_name':items[i].name,'item_image':items[i].media_upload.all()[0].get_media(),
-                'item_id':items[i].id,'item_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),'check':check[i],
+                'item_id':items[i].id,'total_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),'check':check[i],
                 'min_price':items[i].min_price(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':items[i].number_order()
             } for i in range(len(items))] 
             data={'a':list_item_main}
@@ -1126,7 +1107,7 @@ def deal_shock(request,id):
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
             items=Item.objects.filter(id__in=item_id,sku_product=q).order_by(preserved)
             list_item_main=[{'item_name':items[i].name,'item_image':items[i].media_upload.all()[0].get_media(),
-                'item_id':items[i].id,'item_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),'check':check[i],
+                'item_id':items[i].id,'total_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),'check':check[i],
                 'min_price':items[i].min_price(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':items[i].number_order()
             } for i in range(len(items))] 
             data={'a':list_item_main}
@@ -1136,7 +1117,7 @@ def deal_shock(request,id):
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
             items=Item.objects.filter(id__in=item_id,name__contains=q).order_by(preserved)
             list_item_main=[{'item_name':items[i].name,'item_image':items[i].media_upload.all()[0].get_media(),'check':check[i],
-                'item_id':items[i].id,'item_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),
+                'item_id':items[i].id,'total_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),
                 'min_price':items[i].min_price(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':items[i].number_order()
             } for i in range(len(items))] 
             data={'a':list_item_main}
@@ -1153,7 +1134,7 @@ def deal_shock(request,id):
             'limit_order':variation.limited_product_bundles
             } for variation in item.variation_item.all()
             ]} for item in deal_shock.byproduct.all()],'items_choice':[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in deal_shock.main_product.all()]}
             return Response(data)
@@ -1222,7 +1203,7 @@ def new_program(request):
             else:
                 items=items.order_by('-variation__price').distinct()
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1233,7 +1214,7 @@ def new_program(request):
             else:
                 items=items.filter(variation__cartitem__order__ordered=True).annotate(count=Count('variation__cartitem__order__ordered')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1242,7 +1223,7 @@ def new_program(request):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(name__contains=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1251,21 +1232,21 @@ def new_program(request):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(sku_product=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
             return Response(data)
         elif item:
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
             return Response(data)
         else:
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1335,7 +1316,7 @@ def detail_program(request,id):
             else:
                 items=items.order_by('-variation__price').distinct()
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1346,7 +1327,7 @@ def detail_program(request,id):
             else:
                 items=items.filter(variation__cartitem__order__ordered=True).annotate(count=Count('variation__cartitem__order__ordered')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1355,7 +1336,7 @@ def detail_program(request,id):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(name__contains=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1364,14 +1345,14 @@ def detail_program(request,id):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(sku_product=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
             return Response(data)
         elif item:
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1437,7 +1418,7 @@ def new_flashsale(request):
             else:
                 items=items.order_by('-variation__price').distinct()
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1448,7 +1429,7 @@ def new_flashsale(request):
             else:
                 items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1457,7 +1438,7 @@ def new_flashsale(request):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(name__contains=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1466,14 +1447,14 @@ def new_flashsale(request):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(sku_product=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
             return Response(data)
         else:
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1541,7 +1522,7 @@ def detail_flashsale(request,id):
             else:
                 items=items.order_by('-variation__price').distinct()
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1552,7 +1533,7 @@ def detail_flashsale(request,id):
             else:
                 items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1561,7 +1542,7 @@ def detail_flashsale(request,id):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(name__contains=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
@@ -1570,14 +1551,14 @@ def detail_flashsale(request,id):
             category=Category.objects.get(title=title,choice=True)
             items=items.filter(sku_product=q,category=category)
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
             return Response(data)
         elif item:
             list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'item_inventory':i.total_inventory(),'max_price':i.max_price(),
+                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
                 'min_price':i.min_price()
                 } for i in items]
             data={'c':list_item_main}
