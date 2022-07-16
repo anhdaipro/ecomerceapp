@@ -377,16 +377,45 @@ class ImageHomeAPIView(ListAPIView):
     def get_queryset(self):
         return Image_home.objects.all()
 
+class ItemdetailAPI(APIView):
+    def get(self,request):
+        item_id=request.GET.get('itemId')
+        item=Item.objects.get(id=item_id)
+        item.views += 1
+        item.save()
+        serializer =ItemdetailSerializer(item,context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK) 
+        if token:
+            if ItemViews.objects.filter(item=item,user=request.user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
+                ItemViews.objects.create(item=item,user=request.user)
+
+class Getlistitem(APIView):
+    def get(self,request):
+        page_no=1
+        page = request.GET.get('page')
+        sort_price=request.GET.get('price_sort')
+        minprice=request.GET.get('minPrice')
+        maxprice=request.GET.get('maxPrice')
+        rating_score=request.GET.get('rating')
+        order=request.GET.get('order')
+        sortby=request.GET.get('sortby')
+        brand=request.GET.get('brand')
+        status=request.GET.get('status')
+        locations=request.GET.get('locations')
+        unitdelivery=request.GET.get('unitdelivery')
+        shoptype=request.GET.get('shoptype')
+        categoryID=request.GET.get('categoryID')
+
+
+
 class DetailAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request,slug):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         category=Category.objects.filter(slug=slug)
-        item=Item.objects.filter(slug=slug)
         shop=Shop.objects.filter(slug=slug)
         page_no=1
         page = request.GET.get('page')
-        sp_atk=request.GET.get('sp_atk')
         sort_price=request.GET.get('price_sort')
         minprice=request.GET.get('minPrice')
         maxprice=request.GET.get('maxPrice')
@@ -459,15 +488,6 @@ class DetailAPIView(APIView):
             })
             return Response(data)
 
-        elif item.exists():
-            item=item.first()
-            item.views += 1
-            item.save()
-            serializer =ItemdetailSerializer(item,context={"request": request})
-            return Response(serializer.data, status=status.HTTP_200_OK) 
-            if token:
-                if ItemViews.objects.filter(item=item,user=request.user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
-                    ItemViews.objects.create(item=item,user=request.user)
         elif shop.exists():
             shop=shop.first()
             shop.views += 1
@@ -558,7 +578,6 @@ class DetailAPIView(APIView):
         'is_online':shop.user.profile.is_online,'count_product':shop.count_product(),
         'total_review':shop.total_review(),'averge_review':shop.averge_review()}
         return Response(data)
-
 
 class ProductInfoAPIVIew(APIView):
     permission_classes = (AllowAny,)

@@ -38,7 +38,8 @@ from .views import (
     RegisterView, LoginView, LogoutView ,
     UpdateOnline,
     ActionReviewAPI,
-    BuyagainAPI
+    BuyagainAPI,
+    ItemdetailAPI
 )
 
 urlpatterns = [
@@ -77,6 +78,7 @@ urlpatterns = [
     path('listorder',  ListorderAPIView.as_view()),
     path('order/<int:id>',  OrderinfoAPIView.as_view()),
     path('detail/<slug>',DetailAPIView.as_view()),
+    path('item/get',ItemdetailAPI.as_view()),
     path('shopinfo',ShopinfoAPIVIew.as_view()),
     path('productinfo/<int:id>',ProductInfoAPIVIew.as_view()),
     path('addon-deal-cart-selection/<int:id>', DealShockAPIView.as_view()),
