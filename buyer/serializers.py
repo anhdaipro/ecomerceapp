@@ -305,17 +305,14 @@ class ItemdetailSerializer(ItemSerializer):
     colors=serializers.SerializerMethodField()
     sizes=serializers.SerializerMethodField()
     vouchers=serializers.SerializerMethodField()
-    choice=serializers.SerializerMethodField()
     like=serializers.SerializerMethodField()
     class Meta(ItemSerializer.Meta):
         fields =ItemSerializer.Meta.fields+ (
             'shop','category','count_variation','description','media_upload',
             'shock_deal_type','promotion','flash_sale','num_like',
             'total_inventory','review_rating','count_review','sizes','colors',
-            'vouchers','choice','like',
+            'vouchers','like',
         )
-    def get_choice(self,obj):
-        return 'item'
     
     def get_like(self,obj): 
         request=self.context.get("request")
