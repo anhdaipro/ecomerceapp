@@ -302,6 +302,7 @@ class ComboSerializer(serializers.ModelSerializer):
 
 class ShopinfoSerializer(serializers.ModelSerializer): 
     avatar=serializers.SerializerMethodField()
+    url=serializers.SerializerMethodField()
     online=serializers.SerializerMethodField()
     num_follow=serializers.SerializerMethodField()
     count_product=serializers.SerializerMethodField()
@@ -311,6 +312,8 @@ class ShopinfoSerializer(serializers.ModelSerializer):
         model=Shop
         fields=('id','avatar','url','name','online','num_follow','is_online',
         'count_product','total_order',)
+    def get_url(self,obj):
+        return obj.get_absolute_url()
     def get_avatar(self,obj):
         return obj.user.profile.avatar.url
     def get_online(self,obj):
