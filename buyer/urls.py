@@ -9,7 +9,7 @@ from .views import (
     ListItemRecommendAPIView,
     SetNewPasswordAPIView,
     PasswordResetView,
-    ProductInfoAPIVIew,
+    ProductInfoAPI,
     CartItemAPIView,
     UpdateCartAPIView,
     OrderinfoAPIView,
