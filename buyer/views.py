@@ -50,7 +50,7 @@ UserprofileSerializer,ShopinfoSerializer,ItemSerializer,ItemdetailSerializer,
 ItemSellerSerializer,ItemrecentlySerializer,ShoporderSerializer,ImagehomeSerializer,
 CategoryhomeSerializer,AddressSerializer,OrderSerializer,OrderdetailSerializer,
 ReviewSerializer,CartitemcartSerializer,CartviewSerializer,DealshockSerializer,
-ItemdetailSerializer
+ItemdetailsSerializer
 )
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
@@ -581,6 +581,10 @@ class ProductInfoAPIVIew(APIView):
         elif choice=='hotsale':
             list_hot_sales=Item.objects.filter(shop_id=item.shop_id,cart_item__order_cartitem__ordered=True).annotate(count=Count('cart_item__order_cartitem__id')).prefetch_related('shop_program').prefetch_related('promotion_combo').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count')
             data = ShopinfoSerializer(list_hot_sales,context={"request": request}).data
+        elif choice=='detail':
+            detail=Detail_Item.objects.filter(item=item)
+            if detail.exists():
+                data=ItemdetailsSerializer(detail.first()).data
         elif choice=='review':
             list_review=ReView.objects.filter(cartitem__product__item=item)
             reviews=list_review

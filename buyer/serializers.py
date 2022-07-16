@@ -217,7 +217,7 @@ class ItemrecentlySerializer(serializers.ModelSerializer):
     def get_min_price(self,obj):
         return obj.item.min_price()
 
-class ItemdetailSerializer(serializers.ModelSerializer):
+class ItemdetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model=Detail_Item
         fields='__all__'
