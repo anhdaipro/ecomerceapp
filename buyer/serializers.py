@@ -279,12 +279,12 @@ class ItemcomboSerializer(serializers.ModelSerializer):
         numTuple1 = tuple(numList)
         fields=numTuple1
     
-class ItemdealSerializer(ItemcomboSerializer):
+class ItemdealSerializer(ItemSerializer):
     colors=serializers.SerializerMethodField()
     sizes=serializers.SerializerMethodField()
     discount_deal=serializers.SerializerMethodField()
-    class Meta(ItemcomboSerializer.Meta):
-        fields=ItemcomboSerializer.Meta.fields+('discount_deal','colors','sizes',)
+    class Meta(ItemSerializer.Meta):
+        fields=ItemSerializer.Meta.fields+('discount_deal','colors','sizes',)
     def get_discount_deal(self,obj):
         return obj.discount_deal()
     def get_sizes(self,obj):
