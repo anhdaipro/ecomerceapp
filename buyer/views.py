@@ -50,7 +50,7 @@ UserprofileSerializer,ShopinfoSerializer,ItemSerializer,ItemdetailSerializer,
 ItemSellerSerializer,ShoporderSerializer,ImagehomeSerializer,ComboSerializer,
 CategoryhomeSerializer,AddressSerializer,OrderSerializer,OrderdetailSerializer,
 ReviewSerializer,CartitemcartSerializer,CartviewSerializer,ByproductdealSerializer,
-ProductdealSerializer,ItemcomboSerializer,CombodetailseSerializer,
+ProductdealSerializer,ItemcomboSerializer,CombodetailseSerializer,ItempageSerializer,
 ItemdetailsSerializer,ShopdetailSerializer,OrderpurchaseSerializer,CategorydetailSerializer,
 )
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
@@ -552,7 +552,7 @@ class ListItemRecommendAPIView(APIView):
         page_number = request.GET.get('page')
         paginator = Paginator(items_recommend, 30)
         page_obj = paginator.get_page(page_number)
-        serializer = ItemSerializer(page_obj,many=True, context={"request": request})
+        serializer = ItempageSerializer(page_obj,many=True, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
         
 class Itemrecently(ListAPIView):
@@ -1228,9 +1228,9 @@ class DealShockAPIView(APIView):
         variation_info={'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'quantity':quantity,'item_id':variation.item_id,'item_name':variation.item.name,'check':True,'main':True,
             'price':variation.price,'discount_price':variation.total_discount(),'item_url':variation.item.get_absolute_url(),
-            'size':variation.item.get_size(),'inventory':variation.inventory,'show':False,
+            'sizes':variation.item.get_size(),'inventory':variation.inventory,'show':False,
             'item_image':variation.item.get_image_cover(),
-            'color':variation.item.get_color()}
+            'colors':variation.item.get_color()}
         list_product.append(variation_info)
         cartitem=CartItem.objects.filter(product=variation,ordered=False,user=user)
         if cartitem.exists():
