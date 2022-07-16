@@ -29,11 +29,11 @@ class UserorderSerializer(serializers.ModelSerializer):
         fields=('username','id','avatar',)
     def get_avatar(self,obj):
         return obj.profile.avatar.url
-class UserprofileSerializer(UserSerializer):
+class UserprofileSerializer(UserorderSerializer):
     count_message_unseen=serializers.SerializerMethodField()
     count_notifi_unseen=serializers.SerializerMethodField()
-    class Meta(UserSerializer.Meta):
-        fields = UserSerializer.Meta.fields+('count_message_unseen','count_notifi_unseen',)
+    class Meta(UserorderSerializer.Meta):
+        fields = UserorderSerializer.Meta.fields+('count_message_unseen','count_notifi_unseen',)
     def get_count_notifi_unseen(self,obj):
         return obj.profile.count_notifi_unseen
     def get_count_message_unseen(self,obj):
