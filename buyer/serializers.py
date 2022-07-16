@@ -316,6 +316,7 @@ class ItemdetailSerializer(ItemSerializer):
         )
     def get_choice(self,obj):
         return 'item'
+    
     def get_like(self,obj): 
         request=self.context.get("request")
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
@@ -327,7 +328,7 @@ class ItemdetailSerializer(ItemSerializer):
     def get_vouchers(self,obj):
         request=self.context.get("request")
         vouchers=Voucher.objects.filter(product=obj,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
-        VoucherSerializer(vouchers,many=True,context={"request": request}).data
+        return VoucherSerializer(vouchers,many=True,context={"request": request}).data
     def get_colors(self,obj):
         return obj.get_color()
     def get_sizes(self,obj):
@@ -345,7 +346,7 @@ class ItemdetailSerializer(ItemSerializer):
     def get_total_inventory(self,obj):
         return obj.total_inventory()
     def get_flash_sale(self,obj):
-        return ShopSerializer(obj.shop).data
+        return obj.get_flash_sale()
     def get_category(self,obj):
         return obj.category.get_full_category()
     def get_media_upload(self,obj):

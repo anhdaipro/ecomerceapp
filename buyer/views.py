@@ -273,6 +273,110 @@ def search_matching(list_keys):
 def get_count(category):
     return Item.objects.filter(category=category).count()
 
+class Topsearch(APIView):
+    def get(self,request):
+        from_item=0
+        to_item=5
+        from_item=request.GET.get('from_item')
+        to_item=request.GET.get('to_item')
+        keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__gte=datetime.datetime.now()-datetime.timedelta(days=7)))
+        list_keys=[i['keyword'] for i in keyword]
+        items=search_matching(list_keys)
+        list_title_item=[i['name'] for i in items]
+        result_item = dict((i, list_title_item.count(i)) for i in list_title_item)
+        list_sort_item={k: v for k, v in sorted(result_item.items(), key=lambda item: item[1],reverse=True)}
+        list_name_top_search=sorted(list_sort_item, key=list_sort_item.get, reverse=True)[:20]
+        item_top_search=Item.objects.filter(Q(name__in=list_name_top_search)).prefetch_related('media_upload').select_related('category').prefetch_related('cart_item__order_cartitem')
+        data={
+        'item_top_search':[{'image':item.get_image_cover(),'title':item.category.title,'count':get_count(item.category),'name':item.name,'number_order':item.number_order()} for item in item_top_search]}
+        return Response(data)
+
+class SearchitemAPIView(APIView):
+    permission_classes = (AllowAny,)
+    def get(self, request):
+        keyword=request.GET.get('keyword')
+        page = request.GET.get('page')
+        minprice=request.GET.get('minPrice')
+        maxprice=request.GET.get('maxPrice')
+        rating_score=request.GET.get('rating')
+        order=request.GET.get('order')
+        sortby=request.GET.get('sortby')
+        brand=request.GET.get('brand')
+        status=request.GET.get('status')
+        locations=request.GET.get('locations')
+        unitdelivery=request.GET.get('unitdelivery')
+        shoptype=request.GET.get('shoptype')
+        categoryID=request.GET.get('categoryID')
+        category=request.GET.get('category')
+        shop=request.GET.get('shop')
+        if keyword:
+            list_items = Item.objects.filter(Q(name__icontains=keyword)|Q(shop__name=keyword) | Q(brand__in=keyword)|Q(category__title__in=keyword)).order_by('name').distinct()
+            items = Item.objects.filter(Q(name__icontains=keyword) | Q(
+            brand__in=keyword)|Q(category__title__in=keyword)).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').distinct()
+            category_choice=Category.objects.filter(item__in=list_items).order_by('name').distinct()
+            list_shop=Shop.objects.filter(item__in=list_items)
+            SearchKey.objects.get_or_create(keyword=keyword)
+            SearchKey.objects.filter(keyword=keyword).update(total_searches=F('total_searches') + 1)
+        if shop:
+            list_items=list_items.filter(shop__name=shop)
+            items=items.filter(shop__name=shop).distinct()
+        if categoryID:
+            categoryID=int(categoryID)
+            items=items.filter(category__id=categoryID)
+        if category:
+            category=int(category)
+            category_parent=Category.objects.get(id=category)
+            categories=category_parent.get_descendants(include_self=False).filter(choice=True)
+            list_items=list_items.filter(category__in=categories).distinct()
+            items=items.filter(category__in=categories).distinct()
+        if brand:
+            items=items.filter(brand=brand)
+        if status:
+            items=items.filter(status=status)
+        if locations:
+            items=items.filter(shop__city=locations)
+        if shoptype:
+            items=items.filter(shop_type=shoptype)
+        if rating_score:
+            rating=int(rating_score)
+            items=items.annotate(avg_rating= Avg('cart_item__review_item__review_rating')).filter(avg_rating__gte=rating)
+        if sortby:
+            if sortby=='pop':
+                items=items.annotate(count_like= Count('liked')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_review= Count('cart_item__review_item')).order_by('-count_like','-count_review','-count_order')
+            elif sortby=='ctime':
+                items=items.annotate(count_order= Count('cart_item__order_cartitem__id')).annotate(count_review= Count('cart_item__review_item')).order_by('-id')
+            elif sortby=='price':
+                items=items.annotate(avg_price= Avg('variation_item__price')).order_by('avg_price')
+                if order=='desc':
+                    items=items.annotate(avg_price= Avg('variation_item__price')).order_by('-avg_price')
+        paginator = Paginator(items,30)
+        page_obj = paginator.get_page(page)
+        shoptype=[{'value':shop.shop_type,'name':shop.get_shop_type_display()} for shop in list_shop]
+        status=[{'value':item.status,'name':item.get_status_display()} for item in list_items]
+        data={
+            'shoptype':list({item['value']:item for item in shoptype}.values()),
+            'cities':list(set([shop.city for shop in list_shop if shop.city!=None])),
+            'unitdelivery':list(set(['Nhanh','Hỏa tốc'])),
+            'brands':list(set([item.brand for item in list_items])),
+            'status':list({item['value']:item for item in status}.values()),
+            'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.get_absolute_url()} for i in category_choice],
+            'list_item_page':[{'item_name':i.name,'item_image':i.get_image_cover(),
+            'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
+            'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
+            'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
+            'promotion':i.get_promotion(),
+            'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
+            }
+        for i in page_obj],'page_count':paginator.num_pages
+        }
+        return Response(data)
+        
+class ImageHomeAPIView(ListAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ImagehomeSerializer
+    def get_queryset(self):
+        return Image_home.objects.all()
+
 class DetailAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request,slug):
@@ -454,109 +558,6 @@ class DetailAPIView(APIView):
         'total_review':shop.total_review(),'averge_review':shop.averge_review()}
         return Response(data)
 
-class Topsearch(APIView):
-    def get(self,request):
-        from_item=0
-        to_item=5
-        from_item=request.GET.get('from_item')
-        to_item=request.GET.get('to_item')
-        keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__gte=datetime.datetime.now()-datetime.timedelta(days=7)))
-        list_keys=[i['keyword'] for i in keyword]
-        items=search_matching(list_keys)
-        list_title_item=[i['name'] for i in items]
-        result_item = dict((i, list_title_item.count(i)) for i in list_title_item)
-        list_sort_item={k: v for k, v in sorted(result_item.items(), key=lambda item: item[1],reverse=True)}
-        list_name_top_search=sorted(list_sort_item, key=list_sort_item.get, reverse=True)[:20]
-        item_top_search=Item.objects.filter(Q(name__in=list_name_top_search)).prefetch_related('media_upload').select_related('category').prefetch_related('cart_item__order_cartitem')
-        data={
-        'item_top_search':[{'image':item.get_image_cover(),'title':item.category.title,'count':get_count(item.category),'name':item.name,'number_order':item.number_order()} for item in item_top_search]}
-        return Response(data)
-
-class SearchitemAPIView(APIView):
-    permission_classes = (AllowAny,)
-    def get(self, request):
-        keyword=request.GET.get('keyword')
-        page = request.GET.get('page')
-        minprice=request.GET.get('minPrice')
-        maxprice=request.GET.get('maxPrice')
-        rating_score=request.GET.get('rating')
-        order=request.GET.get('order')
-        sortby=request.GET.get('sortby')
-        brand=request.GET.get('brand')
-        status=request.GET.get('status')
-        locations=request.GET.get('locations')
-        unitdelivery=request.GET.get('unitdelivery')
-        shoptype=request.GET.get('shoptype')
-        categoryID=request.GET.get('categoryID')
-        category=request.GET.get('category')
-        shop=request.GET.get('shop')
-        if keyword:
-            list_items = Item.objects.filter(Q(name__icontains=keyword)|Q(shop__name=keyword) | Q(brand__in=keyword)|Q(category__title__in=keyword)).order_by('name').distinct()
-            items = Item.objects.filter(Q(name__icontains=keyword) | Q(
-            brand__in=keyword)|Q(category__title__in=keyword)).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').distinct()
-            category_choice=Category.objects.filter(item__in=list_items).order_by('name').distinct()
-            list_shop=Shop.objects.filter(item__in=list_items)
-            SearchKey.objects.get_or_create(keyword=keyword)
-            SearchKey.objects.filter(keyword=keyword).update(total_searches=F('total_searches') + 1)
-        if shop:
-            list_items=list_items.filter(shop__name=shop)
-            items=items.filter(shop__name=shop).distinct()
-        if categoryID:
-            categoryID=int(categoryID)
-            items=items.filter(category__id=categoryID)
-        if category:
-            category=int(category)
-            category_parent=Category.objects.get(id=category)
-            categories=category_parent.get_descendants(include_self=False).filter(choice=True)
-            list_items=list_items.filter(category__in=categories).distinct()
-            items=items.filter(category__in=categories).distinct()
-        if brand:
-            items=items.filter(brand=brand)
-        if status:
-            items=items.filter(status=status)
-        if locations:
-            items=items.filter(shop__city=locations)
-        if shoptype:
-            items=items.filter(shop_type=shoptype)
-        if rating_score:
-            rating=int(rating_score)
-            items=items.annotate(avg_rating= Avg('cart_item__review_item__review_rating')).filter(avg_rating__gte=rating)
-        if sortby:
-            if sortby=='pop':
-                items=items.annotate(count_like= Count('liked')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_review= Count('cart_item__review_item')).order_by('-count_like','-count_review','-count_order')
-            elif sortby=='ctime':
-                items=items.annotate(count_order= Count('cart_item__order_cartitem__id')).annotate(count_review= Count('cart_item__review_item')).order_by('-id')
-            elif sortby=='price':
-                items=items.annotate(avg_price= Avg('variation_item__price')).order_by('avg_price')
-                if order=='desc':
-                    items=items.annotate(avg_price= Avg('variation_item__price')).order_by('-avg_price')
-        paginator = Paginator(items,30)
-        page_obj = paginator.get_page(page)
-        shoptype=[{'value':shop.shop_type,'name':shop.get_shop_type_display()} for shop in list_shop]
-        status=[{'value':item.status,'name':item.get_status_display()} for item in list_items]
-        data={
-            'shoptype':list({item['value']:item for item in shoptype}.values()),
-            'cities':list(set([shop.city for shop in list_shop if shop.city!=None])),
-            'unitdelivery':list(set(['Nhanh','Hỏa tốc'])),
-            'brands':list(set([item.brand for item in list_items])),
-            'status':list({item['value']:item for item in status}.values()),
-            'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.get_absolute_url()} for i in category_choice],
-            'list_item_page':[{'item_name':i.name,'item_image':i.get_image_cover(),
-            'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
-            'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-            'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
-            'promotion':i.get_promotion(),
-            'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
-            }
-        for i in page_obj],'page_count':paginator.num_pages
-        }
-        return Response(data)
-        
-class ImageHomeAPIView(ListAPIView):
-    permission_classes = (AllowAny,)
-    serializer_class = ImagehomeSerializer
-    def get_queryset(self):
-        return Image_home.objects.all()
 
 class ProductInfoAPIVIew(APIView):
     permission_classes = (AllowAny,)
