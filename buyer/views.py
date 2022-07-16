@@ -47,10 +47,11 @@ from bulk_update.helper import bulk_update
 from .serializers import (ChangePasswordSerializer,UserSerializer,SMSPinSerializer,
 SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSerializer,
 UserprofileSerializer,ShopinfoSerializer,ItemSerializer,ItemdetailSerializer,
-ItemSellerSerializer,ShoporderSerializer,ImagehomeSerializer,
+ItemSellerSerializer,ShoporderSerializer,ImagehomeSerializer,ComboSerializer,
 CategoryhomeSerializer,AddressSerializer,OrderSerializer,OrderdetailSerializer,
-ReviewSerializer,CartitemcartSerializer,CartviewSerializer,DealshockSerializer,
-ItemdetailsSerializer
+ReviewSerializer,CartitemcartSerializer,CartviewSerializer,ByproductdealSerializer,
+ProductdealSerializer,ItemcomboSerializer,CombodetailseSerializer,
+ItemdetailsSerializer,ShopdetailSerializer,OrderpurchaseSerializer,CategorydetailSerializer,
 )
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
@@ -308,18 +309,19 @@ class SearchitemAPIView(APIView):
         shoptype=request.GET.get('shoptype')
         categoryID=request.GET.get('categoryID')
         category=request.GET.get('category')
-        shop=request.GET.get('shop')
+        shop_id=request.GET.get('shop_id')
+        list_items=Item.objects.all()
         if keyword:
-            list_items = Item.objects.filter(Q(name__icontains=keyword)|Q(shop__name=keyword) | Q(brand__in=keyword)|Q(category__title__in=keyword)).order_by('name').distinct()
+            list_items = list_items.filter(Q(name__icontains=keyword)|Q(shop__name=keyword) | Q(brand__in=keyword)|Q(category__title__in=keyword)).order_by('name').distinct()
             items = Item.objects.filter(Q(name__icontains=keyword) | Q(
             brand__in=keyword)|Q(category__title__in=keyword)).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').distinct()
             category_choice=Category.objects.filter(item__in=list_items).order_by('name').distinct()
             list_shop=Shop.objects.filter(item__in=list_items)
             SearchKey.objects.get_or_create(keyword=keyword)
             SearchKey.objects.filter(keyword=keyword).update(total_searches=F('total_searches') + 1)
-        if shop:
-            list_items=list_items.filter(shop__name=shop)
-            items=items.filter(shop__name=shop).distinct()
+        if shop_id:
+            list_items=list_items.filter(shop_id=shop_id)
+            items=items.filter(shop_id=shop_id).distinct()
         if categoryID:
             categoryID=int(categoryID)
             items=items.filter(category__id=categoryID)
@@ -390,180 +392,43 @@ class ItemdetailAPI(APIView):
             if ItemViews.objects.filter(item=item,user=request.user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
                 ItemViews.objects.create(item=item,user=request.user)
 
-class Getlistitem(APIView):
+class ShopdetailAPI(APIView):
     def get(self,request):
-        page = request.GET.get('page')
-        sort_price=request.GET.get('price_sort')
-        minprice=request.GET.get('minPrice')
-        maxprice=request.GET.get('maxPrice')
-        rating_score=request.GET.get('rating')
-        order=request.GET.get('order')
-        sortby=request.GET.get('sortby')
-        brand=request.GET.get('brand')
-        status=request.GET.get('status')
-        locations=request.GET.get('locations')
-        unitdelivery=request.GET.get('unitdelivery')
-        shoptype=request.GET.get('shoptype')
-        categoryID=request.GET.get('categoryID')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+        item_id=request.GET.get('item_id')
+        category_id=request.GET.get('categoryId')
+        item=Item.objects.get(shop=shop)
+        shop=item.shop
+        shop.views += 1
+        shop.save()
+        serializer =ShopdetailSerializer(shop,context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK) 
+        if token:
+            user=request.user
+            if ShopViews.objects.filter(shop=shop,user=user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
+                ShopViews.objects.create(shop=shop,user=user)
 
-class DetailAPIView(APIView):
+class CategorydetailAPI(APIView):
     permission_classes = (AllowAny,)
     def get(self, request,slug):
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        category=Category.objects.filter(slug=slug)
-        shop=Shop.objects.filter(slug=slug)
-        data={}
-        if category.exists():
-            category=category.first()
-            category_children=Category.objects.filter(parent=category)
-            category_choice=category.get_descendants(include_self=False).filter(choice=True)
-            list_items=Item.objects.filter(category__in=category_choice)
-            items=Item.objects.filter(category__in=category_choice).prefetch_related('main_product').prefetch_related('shop_program').prefetch_related('promotion_combo').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size')
-            list_shop=Shop.objects.filter(item__in=list_items)
-            if categoryID:
-                items=items.filter(category__id=categoryID)
-            if brand:
-                items=items.filter(brand=brand)
-            if status:
-                items=items.filter(status=status)
-            if locations:
-                items=items.filter(shop__city=locations)
-            if shoptype:
-                items=items.filter(shop_type=shoptype)
-            if rating_score:
-                rating=int(rating_score)
-                items=items.annotate(avg_rating= Avg('cart_item__review_item__review_rating')).filter(avg_rating__gte=rating)
-            if maxprice and minprice:
-                max_price=int(maxprice)
-                min_price=int(minprice)
-                items=items.annotate(min=Min('variation_item__price')).filter(min__gte=min_price,min__lte=max_price)
-            if sortby:
-                items=items.filter(cart_item__order_cartitem__ordered=True)
-                if sortby=='pop':
-                    items=items.annotate(count_like= Count('liked')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_review= Count('cart_item__review_item')).order_by('-count_like','-count_review','-count_order')
-                elif sortby=='ctime':
-                    items=items.annotate(count_order= Count('cart_item__order_cartitem__id')).annotate(count_review= Count('cart_item__review_item')).order_by('-id')
-                elif sort_by=='price':
-                    items=items.annotate(avg_price= Avg('variation_item__price')).order_by('avg_price')
-                    if order=='desc':
-                        items=items.annotate(avg_price= Avg('variation_item__price')).order_by('-avg_price')
-            paginator = Paginator(items,30)
-            page_obj = paginator.get_page(page)
-            shoptype=[{'value':shop.shop_type,'name':shop.get_shop_type_display()} for shop in list_shop ]
-            status=[{'value':item.status,'name':item.get_status_display()} for item in list_items]
-            data.update({
-                'image_home':[{'image':i.image.url,'url_field':i.url_field} for i in category.image_category.all()],
-                'shoptype':list({item['value']:item for item in shoptype}.values()),
-                'cities':list(set([shop.city for shop in list_shop if shop.city!=None])),
-                'unitdelivery':list(set(['Nhanh','Hỏa tốc'])),
-                'brands':list(set([item.brand for item in list_items])),
-                'status':list({item['value']:item for item in status}.values()),
-                'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.get_absolute_url()} for i in category_choice if i.item_set.all().count()>0],
-                'category_info':{'title':category.title,'image':category.image.url,'id':category.id},
-                'category_children':[{'id':i.id,'title':i.title,'url':i.get_absolute_url()} for i in category_children],
-                'list_item_page':[{'item_name':i.name,'item_image':i.get_image_cover(),
-                'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
-                'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-                'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
-                'promotion':i.get_promotion(),
-                'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
-                }
-            for i in page_obj],'page_count':paginator.num_pages
-            })
-            return Response(data)
-
-        elif shop.exists():
-            shop=shop.first()
-            shop.views += 1
-            shop.save()
-            list_voucher=Voucher.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
-            deal_shock=Buy_with_shock_deal.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
-            main_product=Item.objects.filter(main_product__in=deal_shock)
-            promotion_combo=Promotion_combo.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
-            item_combo=Item.objects.filter(promotion_combo__in=promotion_combo)
-            items=Item.objects.filter(shop=shop).prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program')
-            category_children=Category.objects.filter(item__shop=shop).distinct()
-            if categoryID:
-                category_choice=Category.objects.get(id=categoryID)
-                items=items.filter(category=category_choice)
-            if rating_score:
-                rating=int(rating_score)
-                items=items.annotate(avg_rating= Avg('cart_item__review_item__review_rating')).filter(avg_rating__gte=rating)
-            if maxprice and minprice:
-                max_price=int(maxprice)
-                min_price=int(minprice)
-                items=items.annotate(min=Min('variation_item__price')).filter(min__gte=min_price,min__lte=max_price)
-            if sortby:
-                items=items.filter(cart_item__order_cartitem__ordered=True)
-                if sortby=='pop':
-                    items=items.annotate(count_like= Count('liked')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_review= Count('cart_item__review_item')).order_by('-count_like','-count_review','-count_order')
-                elif sortby=='ctime':
-                    items=items.annotate(count_order= Count('cart_item__order_cartitem__id')).annotate(count_review= Count('cart_item__review_item')).order_by('-id')
-                elif sort_by=='price':
-                    items=items.annotate(avg_price= Avg('variation_item__price')).order_by('avg_price')
-                    if order=='desc':
-                        items=items.annotate(avg_price= Avg('variation_item__price')).order_by('-avg_price')
-            paginator = Paginator(items,30)
-            page_obj = paginator.get_page(page)
-            count_follow=Shop.objects.filter(followers=shop.user).count()
-            data.update({'avatar':shop.user.profile.avatar.url,'shop_url':shop.get_absolute_url(),'count_followings': count_follow,
-                'shop_name':shop.name,'shop':'shop','user_id':shop.user_id,'created':shop.create_at,
-                'online':shop.user.profile.online,'num_followers':shop.num_follow(),'slug':shop.slug,
-                'is_online':shop.user.profile.is_online,'count_product':shop.count_product(),
-                'total_review':shop.total_review(),'averge_review':shop.averge_review(),
-                'promotion_combo':[{'combo_type':promotion.combo_type,
-                'quantity_to_reduced':promotion.quantity_to_reduced,'limit_order':promotion.quantity_to_reduced,
-                'discount_percent':promotion.discount_percent,'discount_price':promotion.discount_price,
-                'price_special_sale':promotion.price_special_sale} for promotion in promotion_combo],
-                'item_combo':[{'item_name':i.name,'item_image':i.get_image_cover(),
-                'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
-                'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-                'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price()} for i in item_combo],
-                'list_item_page':[{'item_name':i.name,'item_image':i.get_image_cover(),
-                'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
-                'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-                'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
-                'promotion':i.get_promotion(),
-                'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
-                }
-                for i in page_obj],'page_count':paginator.num_pages,'list_voucher':list_voucher.values(),
-                'main_product':[{'item_name':i.name,'item_image':i.get_image_cover(),
-                'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
-                'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-                'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price()} for i in main_product],
-                'total_order':shop.total_order(),'list_category_child':[{'title':category.title,'id':category.id,'url':category.get_absolute_url()} for category in category_children]})
-            
-            if token:
-                user=request.user
-                if ShopViews.objects.filter(shop=shop,user=user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
-                    ShopViews.objects.create(shop=shop,user=user)
-                follow=False
-                if user in shop.followers.all():
-                    follow=True
-                
-                data.update({'follow':follow})
-                
-            return Response(data)
-           
-    def post(self, request, *args, **kwargs):
-        shop_name=request.POST.get('shop_name')
-        shop=Shop.objects.get(name=shop_name)
-        user=request.user
-        follow=False
-        count_follow=Shop.objects.filter(followers=shop.user).count()
-        if user in shop.followers.all():
-            follow=False
-            shop.followers.remove(user)
-        else:
-            follow=True
-            shop.followers.add(user)
-        data={'num_followers':shop.num_follow(),'follow':follow,'online':shop.user.profile.online,
-        'num_followers':shop.num_follow(),'count_followings': count_follow,
-        'is_online':shop.user.profile.is_online,'count_product':shop.count_product(),
-        'total_review':shop.total_review(),'averge_review':shop.averge_review()}
+        category=Category.objects.get(slug=slug)
+        data=CategorydetailSerializer(category).data
         return Response(data)
 
-class ProductInfoAPIVIew(APIView):
+class CategoryinfoAPI(APIView):
+    permission_classes = (AllowAny,)
+    def get(self,request):
+        category_id=request.GET.get('category_id')
+        category=Category.objects.get(id=category_id)
+        category_children=Category.objects.filter(parent=category)
+        category_choice=category.get_descendants(include_self=False).filter(choice=True)
+        data={
+            'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.get_absolute_url()} for i in category_choice if i.item_set.all().count()>0],
+            'category_children':[{'id':i.id,'title':i.title,'url':i.get_absolute_url()} for i in category_children],
+        }
+        return Response(data)
+
+class ProductInfoAPI(APIView):
     permission_classes = (AllowAny,)
     def get(self,request,id):
         media=request.GET.get('media')
@@ -576,7 +441,7 @@ class ProductInfoAPIVIew(APIView):
         data={}
         if choice=='deal':
             deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).order_by('valid_to').first()
-            data =DealshockSerializer(deal_shock,context={"request": request}).data
+            data =Byproductdealserializer(deal_shock,context={"request": request}).data
         elif choice=='combo':
             promotion_combo=Promotion_combo.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
             data =ComboSerializer(promotion_combo,context={"request": request}).data
@@ -624,37 +489,40 @@ class ProductInfoAPIVIew(APIView):
         data.update({'num_like_item':item.num_like(),'like_item':like_item})  
         return Response(data)
 
-class ShopinfoAPIVIew(APIView):
+class ShopinfoAPI(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
-        item_id=request.GET.get('item_id')
-        shop_name=request.GET.get('shop_name')
-        page=request.GET.get('page')
-        sort_price=request.GET.get('price_sort')
-        minprice=request.GET.get('minprice')
-        maxprice=request.GET.get('maxprice')
-        rating_score=request.GET.get('rating_score')
-        order=request.GET.get('order')
-        sortBy=request.GET.get('sortBy')
-        if shop_name:
-            shop=Shop.objects.get(name=shop_name)
-            items=Item.objects.filter(shop=shop).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem')
-            paginator = Paginator(items,30)  # Show 25 contacts per page.
-            page_obj = paginator.get_page(1)
-            if page:
-                page_obj = paginator.get_page(page)
-            list_page_item=[{'item_name':i.name,'item_image':i.get_image_cover(),
-            'item_url':i.get_absolute_url(),'percent_discount':i.percent_discount(),'min_price':i.min_price(),
-            'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-            'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
-            'promotion':i.get_promotion(),
-            'shock_deal':i.shock_deal_type(),'num_order':i.number_order()
-            }
-            for i in page_obj]
-            data={
-                'a':list_page_item,'page_count':paginator.num_pages
-            }
-            return Response(data)
+        choice=request.GET.get('choice')
+        shop_id=request.GET.get('shop_id')
+        data={}
+        if choice=='deal':
+            deal_shock=Buy_with_shock_deal.objects.filter(shop_id=shop_id,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
+            data=ProductdealSerializer(deal_shock,many=True).data
+        elif chocie=='combo':
+            promotion_combo=Promotion_combo.objects.filter(shop_id=shop_id,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
+            data =ComboSerializer(promotion_combo,many=True,context={"request": request}).data
+        elif choice=='gettreecategory':
+            categorychild=Category.objects.filter(item__shop_id=shop_id)
+            data=CategorySerializer(categorychild,many=True).data
+        return Response(data)
+
+    def post(self, request, *args, **kwargs):
+        shop_name=request.POST.get('shop_name')
+        shop=Shop.objects.get(name=shop_name)
+        user=request.user
+        follow=False
+        count_follow=Shop.objects.filter(followers=shop.user).count()
+        if user in shop.followers.all():
+            follow=False
+            shop.followers.remove(user)
+        else:
+            follow=True
+            shop.followers.add(user)
+        data={'num_followers':shop.num_follow(),'follow':follow,'online':shop.user.profile.online,
+        'num_followers':shop.num_follow(),'count_followings': count_follow,
+        'is_online':shop.user.profile.is_online,'count_product':shop.count_product(),
+        'total_review':shop.total_review(),'averge_review':shop.averge_review()}
+        return Response(data)
 
 class ListItemRecommendAPIView(APIView):
     permission_classes = (AllowAny,)
@@ -1388,21 +1256,8 @@ class PromotionAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request,id):
         promotion=Promotion_combo.objects.get(id=id)
-        items=promotion.product.all()
-        data={
-            'promotion_id':promotion.id,'combo_type':promotion.combo_type,
-            'discount_percent':promotion.discount_percent,
-            'discount_price':promotion.discount_price,
-            'price_special_sale':promotion.price_special_sale,
-            'quantity_to_reduced':promotion.quantity_to_reduced,
-            'list_items':[{
-            'item_id':item.id,'item_name':item.name,
-            'item_image':item.media_upload.all()[0].get_media(),
-            'item_url':item.get_absolute_url(),'max_price':item.max_price(),
-            'min_price':item.min_price(),
-            'size':item.get_size(),'color':item.get_color(),'inventory':item.total_inventory()} for item in items]
-        }
-        return Response(data)
+        serializer = CombodetailseSerializer(promotion,context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET', 'POST'])
 def upload_file(request):
@@ -1516,17 +1371,7 @@ class PurchaseAPIView(APIView):
         order_id=request.GET.get('id')
         type_order=request.GET.get('type')
         review=request.GET.get('review')
-        if order_id and not review:
-            order = Order.objects.get(id=order_id)
-            data={
-                'cart_item':[{
-                'item_image':cart_item.get_image(),'item_url':cart_item.item.get_absolute_url(),
-                'item_name':cart_item.item.name,'color_value':cart_item.product.get_color(),
-                'size_value':cart_item.product.get_size(),'id':cart_item.id
-                } for cart_item in order.items.all()]
-            }
-            return Response(data)
-        elif order_id and review:
+        if order_id and review:
             order = Order.objects.get(id=order_id)
             cartitem=order.items.all()
             reviews=ReView.objects.filter(cartitem__in=cartitem).prefetch_related('cartitem__item__media_upload').select_related('cartitem__item').select_related('cartitem__product__size').select_related('cartitem__product__color')
@@ -1547,19 +1392,8 @@ class PurchaseAPIView(APIView):
                 order_all=order_all.filter(received=True)
             if type_order=='5':
                 order_all=order_all.filter(canceled=True)
-            list_order=[{'shop':{'id':order.shop_id,'name':order.shop.name,'url':order.shop.get_absolute_url(),'user_id':order.shop.user_id},'received':order.received,'canceled':order.canceled,
-                'being_delivered':order.being_delivered,'shop_url':order.shop.get_absolute_url(),'id':order.id,
-                'accepted':order.accepted,'amount':order.total_final_order(),
-                'received_date':order.received_date,'review':get_review(order),
-                'cart_item':[{'product_id':cart_item.product_id,
-                'item_image':cart_item.get_image(),'item_url':cart_item.item.get_absolute_url(),
-                'item_name':cart_item.item.name,'color_value':cart_item.product.get_color(),
-                'quantity':cart_item.quantity,'discount_price':cart_item.product.total_discount(),
-                'size_value':cart_item.product.get_size(),'price':cart_item.product.price,
-                'id':cart_item.id
-                } for cart_item in order.items.all()]} for order in order_all]
             data={
-                'a':list_order,'count_order':count_order,
+                'a':OrderpurchaseSerializer(order_all,many=True).data,'count_order':count_order,
                 }
             return Response(data)
     def post(self,request,*args, **kwargs):
