@@ -386,6 +386,7 @@ class DetailAPIView(APIView):
         shop=Shop.objects.filter(slug=slug)
         page_no=1
         page = request.GET.get('page')
+        sp_atk=request.GET.get('sp_atk')
         sort_price=request.GET.get('price_sort')
         minprice=request.GET.get('minPrice')
         maxprice=request.GET.get('maxPrice')
@@ -400,7 +401,7 @@ class DetailAPIView(APIView):
         categoryID=request.GET.get('categoryID')
         data={}
         if category.exists():
-            category=Category.objects.get(slug=slug)
+            category=category.first()
             category_children=Category.objects.filter(parent=category)
             category_choice=category.get_descendants(include_self=False).filter(choice=True)
             list_items=Item.objects.filter(category__in=category_choice)
@@ -459,16 +460,16 @@ class DetailAPIView(APIView):
             return Response(data)
 
         elif item.exists():
-            item=Item.objects.get(slug=slug)
+            item=item.first()
             item.views += 1
             item.save()
-            
-            return Response({'id':item.id}) 
+            serializer =ItemdetailSerializer(item,context={"request": request})
+            return Response(serializer.data, status=status.HTTP_200_OK) 
             if token:
                 if ItemViews.objects.filter(item=item,user=request.user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
                     ItemViews.objects.create(item=item,user=request.user)
         elif shop.exists():
-            shop=Shop.objects.get(slug=slug)
+            shop=shop.first()
             shop.views += 1
             shop.save()
             list_voucher=Voucher.objects.filter(shop=shop,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
