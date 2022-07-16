@@ -466,7 +466,7 @@ class DetailAPIView(APIView):
                 if ItemViews.objects.filter(item=item,user=request.user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
                     ItemViews.objects.create(item=item,user=request.user)
             serializer =ItemdetailSerializer(item,context={"request": request})
-            return Response(serializer.data)  
+            return Response(serializer.data, status=status.HTTP_200_OK) 
         elif shop.exists():
             shop=Shop.objects.get(slug=slug)
             shop.views += 1
