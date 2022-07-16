@@ -90,7 +90,7 @@ urlpatterns = [
     path('add-to-cart-batch',AddToCardBatchAPIView.as_view()),
     path('search', SearchitemAPIView.as_view()),
     path('upload-file',views.upload_file),
-    path('profile',ProfileAPIView.as_view()),
+    path('profile',ProfileAPI.as_view()),
     path('purchase',PurchaseAPIView.as_view()),
     path('cartview',CartItemAPIView.as_view()),
     path('shop/order',ShoporderAPI.as_view()),

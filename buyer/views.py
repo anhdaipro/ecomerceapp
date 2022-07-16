@@ -1294,7 +1294,7 @@ def upload_file(request):
             }
             return Response(data)
 
-class ProfileAPIView(APIView):
+class ProfileAPI(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
