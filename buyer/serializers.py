@@ -307,7 +307,7 @@ class ItemdetailSerializer(ItemSerializer):
     vouchers=serializers.SerializerMethodField()
     like=serializers.SerializerMethodField()
     class Meta(ItemSerializer.Meta):
-        fields =ItemSerializer.Meta.fields+ (
+        fields =ItemSerializer.Meta.fields + (
             'shop','category','count_variation','description','media_upload',
             'shock_deal_type','promotion','flash_sale','num_like',
             'total_inventory','review_rating','count_review','sizes','colors',
