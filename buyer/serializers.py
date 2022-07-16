@@ -293,6 +293,7 @@ class ItemdealSerializer(ItemcomboSerializer):
         return obj.get_color_deal()
 
 class ByproductdealSerializer(serializers.ModelSerializer):
+    byproduct=serializers.SerializerMethodField()
     class Meta:
         model=Buy_with_shock_deal
         fields=('byproduct',)
