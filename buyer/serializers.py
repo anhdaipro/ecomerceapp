@@ -219,7 +219,6 @@ class ItemcomboSerializer(ItemSerializer):
         return obj.get_size()
 
 class ItemdetailSerializer(ItemcomboSerializer):
-    shop=serializers.SerializerMethodField()
     category=serializers.SerializerMethodField()
     media_upload=serializers.SerializerMethodField()
     shock_deal_type=serializers.SerializerMethodField()
