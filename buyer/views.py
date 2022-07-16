@@ -574,7 +574,7 @@ class ProductInfoAPIVIew(APIView):
         choice=request.GET.get('choice')
         item=Item.objects.get(id=id)
         data={}
-        if chocie=='deal':
+        if choice=='deal':
             deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).order_by('valid_to').first()
             data =DealshockSerializer(deal_shock,context={"request": request}).data
         elif choice=='combo':
@@ -848,7 +848,7 @@ class AddToCardBatchAPIView(APIView):
         return Response(data)
     def post(self, request, *args, **kwargs):
         user=request.user
-        product_id_choice=request.POST.get('product_id_chocie')
+        product_id_choice=request.POST.get('product_id_choice')
         quantity_product=request.POST.get('quantity_product')
         item_id=request.POST.get('item_id')
         deal_id=request.POST.get('deal_id')
