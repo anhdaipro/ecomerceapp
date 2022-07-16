@@ -150,7 +150,7 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = (
-        'id','image','max_price','min_price','url','percent_discount')
+        'id','name','image','max_price','min_price','url','percent_discount')
     
     def get_url(self,obj):
         return obj.get_absolute_url()
