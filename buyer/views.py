@@ -577,9 +577,9 @@ def update_image(request):
 
 class Category_home(ListAPIView):
     permission_classes = (AllowAny,)
-    serializer_class = CategorySerializer
-    def get_queryset(self):
-        return Category.objects.exclude(image=None).order_by('title').values('title').distinct()[:8]
+    def get(self,request):
+        data=Category.objects.exclude(image=None).order_by('title').values('title').distinct()[:8]
+        return Response(data)
     
 class CartAPIView(APIView):
     permission_classes = (AllowAny,)
