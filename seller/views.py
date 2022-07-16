@@ -44,8 +44,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from .serializers import VoucherSerializer,ComboSerializer,
-ProgramSerializer,DealsockSerializer,FlashsaleSerializer,OrdersellerSerializer
-
+ProgramSerializer,DealsockSerializer,FlashsaleSerializer
+from buyer.serializers import OrdersellerSerializer
 class ListvoucherAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = VoucherSerializer
@@ -263,7 +263,7 @@ def product(request):
                 'id':i.id,'item_sku':i.sku_product,'get_absolute_id':i.get_absolute_id()
                 } for i in first_page]
             list_variation=[{'number_order':i.number_order(),'inventory':i.inventory,'price':i.price,'sku':i.sku_classify,'color_value':i.get_color(),'size_value':i.get_size(),
-            'item__id':i.item_id ,'id':i.id
+            'item_id':i.item_id ,'id':i.id
                     } for i in variation]
             data={
                 'a':list_product,'b':list_variation,'page_range':obj_paginator.num_pages,'count_product':product.count()

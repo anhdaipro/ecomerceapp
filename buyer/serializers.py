@@ -676,4 +676,12 @@ class CartitemcartSerializer(CartItemSerializer):
     def get_shock_deal_type(self,obj):
         return obj.item.shock_deal_type()
 
-
+class OrdersellerSerializer(OrderSerializer):
+    user=serializers.SerializerMethodField()
+    class Meta(OrderSerializer.Meta):
+        my_list = list(OrderSerializer.Meta.fields)
+        my_list.remove('shop')
+        my_tuple = tuple(my_list)
+        fields=my_tuple+('user',)
+    def get_user(self,obj):
+        return UserorderSerializer(obj.user).data
