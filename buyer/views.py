@@ -308,9 +308,11 @@ class SearchitemAPIView(APIView):
         unitdelivery=request.GET.get('unitdelivery')
         shoptype=request.GET.get('shoptype')
         categoryID=request.GET.get('categoryID')
-        category=request.GET.get('category')
+        category_id=request.GET.get('category_id')
         shop_id=request.GET.get('shop_id')
         list_items=Item.objects.all()
+        items=Item.objects.all()
+        list_shop=Shop.objects.all()
         if keyword:
             list_items = list_items.filter(Q(name__icontains=keyword)|Q(shop__name=keyword) | Q(brand__in=keyword)|Q(category__title__in=keyword)).order_by('name').distinct()
             items = Item.objects.filter(Q(name__icontains=keyword) | Q(
@@ -325,9 +327,8 @@ class SearchitemAPIView(APIView):
         if categoryID:
             categoryID=int(categoryID)
             items=items.filter(category__id=categoryID)
-        if category:
-            category=int(category)
-            category_parent=Category.objects.get(id=category)
+        if category_id:
+            category_parent=Category.objects.get(id=category_id)
             categories=category_parent.get_descendants(include_self=False).filter(choice=True)
             list_items=list_items.filter(category__in=categories).distinct()
             items=items.filter(category__in=categories).distinct()
