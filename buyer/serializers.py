@@ -164,7 +164,7 @@ class ItemSerializer(serializers.ModelSerializer):
         return obj.percent_discount()
     
 
-class ItempageSerializer(serializers.ModelSerializer):
+class ItempageSerializer(ItemSerializer):
     num_like=serializers.SerializerMethodField()
     review_rating=serializers.SerializerMethodField()
     shock_deal_type=serializers.SerializerMethodField()
