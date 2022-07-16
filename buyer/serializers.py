@@ -22,16 +22,18 @@ class UserCreateSerializer(UserCreateSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'password')
-
-class UserprofileSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     avatar=serializers.SerializerMethodField()
-    count_message_unseen=serializers.SerializerMethodField()
-    count_notifi_unseen=serializers.SerializerMethodField()
     class Meta:
         model=User
-        fields = ('username','id','avatar','count_message_unseen','count_notifi_unseen',)
+        fields=('username','id','avatar',)
     def get_avatar(self,obj):
         return obj.profile.avatar.url
+class UserprofileSerializer(UserSerializer):
+    count_message_unseen=serializers.SerializerMethodField()
+    count_notifi_unseen=serializers.SerializerMethodField()
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields+('count_message_unseen','count_notifi_unseen',)
     def get_count_notifi_unseen(self,obj):
         return obj.profile.count_notifi_unseen
     def get_count_message_unseen(self,obj):
