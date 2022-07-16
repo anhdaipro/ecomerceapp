@@ -462,7 +462,7 @@ class ProductInfoAPI(APIView):
         data={}
         if choice=='deal':
             deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).order_by('valid_to').first()
-            data =Byproductdealserializer(deal_shock,context={"request": request}).data
+            data =ByproductdealSerializer(deal_shock,context={"request": request}).data
         elif choice=='combo':
             promotion_combo=Promotion_combo.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
             data =ComboSerializer(promotion_combo,context={"request": request}).data

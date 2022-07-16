@@ -314,6 +314,7 @@ class ItemdetailsSerializer(serializers.ModelSerializer):
 class ComboSerializer(serializers.ModelSerializer):
     products=serializers.SerializerMethodField()
     class Meta:
+        model=Promotion_combo
         fields=('id','combo_type','products',
             'discount_percent','discount_price','price_special_sale','quantity_to_reduced',)
     def get_products(self,obj):
