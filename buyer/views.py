@@ -1037,7 +1037,7 @@ class CartItemAPIView(APIView):
             else:
                 CartItem.objects.get(id=cartitem_id_delete).delete()
                 Byproduct.objects.filter(cartitem=None).delete()
-        order_check = Order.objects.filter(user=user, ordered=False).exclude(items=None).select_related('voucher').prefetch_related('items__item__media_upload').prefetch_related('items__byproduct').prefetch_related('items__item__main_product').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__shop_program').prefetch_related('items__product__size').prefetch_related('items__product__color')
+        order_check = Order.objects.filter(user=user, ordered=False).exclude(items=None).select_related('voucher').prefetch_related('items__item__media_upload').prefetch_related('items__byproduct_cart').prefetch_related('items__item__main_product').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__shop_program').prefetch_related('items__product__size').prefetch_related('items__product__color')
         for order in order_check:
             discount_voucher+=order.discount_voucher()
             count_cartitem+=order.count_cartitem()
@@ -1059,7 +1059,7 @@ class ListorderAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
-        order_check = Order.objects.filter(user=user, ordered=False).select_related('shop').select_related('voucher').prefetch_related('items__byproduct').prefetch_related('items__item__main_product').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__shop_program').prefetch_related('items__product').exclude(items=None)
+        order_check = Order.objects.filter(user=user, ordered=False).select_related('shop').select_related('voucher').prefetch_related('items__byproduct_cart').prefetch_related('items__item__main_product').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__shop_program').prefetch_related('items__product').exclude(items=None)
         data={
         'orders':[{'discount_voucher_shop':order.discount_voucher(),'total':order.total_price_order(),
             'discount_deal':order.discount_deal(),'count':order.count_item_cart(),
@@ -1227,7 +1227,7 @@ class CheckoutAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
-        orders = Order.objects.filter(user=user, ordered=False).select_related('shop').select_related('voucher').prefetch_related('items__byproduct').prefetch_related('items__item__media_upload').prefetch_related('items__item__main_product').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__shop_program').prefetch_related('items__product__size').prefetch_related('items__product__color').exclude(items=None)
+        orders = Order.objects.filter(user=user, ordered=False).select_related('shop').select_related('voucher').prefetch_related('items__byproduct_cart').prefetch_related('items__item__media_upload').prefetch_related('items__item__main_product').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__shop_program').prefetch_related('items__product__size').prefetch_related('items__product__color').exclude(items=None)
         serializer = OrderSerializer(orders,many=True, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
