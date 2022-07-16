@@ -418,6 +418,7 @@ class ShopdetailAPI(APIView):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         item_id=request.GET.get('item_id')
         category_id=request.GET.get('categoryId')
+        item=Item.objects.get(id=item_id)
         shop=item.shop
         shop.views += 1
         shop.save()
