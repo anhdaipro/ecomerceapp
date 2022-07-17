@@ -157,7 +157,6 @@ class ByproductSellerSerializer(IteminfoSerializer):
     variations=serializers.SerializerMethodField()
     class Meta(IteminfoSerializer.Meta):
         fields =IteminfoSerializer.Meta.fields + ('variations',)
-    
     def get_variations(self,obj):
         return VariationSerializer(obj.variation_item.all(),many=True).data
 
@@ -351,7 +350,7 @@ class VoucherSerializer(VoucherinfoSerializer):
     def get_number_used(self,obj):
         return Order.objects.filter(voucher=obj,received=True).count()
     def get_count_product(self,obj):
-        return obj.product.all().count()
+        return obj.products.all().count()
 
 class VoucherdetailSerializer(VoucherinfoSerializer): 
     exists=serializers.SerializerMethodField()
@@ -412,14 +411,11 @@ class BuywithsockdealSellerSerializer(BuywithsockdealinfoSerializer):
         return ByproductSellerSerializer(obj.byproducts.all(),many=True).data
     
 class ComboinfoSerializer(serializers.ModelSerializer):
-    products=serializers.SerializerMethodField()
     class Meta:
         model=Promotion_combo
         fields=['id','valid_from','valid_to',
         'combo_type','discount_percent','discount_price',
         'price_special_sale','limit_order','quantity_to_reduced']
-    def get_products(self,obj):
-        return ItemSerializer(obj.product.all(),many=True).data
 
 class ComboSerializer(ComboinfoSerializer):
     products=serializers.SerializerMethodField()
@@ -433,7 +429,7 @@ class CombosellerSerializer(ComboSerializer):
     class Meta(ComboSerializer.Meta):
         fields=ComboSerializer.Meta.fields+['promotion_combo_name','products']
     def get_products(self,obj):
-        return ItemsellerSerializer(obj.product.all(),many=True).data
+        return ItemsellerSerializer(obj.products.all(),many=True).data
 
 class FlashSaleinfoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -614,7 +610,7 @@ class CombodetailseSerializer(ComboinfoSerializer):
     class Meta(ComboinfoSerializer.Meta):
         fields=ComboinfoSerializer.Meta.fields + ['products']
     def get_products(self,obj):
-        return ItemcomboSerializer(obj.product.all(),many=True).data
+        return ItemcomboSerializer(obj.products.all(),many=True).data
 
 class OrderpurchaseSerializer(serializers.ModelSerializer):
     shop_url=serializers.SerializerMethodField()
