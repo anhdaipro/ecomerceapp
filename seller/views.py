@@ -769,7 +769,7 @@ class Detailprogram(APIView):
             shop_program.items=items
             shop_program.variations=variations
             shop_program.save()
-            shop_program.product.remove(*item_remove)
+            shop_program.products.remove(*item_remove)
             shop_program.products.add(*item_id)
             data={'ok':'ok'}
             return Response(data)
@@ -836,7 +836,7 @@ class DetailFlashsale(APIView):
         if action=='submit':
             item_flash_sale=flash_sale.product.all()
             item_remove=item_flash_sale.exclude(id__in=item_id)
-            flash_sale.product.remove(*item_remove)
+            flash_sale.products.remove(*item_remove)
             flash_sale.products.add(*item_id)
             flash_sale.items=items
             flash_sale.variations=variations
