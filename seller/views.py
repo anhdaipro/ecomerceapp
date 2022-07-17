@@ -493,7 +493,7 @@ class DetailVoucher(APIView):
         items=Item.objects.filter(shop=shop)
         item_id=request.POST.getlist('item_id')
         vocher.code_type=request.POST.get('code_type')
-        vocher.product.set([])
+        vocher.products.set([])
         vocher.name_of_the_discount_program=request.POST.get('name_of_the_discount_program')
         vocher.code = request.POST.get('code')
         vocher.valid_from=request.POST.get('valid_from')
@@ -508,9 +508,9 @@ class DetailVoucher(APIView):
         vocher.setting_display=request.POST.get('setting_display')
         vocher.save()
         if vocher.code_type=="All":
-            vocher.product.add(*items)
+            vocher.products.add(*items)
         else:
-            vocher.product.add(*item_id)
+            vocher.products.add(*item_id)
         data={'ok':'ok' }
         return Response(data)
           
@@ -560,7 +560,11 @@ class NewcomboAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
         promotion_combo_id=request.GET.get('combo_id')
-        items=Item.objects.filter(shop=shop).filter(Q(promotion_combo=None)| Q(promotion_combo_id=promotion_combo_id) | (Q(promotion_combo__valid_to__lt=datetime.datetime.now()) & Q(promotion_combo__isnull=False))).distinct().order_by('-id')
+        list_id=[]
+        if promotion_combo_id:
+            promotion=Promotion_combo.objects.get(id=promotion_combo_id)
+            list_id=[item.id for item in promotion.products.all()]
+        items=Item.objects.filter(shop=shop).filter(Q(promotion_combo=None)| Q(promotion_combo=promotion_combo) | (Q(promotion_combo__valid_to__lt=datetime.datetime.now()) & Q(promotion_combo__isnull=False))).distinct().order_by('-id')
         order=request.GET.get('order')
         price=request.GET.get('price')
         sort=request.GET.get('sort')
@@ -589,7 +593,7 @@ class NewcomboAPI(APIView):
             limit_order=request.POST.get('limit_order'),
             quantity_to_reduced=request.POST.get('quantity_to_reduced'),
             )
-        promotion_combo.product.add(*item_id)
+        promotion_combo.products.add(*item_id)
         data={'ok':'ok'}
         return Response(data)
     
@@ -602,7 +606,7 @@ class DetailComboAPI(APIView):
         item_id=request.POST.getlist('item_id')
         shop=Shop.objects.get(user=request.user)
         promotion_combo=Promotion_combo.objects.get(id=id)
-        promotion_combo.product.set([])
+        promotion_combo.products.set([])
         promotion_combo.promotion_combo_name=request.POST.get('promotion_combo_name')
         promotion_combo.valid_from=request.POST.get('valid_from')
         promotion_combo.valid_to=request.POST.get('valid_to')
@@ -614,7 +618,7 @@ class DetailComboAPI(APIView):
         promotion_combo.quantity_to_reduced=request.POST.get('quantity_to_reduced')
         item.items=items
         promotion_combo.save()
-        promotion_combo.product.add(*item_id)
+        promotion_combo.products.add(*item_id)
         data={'ok':'ok'}
         return Response(data)
     
@@ -685,10 +689,10 @@ class DetailDeal(APIView):
         else:
             deal_shock.items=items
             deal_shock.variations=variations
-            deal_shock.main_product.set([])
-            deal_shock.byproduct.set([])
-            deal_shock.main_product.add(*item_id)
-            deal_shock.byproduct.add(*byproduct_id)
+            deal_shock.main_products.set([])
+            deal_shock.byproducts.set([])
+            deal_shock.main_products.add(*item_id)
+            deal_shock.byproducts.add(*byproduct_id)
             deal_shock.save()
             return Response({'ok':'ok'})
 
@@ -696,7 +700,7 @@ class NewprogramAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
         shop_program_id=request.GET.get('shop_program_id')
-        items=Item.objects.filter(shop=shop).filter(Q(shop_program=None) |Q(shop_program_id=shop_program_id)  | (Q(shop_program__valid_to__lt=datetime.datetime.now()) & Q(shop_program__isnull=False))).distinct()
+        items=Item.objects.filter(shop=shop).filter(Q(shop_program=None) |Q(shop_program=shop_program)  | (Q(shop_program__valid_to__lt=datetime.datetime.now()) & Q(shop_program__isnull=False))).distinct()
         order=request.GET.get('order')
         price=request.GET.get('price')
         sort=request.GET.get('sort')
@@ -729,7 +733,7 @@ class NewprogramAPI(APIView):
                 items=items,
                 variations=variations
                 )
-            shop_program.product.add(*item_id)
+            shop_program.products.add(*item_id)
             data={'ok':'ok'}
             return Response(data)
         else:
@@ -763,7 +767,7 @@ class Detailprogram(APIView):
             shop_program.variations=variations
             shop_program.save()
             shop_program.product.remove(*item_remove)
-            shop_program.product.add(*item_id)
+            shop_program.products.add(*item_id)
             data={'ok':'ok'}
             return Response(data)
         else:
@@ -804,7 +808,7 @@ class Newflashsale(APIView):
                 items=items,
                 variations=variations
                 )
-            flash_sale.product.add(*item_id)
+            flash_sale.products.add(*item_id)
            
             data={'flash_sale_id':flash_sale.id}
             return Response(data)
@@ -830,7 +834,7 @@ class DetailFlashsale(APIView):
             item_flash_sale=flash_sale.product.all()
             item_remove=item_flash_sale.exclude(id__in=item_id)
             flash_sale.product.remove(*item_remove)
-            flash_sale.product.add(*item_id)
+            flash_sale.products.add(*item_id)
             flash_sale.items=items
             flash_sale.variations=variations
             flash_sale.valid_from=request.POST.get('valid_from')
