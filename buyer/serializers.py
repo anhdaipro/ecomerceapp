@@ -143,30 +143,55 @@ class CategorydetailSerializer(CategorySerializer):
         image_category=obj.image_category.all()
         return [{'image':i.image.url,'url_field':i.url_field} for i in image_category]
 
-
-
-class ItemSerializer(serializers.ModelSerializer):
-    url=serializers.SerializerMethodField()
+class IteminfoSerializer(serializers.ModelSerializer):
     image=serializers.SerializerMethodField()
-    max_price=serializers.SerializerMethodField()
-    min_price=serializers.SerializerMethodField()
-    percent_discount=serializers.SerializerMethodField()
     class Meta:
         model = Item
         fields = (
-        'id','name','image','max_price','min_price','url','percent_discount')
+        'id','name','image',)
+    
+    def get_image(self,obj):
+        return obj.get_image_cover()
+
+class ByproductSeller(IteminfoSerializer):
+    image=serializers.SerializerMethodField()
+    class Meta(IteminfoSerializer.Meta):
+        fields =IteminfoSerializer.Meta.fields + ('variations',)
+    def get_image(self,obj):
+        return obj.get_image_cover()
+    def get_variations(self,obj):
+        return VariationSerializer(obj.variation_item.all(),many=True).data
+
+class ItemSerializer(IteminfoSerializer):
+    url=serializers.SerializerMethodField()
+    max_price=serializers.SerializerMethodField()
+    min_price=serializers.SerializerMethodField()
+    percent_discount=serializers.SerializerMethodField()
+    class Meta(IteminfoSerializer.Meta):
+        fields =IteminfoSerializer.Meta.fields+ (
+        'max_price','min_price','url','percent_discount')
     
     def get_url(self,obj):
         return obj.get_absolute_url()
-    def get_image(self,obj):
-        return obj.get_image_cover()
     def get_max_price(self,obj):
         return obj.max_price()
     def get_min_price(self,obj):
         return obj.min_price()
     def get_percent_discount(self,obj):
         return obj.percent_discount()
-    
+
+class VariationSerializer(serializers.ModelSerializer):
+    color_value=serializers.SerializerMethodField()
+    size_value=serializers.SerializerMethodField()
+    class Meta:
+        model = Variation
+        fields = (
+            'id','inventory','color_value','size_value','price','item_id'
+        )
+    def get_color_value(self,obj):
+        return obj.get_color()
+    def get_size_value(self,obj):
+        return obj.get_size()
 
 class ItempageSerializer(ItemSerializer):
     num_like=serializers.SerializerMethodField()
@@ -196,19 +221,20 @@ class ItempageSerializer(ItemSerializer):
 
 class ItemSellerSerializer(ItemSerializer):
     total_inventory=serializers.SerializerMethodField()
-    count_order=serializers.SerializerMethodField()
+    number_order=serializers.SerializerMethodField()
     shipping=serializers.SerializerMethodField()
     class Meta(ItemSerializer.Meta):
         my_list=list(ItemSerializer.Meta.fields)
         my_list.remove('percent_discount')
         my_tuple = tuple(my_list)
-        fields =my_tuple+ ('count_order','total_inventory','shipping',)
+        fields =my_tuple+ ('number_order','total_inventory','shipping',)
     def get_total_inventory(self,obj):
         return obj.total_inventory()
-    def get_count_order(self,obj):
+    def get_number_order(self,obj):
         return obj.number_order()
     def get_shipping(self,obj):
         return obj.shipping_choice.all()[0].method
+
 class ItemcomboSerializer(ItemSerializer):
     total_inventory=serializers.SerializerMethodField()
     colors=serializers.SerializerMethodField()
@@ -221,8 +247,6 @@ class ItemcomboSerializer(ItemSerializer):
         return obj.get_color()
     def get_sizes(self,obj):
         return obj.get_size()
-
-
 
 class ItemdetailSerializer(ItemcomboSerializer):
     category=serializers.SerializerMethodField()
@@ -257,7 +281,7 @@ class ItemdetailSerializer(ItemcomboSerializer):
     def get_vouchers(self,obj):
         request=self.context.get("request")
         vouchers=Voucher.objects.filter(product=obj,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
-        return VoucherSerializer(vouchers,many=True,context={"request": request}).data
+        return VoucherdetailSerializer(vouchers,many=True,context={"request": request}).data
     def get_review_rating(self,obj):
         return obj.average_review()
     def get_count_review(self,obj):
@@ -279,12 +303,6 @@ class ItemdetailSerializer(ItemcomboSerializer):
     def get_shock_deal_type(self,obj):
         return obj.shock_deal_type()
 
-class ItemcomboSerializer(serializers.ModelSerializer):
-    class Meta(ItemSerializer.Meta):
-        numList = list(ItemSerializer.Meta.fields)
-        numTuple1 = tuple(numList)
-        fields=numTuple1
-    
 class ItemdealSerializer(ItemSerializer):
     colors=serializers.SerializerMethodField()
     sizes=serializers.SerializerMethodField()
@@ -318,15 +336,116 @@ class ItemdetailsSerializer(serializers.ModelSerializer):
         model=Detail_Item
         fields='__all__'
 
-class ComboSerializer(serializers.ModelSerializer):
+#discounts
+class VoucherinfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Voucher
+        exclude=('products','user',)
+class VoucherSerializer(VoucherinfoSerializer): 
+    number_used= serializers.SerializerMethodField()
+    count_product=serializers.SerializerMethodField()
+    class Meta(VoucherinfoSerializer.Meta):
+        fields=VoucherinfoSerializer.Meta.fields+('number_userd','count_product',)
+    def get_number_used(self,obj):
+        return Order.objects.filter(voucher=obj,received=True).count()
+    def get_count_product(self,obj):
+        return obj.product.all().count()
+class VoucherdetailSerializer(VoucherinfoSerializer): 
+    exists=serializers.SerializerMethodField()
+    class Meta(VoucherinfoSerializer.Meta):
+        fields=VoucherinfoSerializer.Meta.fields+('exists',)
+    def get_exists(self,obj):
+        request=self.context.get("request")
+        if request.user in obj.user.all():
+            return True
+class VouchersellerSerializer(VoucherinfoSerializer): 
+    products=serializers.SerializerMethodField()
+    class Meta(VoucherinfoSerializer.Meta):
+        fields=VoucherinfoSerializer.Meta.fields+('products',)
+    def get_products(self,obj):
+        return ItemsellerSerializer(obj.main_products.all(),many=True).data
+class ShopPrograminfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Shop_program
+        exclude=('items','variations',)
+class ShopProgramSerializer(ShopPrograminfoSerializer):
+    products=serializers.SerializerMethodField()
+    class Meta(ShopPrograminfoSerializer.Meta):
+        fields=ShopPrograminfoSerializer.Meta.fields+('products',)
+    def get_products(self,obj):
+        return [{'image':item.get_image_cover()} for item in obj.products.all()]
+class ShopprogramSellerSerializer(serializers.ModelSerializer):
+    products=serializers.SerializerMethodField()
+    class Meta(ShopPrograminfoSerializer.Meta):
+        fields=ShopPrograminfoSerializer.Meta.fields+('products','items','variations')
+    def get_products(self,obj):
+        return ByproductSellerSerializer(obj.byproducts.all(),many=True).data
+
+class BuywithsockdealinfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Buy_with_shock_deal
+        exclude=('items','variations','mains_product','byproduct',)
+
+class BuywithsockdealSerializer(BuywithsockdealinfoSerializer):
+    main_products=serializers.SerializerMethodField()
+    byproducts=serializers.SerializerMethodField()
+    class Meta(BuywithsockdealinfoSerializer.Meta):
+        fields=BuywithsockdealinfoSerializer.Meta.fields+('main_products','byproducts',)
+    def get_byproducts(self,obj):
+        return [{'image':item.get_image_cover()} for item in obj.byproducts.all()]
+    def get_main_products(self,obj):
+        return [{'image':item.get_image_cover()} for item in obj.main_products.all()]
+
+class BuywithsockdealSellerSerializer(serializers.ModelSerializer):
+    main_products=serializers.SerializerMethodField()
+    byproducts=serializers.SerializerMethodField()
+    class Meta(BuywithsockdealinfoSerializer.Meta):
+        fields=BuywithsockdealinfoSerializer.Meta.fields+('main_products','byproducts','items','variations')
+    def get_main_products(self,obj):
+        return ItemsellerSerializer(obj.main_products.all(),many=True).data
+    def get_byproducts(self,obj):
+        return ByproductSellerSerializer(obj.byproducts.all(),many=True).data
+    
+class ComboinfoSerializer(serializers.ModelSerializer):
     products=serializers.SerializerMethodField()
     class Meta:
         model=Promotion_combo
-        fields=('id','combo_type','products',
-            'discount_percent','discount_price','price_special_sale','quantity_to_reduced',)
+        exclude=('items',)
     def get_products(self,obj):
         return ItemSerializer(obj.product.all(),many=True).data
 
+class ComboSerializer(ComboinfoSerializer):
+    products=serializers.SerializerMethodField()
+    class Meta(ComboinfoSerializer.Meta):
+        fields=(ComboinfoSerializer.Meta.fields)+('products',)
+    def get_products(self,obj):
+        return [{'image':item.get_image_cover()} for item in obj.products.all()]
+
+class CombosellerSerializer(ComboSerializer):
+    products=serializers.SerializerMethodField()
+    class Meta(ComboSerializer.Meta):
+        fields=ComboSerializer.Meta.fields+('products',)
+    def get_products(self,obj):
+        return ItemsellerSerializer(obj.product.all(),many=True).data
+
+class FlashSaleinfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Flash_sale
+        exclude=('items','variations',)
+class FlashSaleSerializer(FlashSaleinfoSerializer):
+    products=serializers.SerializerMethodField()
+    class Meta(FlashSaleinfoSerializer.Meta):
+        fields=FlashSaleinfoSerializer.Meta.fields+('products',)
+    def get_products(self,obj):
+        return [{'image':item.get_image_cover()} for item in obj.products.all()]
+class FlashSaleSellerSerializer(FlashSaleinfoSerializer):
+    products=serializers.SerializerMethodField()
+    class Meta(FlashSaleinfoSerializer.Meta):
+        fields=FlashSaleinfoSerializer.Meta.fields+('products',)
+    def get_products(self,obj):
+        return ByproductSellerSerializer(obj.byproducts.all(),many=True).data
+
+#discount      
 class ShopinfoSerializer(serializers.ModelSerializer): 
     avatar=serializers.SerializerMethodField()
     url=serializers.SerializerMethodField()
@@ -389,7 +508,7 @@ class ShopdetailSerializer(serializers.ModelSerializer):
     def get_vouchers(self,obj):
         request=self.context.get("request")
         vouchers=Voucher.objects.filter(shop=obj,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
-        return VoucherSerializer(vouchers,many=True,context={"request": request}).data
+        return VoucherdetailSerializer(vouchers,many=True,context={"request": request}).data
     def get_deal(self,obj):
         deal_shock=Buy_with_shock_deal.objects.filter(shop_id=shop_id,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
         if deal_shock.exists():
@@ -397,17 +516,6 @@ class ShopdetailSerializer(serializers.ModelSerializer):
     def get_combo(self,obj):
         promotion_combo=Promotion_combo.objects.filter(shop_id=shop_id,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
         if promotion_combo.exists():
-            return True
-
-class VoucherSerializer(serializers.ModelSerializer): 
-    exists=serializers.SerializerMethodField()
-    class Meta:
-        model=Voucher
-        fields=('id','amount','created','discount_type','maximum_discount','maximum_usage',
-        'minimum_order_value','percent','valid_from','valid_to','voucher_type','exists',)
-    def get_exists(self,obj):
-        request=self.context.get("request")
-        if request.user in obj.user.all():
             return True
 
 class ShoporderSerializer(serializers.ModelSerializer): 
@@ -419,24 +527,12 @@ class ShoporderSerializer(serializers.ModelSerializer):
         request=self.context.get("request")
         cartview=CartItem.objects.filter(shop=obj,ordered=False)
         list_voucher=Voucher.objects.filter(product__cart_item__in=cartview).distinct()
-        return VoucherSerializer(list_voucher,many=True,context={"request": request}).data
+        return VoucherdetailSerializer(list_voucher,many=True,context={"request": request}).data
    
 class AddressSerializer(serializers.ModelSerializer): 
     class Meta:
         model=Address
         fields = '__all__'
-
-class VariationSerializer(serializers.ModelSerializer):
-    item = serializers.SerializerMethodField()
-    class Meta:
-        model = Variation
-        fields = (
-            'id',
-            'color_value',
-            'size_value',
-        )
-    def get_item(self, obj):
-        return ItemSerializer(obj.item).data
 
 class CartpurchaseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -506,10 +602,10 @@ class OrderSerializer(serializers.ModelSerializer):
     def get_total_discount(self,obj):
         return obj.total_discount_order()
 
-class CombodetailseSerializer(serializers.ModelSerializer):
+class CombodetailseSerializer(ComboinfoSerializer):
     products=serializers.SerializerMethodField()
-    class Meta(ComboSerializer.Meta):
-        fields=ComboSerializer.Meta.fields + ('products',)
+    class Meta(ComboinfoSerializer.Meta):
+        fields=ComboinfoSerializer.Meta.fields + ('products',)
     def get_products(self,obj):
         return ItemcomboSerializer(obj.product.all(),many=True).data
 

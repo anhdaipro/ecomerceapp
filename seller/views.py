@@ -45,7 +45,19 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from .serializers import (VoucherSerializer,ComboSerializer,
 ProgramSerializer,DealsockSerializer,FlashsaleSerializer)
-from buyer.serializers import OrdersellerSerializer,ItemSellerSerializer
+from buyer.serializers import (OrdersellerSerializer,ItemSellerSerializer,
+VariationSerializer,
+VoucherSerializer,
+VouchersellerSerializer,
+ShopProgramSerializer,
+ShopprogramSellerSerializer,
+BuywithsockdealSerializer,
+BuywithsockdealSellerSerializer,
+ComboSerializer,
+CombosellerSerializer,
+BuywithsockdealinfoSerializer,
+FlashSaleSerializer,
+FlashSaleSellerSerializer,)
 class ListvoucherAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = VoucherSerializer
@@ -66,7 +78,7 @@ class ListcomboAPI(ListAPIView):
 
 class ListdealshockAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
-    serializer_class = DealsockSerializer
+    serializer_class = Buywithsockdeal
     def get_queryset(self):
         request = self.request
         user=request.user
@@ -393,27 +405,46 @@ def delete_product(request):
         }
         return Response(data)
 
-@api_view(['GET', 'POST'])
-def voucher(request):
-    user=request.user
-    shop=Shop.objects.get(user=user)
-    items=Item.objects.filter(shop=shop).order_by('-id')
+def filteritem(price,sort,order,name,q,sku,item,items):
+    if price and sort:
+        if sort == "sort-asc":
+            items=items.order_by('variation__price').distinct()
+        else:
+            items=items.order_by('-variation__price').distinct()
+    elif order and sort:
+        if sort == "sort-asc":
+            items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
+        else:
+            items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
+        data=ItemSellerSerializer(items,many=True).data
+    elif name and q:
+        category=Category.objects.get(title=title,choice=True)
+        items=items.filter(name__contains=q,category=category)
+        data=ItemSellerSerializer(items,many=True).data
+    elif sku and q:
+        category=Category.objects.get(title=title,choice=True)
+        items=items.filter(sku_product=q,category=category)
     
-    vocher=Voucher.objects.filter(shop=shop)
-    if vocher.exists():
-        vocher=vocher.last()
-    order=request.GET.get('order')
-    price=request.GET.get('price')
-    sort=request.GET.get('sort')
-    name=request.GET.get('name')
-    sku=request.GET.get('sku')
-    item=request.GET.get('item')
-    title=request.GET.get('title')
-    q=request.GET.get('q')
-    if request.method=="POST":
+class Newvoucher(APIView):
+    def get(self,request):
+        user=request.user
+        shop=Shop.objects.get(user=user)
+        items=Item.objects.filter(shop=shop).order_by('-id')
+        order=request.GET.get('order')
+        price=request.GET.get('price')
+        sort=request.GET.get('sort')
+        name=request.GET.get('name')
+        sku=request.GET.get('sku')
+        item=request.GET.get('item')
+        title=request.GET.get('title')
+        q=request.GET.get('q')
+        filteritem(price,sort,order,name,q,sku,item,items)
+        data=ItemSellerSerializer(items,many=True).data
+        return Response(data)
+    def post(self,request):
+        shop=Shop.objects.get(user=request.user)
+        items=Item.objects.filter(shop=shop).order_by('-id')
         item_id=request.POST.getlist('item_id')
-        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
-        item_choice=Item.objects.filter(id__in=item_id).order_by(preserved)
         code_type=request.POST.get('code_type')
         name_of_the_discount_program=request.POST.get('name_of_the_discount_program')
         code = request.POST.get('code')
@@ -444,68 +475,22 @@ def voucher(request):
             setting_display=setting_display,
         )
         if vocher.code_type=="All":
-            vocher.product.add(*items)
+            vocher.products.add(*items)
         else:
-            vocher.product.add(*item_choice)
+            vocher.products.add(*item_id)
         data={'ok':'ok' }
         return Response(data)
 
-    else:
-        if price and sort:
-            if sort == "sort-asc":
-                items=items.order_by('variation__price').distinct()
-            else:
-                items=items.order_by('-variation__price').distinct()
-            data=ItemSellerSerializer(items,many=True).data
-            return Response(data)
-        elif order and sort:
-            if sort == "sort-asc":
-                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
-            else:
-                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
-            data=ItemSellerSerializer(items,many=True).data
-            return Response(data)
-        elif name and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(name__contains=q,category=category)
-            data=ItemSellerSerializer(items,many=True).data
-            return Response(data)
-        elif sku and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(sku_product=q,category=category)
-            
-            data=ItemSellerSerializer(items,many=True).data
-            return Response(data)
-        elif item:
-            data=ItemSellerSerializer(items,many=True).data
-            return Response(data)
-        else:
-            category=Category.objects.filter(item__in=items,choice=True).distinct()
-            category_child=Category.objects.filter(children__in=category).exclude(parent=None).distinct()
-            category_parent=Category.objects.filter(children__in=category,parent=None).distinct()
-            list_category=[{'category':i.__str__()} for i in category]
-            list_category_parent=[{'category':i.title} for i in category_parent]
-            list_category_child=[{'category':i.__str__()} for i in category_child]
-            data={'c':ItemSellerSerializer(items,many=True).data,'a':list_category,'b':list_category_parent,'d':list_category_child}
-            return Response(data) 
-
-@api_view(['GET', 'POST'])
-def detail_voucher(request,id):
-    user=request.user
-    shop=Shop.objects.get(user=user)
-    items=Item.objects.filter(shop=shop).order_by('-id')
-    vocher=Voucher.objects.get(id=id)
-    order=request.GET.get('order')
-    price=request.GET.get('price')
-    sort=request.GET.get('sort')
-    name=request.GET.get('name')
-    sku=request.GET.get('sku')
-    item=request.GET.get('item')
-    title=request.GET.get('title')
-    q=request.GET.get('q')
-    if request.method=="POST":
+class DetailVoucher(APIView):
+    def get(self,request,id):
+        voucher=Voucher.objects.get(id=id)
+        data=Voucherseller(voucher).data
+        return Response(data)
+    def post(self,request,id):
+        user=request.user
+        shop=Shop.objects.get(user=user)
+        items=Item.objects.filter(shop=shop)
         item_id=request.POST.getlist('item_id')
-        item_choice=Item.objects.filter(id__in=item_id)
         vocher.code_type=request.POST.get('code_type')
         vocher.product.set([])
         vocher.name_of_the_discount_program=request.POST.get('name_of_the_discount_program')
@@ -524,79 +509,10 @@ def detail_voucher(request,id):
         if vocher.code_type=="All":
             vocher.product.add(*items)
         else:
-            vocher.product.add(*item_choice)
+            vocher.product.add(*item_id)
         data={'ok':'ok' }
         return Response(data)
-
-    else:
-        if price and sort:
-            if sort == "sort-asc":
-                items=items.order_by('variation__price').distinct()
-            else:
-                items=items.order_by('-variation__price').distinct()
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif order and sort:
-            if sort == "sort-asc":
-                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
-            else:
-                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif name and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(name__contains=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif sku and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(sku_product=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif item:
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        else:
-            data={
-                'voucher':{'code_type':vocher.code_type,
-                'name_of_the_discount_program':vocher.name_of_the_discount_program,
-                'code':vocher.code,
-                'valid_from':vocher.valid_from,
-                'valid_to':vocher.valid_to,
-                'discount_type':vocher.discount_type,
-                'amount':vocher.amount,
-                'percent':vocher.percent,
-                'maximum_usage':vocher.maximum_usage,
-                'voucher_type':vocher.voucher_type,
-                'maximum_discount':vocher.maximum_discount,
-                'minimum_order_value':vocher.minimum_order_value,
-                'setting_display':vocher.setting_display},
-                'items_choice':[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in vocher.product.all()]
-            }
-            return Response(data)
+        
         
 @api_view(['GET', 'POST'])
 def shop_award(request):
@@ -640,96 +556,54 @@ def follower_offer(request):
         data={'a':'a' }
         return Response(data)
 
-@api_view(['GET', 'POST'])
-def new_combo(request):
-    user=request.user
-    shop=Shop.objects.get(user=user)
-    promotion_combo=Promotion_combo.objects.filter(shop=shop).last()
-    
-    items=Item.objects.filter(shop=shop).filter(Q(promotion_combo=None)| Q(promotion_combo=promotion_combo) | (Q(promotion_combo__valid_to__lt=datetime.datetime.now()) & Q(promotion_combo__isnull=False))).distinct().order_by('-id')
-    order=request.GET.get('order')
-    price=request.GET.get('price')
-    sort=request.GET.get('sort')
-    name=request.GET.get('name')
-    sku=request.GET.get('sku')
-    item=request.GET.get('item')
-    title=request.GET.get('title')
-    q=request.GET.get('q')
-    if request.method=="POST":
+
+class NewcomboAPI(APIView):
+    def get(self,request):
+        shop=Shop.objects.get(user=request.user)
+        combo_id=request.GET.get('combo_id')
+        items=Item.objects.filter(shop=shop).filter(Q(promotion_combo=None)| Q(promotion_combo_id=promotion_combo_id) | (Q(promotion_combo__valid_to__lt=datetime.datetime.now()) & Q(promotion_combo__isnull=False))).distinct().order_by('-id')
+        order=request.GET.get('order')
+        price=request.GET.get('price')
+        sort=request.GET.get('sort')
+        name=request.GET.get('name')
+        sku=request.GET.get('sku')
+        item=request.GET.get('item')
+        title=request.GET.get('title')
+        q=request.GET.get('q')
+        filteritem(price,sort,order,name,q,sku,item,items)
+        data=ItemSellerSerializer(items,many=True).data
+        return Response(data)
+    def post(self,request):
+        shop=Shop.objects.get(user=request.user)
         item_id=request.POST.getlist('item_id')
-        item_id_remove=request.POST.getlist('item_id_remove')
-        items=Item.objects.filter(id__in=item_id_remove)
-        promotion_id=request.POST.get('promotion_id')
-        page_no=request.POST.get('page_no')
-        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
-        item_choice=Item.objects.filter(id__in=item_id).order_by(preserved)
-        Variation.objects.filter(item__promotion_combo__valid_to__lt=datetime.datetime.now()-datetime.timedelta(seconds=10)).update(percent_discount_flash_sale=0)
+        items=request.POST.get('items')
         promotion_combo,created=Promotion_combo.objects.get_or_create(
             shop=shop,
             promotion_combo_name=request.POST.get('promotion_combo_name'),
             valid_from=request.POST.get('valid_from'),
             valid_to=request.POST.get('valid_to'),
             combo_type=request.POST.get('combo_type'),
+            items=items,
             discount_percent=request.POST.get('discount_percent'),
             discount_price=request.POST.get('discount_price'),
             price_special_sale=request.POST.get('price_special_sale'),
             limit_order=request.POST.get('limit_order'),
             quantity_to_reduced=request.POST.get('quantity_to_reduced'),
             )
-        promotion_combo.product.add(*item_choice)
+        promotion_combo.product.add(*item_id)
         data={'ok':'ok'}
         return Response(data)
-    else:
-        if price and sort:
-            if sort == "sort-asc":
-                items=items.order_by('variation__price').distinct()
-            else:
-                items=items.order_by('-variation__price').distinct()
-            data=ItemSellerSerializer(items,many=True).data
-            return Response(data)
-        elif order and sort:
-            if sort == "sort-asc":
-                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
-            else:
-                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
-            data=ItemSellerSerializer(items,many=True).data
-            return Response(data)
-        elif name and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(name__contains=q,category=category)
-            data=ItemSellerSerializer(items,many=True).data
-            return Response(data)
-        elif sku and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(sku_product=q,category=category)
-            data=ItemSellerSerializer(items,many=True).data
-            return Response(data)
-        elif item:
-            data=ItemSellerSerializer(items,many=True).data
-        else:
-            data=ItemSellerSerializer(items,many=True).data
-    return Response(data) 
-
-@api_view(['GET', 'POST'])
-def detail_combo(request,id):
-    user=request.user
-    shop=Shop.objects.get(user=user)
-    promotion_combo=Promotion_combo.objects.get(id=id)
     
-    items=Item.objects.filter(shop=shop).filter(Q(promotion_combo=None)| Q(promotion_combo=promotion_combo) | (Q(promotion_combo__valid_to__lt=datetime.datetime.now()) & Q(promotion_combo__isnull=False))).distinct().order_by('-id')
-    order=request.GET.get('order')
-    price=request.GET.get('price')
-    sort=request.GET.get('sort')
-    name=request.GET.get('name')
-    sku=request.GET.get('sku')
-    item=request.GET.get('item')
-    title=request.GET.get('title')
-    q=request.GET.get('q')
-    if request.method=="POST":
+class DetailComboAPI(APIView):
+    def get(self,request,id):
+        promotion_combo=Promotion_combo.objects.get(id=id)
+        data=CombosellerSerializer(promotion_combo).data
+        return Response(data) 
+    def post(self,request,id):
         item_id=request.POST.getlist('item_id')
-        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
-        item_choice=Item.objects.filter(id__in=item_id).order_by(preserved)
-        promotion.product.set([])
+        shop=Shop.objects.get(user=request.user)
+        promotion_combo=Promotion_combo.objects.get(id=id)
+        promotion_combo.product.set([])
         promotion_combo.promotion_combo_name=request.POST.get('promotion_combo_name')
         promotion_combo.valid_from=request.POST.get('valid_from')
         promotion_combo.valid_to=request.POST.get('valid_to')
@@ -739,79 +613,29 @@ def detail_combo(request,id):
         promotion_combo.price_special_sale=request.POST.get('price_special_sale')
         promotion_combo.limit_order=request.POST.get('limit_order')
         promotion_combo.quantity_to_reduced=request.POST.get('quantity_to_reduced')
+        item.items=items
         promotion_combo.save()
-        promotion_combo.product.add(*item_choice)
+        promotion_combo.product.add(*item_id)
         data={'ok':'ok'}
         return Response(data)
-    else:
-        if price and sort:
-            if sort == "sort-asc":
-                items=items.order_by('variation__price').distinct()
-            else:
-                items=items.order_by('-variation__price').distinct()
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif order and sort:
-            if sort == "sort-asc":
-                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
-            else:
-                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif name and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(name__contains=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif sku and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(sku_product=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif item:
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        else:
-            data={'promotion_combo':{'promotion_combo_name':promotion_combo.promotion_combo_name,
-            'valid_from':promotion_combo.valid_from,
-            'valid_to':promotion_combo.valid_to,
-            'combo_type':promotion_combo.combo_type,
-            'discount_percent':promotion_combo.discount_percent,'discount_price':promotion_combo.discount_price,
-            'price_special_sale':promotion_combo.price_special_sale,'limit_order':promotion_combo.limit_order,
-            'quantity_to_reduced':promotion_combo.quantity_to_reduced},
-            'items_choice':[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'number_order':i.number_order(),
-            'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-            'min_price':i.min_price(),'enable':True
-            } for i in promotion_combo.product.all()]}
-            return Response(data) 
+    
 
-@api_view(['GET', 'POST'])
-def new_deal(request):
-    user=request.user
-    shop=Shop.objects.get(user=user)
-    deal_expire=Buy_with_shock_deal.objects.filter(shop=shop,valid_to__lt=timezone.now())
-    if request.method=="POST":
-        Variation.objects.filter(item__byproduct__in=deal_expire).update(percent_discount_deal_shock=0,limited_product_bundles=0)
+class NewDeal(APIView):
+    def get(self,request):
+        shop=Shop.objects.get(user=request.user)
+        items=Item.objects.filter(shop=shop).filter(Q(main_product=None) | (Q(main_product__valid_to__lt=datetime.datetime.now()) & Q(main_product__isnull=False))).distinct().order_by('-id')
+        order=request.GET.get('order')
+        price=request.GET.get('price')
+        sort=request.GET.get('sort')
+        name=request.GET.get('name')
+        sku=request.GET.get('sku')
+        item=request.GET.get('item')
+        title=request.GET.get('title')
+        q=request.GET.get('q')
+        filteritem(price,sort,order,name,q,sku,item,items)
+        data=ItemSellerSerializer(items,many=True).data
+    def post(self,request):
+        shop=Shop.objects.get(user=request.user)
         deal_shock,created=Buy_with_shock_deal.objects.get_or_create(
         shop=shop,
         shock_deal_type=request.POST.get('shock_deal_type'),
@@ -827,36 +651,18 @@ def new_deal(request):
             }
         return Response(data)
     
-@api_view(['GET', 'POST'])
-def deal_shock(request,id):
-    user=request.user
-    shop=Shop.objects.get(user=user)
-    deal_shock=Buy_with_shock_deal.objects.get(id=id)
-    items=Item.objects.filter(shop=shop).filter(Q(main_product=None) | (Q(main_product__valid_to__lt=datetime.datetime.now()) & Q(main_product__isnull=False))).distinct().order_by('-id')
-    item_id=request.GET.getlist('item_id')
-    item_id_off=request.GET.getlist('item_id_off')
-    item_id_add=request.GET.getlist('item_id_add')
-    change=request.GET.getlist('change')
-    order=request.GET.get('order')
-    price=request.GET.get('price')
-    sort=request.GET.get('sort')
-    name=request.GET.get('name')
-    sku=request.GET.get('sku')
-    item=request.GET.get('item')
-    title=request.GET.get('title')
-    product_id=request.GET.getlist('product_id')
-    page_no = request.GET.get('page_no')
-    q=request.GET.get('q')
-    if request.method=="POST":
-        edit=request.POST.get('edit')
+class DetailDeal(APIView):
+    def get(self,request,id):
+        deal_shock=Buy_with_shock_deal.objects.get(id=id)
+        data=BuywithsockdealSellerSerializer(deal_shock).data
+    def post(self,request,id):
+        deal_shock=Buy_with_shock_deal.objects.get(id=id)
+        action=request.POST.get('action')
         item_id=request.POST.getlist('item_id')
         byproduct_id=request.POST.getlist('byproduct_id')
-        product_id=request.POST.getlist('product_id')
-        product_id_off=request.POST.getlist('product_id_off')
-        percent_discount=request.POST.getlist('percent_discount')
-        limited_product_bundles=request.POST.getlist('limit_order')
-        if edit:
-            deal_shock=Buy_with_shock_deal.objects.filter(shop=shop).last()
+        variations=request.POST.getlist('variations')
+        items=request.POST.getlist('items')
+        if action=='edit':
             deal_shock.program_name_buy_with_shock_deal=request.POST.get('program_name_buy_with_shock_deal')
             deal_shock.valid_from=request.POST.get('valid_from')
             deal_shock.valid_to=request.POST.get('valid_to')
@@ -864,668 +670,176 @@ def deal_shock(request,id):
             deal_shock.minimum_price_to_receive_gift=request.POST.get('minimum_price_to_receive_gift')
             deal_shock.number_gift=request.POST.get('number_gift')
             deal_shock.save()
-            data={'shock_deal_type':deal_shock.shock_deal_type,'deal_id':deal_shock.id,'valid_from':deal_shock.valid_from,
-            'valid_to':deal_shock.valid_to,'program_name_buy_with_shock_deal':deal_shock.program_name_buy_with_shock_deal,
-            'limited_product_bundles':deal_shock.limited_product_bundles,
-            'minimum_price_to_receive_gift':deal_shock.minimum_price_to_receive_gift,
-            'number_gift':deal_shock.number_gift}
+            data=BuywithsockdealinfoSerializer(deal_shock).data
+            return Response(data)
+        elif action=='getbyproduct':
+            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(byproduct_id)])
+            list_byproducts=Item.objects.filter(id__in=byproduct_id).order_by(preserved)
+            data={'list_byproducts':ItemSellerSerializer(list_byproducts,many=True).data,
+            'list_variations':VariationSerializer(list_variation,many=True).data}
             return Response(data)
         else:
+            deal_shock.items=items
+            deal_shock.variations=variations
             deal_shock.main_product.set([])
             deal_shock.byproduct.set([])
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(byproduct_id)])
-            list_byproduct=Item.objects.filter(id__in=byproduct_id).order_by(preserved)
-            deal_shock.byproduct.add(*list_byproduct)
-            item_main=Item.objects.filter(id__in=item_id).order_by(preserved)
-            deal_shock.main_product.add(*item_main)
-            variation_byproduct=Variation.objects.filter(id__in=product_id).order_by(preserved)
-            if deal_shock.shock_deal_type=='1':   
-                for variation in variation_byproduct:
-                    for i in range(len(percent_discount)):
-                        if i==list(variation_byproduct).index(variation):
-                            variation.percent_discount_deal_shock=percent_discount[i]
-                            variation.limited_product_bundles=limited_product_bundles[i]
-                bulk_update(variation_byproduct)
-            else:
-                variation_byproduct.update(percent_discount_deal_shock=100)
-            Variation.objects.filter(id__in=product_id_off).update(percent_discount_deal_shock=0)
-            data={'list_byproduct':[{'item_id':item.id,'item_name':item.name,
-            'item_image':item.get_image_cover(),'check':False,
-            'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
-            'inventory':variation.inventory,'price':variation.price,
-            } for variation in item.variation_item.all()
-            ]} for item in list_byproduct]}
-            return Response(data)
-        
-    else:
-        if item_id and item_id_off and not q:
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
-            items=Item.objects.filter(id__in=item_id).order_by(preserved)
-            check=['On' for i in range(len(item_id))]
-            check_on=['Off' for i in range(len(item_id_off))]
-            for i in range(len(item_id)):
-                for j in range(len(item_id_off)):
-                    if item_id_off[j]==item_id[i]:
-                        check[i]=check_on[j]
+            deal_shock.main_product.add(*item_id)
+            deal_shock.byproduct.add(*byproduct_id)
+            deal_shock.save()
+            return Response({'ok':'ok'})
 
-            list_item_main=[{'item_name':items[i].name,'item_image':items[i].media_upload.all()[0].get_media(),'check':check[i],
-                'item_id':items[i].id,'total_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),
-                'min_price':items[i].min_price(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':items[i].number_order()
-                } for i in range(len(items))]
-           
-            data={'a':list_item_main}
-            return Response(data)
-        elif item_id and item_id_off and q and sku:
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
-            items=Item.objects.filter(id__in=item_id,sku_product=q).order_by(preserved)
-            item_none=Item.objects.filter(shop=shop,main_product=None,byproduct=None)
-            check=['On' for i in range(len(item_id))]
-            check_on=['Off' for i in range(len(item_id_off))]
-            for i in range(len(item_id)):
-                for j in range(len(item_id_off)):
-                    if item_id_off[j]==item_id[i]:
-                        check[i]=check_on[j]
-            list_item_main=[{'item_name':items[i].name,'item_image':items[i].media_upload.all()[0].get_media(),'check':check[i],
-                'item_id':items[i].id,'total_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),
-                'min_price':items[i].min_price(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':items[i].number_order()
-                } for i in range(len(items))]
-           
-            data={'a':list_item_main}
-            return Response(data)
-        elif item_id and item_id_off and q and name:
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
-            items=Item.objects.filter(id__in=item_id,name__contains=q).order_by(preserved)
-            item_none=Item.objects.filter(shop=shop,main_product=None,byproduct=None)
-            check=['On' for i in range(len(item_id))]
-            check_on=['Off' for i in range(len(item_id_off))]
-            for i in range(len(item_id)):
-                for j in range(len(item_id_off)):
-                    if item_id_off[j]==item_id[i]:
-                        check[i]=check_on[j]
-            list_item_main=[{'item_name':items[i].name,'item_image':items[i].media_upload.all()[0].get_media(),'check':check[i],
-                'item_id':items[i].id,'total_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),
-                'min_price':items[i].min_price(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':items[i].number_order()
-                } for i in range(len(items))]
-           
-            data={'a':list_item_main}
-            return Response(data)
-        elif change:
-            data={'valid_to':deal_shock.valid_to,'valid_from':deal_shock.valid_from,
-            'name':deal_shock.program_name_buy_with_shock_deal,'shock_deal_type':deal_shock.shock_deal_type,
-            'limited_product_bundles':deal_shock.limited_product_bundles,
-            'minimum_price_to_receive_gift':deal_shock.minimum_price_to_receive_gift,
-            'number_gift':deal_shock.number_gift
-            }
-            return Response(data)
-        elif price and sort:
-            if sort == "sort-asc":
-                items=items.order_by('variation__price').distinct()
-            else:
-                items=items.order_by('-variation__price').distinct()
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif order and sort:
-            if sort == "sort-asc":
-                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
-            else:
-                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif name and q and not item_id:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(name__contains=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif sku and q and not item_id:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(sku_product=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif item:
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,
-            'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif item_id and product_id and not q:
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
-            items=Item.objects.filter(id__in=item_id).order_by(preserved)
-            obj_paginator = Paginator(items,per_page)
-            preserved_variation = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(product_id)])
-            variation=Variation.objects.filter(id__in=product_id).order_by(preserved_variation)
-            first_page=obj_paginator.get_page(page_no)
-            list_by_page=[{'name':first_page[i].name,'image_cover':first_page[i].media_upload.all()[0].get_media(),'id':first_page[i].id,'item_shipping':i.shipping_choice.all()[0].method,
-            } for i in range(len(first_page))]
-            list_variation=[{'item_id':i.item.id,'price':i.price,'id':i.id,'color__value':i.get_color(),'size__value':i.get_size(),'inventory':i.inventory
-            } for i in variation]
-            data={'shock_deal_type':deal_shock.shock_deal_type,'a':list_by_page,'b':list_variation}
-            return Response(data)
-        elif item_id and product_id and q and name:
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
-            items=Item.objects.filter(id__in=item_id,name__contains=q).order_by(preserved)
-            obj_paginator = Paginator(items,per_page)
-            preserved_variation = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(product_id)])
-            variation=Variation.objects.filter(id__in=product_id).order_by(preserved_variation)
-            first_page=obj_paginator.get_page(page_no)
-            list_by_page=[{'name':first_page[i].name,'image_cover':first_page[i].media_upload.all()[0].get_media(),'id':first_page[i].id,'item_shipping':i.shipping_choice.all()[0].method
-            } for i in range(len(first_page))]
-            list_variation=[{'item_id':i.item.id,'price':i.price,'id':i.id,'color__value':i.get_color(),'size__value':i.get_size(),'inventory':i.inventory
-            } for i in variation]
-            data={'shock_deal_type':deal_shock.shock_deal_type,'a':list_by_page,'b':list_variation}
-            return Response(data)
-        elif item_id and product_id and sku and q:
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
-            items=Item.objects.filter(id__in=item_id,sku=q).order_by(preserved)
-            obj_paginator = Paginator(items,per_page)
-            preserved_variation = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(product_id)])
-            variation=Variation.objects.filter(id__in=product_id).order_by(preserved_variation)
-            first_page=obj_paginator.get_page(page_no)
-            list_by_page=[{'name':first_page[i].name,'image_cover':first_page[i].media_upload.all()[0].get_media(),'id':first_page[i].id,'item_shipping':i.shipping_choice.all()[0].method,
-            } for i in range(len(first_page))]
-            list_variation=[{'item_id':i.item.id,'price':i.price,'id':i.id,'color__value':i.get_color(),'size__value':i.get_size(),'inventory':i.inventory
-            } for i in variation]
-            data={'shock_deal_type':deal_shock.shock_deal_type,'a':list_by_page,'b':list_variation}
-            return Response(data)
-        elif item_id and not q:
-            check=['On' for i in range(len(item_id))]
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
-            items=Item.objects.filter(id__in=item_id).order_by(preserved)
-            list_item_main=[{'item_name':items[i].name,'item_image':items[i].media_upload.all()[0].get_media(),
-                'item_id':items[i].id,'total_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),'check':check[i],
-                'min_price':items[i].min_price(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':items[i].number_order()
-            } for i in range(len(items))] 
-            data={'a':list_item_main}
-            return Response(data)
-        elif item_id and sku and q:
-            check=['On' for i in range(len(item_id))]
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
-            items=Item.objects.filter(id__in=item_id,sku_product=q).order_by(preserved)
-            list_item_main=[{'item_name':items[i].name,'item_image':items[i].media_upload.all()[0].get_media(),
-                'item_id':items[i].id,'total_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),'check':check[i],
-                'min_price':items[i].min_price(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':items[i].number_order()
-            } for i in range(len(items))] 
-            data={'a':list_item_main}
-            return Response(data)
-        elif item_id and name and q:
-            check=['On' for i in range(len(item_id))]
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
-            items=Item.objects.filter(id__in=item_id,name__contains=q).order_by(preserved)
-            list_item_main=[{'item_name':items[i].name,'item_image':items[i].media_upload.all()[0].get_media(),'check':check[i],
-                'item_id':items[i].id,'total_inventory':items[i].total_inventory(),'max_price':items[i].max_price(),
-                'min_price':items[i].min_price(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':items[i].number_order()
-            } for i in range(len(items))] 
-            data={'a':list_item_main}
-            return Response(data)
-        else:
-            data={'deal_shock':{'shock_deal_type':deal_shock.shock_deal_type,'deal_id':deal_shock.id,'valid_from':deal_shock.valid_from,
-            'valid_to':deal_shock.valid_to,'program_name_buy_with_shock_deal':deal_shock.program_name_buy_with_shock_deal,
-            'limited_product_bundles':deal_shock.limited_product_bundles,
-            'minimum_price_to_receive_gift':deal_shock.minimum_price_to_receive_gift,
-            'number_gift':deal_shock.number_gift},'byproduct_choice':[{'item_id':item.id,'item_name':item.name,
-            'item_image':item.get_image_cover(),'check':False,
-            'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
-            'inventory':variation.inventory,'price':variation.price,'discount_price':variation.price*(1-variation.percent_discount_deal_shock/100),'percent_discount':variation.percent_discount_deal_shock,
-            'limit_order':variation.limited_product_bundles
-            } for variation in item.variation_item.all()
-            ]} for item in deal_shock.byproduct.all()],'items_choice':[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in deal_shock.main_product.all()]}
-            return Response(data)
-      
-@api_view(['GET', 'POST'])
-def new_program(request):
-    user=request.user
-    shop=Shop.objects.get(user=user)
-    program_expire=Shop_program.objects.filter(shop=shop,valid_to__lt=timezone.now())
-    items=Item.objects.filter(shop=shop).filter(Q(shop_program=None) | (Q(shop_program__valid_to__lt=datetime.datetime.now()) & Q(shop_program__isnull=False))).distinct()
-    order=request.GET.get('order')
-    price=request.GET.get('price')
-    sort=request.GET.get('sort')
-    name=request.GET.get('name')
-    sku=request.GET.get('sku')
-    item=request.GET.get('item')
-    title=request.GET.get('title')
-    q=request.GET.get('q')
-    if request.method=="POST": 
+class NewprogramAPI(request):
+    def get(self,request):
+        shop=Shop.objects.get(user=request.user)
+        shop_program_id=request.GET.get('shop_program_id')
+        items=Item.objects.filter(shop=shop).filter(Q(shop_program=None) |Q(shop_program_id=shop_program_id)  | (Q(shop_program__valid_to__lt=datetime.datetime.now()) & Q(shop_program__isnull=False))).distinct()
+        order=request.GET.get('order')
+        price=request.GET.get('price')
+        sort=request.GET.get('sort')
+        name=request.GET.get('name')
+        sku=request.GET.get('sku')
+        item=request.GET.get('item')
+        title=request.GET.get('title')
+        q=request.GET.get('q')
+        filteritem(price, sort, order, name, q, sku, item, items)
+        data=ItemSellerSerializer(items,many=True).data
+        return Response(data) 
+    def post(self,request): 
+        shop=Shop.objects.get(user=request.user)
         name_program=request.POST.get('name_program')
         valid_from=request.POST.get('valid_from')
         valid_to=request.POST.get('valid_from')
         item_id=request.POST.getlist('item_id')
-        product_id=request.POST.getlist('product_id')
-        percent_discount=request.POST.getlist('percent_discount')
-        number_of_promotional_products=request.POST.getlist('number_of_promotional_products')
-        limit_order=request.POST.getlist('limit_order')
+        items=request.POST.get('items')
+        variations=request.POST.get('variations')
+        action=request.GET.get('action')
         preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
         list_products=Item.objects.filter(id__in=item_id).order_by(preserved)
-        list_variation=Variation.objects.filter(id__in=product_id)
-        Variation.objects.filter(item__shop_program__in=program_expire).update(percent_discount=0)
-        if item_id and not product_id:
-            data={'list_product':[{'item_id':item.id,'item_name':item.name,
-            'item_image':item.get_image_cover(),'check':False,
-            'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
-            'inventory':variation.inventory,'price':variation.price,
-            } for variation in item.variation_item.all()
-            ]} for item in list_products]}
-            return Response(data)
-        else:
+        list_variations=Variation.objects.filter(item_id__in=item_id)
+        if action=='submit':
             shop_program,created=Shop_program.objects.get_or_create(
                 name_program=name_program,
                 valid_from=valid_from,
                 valid_to=valid_to,
                 shop=shop,
+                items=items,
+                variations=variations
                 )
-            shop_program.product.add(*list_products)
-            for variation in list_variation:
-                for i in range(len(percent_discount)):
-                    if i==list(variation_byproduct).index(variation):
-                        variation.percent_discount=percent_discount[i]
-                        variation.number_of_promotional_products=number_of_promotional_products[i]
-            
-            for item in list_products:
-                for i in range(len(limit_order)):
-                    if i==list(list_products).index(item):
-                        item.quantity_limit=limit_order[i]
-            bulk_update(list_products,batch_size=200)
-            bulk_update(variation_byproduct)
+            shop_program.product.add(*item_id)
             data={'ok':'ok'}
             return Response(data)
-    else:
-        if price and sort:
-            if sort == "sort-asc":
-                items=items.order_by('variation__price').distinct()
-            else:
-                items=items.order_by('-variation__price').distinct()
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif order and sort:
-            if sort == "sort-asc":
-                items=items.filter(variation__cartitem__order__ordered=True).annotate(count=Count('variation__cartitem__order__ordered')).order_by('count')
-            else:
-                items=items.filter(variation__cartitem__order__ordered=True).annotate(count=Count('variation__cartitem__order__ordered')).order_by('-count')
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif name and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(name__contains=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif sku and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(sku_product=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif item:
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
         else:
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
+            data={'list_products':ItemSellerSerializer(list_products,many=True).data,
+            'list_variations':VariationSerializer(list_variation,many=True).data}
             return Response(data)
-
-@api_view(['GET', 'POST'])
-def detail_program(request,id):
-    user=request.user
-    shop=Shop.objects.get(user=user) 
-    shop_program=Shop_program.objects.get(id=id)
-    items=Item.objects.filter(shop=shop).filter(Q(shop_program=None)|Q(shop_program=shop_program) | (Q(shop_program__valid_to__lt=datetime.datetime.now()) & Q(shop_program__isnull=False)))
-    order=request.GET.get('order')
-    price=request.GET.get('price')
-    sort=request.GET.get('sort')
-    name=request.GET.get('name')
-    sku=request.GET.get('sku')
-    item=request.GET.get('item')
-    title=request.GET.get('title')
-    q=request.GET.get('q')
-    if request.method=="POST": 
+    
+class Detailprogram(APIView):
+    def get(self,request,id):
+        program=Shop_program.objects.get(id=id)
+        ShopprogramSellerSerializer(program).data
+        return Response(data)
+    def post(self,request,id): 
+        program=Shop_program.objects.get(id=id)
         name_program=request.POST.get('name_program')
         valid_from=request.POST.get('valid_from')
         valid_to=request.POST.get('valid_from')
         item_id=request.POST.getlist('item_id')
-        product_id=request.POST.getlist('product_id')
-        product_id_off=request.POST.getlist('product_id_off')
-        percent_discount=request.POST.getlist('percent_discount')
-        number_of_promotional_products=request.POST.getlist('number_of_promotional_products')
-        limit_order=request.POST.getlist('limit_order')
+        items=request.POST.get('items')
+        variations=request.POST.get('variations')
+        action=request.GET.get('action')
         preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
         list_products=Item.objects.filter(id__in=item_id).order_by(preserved)
-        list_variation=Variation.objects.filter(id__in=product_id)
-        if item_id and not product_id:
-            data={'list_product':[{'item_id':item.id,'item_name':item.name,
-            'item_image':item.get_image_cover(),'check':False,
-            'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
-            'inventory':variation.inventory,'price':variation.price,
-            } for variation in item.variation_item.all()
-            ]} for item in list_product]}
-            return Response(data)
-        else:
-            shop_program.product.set([])
+        list_variations=Variation.objects.filter(item_id__in=item_id)
+        if action=='submit':
+            item_programs=shop_program.product.all()
+            item_remove=item_programs.exclude(id__in=item_id)
             shop_program.name_program=name_program
             shop_program.valid_from=valid_from
             shop_program.valid_to=valid_to
+            shop_program.items=items
+            shop_program.variations=variations
             shop_program.save()
-            shop_program.product.add(*list_products)
-            for variation in list_variation:
-                for i in range(len(percent_discount)):
-                    if i==list(variation_byproduct).index(variation):
-                        variation.percent_discount=percent_discount[i]
-                        variation.number_of_promotional_products=number_of_promotional_products[i]
-            
-            for item in list_products:
-                for i in range(len(limit_order)):
-                    if i==list(list_products).index(item):
-                        item.quantity_limit=limit_order[i]
-            bulk_update(list_products)
-            bulk_update(variation_byproduct)
-            Variation.objects.filter(id__in=product_id_off).update(percent_discount_deal_shock=0)
+            shop_program.product.remove(*item_remove)
+            shop_program.product.add(*item_id)
             data={'ok':'ok'}
             return Response(data)
-    else:
-        if price and sort:
-            if sort == "sort-asc":
-                items=items.order_by('variation__price').distinct()
-            else:
-                items=items.order_by('-variation__price').distinct()
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif order and sort:
-            if sort == "sort-asc":
-                items=items.filter(variation__cartitem__order__ordered=True).annotate(count=Count('variation__cartitem__order__ordered')).order_by('count')
-            else:
-                items=items.filter(variation__cartitem__order__ordered=True).annotate(count=Count('variation__cartitem__order__ordered')).order_by('-count')
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif name and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(name__contains=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif sku and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(sku_product=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif item:
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
         else:
-            data={'program':{'valid_from':shop_program.valid_from,'name_program':shop_program.name_program,
-            'valid_to':shop_program.valid_to},'list_product':[{'item_id':item.id,'item_name':item.name,
-            'limit_order':item.quantity_limit,
-            'item_image':item.get_image_cover(),'check':False,
-            'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
-            'inventory':variation.inventory,'price':variation.price,'discount_price':variation.price*(1-variation.percent_discount/100),'percent_discount':variation.percent_discount,
-            'number_of_promotional_products':variation.number_of_promotional_products
-            } for variation in item.variation_item.all()
-            ]} for item in shop_program.product.all()]}
+            data={'list_products':ItemSellerSerializer(list_products,many=True).data,
+            'list_variations':VariationSerializer(list_variation,many=True).data}
             return Response(data)
-       
-@api_view(['GET', 'POST'])
-def new_flashsale(request):
-    user=request.user
-    shop=Shop.objects.get(user=user)
-    order=request.GET.get('order')
-    price=request.GET.get('price')
-    sort=request.GET.get('sort')
-    name=request.GET.get('name')
-    sku=request.GET.get('sku')
-    item=request.GET.get('item')
-    title=request.GET.get('title')
     
-    flash_sale_expire=Flash_sale.objects.filter(shop=shop,valid_to__lt=timezone.now())
-    items=Item.objects.filter(shop=shop).filter(Q(flash_sale=None) | (Q(flash_sale__valid_to__lt=datetime.datetime.now()) & Q(flash_sale__isnull=False))).distinct()
-    q=request.GET.get('q')
-    if request.method=="POST":
+class Newflashsale(APIView):
+    def get(self,request):
+        shop=Shop.objects.get(user=request.user)
+        order=request.GET.get('order')
+        price=request.GET.get('price')
+        sort=request.GET.get('sort')
+        name=request.GET.get('name')
+        sku=request.GET.get('sku')
+        flash_sale_id=request.GET.get('flash_sale_id')
+        item=request.GET.get('item')
+        title=request.GET.get('title')
+        q=request.GET.get('q')
+        items=Item.objects.filter(shop=shop).filter(Q(flash_sale=None) |Q(flash_sale_id=flash_sale_id) | (Q(flash_sale__valid_to__lt=datetime.datetime.now()) & Q(flash_sale__isnull=False))).distinct()
+        filteritem(price, sort, order, name, q, sku, item, items)
+        data=ItemSellerSerializer(items,many=True).data
+        return Response(data) 
+    def post(self,request):
+        shop=Shop.objects.get(user=request.user)
         item_id=request.POST.getlist('item_id')
-        product_id=request.POST.get('product_id')
+        items=request.POST.get('items')
+        variations=request.POST.get('variations')
+        action=request.GET.get('action')
         preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
-        items=Item.objects.filter(id__in=item_id).order_by(preserved)
-        if item_id and not product_id:
-            data={'list_product':[{'item_id':item.id,'item_name':item.name,
-            'item_image':item.get_image_cover(),'check':False,
-            'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
-            'inventory':variation.inventory,'price':variation.price,
-            } for variation in item.variation_item.all()
-            ]} for item in items]}
-            return Response(data)
-        else:
+        list_products=Item.objects.filter(id__in=item_id).order_by(preserved)
+        list_variations=Variation.objects.filter(item_id__in=item_id)
+        if action=='submit':
             Variation.objects.filter(item__flash_sale__in=flash_sale_expire).update(percent_discount_flash_sale=0,quantity_flash_sale_products=0)
             flash_sale,created=Flash_sale.objects.get_or_create(
                 shop=shop,
                 valid_from=request.POST.get('valid_from'),
                 valid_to=request.POST.get('valid_to'),
+                items=items,
+                variations=variations
                 )
-            flash_sale.product.add(*items)
-            variation=Variation.objects.filter(item__in=items)
-            Variation.objects.filter(item__flash_sale__valid_to__lt=datetime.datetime.now()-datetime.timedelta(seconds=10)).update(percent_discount_flash_sale=0)
-            list_item=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'id':i.id
-                } for i in items]
-            data={'flash_sale_id':flash_sale.id ,'a':list_item,'b':list(variation.values('price','inventory','color__value','size__value','item__id','id'))}
-            return Response(data)
-    else:
-        if price and sort:
-            if sort == "sort-asc":
-                items=items.order_by('variation__price').distinct()
-            else:
-                items=items.order_by('-variation__price').distinct()
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif order and sort:
-            if sort == "sort-asc":
-                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
-            else:
-                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif name and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(name__contains=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif sku and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(sku_product=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
+            flash_sale.product.add(*item_id)
+           
+            data={'flash_sale_id':flash_sale.id}
             return Response(data)
         else:
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
+            data={'list_products':ItemSellerSerializer(list_products,many=True).data,
+            'list_variations':VariationSerializer(list_variation,many=True).data}
             return Response(data)
-
-@api_view(['GET', 'POST'])
-def detail_flashsale(request,id):
-    user=request.user
-    shop=Shop.objects.get(user=user)
-    items=Item.objects.filter(shop=shop)
-    order=request.GET.get('order')
-    price=request.GET.get('price')
-    sort=request.GET.get('sort')
-    name=request.GET.get('name')
-    sku=request.GET.get('sku')
-    item=request.GET.get('item')
-    title=request.GET.get('title')
-    flash_sale=Flash_sale.objects.get(id=id)
-    
-    items=Item.objects.filter(shop=shop).filter(Q(flash_sale=None)| Q(flash_sale=flash_sale) | (Q(flash_sale__valid_to__lt=datetime.datetime.now()) & Q(flash_sale__isnull=False))).distinct()
-    q=request.GET.get('q')
-    if request.method=="POST":
+   
+class DetailFlashsale(APIView):
+    def get(self,request,id):
+        flash_sale=Flash_sale.objects.get(id=id)
+        data=FlashSaleSellerSerializer(flash_sale).data
+        return Response(data) 
+    def post(self,request,id):
+        flash_sale=Flash_sale.objects.get(id=id)
         item_id=request.POST.getlist('item_id')
-        product_id=request.POST.getlist('product_id')
-        percent_discount=request.POST.getlist('percent_discount')
-        number_flash_sale_products=request.POST.getlist('number_flash_sale_products')
-        quantity_limit_flash_sale=request.POST.getlist('limit_order')
+        items=request.POST.get('items')
+        variations=request.POST.get('variations')
+        action=request.GET.get('action')
         preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
-        items=Item.objects.filter(id__in=item_id).order_by(preserved)
-        variations=Variation.objects.filter(id__in=product_id)
-        if item_id and not product_id:
-            data={'list_product':[{'item_id':item.id,'item_name':item.name,
-            'item_image':item.get_image_cover(),'check':False,
-            'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
-            'inventory':variation.inventory,'price':variation.price,
-            } for variation in item.variation_item.all()
-            ]} for item in items]}
-            return Response(data)
-        elif product_id and item_id:
-            flash_sale.product.set([])
-            flash_sale.product.add(*items)
-            for item in items:
-                for i in range(len(quantity_limit_flash_sale)):
-                    if i==list(items).index(item):
-                        item.quantity_limit_flash_sale=quantity_limit_flash_sale[i]
-            bulk_update(items)
-            for variation in variations:
-                for i in range(len(percent_discount)):
-                    if i==list(variations).index(variation):
-                        variation.percent_discount_flash_sale=percent_discount[i]
-                        variation.number_of_promotional_flash_sale_products=number_flash_sale_products[i]
-            bulk_update(variations)
-            data={'a':'a'}
-            return Response(data)
-        else:
+        list_products=Item.objects.filter(id__in=item_id).order_by(preserved)
+        list_variations=Variation.objects.filter(item_id__in=item_id)
+        if action=='submit':
+            item_flash_sale=flash_sale.product.all()
+            item_remove=item_flash_sale.exclude(id__in=item_id)
+            flash_sale.product.remove(*item_remove)
+            flash_sale.product.add(*item_id)
+            flash_sale.items=items
+            flash_sale.variations=variations
             flash_sale.valid_from=request.POST.get('valid_from')
             flash_sale.valid_to=request.POST.get('valid_to')
             flash_sale.save()
             data={'a':'a'}
             return Response(data)
-    else:
-        if price and sort:
-            if sort == "sort-asc":
-                items=items.order_by('variation__price').distinct()
-            else:
-                items=items.order_by('-variation__price').distinct()
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif order and sort:
-            if sort == "sort-asc":
-                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
-            else:
-                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif name and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(name__contains=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif sku and q:
-            category=Category.objects.get(title=title,choice=True)
-            items=items.filter(sku_product=q,category=category)
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
-        elif item:
-            list_item_main=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),'item_shipping':i.shipping_choice.all()[0].method,'number_order':i.number_order(),
-                'item_id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),
-                'min_price':i.min_price()
-                } for i in items]
-            data={'c':list_item_main}
-            return Response(data)
         else:
-            data={
-                'flashsale':{'valid_from':flash_sale.valid_from,'valid_to':flash_sale.valid_to},
-                'list_product':[{'item_id':item.id,'item_name':item.name,
-                'item_image':item.get_image_cover(),'check':False,
-                'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
-                'inventory':variation.inventory,'price':variation.price,'discount_price':variation.price*(1-variation.percent_discount_flash_sale/100),'percent_discount':variation.percent_discount_flash_sale,
-                'number_of_promotional_products':variation.quantity_flash_sale_products
-                } for variation in item.variation_item.all()
-                ]} for item in flash_sale.product.all()]
-            }
+            data={'list_products':ItemSellerSerializer(list_products,many=True).data,
+            'list_variations':VariationSerializer(list_variation,many=True).data}
             return Response(data)
 
 @api_view(['GET', 'POST'])
