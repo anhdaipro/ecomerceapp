@@ -559,7 +559,7 @@ def follower_offer(request):
 class NewcomboAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
-        combo_id=request.GET.get('combo_id')
+        promotion_combo_id=request.GET.get('combo_id')
         items=Item.objects.filter(shop=shop).filter(Q(promotion_combo=None)| Q(promotion_combo_id=promotion_combo_id) | (Q(promotion_combo__valid_to__lt=datetime.datetime.now()) & Q(promotion_combo__isnull=False))).distinct().order_by('-id')
         order=request.GET.get('order')
         price=request.GET.get('price')
@@ -621,7 +621,14 @@ class DetailComboAPI(APIView):
 class NewDeal(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
-        items=Item.objects.filter(shop=shop).filter(Q(main_product=None) | (Q(main_product__valid_to__lt=datetime.datetime.now()) & Q(main_product__isnull=False))).distinct().order_by('-id')
+        deal_id=request.GET.get('deal_id')
+        items=Item.objects.filter(shop=shop)
+        list_id=[]
+        if deal_id:
+            deal_shock=Buy_with_shock_deal.objects.get(id=deal_id)
+            item_deal=deal_shock.main_product.all()
+            list_id=[item.id for item in items]
+        items=items.filter(Q(main_product=None)| Q(id__in=list_id) | (Q(main_product__valid_to__lt=datetime.datetime.now()) & Q(main_product__isnull=False))).distinct().order_by('-id')
         order=request.GET.get('order')
         price=request.GET.get('price')
         sort=request.GET.get('sort')
