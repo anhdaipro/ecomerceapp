@@ -341,9 +341,9 @@ class VoucherinfoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Voucher
         list_fields='__all__'
-        list_field.remove('products')
-        list_field.remove('user')
-        fields=list_field
+        list_fields.remove('products')
+        list_fields.remove('user')
+        fields=list_fields
 class VoucherSerializer(VoucherinfoSerializer): 
     number_used= serializers.SerializerMethodField()
     count_product=serializers.SerializerMethodField()
@@ -390,11 +390,11 @@ class BuywithsockdealinfoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Buy_with_shock_deal
         list_fields='__all__'
-        list_field.remove('items')
-        list_field.remove('variations')
-        list_field.remove('main_products')
-        list_field.remove('byproducts')
-        fields=list_field
+        list_fields.remove('items')
+        list_fields.remove('variations')
+        list_fields.remove('main_products')
+        list_fields.remove('byproducts')
+        fields=list_fields
 class BuywithsockdealSerializer(BuywithsockdealinfoSerializer):
     main_products=serializers.SerializerMethodField()
     byproducts=serializers.SerializerMethodField()
@@ -420,8 +420,8 @@ class ComboinfoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Promotion_combo
         list_fields='__all__'
-        list_field.remove('items')
-        fields=list_field
+        list_fields.remove('items')
+        fields=list_fields
     def get_products(self,obj):
         return ItemSerializer(obj.product.all(),many=True).data
 
@@ -443,9 +443,9 @@ class FlashSaleinfoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Flash_sale
         list_fields='__all__'
-        list_field.remove('items')
-        list_field.remove('variations')
-        fields=list_field
+        list_fields.remove('items')
+        list_fields.remove('variations')
+        fields=list_fields
 class FlashSaleSerializer(FlashSaleinfoSerializer):
     products=serializers.SerializerMethodField()
     class Meta(FlashSaleinfoSerializer.Meta):
