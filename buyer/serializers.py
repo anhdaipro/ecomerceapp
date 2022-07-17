@@ -340,10 +340,10 @@ class ItemdetailsSerializer(serializers.ModelSerializer):
 class VoucherinfoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Voucher
-        list_fields='__all__'
-        list_fields.remove('products')
-        list_fields.remove('user')
-        fields=list_fields
+        fields='__all__'
+        fields.remove('products')
+        fields.remove('user')
+        fields=fields
 class VoucherSerializer(VoucherinfoSerializer): 
     number_used= serializers.SerializerMethodField()
     count_product=serializers.SerializerMethodField()
@@ -389,12 +389,12 @@ class ShopprogramSellerSerializer(ShopPrograminfoSerializer):
 class BuywithsockdealinfoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Buy_with_shock_deal
-        list_fields='__all__'
-        list_fields.remove('items')
-        list_fields.remove('variations')
-        list_fields.remove('main_products')
-        list_fields.remove('byproducts')
-        fields=list_fields
+        fields='__all__'
+        fields.remove('items')
+        fields.remove('variations')
+        fields.remove('main_products')
+        fields.remove('byproducts')
+        fields=fields
 class BuywithsockdealSerializer(BuywithsockdealinfoSerializer):
     main_products=serializers.SerializerMethodField()
     byproducts=serializers.SerializerMethodField()
@@ -419,9 +419,9 @@ class ComboinfoSerializer(serializers.ModelSerializer):
     products=serializers.SerializerMethodField()
     class Meta:
         model=Promotion_combo
-        list_fields='__all__'
-        list_fields.remove('items')
-        fields=list_fields
+        fields='__all__'
+        fields.remove('items')
+        fields=fields
     def get_products(self,obj):
         return ItemSerializer(obj.product.all(),many=True).data
 
@@ -442,10 +442,10 @@ class CombosellerSerializer(ComboSerializer):
 class FlashSaleinfoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Flash_sale
-        list_fields='__all__'
-        list_fields.remove('items')
-        list_fields.remove('variations')
-        fields=list_fields
+        fields='__all__'
+        fields.remove('items')
+        fields.remove('variations')
+        fields=fields
 class FlashSaleSerializer(FlashSaleinfoSerializer):
     products=serializers.SerializerMethodField()
     class Meta(FlashSaleinfoSerializer.Meta):
