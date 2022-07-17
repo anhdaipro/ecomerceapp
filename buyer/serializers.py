@@ -427,7 +427,7 @@ class ComboSerializer(ComboinfoSerializer):
 class CombosellerSerializer(ComboSerializer):
     products=serializers.SerializerMethodField()
     class Meta(ComboSerializer.Meta):
-        fields=ComboSerializer.Meta.fields+['promotion_combo_name','products']
+        fields=ComboSerializer.Meta.fields+['promotion_combo_name','products','items']
     def get_products(self,obj):
         return ItemsellerSerializer(obj.products.all(),many=True).data
 
@@ -444,7 +444,7 @@ class FlashSaleSerializer(FlashSaleinfoSerializer):
 class FlashSaleSellerSerializer(FlashSaleinfoSerializer):
     products=serializers.SerializerMethodField()
     class Meta(FlashSaleinfoSerializer.Meta):
-        fields=FlashSaleinfoSerializer.Meta.fields+['products']
+        fields=FlashSaleinfoSerializer.Meta.fields+['products','items','variations']
     def get_products(self,obj):
         return ByproductSellerSerializer(obj.byproducts.all(),many=True).data
 
