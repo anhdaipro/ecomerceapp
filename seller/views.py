@@ -685,7 +685,7 @@ class DetailDeal(APIView):
             deal_shock.save()
             return Response({'ok':'ok'})
 
-class NewprogramAPI(request):
+class NewprogramAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
         shop_program_id=request.GET.get('shop_program_id')
