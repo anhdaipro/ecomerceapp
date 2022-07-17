@@ -604,6 +604,7 @@ class DetailComboAPI(APIView):
         return Response(data) 
     def post(self,request,id):
         item_id=request.POST.getlist('item_id')
+        items=request.POST.getlist('items')
         shop=Shop.objects.get(user=request.user)
         promotion_combo=Promotion_combo.objects.get(id=id)
         promotion_combo.products.set([])
