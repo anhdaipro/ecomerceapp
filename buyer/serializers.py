@@ -186,7 +186,7 @@ class VariationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Variation
         fields = (
-            'id','inventory','color_value','size_value','price','item_id'
+            'id','inventory','color_value','size_value','price','item_id',
         )
     def get_color_value(self,obj):
         return obj.get_color()
@@ -350,6 +350,7 @@ class VoucherSerializer(VoucherinfoSerializer):
         return Order.objects.filter(voucher=obj,received=True).count()
     def get_count_product(self,obj):
         return obj.product.all().count()
+
 class VoucherdetailSerializer(VoucherinfoSerializer): 
     exists=serializers.SerializerMethodField()
     class Meta(VoucherinfoSerializer.Meta):
@@ -358,6 +359,7 @@ class VoucherdetailSerializer(VoucherinfoSerializer):
         request=self.context.get("request")
         if request.user in obj.user.all():
             return True
+
 class VouchersellerSerializer(VoucherinfoSerializer): 
     products=serializers.SerializerMethodField()
     class Meta(VoucherinfoSerializer.Meta):
@@ -374,7 +376,7 @@ class ShopProgramSerializer(ShopPrograminfoSerializer):
         fields=ShopPrograminfoSerializer.Meta.fields+('products',)
     def get_products(self,obj):
         return [{'image':item.get_image_cover()} for item in obj.products.all()]
-class ShopprogramSellerSerializer(serializers.ModelSerializer):
+class ShopprogramSellerSerializer(ShopPrograminfoSerializer):
     products=serializers.SerializerMethodField()
     class Meta(ShopPrograminfoSerializer.Meta):
         fields=ShopPrograminfoSerializer.Meta.fields+('products','items','variations')
@@ -396,7 +398,7 @@ class BuywithsockdealSerializer(BuywithsockdealinfoSerializer):
     def get_main_products(self,obj):
         return [{'image':item.get_image_cover()} for item in obj.main_products.all()]
 
-class BuywithsockdealSellerSerializer(serializers.ModelSerializer):
+class BuywithsockdealSellerSerializer(BuywithsockdealinfoSerializer):
     main_products=serializers.SerializerMethodField()
     byproducts=serializers.SerializerMethodField()
     class Meta(BuywithsockdealinfoSerializer.Meta):

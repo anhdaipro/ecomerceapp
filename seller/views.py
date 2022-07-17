@@ -512,8 +512,7 @@ class DetailVoucher(APIView):
             vocher.product.add(*item_id)
         data={'ok':'ok' }
         return Response(data)
-        
-        
+          
 @api_view(['GET', 'POST'])
 def shop_award(request):
     shop=Shop.objects.get(user=user)
@@ -555,7 +554,6 @@ def follower_offer(request):
 
         data={'a':'a' }
         return Response(data)
-
 
 class NewcomboAPI(APIView):
     def get(self,request):
@@ -619,7 +617,6 @@ class DetailComboAPI(APIView):
         data={'ok':'ok'}
         return Response(data)
     
-
 class NewDeal(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
@@ -915,11 +912,10 @@ def add_item(request):
         from_quantity=request.POST.getlist('from_quantity')
         to_quantity=request.POST.getlist('to_quantity')
         price_range=request.POST.getlist('price_range')
-        category= Category.objects.get(id=category_id)
-        
+       
         name=request.POST.get('name')
         description = request.POST.get('description')
-        item = Item.objects.create(shop = shop,name = name,category=category,description=description)
+        item = Item.objects.create(shop = shop,name = name,category_id=category_id,description=description)
         item.slug=re.sub('[,./\&]', "-",name) +  str(item.id)
         file_id=request.POST.getlist('file_id')
         file_id_remove=request.POST.getlist('file_id_remove')
@@ -1119,8 +1115,6 @@ def update_item(request,id):
         from_quantity=request.POST.getlist('from_quantity')
         to_quantity=request.POST.getlist('to_quantity')
         price_range=request.POST.getlist('price_range')
-        category= Category.objects.get(id=category_id)
-        
         BuyMoreDiscount.objects.bulk_create([
             BuyMoreDiscount(
                from_quantity=from_quantity[i],
@@ -1132,9 +1126,7 @@ def update_item(request,id):
         ])
         
         name=request.POST.get('name')
-        category_id=request.POST.get('category_id')
         description = request.POST.get('description')
-        item = Item.objects.create(shop = shop,name = name,category=category,description=description,slug=name)
         item.slug=name + '.' + str(item.id)
         file_id=request.POST.getlist('file_id')
         file_id_remove=request.POST.getlist('file_id_remove')
@@ -1166,7 +1158,7 @@ def update_item(request,id):
         item.save()
         #detail item
         # clotes,jeans,pants,
-        detail_item=Detail_Item.objects.get(item=item)
+        detail_item=Detail_Item.objects.get(item_id=item_id)
         detail_item.brand_clothes=request.POST.get('brand_clothes')#skirt,dress
         detail_item.material=request.POST.get('material_clothes')#skirt
         detail_item.pants_length=request.POST.get('pants_length')#,dress
