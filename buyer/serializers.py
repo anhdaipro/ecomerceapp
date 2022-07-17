@@ -340,15 +340,15 @@ class ItemdetailsSerializer(serializers.ModelSerializer):
 class VoucherinfoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Voucher
-        fields='__all__'
-        fields.remove('products')
-        fields.remove('user')
-        fields=fields
+        fields=['id','code_type','code','valid_from','valid_to',
+        'discount_type','amount','percent','maximum_usage','voucher_type',
+        'minimum_order_value','maximum_discount']
+
 class VoucherSerializer(VoucherinfoSerializer): 
     number_used= serializers.SerializerMethodField()
     count_product=serializers.SerializerMethodField()
     class Meta(VoucherinfoSerializer.Meta):
-        fields=VoucherinfoSerializer.Meta.fields+['number_userd','count_product']
+        fields=VoucherinfoSerializer.Meta.fields+['number_userd','count_product','name_of_the_discount_program']
     def get_number_used(self,obj):
         return Order.objects.filter(voucher=obj,received=True).count()
     def get_count_product(self,obj):
@@ -366,13 +366,13 @@ class VoucherdetailSerializer(VoucherinfoSerializer):
 class VouchersellerSerializer(VoucherinfoSerializer): 
     products=serializers.SerializerMethodField()
     class Meta(VoucherinfoSerializer.Meta):
-        fields=VoucherinfoSerializer.Meta.fields+['products']
+        fields=VoucherinfoSerializer.Meta.fields+['products','setting_display','name_of_the_discount_program']
     def get_products(self,obj):
         return ItemsellerSerializer(obj.main_products.all(),many=True).data
 class ShopPrograminfoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Shop_program
-        exclude=['items','variations']
+        fields=['id','valid_to','valid_from','name_program']
 class ShopProgramSerializer(ShopPrograminfoSerializer):
     products=serializers.SerializerMethodField()
     class Meta(ShopPrograminfoSerializer.Meta):
@@ -389,12 +389,9 @@ class ShopprogramSellerSerializer(ShopPrograminfoSerializer):
 class BuywithsockdealinfoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Buy_with_shock_deal
-        fields='__all__'
-        fields.remove('items')
-        fields.remove('variations')
-        fields.remove('main_products')
-        fields.remove('byproducts')
-        fields=fields
+        fields=['shock_deal_type','program_name_buy_with_shock_deal',
+        'valid_from','valid_to','limited_product_bundles',
+        'minimum_price_to_receive_gift','number_gift']
 class BuywithsockdealSerializer(BuywithsockdealinfoSerializer):
     main_products=serializers.SerializerMethodField()
     byproducts=serializers.SerializerMethodField()
@@ -419,33 +416,30 @@ class ComboinfoSerializer(serializers.ModelSerializer):
     products=serializers.SerializerMethodField()
     class Meta:
         model=Promotion_combo
-        fields='__all__'
-        fields.remove('items')
-        fields=fields
+        fields=['id','valid_from','valid_to',
+        'combo_type','discount_percent','discount_price',
+        'price_special_sale','limit_order','quantity_to_reduced']
     def get_products(self,obj):
         return ItemSerializer(obj.product.all(),many=True).data
 
 class ComboSerializer(ComboinfoSerializer):
     products=serializers.SerializerMethodField()
     class Meta(ComboinfoSerializer.Meta):
-        fields=(ComboinfoSerializer.Meta.fields)+['products']
+        fields=(ComboinfoSerializer.Meta.fields)+['promotion_combo_name','products']
     def get_products(self,obj):
         return [{'image':item.get_image_cover()} for item in obj.products.all()]
 
 class CombosellerSerializer(ComboSerializer):
     products=serializers.SerializerMethodField()
     class Meta(ComboSerializer.Meta):
-        fields=ComboSerializer.Meta.fields+['products']
+        fields=ComboSerializer.Meta.fields+['promotion_combo_name','products']
     def get_products(self,obj):
         return ItemsellerSerializer(obj.product.all(),many=True).data
 
 class FlashSaleinfoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Flash_sale
-        fields='__all__'
-        fields.remove('items')
-        fields.remove('variations')
-        fields=fields
+        fields=['id','valid_to','valid_from']
 class FlashSaleSerializer(FlashSaleinfoSerializer):
     products=serializers.SerializerMethodField()
     class Meta(FlashSaleinfoSerializer.Meta):
