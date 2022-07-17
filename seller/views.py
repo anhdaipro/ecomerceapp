@@ -564,7 +564,7 @@ class NewcomboAPI(APIView):
         if promotion_combo_id:
             promotion=Promotion_combo.objects.get(id=promotion_combo_id)
             list_id=[item.id for item in promotion.products.all()]
-        items=Item.objects.filter(shop=shop).filter(Q(promotion_combo=None)| Q(promotion_combo=promotion_combo) | (Q(promotion_combo__valid_to__lt=datetime.datetime.now()) & Q(promotion_combo__isnull=False))).distinct().order_by('-id')
+        items=Item.objects.filter(shop=shop).filter(Q(promotion_combo=None)| Q(id__in=list_id) | (Q(promotion_combo__valid_to__lt=datetime.datetime.now()) & Q(promotion_combo__isnull=False))).distinct().order_by('-id')
         order=request.GET.get('order')
         price=request.GET.get('price')
         sort=request.GET.get('sort')
