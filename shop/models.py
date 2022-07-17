@@ -241,7 +241,7 @@ class Item(models.Model):
     def program_valid(self):
         shop_program=Shop_program.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if shop_program.exists():
-            return True
+            return shop_program.variations
     def get_promotion(self):
         promotion_combo=Promotion_combo.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if promotion_combo.exists():
@@ -359,7 +359,7 @@ class Variation(models.Model):
 
     def total_discount(self):
         discount=0
-        if self.percent_discount and self.item.program_valid() > 0:
+        if self.percent_discount and self.item.program_valid():
             discount= self.price*(self.percent_discount)/100
         return discount
     class Meta:
