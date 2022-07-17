@@ -613,7 +613,7 @@ class OrderSerializer(serializers.ModelSerializer):
 class CombodetailseSerializer(ComboinfoSerializer):
     products=serializers.SerializerMethodField()
     class Meta(ComboinfoSerializer.Meta):
-        fields=ComboinfoSerializer.Meta.fields + ('products',)
+        fields=ComboinfoSerializer.Meta.fields + ['products']
     def get_products(self,obj):
         return ItemcomboSerializer(obj.product.all(),many=True).data
 
