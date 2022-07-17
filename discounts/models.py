@@ -92,6 +92,7 @@ class Buy_with_shock_deal(models.Model):
     byproducts=models.ManyToManyField(to='shop.Item',related_name='byproduct',blank=True)
     variations=models.TextField(null=True)
     items=models.TextField(null=True)
+    list_byproducts=models.TextField(null=True)
     valid_from=models.DateTimeField()
     valid_to=models.DateTimeField()
     limited_product_bundles=models.IntegerField(null=True)

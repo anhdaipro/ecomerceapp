@@ -669,8 +669,9 @@ class DetailDeal(APIView):
         action=request.POST.get('action')
         item_id=request.POST.getlist('item_id')
         byproduct_id=request.POST.getlist('byproduct_id')
-        variations=request.POST.getlist('variations')
-        items=request.POST.getlist('items')
+        variations=request.POST.get('variations')
+        items=request.POST.get('items')
+        list_byproducts=request.POST.get('list_byproducts')
         if action=='edit':
             deal_shock.program_name_buy_with_shock_deal=request.POST.get('program_name_buy_with_shock_deal')
             deal_shock.valid_from=request.POST.get('valid_from')
@@ -689,6 +690,7 @@ class DetailDeal(APIView):
         else:
             deal_shock.items=items
             deal_shock.variations=variations
+            deal_shock.list_byproducts=list_byproducts
             deal_shock.main_products.set([])
             deal_shock.byproducts.set([])
             deal_shock.main_products.add(*item_id)

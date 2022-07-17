@@ -408,7 +408,7 @@ class BuywithsockdealSellerSerializer(BuywithsockdealinfoSerializer):
     def get_main_products(self,obj):
         return ItemsellerSerializer(obj.main_products.all(),many=True).data
     def get_byproducts(self,obj):
-        return ByproductSellerSerializer(obj.byproducts.all(),many=True).data
+        return IteminfoSerializer(obj.byproducts.all(),many=True).data
     
 class ComboinfoSerializer(serializers.ModelSerializer):
     class Meta:
