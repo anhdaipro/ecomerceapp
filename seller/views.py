@@ -702,8 +702,12 @@ class DetailDeal(APIView):
 class NewprogramAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
-        shop_program_id=request.GET.get('shop_program_id')
-        items=Item.objects.filter(shop=shop).filter(Q(shop_program=None) |Q(shop_program=shop_program)  | (Q(shop_program__valid_to__lt=datetime.datetime.now()) & Q(shop_program__isnull=False))).distinct()
+        program_id=request.GET.get('program_id')
+        list_id=[]
+        if program_id:
+            shop_program=Shop_program.objects.get(id=program_id)
+            list_id=[item.id for item in shop_program.products.all()]
+        items=Item.objects.filter(shop=shop).filter(Q(shop_program=None) |Q(id__in=list_id)  | (Q(shop_program__valid_to__lt=datetime.datetime.now()) & Q(shop_program__isnull=False))).distinct()
         order=request.GET.get('order')
         price=request.GET.get('price')
         sort=request.GET.get('sort')
