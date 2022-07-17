@@ -51,6 +51,7 @@ VoucherSerializer,
 VouchersellerSerializer,
 ShopProgramSerializer,
 ShopprogramSellerSerializer,
+ByproductSellerSerializer,
 BuywithsockdealSerializer,
 BuywithsockdealSellerSerializer,
 ComboSerializer,
@@ -78,7 +79,7 @@ class ListcomboAPI(ListAPIView):
 
 class ListdealshockAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
-    serializer_class = Buywithsockdeal
+    serializer_class = BuywithsockdealSerializer
     def get_queryset(self):
         request = self.request
         user=request.user
@@ -672,8 +673,7 @@ class DetailDeal(APIView):
         elif action=='getbyproduct':
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(byproduct_id)])
             list_byproducts=Item.objects.filter(id__in=byproduct_id).order_by(preserved)
-            data={'list_byproducts':ItemSellerSerializer(list_byproducts,many=True).data,
-            'list_variations':VariationSerializer(list_variation,many=True).data}
+            data=ByproductSellerSerializer(list_byproducts,many=True).data
             return Response(data)
         else:
             deal_shock.items=items
@@ -726,8 +726,7 @@ class NewprogramAPI(request):
             data={'ok':'ok'}
             return Response(data)
         else:
-            data={'list_products':ItemSellerSerializer(list_products,many=True).data,
-            'list_variations':VariationSerializer(list_variation,many=True).data}
+            data=ByproductSellerSerializer(list_products,many=True).data
             return Response(data)
     
 class Detailprogram(APIView):
@@ -761,8 +760,7 @@ class Detailprogram(APIView):
             data={'ok':'ok'}
             return Response(data)
         else:
-            data={'list_products':ItemSellerSerializer(list_products,many=True).data,
-            'list_variations':VariationSerializer(list_variation,many=True).data}
+            data=ByproductSellerSerializer(list_products,many=True).data
             return Response(data)
     
 class Newflashsale(APIView):
@@ -804,8 +802,7 @@ class Newflashsale(APIView):
             data={'flash_sale_id':flash_sale.id}
             return Response(data)
         else:
-            data={'list_products':ItemSellerSerializer(list_products,many=True).data,
-            'list_variations':VariationSerializer(list_variation,many=True).data}
+            data=ByproductSellerSerializer(list_products,many=True).data
             return Response(data)
    
 class DetailFlashsale(APIView):
@@ -835,8 +832,7 @@ class DetailFlashsale(APIView):
             data={'a':'a'}
             return Response(data)
         else:
-            data={'list_products':ItemSellerSerializer(list_products,many=True).data,
-            'list_variations':VariationSerializer(list_variation,many=True).data}
+            data=ByproductSellerSerializer(list_products,many=True).data
             return Response(data)
 
 @api_view(['GET', 'POST'])

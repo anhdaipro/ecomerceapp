@@ -153,12 +153,11 @@ class IteminfoSerializer(serializers.ModelSerializer):
     def get_image(self,obj):
         return obj.get_image_cover()
 
-class ByproductSeller(IteminfoSerializer):
-    image=serializers.SerializerMethodField()
+class ByproductSellerSerializer(IteminfoSerializer):
+    variations=serializers.SerializerMethodField()
     class Meta(IteminfoSerializer.Meta):
         fields =IteminfoSerializer.Meta.fields + ('variations',)
-    def get_image(self,obj):
-        return obj.get_image_cover()
+    
     def get_variations(self,obj):
         return VariationSerializer(obj.variation_item.all(),many=True).data
 
