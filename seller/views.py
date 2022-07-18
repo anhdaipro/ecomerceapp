@@ -686,7 +686,7 @@ class DetailDeal(APIView):
         elif action=='addbyproduct': 
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(byproducts)])
             list_byproducts=Item.objects.filter(id__in=byproducts).order_by(preserved)
-            variation=Variation.objects.filter(item_id__in=byproducts)
+            variations=Variation.objects.filter(item_id__in=byproducts)
             Variationdeal.objects.bulk_create([Variationdeal(deal_shock_id=id,item=variation.item,variation=variation) for variation in variations])
             data=ByproductSellerSerializer(list_byproducts,many=True).data
             return Response(data) 
