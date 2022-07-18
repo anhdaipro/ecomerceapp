@@ -780,12 +780,15 @@ class Detailprogram(APIView):
         action=request.data.get('action')
         if action=='submit':
             discount_model_list=request.data.get('discount_model_list')
+            item_programs=shop_program.products.all()
+            item_remove=item_programs.exclude(id__in=list_items)
             shop_program.name_program=name_program
             shop_program.valid_from=valid_from
             shop_program.valid_to=valid_to
             shop_program.items=items
             shop_program.variations=variations
             shop_program.save()
+            Variation_discount.objects.filter(shop_program_id=id).exclude(item_id__in=list_items).delete()
             shop_program.products.set([])
             shop_program.products.add(*list_items)
             discount_model_list=request.data.get('discount_model_list')
@@ -885,13 +888,14 @@ class DetailFlashsale(APIView):
             discount_model_list=request.data.get('discount_model_list')
             item_flash_sale=flash_sale.products.all()
             item_remove=item_flash_sale.exclude(id__in=list_items)
-            flash_sale.products.remove(*item_remove)
-            flash_sale.products.add(*list_items)
+            Variationflashsale.objects.filter(flash_sale_id=id).exclude(item_id__in=list_items).delete()
             flash_sale.items=items
             flash_sale.variations=variations
             flash_sale.valid_from=request.POST.get('valid_from')
             flash_sale.valid_to=request.POST.get('valid_to')
             flash_sale.save()
+            flash_sale.products.set([])
+            flash_sale.products.add(*list_items)
             list_variation_update=[variation for variation in discount_model_list if variation['id']]
             listvariation=[Variationflashsale(flash_sale_id=id,
             item_id=variation['item_id'],variation_id=variation['variation_id'],
