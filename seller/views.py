@@ -579,14 +579,12 @@ class NewcomboAPI(APIView):
     def post(self,request):
         shop=Shop.objects.get(user=request.user)
         item_id=request.POST.getlist('item_id')
-        items=request.POST.get('items')
         promotion_combo,created=Promotion_combo.objects.get_or_create(
             shop=shop,
             promotion_combo_name=request.POST.get('promotion_combo_name'),
             valid_from=request.POST.get('valid_from'),
             valid_to=request.POST.get('valid_to'),
             combo_type=request.POST.get('combo_type'),
-            items=items,
             discount_percent=request.POST.get('discount_percent'),
             discount_price=request.POST.get('discount_price'),
             price_special_sale=request.POST.get('price_special_sale'),
@@ -789,7 +787,7 @@ class Detailprogram(APIView):
             shop_program.products.add(*list_items)
             list_variation_update=[variation for variation in discount_model_list if variation['id']]
             list_variation=[Variation_discount(shop_program_id=id,
-            item_id=variation['item'],variation_id=variation['variation_id'],
+            item_id=variation['item_id'],variation_id=variation['variation_id'],
             promotion_price=variation['promotion_price'],
             promotion_price_after_tax=variation['promotion_price'],
             enable=False if variation['enable']=='false' else True,
