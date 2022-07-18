@@ -147,8 +147,8 @@ class IteminfoSerializer(serializers.ModelSerializer):
     image=serializers.SerializerMethodField()
     class Meta:
         model = Item
-        fields = (
-        'id','name','image',)
+        fields = [
+        'id','name','image']
     
     def get_image(self,obj):
         return obj.get_image_cover()
@@ -166,8 +166,8 @@ class ItemSerializer(IteminfoSerializer):
     min_price=serializers.SerializerMethodField()
     percent_discount=serializers.SerializerMethodField()
     class Meta(IteminfoSerializer.Meta):
-        fields =IteminfoSerializer.Meta.fields+ (
-        'max_price','min_price','url','percent_discount')
+        fields =IteminfoSerializer.Meta.fields+ [
+        'max_price','min_price','url','percent_discount']
     
     def get_url(self,obj):
         return obj.get_absolute_url()
@@ -201,8 +201,8 @@ class ItempageSerializer(ItemSerializer):
     voucher=serializers.SerializerMethodField()
     number_order=serializers.SerializerMethodField()
     class Meta(ItemSerializer.Meta):
-        fields=ItemSerializer.Meta.fields+('shop_city','brand','voucher',
-        'review_rating','num_like','promotion','shock_deal_type','number_order',)
+        fields=ItemSerializer.Meta.fields+['shop_city','brand','voucher',
+        'review_rating','num_like','promotion','shock_deal_type','number_order']
     def get_shop_city(self,obj):
         return obj.shop.city
     def get_review_rating(self,obj):
@@ -225,8 +225,7 @@ class ItemSellerSerializer(ItemSerializer):
     class Meta(ItemSerializer.Meta):
         my_list=list(ItemSerializer.Meta.fields)
         my_list.remove('percent_discount')
-        my_tuple = tuple(my_list)
-        fields =my_tuple+ ('number_order','total_inventory','shipping',)
+        fields =my_list+ ['number_order','total_inventory','shipping']
     def get_total_inventory(self,obj):
         return obj.total_inventory()
     def get_number_order(self,obj):
@@ -239,7 +238,7 @@ class ItemcomboSerializer(ItemSerializer):
     colors=serializers.SerializerMethodField()
     sizes=serializers.SerializerMethodField()
     class Meta(ItemSerializer.Meta):
-        fields =ItemSerializer.Meta.fields+ ('colors','sizes','total_inventory',)
+        fields =ItemSerializer.Meta.fields+ ['colors','sizes','total_inventory']
     def get_total_inventory(self,obj):
         return obj.total_inventory()
     def get_colors(self,obj):
@@ -260,12 +259,12 @@ class ItemdetailSerializer(ItemcomboSerializer):
     like=serializers.SerializerMethodField()
     user_id=serializers.SerializerMethodField()
     class Meta(ItemcomboSerializer.Meta):
-        fields =ItemcomboSerializer.Meta.fields+ (
+        fields =ItemcomboSerializer.Meta.fields+ [
             'user_id','category','count_variation','description','media_upload',
             'shock_deal_type','promotion','flash_sale','num_like'
             ,'review_rating','count_review',
             'vouchers','like','category_id'
-        )
+        ]
     
     def get_like(self,obj): 
         request=self.context.get("request")
@@ -307,7 +306,7 @@ class ItemdealSerializer(ItemSerializer):
     sizes=serializers.SerializerMethodField()
     discount_deal=serializers.SerializerMethodField()
     class Meta(ItemSerializer.Meta):
-        fields=ItemSerializer.Meta.fields+('discount_deal','colors','sizes',)
+        fields=ItemSerializer.Meta.fields+['discount_deal','colors','sizes']
     def get_discount_deal(self,obj):
         return obj.discount_deal()
     def get_sizes(self,obj):
