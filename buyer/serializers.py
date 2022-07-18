@@ -177,19 +177,20 @@ class ItemSerializer(IteminfoSerializer):
         return obj.min_price()
     def get_percent_discount(self,obj):
         return obj.percent_discount()
-
+field_variation=['variation_id','inventory','color_value','size_value','price','item_id']
 class VariationSerializer(serializers.ModelSerializer):
     color_value=serializers.SerializerMethodField()
     size_value=serializers.SerializerMethodField()
+    variation_id=serializers.SerializerMethodField()
     class Meta:
         model = Variation
-        fields = (
-            'id','inventory','color_value','size_value','price','item_id',
-        )
+        fields =field_variation
     def get_color_value(self,obj):
         return obj.get_color()
     def get_size_value(self,obj):
         return obj.get_size()
+    def get_variation_id(self,obj):
+        return obj.id
 
 class ItempageSerializer(ItemSerializer):
     num_like=serializers.SerializerMethodField()
@@ -379,11 +380,14 @@ class ShopProgramSerializer(ShopPrograminfoSerializer):
         return [{'image':item.get_image_cover()} for item in obj.products.all()]
 class ShopprogramSellerSerializer(ShopPrograminfoSerializer):
     products=serializers.SerializerMethodField()
+    variations=serializers.SerializerMethodField()
     class Meta(ShopPrograminfoSerializer.Meta):
-        fields=ShopPrograminfoSerializer.Meta.fields+['products','items','variations']
+        fields=ShopPrograminfoSerializer.Meta.fields+['products','variations']
     def get_products(self,obj):
         return ByproductSellerSerializer(obj.byproducts.all(),many=True).data
-
+    def get_variations(self,obj):
+        list_variations=Variation_discount.objects.filter(shop_program=obj)
+        return VariationprogramSerializer(list_variations,many=True).data
 class BuywithsockdealinfoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Buy_with_shock_deal
@@ -400,15 +404,69 @@ class BuywithsockdealSerializer(BuywithsockdealinfoSerializer):
     def get_main_products(self,obj):
         return [{'image':item.get_image_cover()} for item in obj.main_products.all()]
 
+class VariationprogramSerializer(serializers.ModelSerializer):
+    color_value=serializers.SerializerMethodField()
+    size_value=serializers.SerializerMethodField()
+    inventory=serializers.SerializerMethodField()
+    price=serializers.SerializerMethodField()
+    class Meta:
+        model=Variation_discount
+        fields=field_variation+['id','promotion_price','user_limit_item','promotion_stock']
+    def get_color_value(self,obj):
+        return obj.variation.get_color()
+    def get_size_value(self,obj):
+        return obj.variation.get_size()
+    def get_inventory(self,obj):
+        return obj.variation.get_size()
+    def get_price(self,obj):
+        return obj.variation.get_size()
+
+class VariationflashsaleSerializer(serializers.ModelSerializer):
+    color_value=serializers.SerializerMethodField()
+    size_value=serializers.SerializerMethodField()
+    inventory=serializers.SerializerMethodField()
+    price=serializers.SerializerMethodField()
+    class Meta:
+        model=Variation_discount
+        fields=fields=field_variation+['id','promotion_price','user_limit_item','promotion_stock']
+    def get_color_value(self,obj):
+        return obj.variation.get_color()
+    def get_size_value(self,obj):
+        return obj.variation.get_size()
+    def get_inventory(self,obj):
+        return obj.variation.get_size()
+    def get_price(self,obj):
+        return obj.variation.get_size()
+
+class VariationdealSerializer(serializers.ModelSerializer):
+    color_value=serializers.SerializerMethodField()
+    size_value=serializers.SerializerMethodField()
+    inventory=serializers.SerializerMethodField()
+    price=serializers.SerializerMethodField()
+    class Meta:
+        model=Variation_discount
+        fields= fields=fields=field_variation+['id','promotion_price','user_limit_item']
+    def get_color_value(self,obj):
+        return obj.variation.get_color()
+    def get_size_value(self,obj):
+        return obj.variation.get_size()
+    def get_inventory(self,obj):
+        return obj.variation.get_size()
+    def get_price(self,obj):
+        return obj.variation.get_size()
 class BuywithsockdealSellerSerializer(BuywithsockdealinfoSerializer):
     main_products=serializers.SerializerMethodField()
     byproducts=serializers.SerializerMethodField()
+    variations=serializers.SerializerMethodField()
     class Meta(BuywithsockdealinfoSerializer.Meta):
-        fields=BuywithsockdealinfoSerializer.Meta.fields+['main_products','byproducts','items','variations']
+        fields=BuywithsockdealinfoSerializer.Meta.fields+['main_products','byproducts','variations']
     def get_main_products(self,obj):
         return ItemsellerSerializer(obj.main_products.all(),many=True).data
     def get_byproducts(self,obj):
         return IteminfoSerializer(obj.byproducts.all(),many=True).data
+    def get_variations(self,obj):
+        list_variations=Variationdeal.objects.filter(deal_shock=obj)
+        return VariationdealSerializer(list_variations,many=True).data
     
 class ComboinfoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -427,7 +485,7 @@ class ComboSerializer(ComboinfoSerializer):
 class CombosellerSerializer(ComboSerializer):
     products=serializers.SerializerMethodField()
     class Meta(ComboSerializer.Meta):
-        fields=ComboSerializer.Meta.fields+['promotion_combo_name','products','items']
+        fields=ComboSerializer.Meta.fields+['promotion_combo_name','products']
     def get_products(self,obj):
         return ItemsellerSerializer(obj.products.all(),many=True).data
 
@@ -443,10 +501,14 @@ class FlashSaleSerializer(FlashSaleinfoSerializer):
         return [{'image':item.get_image_cover()} for item in obj.products.all()]
 class FlashSaleSellerSerializer(FlashSaleinfoSerializer):
     products=serializers.SerializerMethodField()
+    variations=serializers.SerializerMethodField()
     class Meta(FlashSaleinfoSerializer.Meta):
-        fields=FlashSaleinfoSerializer.Meta.fields+['products','items','variations']
+        fields=FlashSaleinfoSerializer.Meta.fields+['products','variations']
     def get_products(self,obj):
-        return ByproductSellerSerializer(obj.byproducts.all(),many=True).data
+        return IteminfoSerializer(obj.byproducts.all(),many=True).data
+    def get_variations(self,obj):
+        list_variations=Variationflashsale.objects.filter(flash_sale=obj)
+        return VariationflashsaleSerializer(list_variations,many=True).data
 
 #discount      
 class ShopinfoSerializer(serializers.ModelSerializer): 

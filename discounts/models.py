@@ -54,23 +54,36 @@ class Shop_program(models.Model):
     name_program=models.CharField(max_length=100)
     products=models.ManyToManyField(to='shop.Item',blank=True,related_name='shop_program')
     valid_from=models.DateTimeField()
-    variations=models.TextField(null=True)
-    items=models.TextField(null=True)
     valid_to=models.DateTimeField()
+    active=models.BooleanField(default=False)
     created=models.DateTimeField(auto_now=True)
-
 combo_type_choices=(
 ('1','percentage discount'),
 ('2','discount by amount'),
 ('3','special sale')
 )  
+status=(
+    (1,'On'),
+    (2,"Off")
+)
+
+class Variation_discount(models.Model):
+    shop_program=models.ForeignKey(Shop_program,on_delete=models.CASCADE,related_name='shop_program')
+    item=models.ForeignKey(to='shop.Item',on_delete=models.CASCADE,related_name='item_discount')
+    variation=models.ForeignKey(to='shop.Variation',on_delete=models.CASCADE,related_name='variation_discount')
+    created=models.DateTimeField(auto_now=True)
+    promotion_price=models.DecimalField(decimal_places=2, max_digits=12)
+    promotion_stock=models.IntegerField(default=0)
+    user_item_limit=models.IntegerField(default=0)
+    promotion_price_after_tax=models.DecimalField(decimal_places=2, max_digits=12)
+    enable=models.BooleanField(default=True)
+
 class Promotion_combo(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
     promotion_combo_name=models.CharField(max_length=100)
     products=models.ManyToManyField(to='shop.Item',blank=True,related_name='promotion_combo')
     valid_from=models.DateTimeField()
     valid_to=models.DateTimeField()
-    items=models.TextField(null=True)
     combo_type=models.CharField(max_length=100,choices=combo_type_choices)
     discount_percent=models.IntegerField(null=True,blank=True)
     discount_price=models.IntegerField(default=0,null=True,blank=True)
@@ -78,7 +91,6 @@ class Promotion_combo(models.Model):
     limit_order=models.IntegerField(default=100)
     quantity_to_reduced=models.IntegerField(default=2)
     created=models.DateTimeField(auto_now=True)
-
 
 Shock_Deal_Type=(
     ('1','Buy With Shock Deal'),
@@ -90,23 +102,41 @@ class Buy_with_shock_deal(models.Model):
     program_name_buy_with_shock_deal=models.CharField(max_length=100)
     main_products=models.ManyToManyField(to='shop.Item',related_name='main_product',blank=True)
     byproducts=models.ManyToManyField(to='shop.Item',related_name='byproduct',blank=True)
-    variations=models.TextField(null=True)
-    items=models.TextField(null=True)
-    list_byproducts=models.TextField(null=True)
     valid_from=models.DateTimeField()
     valid_to=models.DateTimeField()
+    active=models.BooleanField(default=False)
     limited_product_bundles=models.IntegerField(null=True)
     minimum_price_to_receive_gift=models.IntegerField(default=0,null=True)
     number_gift=models.IntegerField(default=0,null=True)
     created=models.DateTimeField(auto_now=True)
+
+
+class Variationdeal(models.Model):
+    deal_shock=models.ForeignKey(Buy_with_shock_deal,on_delete=models.CASCADE,related_name='deal_shock')
+    item=models.ForeignKey(to='shop.Item',on_delete=models.CASCADE,related_name='item_deal')
+    variation=models.ForeignKey(to='shop.Variation',on_delete=models.CASCADE,related_name='variation_deal')
+    promotion_price=models.DecimalField(decimal_places=2, max_digits=12)
+    user_item_limit=models.IntegerField(default=0)
+    enable=models.BooleanField(default=False)
+    created=models.DateTimeField(auto_now=True)
+
 class Flash_sale(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
     products=models.ManyToManyField(to='shop.Item',blank=True,related_name='flash_sale')
     valid_from=models.DateTimeField()
-    variations=models.TextField(null=True)
-    items=models.TextField(null=True)
     valid_to=models.DateTimeField()
+    active=models.BooleanField(default=False)
     created=models.DateTimeField(auto_now=True)
+
+class Variationflashsale(models.Model):
+    flash_sale=models.ForeignKey(Flash_sale,on_delete=models.CASCADE,related_name='flah_sale')
+    item=models.ForeignKey(to='shop.Item',on_delete=models.CASCADE,related_name='item_flash_sale')
+    variation=models.ForeignKey(to='shop.Variation',on_delete=models.CASCADE,related_name='variation_flash_sale')
+    promotion_price=models.DecimalField(decimal_places=2, max_digits=12)
+    user_item_limit=models.IntegerField(default=0)
+    promotion_stock=models.IntegerField()
+    created=models.DateTimeField(auto_now=True)
+    enable=models.BooleanField(default=False)
 
 class Follower_offer(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
