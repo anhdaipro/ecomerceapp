@@ -321,14 +321,14 @@ class ByproductdealSerializer(serializers.ModelSerializer):
         model=Buy_with_shock_deal
         fields=('byproduct',)
     def get_byproduct(self,obj):
-        return ItemdealSerializer(obj.byproduct.all(),many=True).data
+        return ItemdealSerializer(obj.byproducts.all(),many=True).data
 
 class ProductdealSerializer(serializers.ModelSerializer):
     class Meta:
         model=Buy_with_shock_deal
         fields=('products',)
     def get_products(self,obj):   
-        return ItemSerializer(obj.byproduct.all(),many=True).data
+        return ItemSerializer(obj.main_products.all(),many=True).data
 
 class ItemdetailsSerializer(serializers.ModelSerializer):
     class Meta:

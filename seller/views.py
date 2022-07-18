@@ -88,7 +88,7 @@ class ListdealshockAPI(ListAPIView):
 
 class ListprogramAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
-    serializer_class = ProgramSerializer
+    serializer_class = ShopProgramSerializer
     def get_queryset(self):
         request = self.request
         user=request.user
@@ -629,7 +629,7 @@ class NewDeal(APIView):
         list_id=[]
         if deal_id:
             deal_shock=Buy_with_shock_deal.objects.get(id=deal_id)
-            item_deal=deal_shock.main_product.all()
+            item_deal=deal_shock.main_products.all()
             list_id=[item.id for item in items]
         items=items.filter(Q(main_product=None)| Q(id__in=list_id) | (Q(main_product__valid_to__lt=datetime.datetime.now()) & Q(main_product__isnull=False))).distinct().order_by('-id')
         order=request.GET.get('order')
@@ -777,7 +777,7 @@ class Detailprogram(APIView):
         if action=='submit':
             discount_model_list=request.data.get('discount_model_list')
             discount_model_list_update=request.data.get('discount_model_list_update')
-            item_programs=shop_program.product.all()
+            item_programs=shop_program.products.all()
             item_remove=item_programs.exclude(id__in=list_items)
             shop_program.name_program=name_program
             shop_program.valid_from=valid_from

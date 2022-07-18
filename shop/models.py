@@ -159,7 +159,7 @@ class Item(models.Model):
         deal_valid=Buy_with_shock_deal.objects.filter(byproduct=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if deal_valid.exists():
             deal_valid=deal_valid.first()
-            if self in deal_valid.byproduct.all():
+            if self in deal_valid.byproducts.all():
                 return True
     
     def get_color_deal(self):

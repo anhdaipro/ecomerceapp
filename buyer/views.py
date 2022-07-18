@@ -1244,7 +1244,7 @@ class DealShockAPIView(APIView):
                 'discount_price':byproduct.product.total_discount(),'byproduct_id':byproduct.id})
         item=Item.objects.get(id=variation.item_id)
         shock_deal=Buy_with_shock_deal.objects.get(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
-        byproducts=shock_deal.byproduct.all()
+        byproducts=shock_deal.byproducts.all()
         for item in byproducts:
             if item.get_deal():
                 list_product.append({
