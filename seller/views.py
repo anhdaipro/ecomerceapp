@@ -630,7 +630,7 @@ class NewDeal(APIView):
         if deal_id:
             deal_shock=Buy_with_shock_deal.objects.get(id=deal_id)
             item_deal=deal_shock.main_products.all()
-            list_id=[item.id for item in items]
+            list_id=[item.id for item in item_deal]
         items=items.filter(Q(main_product=None)| Q(id__in=list_id) | (Q(main_product__valid_to__lt=datetime.datetime.now()) & Q(main_product__isnull=False))).distinct().order_by('-id')
         order=request.GET.get('order')
         price=request.GET.get('price')
@@ -663,6 +663,7 @@ class DetailDeal(APIView):
     def get(self,request,id):
         deal_shock=Buy_with_shock_deal.objects.get(id=id)
         data=BuywithsockdealSellerSerializer(deal_shock).data
+        return Response(data)
     def post(self,request,id):
         deal_shock=Buy_with_shock_deal.objects.get(id=id)
         action=request.data.get('action')
@@ -834,7 +835,12 @@ class Newflashsale(APIView):
         item=request.GET.get('item')
         title=request.GET.get('title')
         q=request.GET.get('q')
-        items=Item.objects.filter(shop=shop).filter(Q(flash_sale=None) |Q(flash_sale_id=flash_sale_id) | (Q(flash_sale__valid_to__lt=datetime.datetime.now()) & Q(flash_sale__isnull=False))).distinct()
+        list_id=[]
+        if flash_sale_id:
+            flash_sale=Flash_sale.objects.get(id=flash_sale_id)
+            item_flash_sale=flash_sale.products.all()
+            list_id=[item.id for item in item_flash_sale]
+        items=Item.objects.filter(shop=shop).filter(Q(flash_sale=None) |Q(id__in=list_id) | (Q(flash_sale__valid_to__lt=datetime.datetime.now()) & Q(flash_sale__isnull=False))).distinct()
         filteritem(price, sort, order, name, q, sku, item, items)
         data=ItemSellerSerializer(items,many=True).data
         return Response(data) 
@@ -871,7 +877,7 @@ class DetailFlashsale(APIView):
     def get(self,request,id):
         flash_sale=Flash_sale.objects.get(id=id)
         data=FlashSaleSellerSerializer(flash_sale).data
-        return Response(data) 
+        return Response(data)
     def post(self,request,id):
         flash_sale=Flash_sale.objects.get(id=id)
         list_items=request.data.get('list_items')

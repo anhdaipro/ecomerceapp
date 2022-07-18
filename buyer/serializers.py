@@ -335,75 +335,7 @@ class ItemdetailsSerializer(serializers.ModelSerializer):
         model=Detail_Item
         fields='__all__'
 
-#discounts
-class VoucherinfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Voucher
-        fields=['id','code_type','code','valid_from','valid_to',
-        'discount_type','amount','percent','maximum_usage','voucher_type',
-        'minimum_order_value','maximum_discount']
-
-class VoucherSerializer(VoucherinfoSerializer): 
-    number_used= serializers.SerializerMethodField()
-    count_product=serializers.SerializerMethodField()
-    class Meta(VoucherinfoSerializer.Meta):
-        fields=VoucherinfoSerializer.Meta.fields+['number_userd','count_product','name_of_the_discount_program']
-    def get_number_used(self,obj):
-        return Order.objects.filter(voucher=obj,received=True).count()
-    def get_count_product(self,obj):
-        return obj.products.all().count()
-
-class VoucherdetailSerializer(VoucherinfoSerializer): 
-    exists=serializers.SerializerMethodField()
-    class Meta(VoucherinfoSerializer.Meta):
-        fields=VoucherinfoSerializer.Meta.fields+['exists']
-    def get_exists(self,obj):
-        request=self.context.get("request")
-        if request.user in obj.user.all():
-            return True
-
-class VouchersellerSerializer(VoucherinfoSerializer): 
-    products=serializers.SerializerMethodField()
-    class Meta(VoucherinfoSerializer.Meta):
-        fields=VoucherinfoSerializer.Meta.fields+['products','setting_display','name_of_the_discount_program']
-    def get_products(self,obj):
-        return ItemsellerSerializer(obj.main_products.all(),many=True).data
-class ShopPrograminfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Shop_program
-        fields=['id','valid_to','valid_from','name_program']
-class ShopProgramSerializer(ShopPrograminfoSerializer):
-    products=serializers.SerializerMethodField()
-    class Meta(ShopPrograminfoSerializer.Meta):
-        fields=ShopPrograminfoSerializer.Meta.fields+['products']
-    def get_products(self,obj):
-        return [{'image':item.get_image_cover()} for item in obj.products.all()]
-class ShopprogramSellerSerializer(ShopPrograminfoSerializer):
-    products=serializers.SerializerMethodField()
-    variations=serializers.SerializerMethodField()
-    class Meta(ShopPrograminfoSerializer.Meta):
-        fields=ShopPrograminfoSerializer.Meta.fields+['products','variations']
-    def get_products(self,obj):
-        return ByproductSellerSerializer(obj.byproducts.all(),many=True).data
-    def get_variations(self,obj):
-        list_variations=Variation_discount.objects.filter(shop_program=obj)
-        return VariationprogramSerializer(list_variations,many=True).data
-class BuywithsockdealinfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Buy_with_shock_deal
-        fields=['shock_deal_type','program_name_buy_with_shock_deal',
-        'valid_from','valid_to','limited_product_bundles',
-        'minimum_price_to_receive_gift','number_gift']
-class BuywithsockdealSerializer(BuywithsockdealinfoSerializer):
-    main_products=serializers.SerializerMethodField()
-    byproducts=serializers.SerializerMethodField()
-    class Meta(BuywithsockdealinfoSerializer.Meta):
-        fields=BuywithsockdealinfoSerializer.Meta.fields+['main_products','byproducts']
-    def get_byproducts(self,obj):
-        return [{'image':item.get_image_cover()} for item in obj.byproducts.all()]
-    def get_main_products(self,obj):
-        return [{'image':item.get_image_cover()} for item in obj.main_products.all()]
-
+# variation 
 class VariationprogramSerializer(serializers.ModelSerializer):
     color_value=serializers.SerializerMethodField()
     size_value=serializers.SerializerMethodField()
@@ -454,6 +386,75 @@ class VariationdealSerializer(serializers.ModelSerializer):
         return obj.variation.get_size()
     def get_price(self,obj):
         return obj.variation.get_size()
+#discounts
+class VoucherinfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Voucher
+        fields=['id','code_type','code','valid_from','valid_to',
+        'discount_type','amount','percent','maximum_usage','voucher_type',
+        'minimum_order_value','maximum_discount']
+
+class VoucherSerializer(VoucherinfoSerializer): 
+    number_used= serializers.SerializerMethodField()
+    count_product=serializers.SerializerMethodField()
+    class Meta(VoucherinfoSerializer.Meta):
+        fields=VoucherinfoSerializer.Meta.fields+['number_userd','count_product','name_of_the_discount_program']
+    def get_number_used(self,obj):
+        return Order.objects.filter(voucher=obj,received=True).count()
+    def get_count_product(self,obj):
+        return obj.products.all().count()
+
+class VoucherdetailSerializer(VoucherinfoSerializer): 
+    exists=serializers.SerializerMethodField()
+    class Meta(VoucherinfoSerializer.Meta):
+        fields=VoucherinfoSerializer.Meta.fields+['exists']
+    def get_exists(self,obj):
+        request=self.context.get("request")
+        if request.user in obj.user.all():
+            return True
+
+class VouchersellerSerializer(VoucherinfoSerializer): 
+    products=serializers.SerializerMethodField()
+    class Meta(VoucherinfoSerializer.Meta):
+        fields=VoucherinfoSerializer.Meta.fields+['products','setting_display','name_of_the_discount_program']
+    def get_products(self,obj):
+        return ItemsellerSerializer(obj.main_products.all(),many=True).data
+class ShopPrograminfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Shop_program
+        fields=['id','valid_to','valid_from','name_program']
+class ShopProgramSerializer(ShopPrograminfoSerializer):
+    products=serializers.SerializerMethodField()
+    class Meta(ShopPrograminfoSerializer.Meta):
+        fields=ShopPrograminfoSerializer.Meta.fields+['products']
+    def get_products(self,obj):
+        return [{'image':item.get_image_cover()} for item in obj.products.all()]
+class ShopprogramSellerSerializer(ShopPrograminfoSerializer):
+    products=serializers.SerializerMethodField()
+    variations=serializers.SerializerMethodField()
+    class Meta(ShopPrograminfoSerializer.Meta):
+        fields=ShopPrograminfoSerializer.Meta.fields+['products','variations']
+    def get_products(self,obj):
+        return IteminfoSerializer(obj.products.all(),many=True).data
+    def get_variations(self,obj):
+        list_variations=Variation_discount.objects.filter(shop_program=obj)
+        return VariationprogramSerializer(list_variations,many=True).data
+class BuywithsockdealinfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Buy_with_shock_deal
+        fields=['id','shock_deal_type','program_name_buy_with_shock_deal',
+        'valid_from','valid_to','limited_product_bundles',
+        'minimum_price_to_receive_gift','number_gift']
+class BuywithsockdealSerializer(BuywithsockdealinfoSerializer):
+    main_products=serializers.SerializerMethodField()
+    byproducts=serializers.SerializerMethodField()
+    class Meta(BuywithsockdealinfoSerializer.Meta):
+        fields=BuywithsockdealinfoSerializer.Meta.fields+['main_products','byproducts']
+    def get_byproducts(self,obj):
+        return [{'image':item.get_image_cover()} for item in obj.byproducts.all()]
+    def get_main_products(self,obj):
+        return [{'image':item.get_image_cover()} for item in obj.main_products.all()]
+
 class BuywithsockdealSellerSerializer(BuywithsockdealinfoSerializer):
     main_products=serializers.SerializerMethodField()
     byproducts=serializers.SerializerMethodField()
