@@ -696,14 +696,12 @@ class DetailDeal(APIView):
             Variationdeal.objects.filter(deal_shock_id=id).exclude(item_id__in=byproducts).delete()
             for variation in discount_model_list:
                 variationdeal=Variationdeal.objects.get(item_id=variation['item_id'],variation_id=variation['variation_id'],deal_shock_id=id)
-                if variation_discount.promotion_price!=variation['promotion_price']:
-                    variation_discount.promotion_price=variation['promotion_price']
-                if variation_discount.user_item_limit!=variation['user_item_limit']:
-                    variation_discount.user_item_limit=variation['user_item_limit']
-                if variation['enable']=='true':
-                    variationdeal.enable=True
-                if variation['enable']=='false':
-                    variationdeal.enable=False
+                if variationdeal.promotion_price!=variation['promotion_price']:
+                    variationdeal.promotion_price=variation['promotion_price']
+                if variationdeal.user_item_limit!=variation['user_item_limit']:
+                    variationdeal.user_item_limit=variation['user_item_limit']
+                if variationdeal.enable!=variation['enable']:
+                    variationdeal.enable=variation['enable']
                 list_variation_deal.append(variationdeal)
             Variationdeal.objects.bulk_update(list_variation_deal, ['enable','promotion_price','user_item_limit'], batch_size=1000)
             return Response({'ok':'ok'})
@@ -752,7 +750,7 @@ class NewprogramAPI(APIView):
             listvariation=[Variation_discount(shop_program=shop_program,
             item_id=variation['item_id'],variation_id=variation['variation_id'],
             promotion_price=variation['promotion_price'],promotion_price_after_tax=variation['promotion_price'],
-            enable=False if variation['enable']=='false' else True,
+            enable=variation['enable'],
             user_item_limit=variation['user_item_limit'],promotion_stock=variation['promotion_stock']) for variation in discount_model_list]
             Variation_discount.objects.bulk_create(listvariation)
             data={'ok':'ok'}
@@ -787,12 +785,12 @@ class Detailprogram(APIView):
             Variation_discount.objects.filter(shop_program_id=id).exclude(item_id__in=list_items).delete()
             shop_program.products.set([])
             shop_program.products.add(*list_items)
-            list_variation_update=[variation for variation in discount_model_list if variation['id']!=None]
+            list_variation_update=[variation for variation in discount_model_list if variation['id']]
             list_variation=[Variation_discount(shop_program_id=id,
             item_id=variation['item_id'],variation_id=variation['variation_id'],
             promotion_price=variation['promotion_price'],
             promotion_price_after_tax=variation['promotion_price'],
-            enable=False if variation['enable']=='false' else True,
+            enable=variation['enable'],
             user_item_limit=variation['user_item_limit'],
             promotion_stock=variation['promotion_stock']) 
             for variation in discount_model_list if variation['id']==None]
@@ -806,10 +804,9 @@ class Detailprogram(APIView):
                     variation_discount.promotion_stock=variation['promotion_stock']
                 if variation_discount.user_item_limit!=variation['user_item_limit']:
                     variation_discount.user_item_limit=variation['user_item_limit']
-                if variation['enable']=='false':
-                    variation_discount.enable=False 
-                if variation['enable']=='true':
-                    variation_discount.enable=True
+                if variation_discount.enable!=variation['enable']:
+                    variation_discount.enable=variation['enable']
+               
                 list_variation_updates.append(variation_discount)
             Variation_discount.objects.bulk_create(list_variation)
             Variation_discount.objects.bulk_update(list_variation_updates, ['promotion_stock','promotion_price','user_item_limit','enable'], batch_size=1000)
@@ -857,7 +854,7 @@ class Newflashsale(APIView):
             listvariation=[Variationflashsale(flash_sale=flash_sale,
             item_id=variation['item_id'],variation_id=variation['variation_id'],
             promotion_price=variation['promotion_price'],
-            enable=False if variation['enable']=='false' else True,
+            enable=variation['enable'],
             user_item_limit=variation['user_item_limit'],
             promotion_stock=variation['promotion_stock']) for variation in discount_model_list]
             Variationflashsale.objects.bulk_create(listvariation)
@@ -888,7 +885,7 @@ class DetailFlashsale(APIView):
             flash_sale.save()
             flash_sale.products.set([])
             flash_sale.products.add(*list_items)
-            list_variation_update=[variation for variation in discount_model_list if variation['id']!=None]
+            list_variation_update=[variation for variation in discount_model_list if variation['id']]
             listvariation=[Variationflashsale(flash_sale_id=id,
             item_id=variation['item_id'],variation_id=variation['variation_id'],
             promotion_price=variation['promotion_price'],
