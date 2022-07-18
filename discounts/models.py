@@ -72,7 +72,7 @@ class Variation_discount(models.Model):
     item=models.ForeignKey(to='shop.Item',on_delete=models.CASCADE,related_name='item_discount')
     variation=models.ForeignKey(to='shop.Variation',on_delete=models.CASCADE,related_name='variation_discount')
     created=models.DateTimeField(auto_now=True)
-    promotion_price=models.DecimalField(decimal_places=0, max_digits=12)
+    promotion_price=models.DecimalField(decimal_places=2, max_digits=12)
     promotion_stock=models.IntegerField(default=0)
     user_item_limit=models.IntegerField(default=0)
     promotion_price_after_tax=models.DecimalField(decimal_places=2, max_digits=12)
@@ -115,7 +115,7 @@ class Variationdeal(models.Model):
     deal_shock=models.ForeignKey(Buy_with_shock_deal,on_delete=models.CASCADE,related_name='deal_shock')
     item=models.ForeignKey(to='shop.Item',on_delete=models.CASCADE,related_name='item_deal')
     variation=models.ForeignKey(to='shop.Variation',on_delete=models.CASCADE,related_name='variation_deal')
-    promotion_price=models.DecimalField(decimal_places=0, max_digits=12)
+    promotion_price=models.DecimalField(decimal_places=2, max_digits=12)
     user_item_limit=models.IntegerField(default=0)
     enable=models.BooleanField(default=False)
     created=models.DateTimeField(auto_now=True)
@@ -126,7 +126,7 @@ class Variationdeal(models.Model):
             return self.variation.price
     def get_total_discount(self):
         return get_discount()-(self.variation.price-self.promotion_price)
-
+        
 class Flash_sale(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
     products=models.ManyToManyField(to='shop.Item',blank=True,related_name='flash_sale')
@@ -139,7 +139,7 @@ class Variationflashsale(models.Model):
     flash_sale=models.ForeignKey(Flash_sale,on_delete=models.CASCADE,related_name='flah_sale')
     item=models.ForeignKey(to='shop.Item',on_delete=models.CASCADE,related_name='item_flash_sale')
     variation=models.ForeignKey(to='shop.Variation',on_delete=models.CASCADE,related_name='variation_flash_sale')
-    promotion_price=models.DecimalField(decimal_places=0, max_digits=12)
+    promotion_price=models.DecimalField(decimal_places=2, max_digits=12)
     user_item_limit=models.IntegerField(default=0)
     promotion_stock=models.IntegerField()
     created=models.DateTimeField(auto_now=True)

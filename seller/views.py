@@ -762,32 +762,31 @@ class NewprogramAPI(APIView):
             list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
             data=ByproductSellerSerializer(list_products,many=True).data
             return Response(data)
-    
+
+
+
+
 class Detailprogram(APIView):
     def get(self,request,id):
         program=Shop_program.objects.get(id=id)
         data=ShopprogramSellerSerializer(program).data
         return Response(data)
     def post(self,request,id): 
-        program=Shop_program.objects.get(id=id)
+        shop_program=Shop_program.objects.get(id=id)
         name_program=request.data.get('name_program')
         valid_from=request.data.get('valid_from')
         valid_to=request.data.get('valid_from')
         list_items=request.data.get('list_items')
-        variations=request.data.get('variations')
         action=request.data.get('action')
         if action=='submit':
             discount_model_list=request.data.get('discount_model_list')
-            discount_model_list_update=request.data.get('discount_model_list_update')
-            item_programs=shop_program.products.all()
-            item_remove=item_programs.exclude(id__in=list_items)
             shop_program.name_program=name_program
             shop_program.valid_from=valid_from
             shop_program.valid_to=valid_to
             shop_program.items=items
             shop_program.variations=variations
             shop_program.save()
-            shop_program.products.remove(*item_remove)
+            shop_program.products.set([])
             shop_program.products.add(*list_items)
             discount_model_list=request.data.get('discount_model_list')
             list_variation_update=[variation for variation in discount_model_list if variation['id']]
@@ -801,7 +800,7 @@ class Detailprogram(APIView):
             for variation in discount_model_list if variation['id']==None]
             list_variation_updates=[]
             for variation in list_variation_updates:
-                variation_discount=Variation_discount.objects.get(item_id=variation['item_id'],variation_id=variation['variation_id'],shop_program=id)
+                variation_discount=Variation_discount.objects.get(item_id=variation['item_id'],variation_id=variation['variation_id'],shop_program_id=id)
                 if variation_discount.promotion_price!=variation['promotion_price']:
                     variation_discount.promotion_price=variation['promotion_price']
                     variation_discount.promotion_price_after_tax=variation['promotion_price']
