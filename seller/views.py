@@ -795,7 +795,7 @@ class Detailprogram(APIView):
             promotion_stock=variation['promotion_stock']) 
             for variation in discount_model_list if variation['id']==None]
             list_variation_updates=[]
-            for variation in list_variation_updates:
+            for variation in list_variation_update:
                 variation_discount=Variation_discount.objects.get(item_id=variation['item_id'],variation_id=variation['variation_id'],shop_program_id=id)
                 if variation_discount.promotion_price!=variation['promotion_price']:
                     variation_discount.promotion_price=variation['promotion_price']
