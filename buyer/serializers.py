@@ -156,7 +156,7 @@ class IteminfoSerializer(serializers.ModelSerializer):
 class ByproductSellerSerializer(IteminfoSerializer):
     variations=serializers.SerializerMethodField()
     class Meta(IteminfoSerializer.Meta):
-        fields =IteminfoSerializer.Meta.fields + ('variations',)
+        fields =IteminfoSerializer.Meta.fields + ['variations']
     def get_variations(self,obj):
         return VariationSerializer(obj.variation_item.all(),many=True).data
 
