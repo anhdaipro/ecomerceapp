@@ -343,15 +343,15 @@ class VariationprogramSerializer(serializers.ModelSerializer):
     price=serializers.SerializerMethodField()
     class Meta:
         model=Variation_discount
-        fields=field_variation+['id','promotion_price','user_item_limit','promotion_stock']
+        fields=field_variation+['enable','id','promotion_price','user_item_limit','promotion_stock']
     def get_color_value(self,obj):
         return obj.variation.get_color()
     def get_size_value(self,obj):
         return obj.variation.get_size()
     def get_inventory(self,obj):
-        return obj.variation.get_size()
+        return obj.variation.inventory
     def get_price(self,obj):
-        return obj.variation.get_size()
+        return obj.variation.price
 
 class VariationflashsaleSerializer(serializers.ModelSerializer):
     color_value=serializers.SerializerMethodField()
@@ -360,15 +360,15 @@ class VariationflashsaleSerializer(serializers.ModelSerializer):
     price=serializers.SerializerMethodField()
     class Meta:
         model=Variation_discount
-        fields=fields=field_variation+['id','promotion_price','user_item_limit','promotion_stock']
+        fields=fields=field_variation+['enable','id','promotion_price','user_item_limit','promotion_stock']
     def get_color_value(self,obj):
         return obj.variation.get_color()
     def get_size_value(self,obj):
         return obj.variation.get_size()
     def get_inventory(self,obj):
-        return obj.variation.get_size()
+        return obj.variation.inventory
     def get_price(self,obj):
-        return obj.variation.get_size()
+        return obj.variation.price
 
 class VariationdealSerializer(serializers.ModelSerializer):
     color_value=serializers.SerializerMethodField()
@@ -377,15 +377,15 @@ class VariationdealSerializer(serializers.ModelSerializer):
     price=serializers.SerializerMethodField()
     class Meta:
         model=Variation_discount
-        fields= fields=fields=field_variation+['id','promotion_price','user_item_limit']
+        fields= fields=fields=field_variation+['enable','id','promotion_price','user_item_limit']
     def get_color_value(self,obj):
         return obj.variation.get_color()
     def get_size_value(self,obj):
         return obj.variation.get_size()
     def get_inventory(self,obj):
-        return obj.variation.get_size()
+        return obj.variation.inventory
     def get_price(self,obj):
-        return obj.variation.get_size()
+        return obj.variation.price
 #discounts
 class VoucherinfoSerializer(serializers.ModelSerializer):
     class Meta:
