@@ -119,7 +119,14 @@ class Variationdeal(models.Model):
     user_item_limit=models.IntegerField(default=0)
     enable=models.BooleanField(default=False)
     created=models.DateTimeField(auto_now=True)
-
+    def get_discount(self):
+        if self.variation.get_discount():
+            return self.variation.get_discount()
+        else:
+            return self.variation.price
+    def get_total_discount(self):
+        return get_discount()-(self.variation.price-self.promotion_price)
+        
 class Flash_sale(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
     products=models.ManyToManyField(to='shop.Item',blank=True,related_name='flash_sale')

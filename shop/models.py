@@ -175,19 +175,6 @@ class Item(models.Model):
     def num_like(self):
         return self.liked.all().count()
     
-    def discount_deal(self):
-        discount=0
-        variations = Variation.objects.filter(item=self,percent_discount_deal_shock__gt=0).aggregate(avg=Avg('percent_discount_deal_shock'))
-        if variations['avg'] is not None:
-            discount=int(variations["avg"])
-        return discount
-    
-    def discount_flash_sale(self):
-        discount_flash_sale=0
-        variations = Variation.objects.filter(item=self).aggregate(max=Max('percent_discount_flash_sale'))
-        if variations['max'] is not None:
-            discount_flash_sale=int(variations["max"])
-        return discount_flash_sale
     
     def total_inventory(self):
         variations = Variation.objects.filter(item=self).aggregate(sum=Sum('inventory'))
@@ -225,7 +212,10 @@ class Item(models.Model):
         vouchers=Voucher.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if vouchers.exists():
             return list(vouchers.values())[0]
-
+    def get_deal(self):
+        deal_shock=Buy_with_shock_deal.objects.filter(main_product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        if deal_shock.exists():
+            return deal_shock.first().id
     def shock_deal_type(self):
         if Buy_with_shock_deal.objects.filter(main_product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
             return Buy_with_shock_deal.objects.filter(main_product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).last().shock_deal_type
@@ -338,30 +328,16 @@ class Variation(models.Model):
         return str(self.item)
     def get_absolute_url(self):
         return reverse("deal_shock", kwargs={"id": self.id})
-    def update_percent(self):
-        count_program=Shop_program.objects.filter(product=self.item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).count()
-        if count_program==0:
-            self.percent_discount=0
-
+    
     def save(self, *args, **kwargs):
         self.update_percent()        
         super(Variation, self).save(*args, **kwargs)
         
-    def discount_price_deal_shock(self):
-        discount=0
-        if self.percent_discount_deal_shock>0:
-            discount= self.price*self.percent_discount_deal_shock/100
-        return discount
     def get_discount(self):
         if self.item.program_valid():
             variations=Variation_discount.objects.filter(enable=True,variation=self,shop_program=self.program_valid())
             if variations.exists():
                 return variations.first().promotion_discount
-    def total_discount(self):
-        discount=0
-        if self.percent_discount and self.item.program_valid():
-            discount= self.price*(self.percent_discount)/100
-        return discount
     class Meta:
         ordering=['color']
     def number_order(self):
