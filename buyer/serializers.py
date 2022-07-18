@@ -417,7 +417,7 @@ class VouchersellerSerializer(VoucherinfoSerializer):
     class Meta(VoucherinfoSerializer.Meta):
         fields=VoucherinfoSerializer.Meta.fields+['products','setting_display','name_of_the_discount_program']
     def get_products(self,obj):
-        return ItemsellerSerializer(obj.main_products.all(),many=True).data
+        return ItemsellerSerializer(obj.products.all(),many=True).data
 class ShopPrograminfoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Shop_program
@@ -461,7 +461,7 @@ class BuywithsockdealSellerSerializer(BuywithsockdealinfoSerializer):
     class Meta(BuywithsockdealinfoSerializer.Meta):
         fields=BuywithsockdealinfoSerializer.Meta.fields+['main_products','byproducts','variations']
     def get_main_products(self,obj):
-        return ItemsellerSerializer(obj.main_products.all(),many=True).data
+        return ItemSellerSerializer(obj.main_products.all(),many=True).data
     def get_byproducts(self,obj):
         return IteminfoSerializer(obj.byproducts.all(),many=True).data
     def get_variations(self,obj):
