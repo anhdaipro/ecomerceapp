@@ -739,8 +739,6 @@ class NewprogramAPI(APIView):
         list_items=request.data.get('list_items')
         action=request.data.get('action')
         discount_model_list=request.data.get('discount_model_list')
-        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
-        list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
         if action=='submit':
             shop_program,created=Shop_program.objects.get_or_create(
                 name_program=name_program,
@@ -750,7 +748,7 @@ class NewprogramAPI(APIView):
                 )
             shop_program.products.add(*list_items)
             listvariation=[Variation_discount(shop_program=shop_program,
-            item_id=variation['item'],variation_id=variation['variation_id'],
+            item_id=variation['item_id'],variation_id=variation['variation_id'],
             promotion_price=variation['promotion_price'],
             enable=False if variation['enable']=='false' else True,
             user_item_limit=variation['user_item_limit'],promotion_stock=variation['promotion_stock']) for variation in discount_model_list]
@@ -758,6 +756,8 @@ class NewprogramAPI(APIView):
             data={'ok':'ok'}
             return Response(data)
         else:
+            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
+            list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
             data=ByproductSellerSerializer(list_products,many=True).data
             return Response(data)
     
@@ -894,7 +894,7 @@ class DetailFlashsale(APIView):
             promotion_price=variation['promotion_price'],
             enable=False if variation['enable']=='false' else True,
             user_item_limit=variation['user_item_limit'],
-            promotion_stock=variation['promotion_stock']) for variation in discount_model_list if variation['id']==None]]
+            promotion_stock=variation['promotion_stock']) for variation in discount_model_list if variation['id']==None]
             list_variation_updates=[]
             for variation in list_variation_update:
                 variation_flash_sale=Variationflashsale.objects.get(item_id=variation['item_id'],variation_id=variation['variation_id'],flash_sale_id=id)
