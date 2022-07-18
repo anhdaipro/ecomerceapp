@@ -93,7 +93,7 @@ class ListprogramAPI(ListAPIView):
         request = self.request
         user=request.user
         shop=Shop.objects.get(user=user)
-        return Shop_program.objects.filter(shop=shop).prefetch_related('products__meida_upload')
+        return Shop_program.objects.filter(shop=shop).prefetch_related('products__media_upload')
 
 class ListflashsaleAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
