@@ -578,20 +578,20 @@ class NewcomboAPI(APIView):
         return Response(data)
     def post(self,request):
         shop=Shop.objects.get(user=request.user)
-        item_id=request.POST.getlist('item_id')
+        list_items=request.data.get('list_items')
         promotion_combo,created=Promotion_combo.objects.get_or_create(
             shop=shop,
-            promotion_combo_name=request.POST.get('promotion_combo_name'),
-            valid_from=request.POST.get('valid_from'),
-            valid_to=request.POST.get('valid_to'),
-            combo_type=request.POST.get('combo_type'),
-            discount_percent=request.POST.get('discount_percent'),
-            discount_price=request.POST.get('discount_price'),
-            price_special_sale=request.POST.get('price_special_sale'),
-            limit_order=request.POST.get('limit_order'),
-            quantity_to_reduced=request.POST.get('quantity_to_reduced'),
+            promotion_combo_name=request.data.get('promotion_combo_name'),
+            valid_from=request.data.get('valid_from'),
+            valid_to=request.data.get('valid_to'),
+            combo_type=request.data.get('combo_type'),
+            discount_percent=request.data.get('discount_percent'),
+            discount_price=request.data.get('discount_price'),
+            price_special_sale=request.data.get('price_special_sale'),
+            limit_order=request.data.get('limit_order'),
+            quantity_to_reduced=request.data.get('quantity_to_reduced'),
             )
-        promotion_combo.products.add(*item_id)
+        promotion_combo.products.add(*list_items)
         data={'ok':'ok'}
         return Response(data)
     
@@ -601,21 +601,21 @@ class DetailComboAPI(APIView):
         data=CombosellerSerializer(promotion_combo).data
         return Response(data) 
     def post(self,request,id):
-        item_id=request.POST.getlist('item_id')
+        list_items=request.data.get('list_items')
         shop=Shop.objects.get(user=request.user)
         promotion_combo=Promotion_combo.objects.get(id=id)
         promotion_combo.products.set([])
-        promotion_combo.promotion_combo_name=request.POST.get('promotion_combo_name')
-        promotion_combo.valid_from=request.POST.get('valid_from')
-        promotion_combo.valid_to=request.POST.get('valid_to')
-        promotion_combo.combo_type=request.POST.get('combo_type')
-        promotion_combo.discount_percent=request.POST.get('discount_percent')
-        promotion_combo.discount_price=request.POST.get('discount_price')
-        promotion_combo.price_special_sale=request.POST.get('price_special_sale')
-        promotion_combo.limit_order=request.POST.get('limit_order')
-        promotion_combo.quantity_to_reduced=request.POST.get('quantity_to_reduced')
+        promotion_combo.promotion_combo_name=request.data.get('promotion_combo_name')
+        promotion_combo.valid_from=request.data.get('valid_from')
+        promotion_combo.valid_to=request.data.get('valid_to')
+        promotion_combo.combo_type=request.data.get('combo_type')
+        promotion_combo.discount_percent=request.data.get('discount_percent')
+        promotion_combo.discount_price=request.data.get('discount_price')
+        promotion_combo.price_special_sale=request.data.get('price_special_sale')
+        promotion_combo.limit_order=request.data.get('limit_order')
+        promotion_combo.quantity_to_reduced=request.data.get('quantity_to_reduced')
         promotion_combo.save()
-        promotion_combo.products.add(*item_id)
+        promotion_combo.products.add(*list_items)
         data={'ok':'ok'}
         return Response(data)
     
@@ -771,7 +771,7 @@ class Detailprogram(APIView):
         shop_program=Shop_program.objects.get(id=id)
         name_program=request.data.get('name_program')
         valid_from=request.data.get('valid_from')
-        valid_to=request.data.get('valid_from')
+        valid_to=request.data.get('valid_to')
         list_items=request.data.get('list_items')
         action=request.data.get('action')
         if action=='submit':
