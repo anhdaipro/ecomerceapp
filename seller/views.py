@@ -642,6 +642,7 @@ class NewDeal(APIView):
         q=request.GET.get('q')
         filteritem(price,sort,order,name,q,sku,item,items)
         data=ItemSellerSerializer(items,many=True).data
+        return Response(data)
     def post(self,request):
         shop=Shop.objects.get(user=request.user)
         deal_shock,created=Buy_with_shock_deal.objects.get_or_create(
