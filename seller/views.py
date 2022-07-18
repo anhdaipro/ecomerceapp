@@ -787,7 +787,7 @@ class Detailprogram(APIView):
             shop_program.variations=variations
             shop_program.save()
             shop_program.products.remove(*item_remove)
-            shop_program.products.add(*item_id)
+            shop_program.products.add(*list_items)
             discount_model_list=request.data.get('discount_model_list')
             list_variation_update=[variation for variation in discount_model_list if variation['id']]
             list_variation=[Variation_discount(shop_program_id=id,
@@ -848,9 +848,6 @@ class Newflashsale(APIView):
         shop=Shop.objects.get(user=request.user)
         list_items=request.data.get('list_items')
         action=request.data.get('action')
-        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
-        list_products=Item.objects.filter(id__in=item_id).order_by(preserved)
-        list_variations=Variation.objects.filter(item_id__in=list_items)
         if action=='submit':
             discount_model_list=request.data.get('discount_model_list')
             Variation.objects.filter(item__flash_sale__in=flash_sale_expire).update(percent_discount_flash_sale=0,quantity_flash_sale_products=0)
@@ -870,6 +867,8 @@ class Newflashsale(APIView):
             data={'flash_sale_id':flash_sale.id}
             return Response(data)
         else:
+            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
+            list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
             data=ByproductSellerSerializer(list_products,many=True).data
             return Response(data)
    
@@ -882,13 +881,10 @@ class DetailFlashsale(APIView):
         flash_sale=Flash_sale.objects.get(id=id)
         list_items=request.data.get('list_items')
         action=request.data.get('action')
-        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(item_id)])
-        list_products=Item.objects.filter(id__in=item_id).order_by(preserved)
-        list_variations=Variation.objects.filter(item_id__in=item_id)
         if action=='submit':
             discount_model_list=request.data.get('discount_model_list')
             item_flash_sale=flash_sale.products.all()
-            item_remove=item_flash_sale.exclude(id__in=item_id)
+            item_remove=item_flash_sale.exclude(id__in=list_items)
             flash_sale.products.remove(*item_remove)
             flash_sale.products.add(*list_items)
             flash_sale.items=items
@@ -922,6 +918,8 @@ class DetailFlashsale(APIView):
             data={'a':'a'}
             return Response(data)
         else:
+            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
+            list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
             data=ByproductSellerSerializer(list_products,many=True).data
             return Response(data)
 
