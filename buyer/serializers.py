@@ -225,7 +225,7 @@ class ItemSellerSerializer(ItemSerializer):
     class Meta(ItemSerializer.Meta):
         my_list=list(ItemSerializer.Meta.fields)
         my_list.remove('percent_discount')
-        fields =my_list+ ['number_order','total_inventory','shipping']
+        fields =my_list+ ['number_order','total_inventory','shipping','sku_product']
     def get_total_inventory(self,obj):
         return obj.total_inventory()
     def get_number_order(self,obj):
