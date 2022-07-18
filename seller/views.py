@@ -97,7 +97,7 @@ class ListprogramAPI(ListAPIView):
 
 class ListflashsaleAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
-    serializer_class = FlashsaleSerializer
+    serializer_class = FlashSaleSerializer
     def get_queryset(self):
         request = self.request
         user=request.user
