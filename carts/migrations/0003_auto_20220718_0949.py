@@ -21,7 +21,5 @@ class Migration(migrations.Migration):
             name='byproduct',
             field=models.ManyToManyField(blank=True, to='discounts.Variationdeal'),
         ),
-        
-        
-        
+           
     ]

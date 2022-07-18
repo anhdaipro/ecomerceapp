@@ -749,7 +749,7 @@ class NewprogramAPI(APIView):
             shop_program.products.add(*list_items)
             listvariation=[Variation_discount(shop_program=shop_program,
             item_id=variation['item_id'],variation_id=variation['variation_id'],
-            promotion_price=variation['promotion_price'],
+            promotion_price=variation['promotion_price'],promotion_price_after_tax=variation['promotion_price'],
             enable=False if variation['enable']=='false' else True,
             user_item_limit=variation['user_item_limit'],promotion_stock=variation['promotion_stock']) for variation in discount_model_list]
             Variation_discount.objects.bulk_create(listvariation)
@@ -792,6 +792,7 @@ class Detailprogram(APIView):
             list_variation=[Variation_discount(shop_program_id=id,
             item_id=variation['item'],variation_id=variation['variation_id'],
             promotion_price=variation['promotion_price'],
+            promotion_price_after_tax=variation['promotion_price'],
             enable=False if variation['enable']=='false' else True,
             user_item_limit=variation['user_item_limit'],
             promotion_stock=variation['promotion_stock']) 
@@ -801,6 +802,7 @@ class Detailprogram(APIView):
                 variation_discount=Variation_discount.objects.get(item_id=variation['item_id'],variation_id=variation['variation_id'],shop_program=id)
                 if variation_discount.promotion_price!=variation['promotion_price']:
                     variation_discount.promotion_price=variation['promotion_price']
+                    variation_discount.promotion_price_after_tax=variation['promotion_price']
                 if variation_discount.promotion_stock!=variation['promotion_stock']:
                     variation_discount.promotion_stock=variation['promotion_stock']
                 if variation_discount.user_item_limit!=variation['user_item_limit']:

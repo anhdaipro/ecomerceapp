@@ -6,6 +6,8 @@ class Notify(models.Model):
     image=models.ImageField(null=True)
     message=models.CharField(max_length=1000)
     read=models.BooleanField(default=False)
+
+
 class Image_home(models.Model):
     upload_by=models.ForeignKey(User, on_delete=models.CASCADE,null=True)
     image=models.ImageField(null=True)
