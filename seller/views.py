@@ -766,7 +766,7 @@ class NewprogramAPI(APIView):
 class Detailprogram(APIView):
     def get(self,request,id):
         program=Shop_program.objects.get(id=id)
-        ShopprogramSellerSerializer(program).data
+        data=ShopprogramSellerSerializer(program).data
         return Response(data)
     def post(self,request,id): 
         program=Shop_program.objects.get(id=id)

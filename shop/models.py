@@ -197,10 +197,8 @@ class Item(models.Model):
         return total_inventory
     
     def max_price(self):
-        max_price=0
         variations = Variation.objects.filter(item=self).aggregate(max=Max('price'))
-        if variations['max'] is not None:
-            max_price=int(variations["max"])
+        max_price=int(variations["max"])
         return max_price
     
     def count_variation(self):
@@ -214,17 +212,13 @@ class Item(models.Model):
         return count
     
     def min_price(self):
-        min_price=0
         variations = Variation.objects.filter(item=self).aggregate(min=Min('price'))
-        if variations['min'] is not None:
-            min_price=int(variations["min"])
+        min_price=int(variations["min"])
         return min_price
     
     def number_order(self):
-        number_order=0
         order=Order.objects.filter(items__product__item=self,ordered=True).aggregate(count=Count('id'))
-        if order['count'] is not None:
-            number_order += int(order['count'])
+        number_order = int(order['count'])
         return number_order
     
     def get_voucher(self):
@@ -239,9 +233,9 @@ class Item(models.Model):
     def shipping(self):
         return Shipping.objects.all().last()
     def program_valid(self):
-        shop_program=Shop_program.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        shop_program=Shop_program.objects.filter(product=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if shop_program.exists():
-            return shop_program.variations
+            return shop_program.first()
     def get_promotion(self):
         promotion_combo=Promotion_combo.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if promotion_combo.exists():
@@ -269,14 +263,16 @@ class Item(models.Model):
     def get_image_cover(self):
         media_file=[media for media in self.media_upload.all() if media.media_type()=='image'][0].get_media()    
         return media_file
-
-    def percent_discount(self):
-        percent=0
-        variations = Variation.objects.filter(item=self).aggregate(avg=Avg('percent_discount'))
-        if variations['avg'] is not None and self.program_valid():
-            percent=int(variations['avg'])
-        return percent
-
+    
+    def get_max_discount(self):
+        if self.program_valid():
+            variations=Variation_discount.objects.filter(enable=True,item=self,shop_program=self.program_valid()).aggregate(min=Min('promotion_discount'))
+            return int(variations['min'])
+    def get_min_discount(self):
+        if self.program_valid():
+            variations=Variation_discount.objects.filter(enable=True,item=self,shop_program=self.program_valid()).aggregate(max=Max('promotion_discount'))
+            return int(variations['max'])
+    
 class BuyMoreDiscount(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE,related_name='buymore_item')
     from_quantity=models.IntegerField()
@@ -356,7 +352,11 @@ class Variation(models.Model):
         if self.percent_discount_deal_shock>0:
             discount= self.price*self.percent_discount_deal_shock/100
         return discount
-
+    def get_discount(self):
+        if self.item.program_valid():
+            variations=Variation_discount.objects.filter(enable=True,variation=self,shop_program=self.program_valid())
+            if variations.exists():
+                return variations.first().promotion_discount
     def total_discount(self):
         discount=0
         if self.percent_discount and self.item.program_valid():
