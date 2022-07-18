@@ -506,7 +506,7 @@ class FlashSaleSellerSerializer(FlashSaleinfoSerializer):
     class Meta(FlashSaleinfoSerializer.Meta):
         fields=FlashSaleinfoSerializer.Meta.fields+['products','variations']
     def get_products(self,obj):
-        return IteminfoSerializer(obj.byproducts.all(),many=True).data
+        return IteminfoSerializer(obj.products.all(),many=True).data
     def get_variations(self,obj):
         list_variations=Variationflashsale.objects.filter(flash_sale=obj)
         return VariationflashsaleSerializer(list_variations,many=True).data

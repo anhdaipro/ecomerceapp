@@ -102,7 +102,7 @@ class ListflashsaleAPI(ListAPIView):
         request = self.request
         user=request.user
         shop=Shop.objects.get(user=user)
-        return Flash_sale.objects.filter(shop=shop).prefetch_related('products__meida_upload')
+        return Flash_sale.objects.filter(shop=shop).prefetch_related('products__media_upload')
 
 class ShopprofileAPIView(APIView):
     def get(self,request):
@@ -692,8 +692,8 @@ class DetailDeal(APIView):
         elif action=='savebyproduct':
             list_variation_deal=[]
             deal_shock.byproducts.set([])
-            deal_shock.byproducts.add(*list_byproducts)
-            Variationdeal.objects.filter(deal_shock_id=id).exclude(item_id__in=list_byproducts).delete()
+            deal_shock.byproducts.add(*byproducts)
+            Variationdeal.objects.filter(deal_shock_id=id).exclude(item_id__in=byproducts).delete()
             for variation in discount_model_list:
                 variationdeal=Variationdeal.objects.get(item_id=variation['item_id'],variation_id=variation['variation_id'],deal_shock_id=id)
                 if variation_discount.promotion_price!=variation['promotion_price']:
