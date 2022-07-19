@@ -461,10 +461,10 @@ class ProductInfoAPI(APIView):
         item=Item.objects.get(id=id)
         data={}
         if choice=='deal':
-            deal_shock=Buy_with_shock_deal.objects.filter(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).order_by('valid_to').first()
+            deal_shock=Buy_with_shock_deal.objects.filter(main_products=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).order_by('valid_to').first()
             data =ByproductdealSerializer(deal_shock,context={"request": request}).data
         elif choice=='combo':
-            promotion_combo=Promotion_combo.objects.filter(product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+            promotion_combo=Promotion_combo.objects.filter(products=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
             data =ComboSerializer(promotion_combo,context={"request": request}).data
         elif choice=='shop':
             shop=item.shop
@@ -793,7 +793,7 @@ class AddToCartAPIView(APIView):
             product=Variation.objects.get(item_id=item_id)
         data={
             'price':product.price,
-            'discount_price':product.discount_price,
+            'discount_price':product.get_discount(),
             'inventory':product.inventory,'id':product.id
             }
         return Response(data)
@@ -1235,7 +1235,7 @@ class DealShockAPIView(APIView):
                 'item_name':byproduct.item.name,
                 'discount_price':byproduct.product.total_discount(),'byproduct_id':byproduct.id})
         item=Item.objects.get(id=variation.item_id)
-        shock_deal=Buy_with_shock_deal.objects.get(main_product=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        shock_deal=Buy_with_shock_deal.objects.get(main_products=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         byproducts=shock_deal.byproducts.all()
         for item in byproducts:
             if item.get_deal():

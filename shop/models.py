@@ -211,7 +211,7 @@ class Item(models.Model):
     
     def shock_deal_type(self):
         if Buy_with_shock_deal.objects.filter(main_products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
-            return Buy_with_shock_deal.objects.filter(main_product=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).last().shock_deal_type
+            return Buy_with_shock_deal.objects.filter(main_products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).last().shock_deal_type
     
     def shipping(self):
         return Shipping.objects.all().last()
@@ -244,7 +244,7 @@ class Item(models.Model):
             return True
 
     def get_flash_sale(self):
-        flash_sale=Flash_sale.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        flash_sale=Flash_sale.objects.filter(products=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if flash_sale.exists():
             flash_sale=flash_sale.first()
             return {'id':flash_sale.id,'valid_to':flash_sale.valid_to}
