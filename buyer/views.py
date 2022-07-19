@@ -851,8 +851,8 @@ class CartItemAPIView(APIView):
         cartitem_id_delete=request.data.get('cartitem_id_delete')
         quantity=request.data.get('quantity')
         shop_id=request.data.get('shop_id')
-        id_checked=request.data.get('id_checked')
-        id_check=request.data.get('id_check')
+        id_checked=request.data.get('id_checked',[])
+        id_check=request.data.get('id_check',[])
         voucher_id=request.data.get('voucher_id')
         voucher_id_remove=request.data.get('voucher_id_remove')
         list_shop_order=[]
