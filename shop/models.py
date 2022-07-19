@@ -171,7 +171,7 @@ class Item(models.Model):
             return variations['avg']
     def percent_discount(self):
         if self.get_program_current():
-            return int((float(self.avg_price)-float(self.avg_discount_price))*100/float(self.avg_price))
+            return int((float(self.avg_price())-float(self.avg_discount_price()))*100/float(self.avg_price()))
     def total_inventory(self):
         variations = Variation.objects.filter(item=self).aggregate(sum=Sum('inventory'))
         total_inventory = 0
