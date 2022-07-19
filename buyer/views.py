@@ -698,23 +698,19 @@ class UpdateCartAPIView(APIView):
 
 class AddToCardBatchAPIView(APIView):
     def get(self, request):
+        byproduct_id=request.GET.get('byproduct_id')
         item_id=request.GET.get('item_id')
         color_id=request.GET.get('color_id')
         size_id=request.GET.get('size_id')
-        byproduct_id=request.GET.get('byproduct_id')
         product=Variation.objects.all()
         if item_id and color_id and size_id:
-            color=Color.objects.get(id=color_id)
-            size=Size.objects.get(id=size_id)
-            product=Variation.objects.get(item=item_id,color=color,size=size)
+            product=Variation.objects.get(item_id=item_id,color_id=color_id,size_id=size_id)
         elif item_id and color_id and not size_id:
-            color=Color.objects.get(id=color_id)
-            product=Variation.objects.get(item=item_id,color=color)
+            product=Variation.objects.get(item_id=item_id,color_id=color_id)
         elif item_id and not color_id and size_id:
-            size=Size.objects.get(id=size_id)
-            product=Variation.objects.get(item=item_id,size=size)
+            product=Variation.objects.get(item_id=item_id,size_id=size_id)
         elif item_id and not size_id and not color_id:
-            product=Variation.objects.get(item=item_id)
+            product=Variation.objects.get(item_id=item_id)
         
         data={'product_id':product.id,'color_value':product.get_color(),'size_value':product.get_size(),
             'price':product.price,'discount_price':product.total_discount(),'inventory':product.inventory,
