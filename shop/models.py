@@ -140,7 +140,7 @@ class Item(models.Model):
         return list_size
     def get_first_deal(self):
         if self.get_deal_shock_current():
-            variationdeal=Variationdeal.objects.filter(enable=True,item=self,deal_shock_id=self.getdeal_shock_current()).first()
+            variationdeal=Variationdeal.objects.filter(enable=True,item=self,deal_shock_id=self.get_deal_shock_current()).first()
             return {'variation_id':variationdeal.variation_id,'color_value':variationdeal.variation.get_color(),'promotion_price':variationdeal.promotion_price,
             'size_value':variationdeal.variation.get_size()}
     def get_color(self):
