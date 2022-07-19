@@ -813,7 +813,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_item_url(self,obj):
         return obj.item.get_absolute_url()
     def get_total_price(self,obj):
-        return obj.total_discount_cartitem()
+        return obj.discount_main()
     def get_discount_price(self,obj):
         return obj.product.get_discount()
     def get_byproduct(self,obj):
