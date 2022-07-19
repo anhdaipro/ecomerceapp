@@ -166,7 +166,6 @@ class ItemSerializer(IteminfoSerializer):
     min_price=serializers.SerializerMethodField()
     max_discount=serializers.SerializerMethodField()
     min_discount=serializers.SerializerMethodField()
-    percent_discount=serializers.SerializerMethodField()
     class Meta(IteminfoSerializer.Meta):
         fields =IteminfoSerializer.Meta.fields+ [
         'max_price','min_price','url','max_discount','min_discount']
@@ -228,7 +227,8 @@ class ItemSellerSerializer(ItemSerializer):
     shipping=serializers.SerializerMethodField()
     class Meta(ItemSerializer.Meta):
         my_list=list(ItemSerializer.Meta.fields)
-        my_list.remove('percent_discount')
+        my_list.remove('min_discount')
+        my_list.remove('max_discount')
         fields =my_list+ ['number_order','total_inventory','shipping','sku_product']
     def get_total_inventory(self,obj):
         return obj.total_inventory()

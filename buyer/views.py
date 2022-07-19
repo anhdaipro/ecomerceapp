@@ -641,16 +641,7 @@ class UpdateCartAPIView(APIView):
             page_no=page
         data={
             'page_count':paginator.num_pages,'page':int(page_no),
-            'list_item':[{'item_id':i.id,'item_name':i.name,
-            'item_image':i.get_image_cover(),
-            'percent_discount':i.percent_discount(),'min_price':i.min_price(),
-            'shop_city':i.shop.city,'item_brand':i.brand,'voucher':i.get_voucher(),
-            'review_rating':i.average_review(),'num_like':i.num_like(),'max_price':i.max_price(),
-            'promotion':i.get_promotion(),
-            'shock_deal':i.shock_deal_type(),'num_order':i.number_order(),
-            'item_url':i.get_absolute_url(),
-            }
-            for i in page_obj]
+            'list_item':ItempageSerializer(page_obj,many=True).data
         }
         return Response(data)
     def post(self, request,price=0,total=0,count_cartitem=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0,*args, **kwargs):  
@@ -801,7 +792,7 @@ class AddToCartAPIView(APIView):
             product=Variation.objects.get(item_id=item_id)
         data={
             'price':product.price,
-            'percent_discout':product.percent_discount,
+            'discount_price':product.discount_price,
             'inventory':product.inventory,'id':product.id
             }
         return Response(data)
