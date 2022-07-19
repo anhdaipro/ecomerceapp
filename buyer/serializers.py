@@ -324,13 +324,13 @@ class ByproductdealSerializer(serializers.ModelSerializer):
     def get_byproduct(self,obj):
         return ItemdealSerializer(obj.byproducts.all(),many=True).data
     def get_colors_deal(self,obj):
-        variations=Variationdeal.objects.filter(deal_shock=obj,enable=True)
-        colors=Color.objects.filter(variation__variation_deal__in=variations)
+        variations=Variationdeal.objects.filter(deal_shock=obj,enable=True).select_related('variation__color')
+        colors=Color.objects.filter(variation__variation_deal__in=variations).distinct()
         return list(set([color.id for color in colors]))
       
     def get_sizes_deal(self,obj):
-        variations=Variationdeal.objects.filter(deal_shock=obj,enable=True)
-        sizes=Size.objects.filter(variation__variation_deal__in=variations)
+        variations=Variationdeal.objects.filter(deal_shock=obj,enable=True).select_related('variation__size')
+        sizes=Size.objects.filter(variation__variation_deal__in=variations).distinct()
         return list(set([size.id for size in sizes]))
 class ProductdealSerializer(serializers.ModelSerializer):
     class Meta:
