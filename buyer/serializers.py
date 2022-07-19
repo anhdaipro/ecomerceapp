@@ -164,11 +164,10 @@ class ItemSerializer(IteminfoSerializer):
     url=serializers.SerializerMethodField()
     max_price=serializers.SerializerMethodField()
     min_price=serializers.SerializerMethodField()
-    max_discount=serializers.SerializerMethodField()
-    min_discount=serializers.SerializerMethodField()
+    percent_discount=serializers.SerializerMethodField()
     class Meta(IteminfoSerializer.Meta):
         fields =IteminfoSerializer.Meta.fields+ [
-        'max_price','min_price','url','max_discount','min_discount']
+        'max_price','min_price','url','percent_discount']
     
     def get_url(self,obj):
         return obj.get_absolute_url()
@@ -176,10 +175,9 @@ class ItemSerializer(IteminfoSerializer):
         return obj.max_price()
     def get_min_price(self,obj):
         return obj.min_price()
-    def get_max_discount(self,obj):
-        return obj.max_discount()
-    def get_min_discount(self,obj):
-        return obj.min_discount()
+    def get_percent_discount(self,obj):
+        return obj.percent_discount()
+    
 field_variation=['variation_id','inventory','color_value','size_value','price','item_id']
 class VariationSerializer(serializers.ModelSerializer):
     color_value=serializers.SerializerMethodField()
@@ -227,8 +225,7 @@ class ItemSellerSerializer(ItemSerializer):
     shipping=serializers.SerializerMethodField()
     class Meta(ItemSerializer.Meta):
         my_list=list(ItemSerializer.Meta.fields)
-        my_list.remove('min_discount')
-        my_list.remove('max_discount')
+        my_list.remove('percent_discount')
         fields =my_list+ ['number_order','total_inventory','shipping','sku_product']
     def get_total_inventory(self,obj):
         return obj.total_inventory()
