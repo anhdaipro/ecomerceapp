@@ -728,6 +728,7 @@ class AddToCardBatchAPIView(APIView):
         cartitem_id=request.data.get('cartitem_id')
         variation_choice=Variation.objects.get(id=product_id)
         cartitem=CartItem.objects.filter(id=cartitem_id)
+        item=Item.objects.get(id=item_id)
         data={}
         if cartitem.exists():
             cartitem=cartitem.last()
