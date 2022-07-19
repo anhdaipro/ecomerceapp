@@ -873,7 +873,7 @@ class CartItemAPIView(APIView):
                         if voucher.shop_id==order.shop_id:
                             order.voucher=None
                             order.save()
-                    list_shop_order.append(str(order.shop_id))
+                    list_shop_order.append(order.shop_id)
                     list_cart_item_remove=CartItem.objects.filter(shop_id=order.shop_id,id__in=id_check)
                     order.items.remove(*list_cart_item_remove)
                     list_cart_item_add=CartItem.objects.filter(shop_id=order.shop_id,id__in=id_checked)
