@@ -727,13 +727,11 @@ class AddToCardBatchAPIView(APIView):
         deal_id=request.data.get('deal_id')
         cartitem_id=request.data.get('cartitem_id')
         variation_choice=Variation.objects.get(id=product_id)
-        item=Item.objects.get(id=item_id)
-        deal_shock=Buy_with_shock_deal.objects.get(id=deal_id)
         cartitem=CartItem.objects.filter(id=cartitem_id)
         data={}
         if cartitem.exists():
             cartitem=cartitem.last()
-            cartitem.deal_shock=deal_shock
+            cartitem.deal_id=deal_id
             cartitem.quantity=int(quantity_product)
             if cartitem.product!=variation_choice:
                 cartitem.product=variation_choice
@@ -743,9 +741,10 @@ class AddToCardBatchAPIView(APIView):
             cartitem=CartItem.objects.create(
                 product=variation_choice,
                 user=user,
+                item_id=item_id,
                 ordered=False,
                 shop=item.shop,
-                deal_shock=deal_shock,
+                deal_id=deal_id,
                 quantity=int(quantity_product)
                 )
             data.update({'ow':'ow'})
