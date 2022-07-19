@@ -164,14 +164,14 @@ class Item(models.Model):
         return self.liked.all().count()
     def avg_price(self):
         variations=Variation.objects.filter(item=self).aggregate(avg=Avg('price'))
-        return float(variations['avg'])
+        return variations['avg']
     def avg_discount_price(self):
         if self.get_program_current():
             variations=Variation_discount.objects.filter(item=self,shop_program=self.get_program_current()).aggregate(avg=Avg('promotion_discount'))
-            return float(variations['avg'])
+            return variations['avg']
     def percent_discount(self):
         if self.get_program_current():
-            return int((self.avg_price-self.avg_discount_price)*100/self.avg_price)
+            return int((float(self.avg_price)-float(self.avg_discount_price))*100/float(self.avg_price))
     def total_inventory(self):
         variations = Variation.objects.filter(item=self).aggregate(sum=Sum('inventory'))
         total_inventory = 0
