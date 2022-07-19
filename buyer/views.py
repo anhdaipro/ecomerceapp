@@ -51,7 +51,8 @@ ItemSellerSerializer,ShoporderSerializer,ImagehomeSerializer,ComboSerializer,
 CategoryhomeSerializer,AddressSerializer,OrderSerializer,OrderdetailSerializer,
 ReviewSerializer,CartitemcartSerializer,CartviewSerializer,ByproductdealSerializer,
 ProductdealSerializer,ItemcomboSerializer,CombodetailseSerializer,ItempageSerializer,
-ItemdetailsSerializer,ShopdetailSerializer,OrderpurchaseSerializer,CategorydetailSerializer,
+ItemdetailsSerializer,ShopdetailSerializer,OrderpurchaseSerializer,
+CategorydetailSerializer,VariationdealSerializer
 )
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
@@ -698,7 +699,6 @@ class UpdateCartAPIView(APIView):
 
 class AddToCardBatchAPIView(APIView):
     def get(self, request):
-        byproduct_id=request.GET.get('byproduct_id')
         item_id=request.GET.get('item_id')
         color_id=request.GET.get('color_id')
         size_id=request.GET.get('size_id')
@@ -711,31 +711,23 @@ class AddToCardBatchAPIView(APIView):
             product=Variation.objects.get(item_id=item_id,size_id=size_id)
         elif item_id and not size_id and not color_id:
             product=Variation.objects.get(item_id=item_id)
-        
-        data={'product_id':product.id,'color_value':product.get_color(),'size_value':product.get_size(),
-            'price':product.price,'discount_price':product.total_discount(),'inventory':product.inventory,
-            }
-        if byproduct_id:
-            data.update({'byproduct_id':byproduct_id})
+        data=VariationdealSerializer(product,context={"request": request}).data
         return Response(data)
     def post(self, request, *args, **kwargs):
         user=request.user
         product_id=request.data.get('product_id')
         quantity_product=request.data.get('quantity')
         item_id=request.data.get('item_id')
-        byproducts=request.data.get('byproduct')
+        byproducts=request.data.get('byproducts')
         deal_id=request.data.get('deal_id')
-        cartitem_id=request.data.get('cartitem_id')
         variation_choice=Variation.objects.get(id=product_id)
-        cartitem=CartItem.objects.filter(id=cartitem_id)
+        cartitem=CartItem.objects.filter(user=request.user,product_id=product_id,ordered=False)
         item=Item.objects.get(id=item_id)
         data={}
         if cartitem.exists():
             cartitem=cartitem.last()
             cartitem.deal_shock_id=deal_id
-            cartitem.quantity=int(quantity_product)
-            if cartitem.product!=variation_choice:
-                cartitem.product=variation_choice
+            cartitem.quantity+=int(quantity_product)
             cartitem.save()
             data.update({'o':'o'})
         else:

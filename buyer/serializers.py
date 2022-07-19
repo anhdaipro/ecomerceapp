@@ -193,6 +193,32 @@ class VariationSerializer(serializers.ModelSerializer):
     def get_variation_id(self,obj):
         return obj.id
 
+class VariationdealSerializer(serializers.ModelSerializer):
+    color_value=serializers.SerializerMethodField()
+    size_value=serializers.SerializerMethodField()
+    product_id=serializers.SerializerMethodField()
+    byproduct_id=serializers.SerializerMethodField()
+    discount_price=serializers.SerializerMethodField()
+    class Meta:
+        model = Variation
+        field_variation.remove('variation_id')
+        fields =field_variation+['byproduct_id','discount_price']
+    def get_byproduct_id(self,obj):
+        request=self.context.get("request")
+        cart=CartItem.objects.filter(product=obj,ordered=False,user=request.user)
+        if cart.exists():
+            cart=cart.first()
+            variationdeal=Byproduct.objects.filter(variation=obj,cartitem=cart)
+            if variationdeal.exists():
+                return variationdeal.first().id
+    def get_color_value(self,obj):
+        return obj.get_color()
+    def get_size_value(self,obj):
+        return obj.get_size()
+    def get_product_id(self,obj):
+        return obj.id
+    def get_discount_price(self,obj):
+        return obj.total_discount()
 class ItempageSerializer(ItemSerializer):
     num_like=serializers.SerializerMethodField()
     review_rating=serializers.SerializerMethodField()
