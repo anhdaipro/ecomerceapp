@@ -326,12 +326,12 @@ class ByproductdealSerializer(serializers.ModelSerializer):
     def get_colors_deal(self,obj):
         variations=Variationdeal.objects.filter(deal_shock=obj,enable=True).select_related('variation__color')
         colors=Color.objects.filter(variation__variation_deal__in=variations).distinct()
-        return list(set([color.id for color in colors]))
+        return [color.id for color in colors]
       
     def get_sizes_deal(self,obj):
         variations=Variationdeal.objects.filter(deal_shock=obj,enable=True).select_related('variation__size')
         sizes=Size.objects.filter(variation__variation_deal__in=variations).distinct()
-        return list(set([size.id for size in sizes]))
+        return [size.id for size in sizes]
 class ProductdealSerializer(serializers.ModelSerializer):
     class Meta:
         model=Buy_with_shock_deal
