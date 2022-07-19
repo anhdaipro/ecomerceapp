@@ -193,7 +193,7 @@ class VariationSerializer(serializers.ModelSerializer):
     def get_variation_id(self,obj):
         return obj.id
 
-class VariationdealSerializer(serializers.ModelSerializer):
+class VariationcartSerializer(serializers.ModelSerializer):
     color_value=serializers.SerializerMethodField()
     size_value=serializers.SerializerMethodField()
     product_id=serializers.SerializerMethodField()

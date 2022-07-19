@@ -52,7 +52,7 @@ CategoryhomeSerializer,AddressSerializer,OrderSerializer,OrderdetailSerializer,
 ReviewSerializer,CartitemcartSerializer,CartviewSerializer,ByproductdealSerializer,
 ProductdealSerializer,ItemcomboSerializer,CombodetailseSerializer,ItempageSerializer,
 ItemdetailsSerializer,ShopdetailSerializer,OrderpurchaseSerializer,
-CategorydetailSerializer,VariationdealSerializer
+CategorydetailSerializer,VariationcartSerializer
 )
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
@@ -711,7 +711,7 @@ class AddToCardBatchAPIView(APIView):
             product=Variation.objects.get(item_id=item_id,size_id=size_id)
         elif item_id and not size_id and not color_id:
             product=Variation.objects.get(item_id=item_id)
-        data=VariationdealSerializer(product,context={"request": request}).data
+        data=VariationcartSerializer(product,context={"request": request}).data
         return Response(data)
     def post(self, request, *args, **kwargs):
         user=request.user
