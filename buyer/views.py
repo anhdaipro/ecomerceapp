@@ -737,19 +737,14 @@ class AddToCardBatchAPIView(APIView):
         return Response(data)
     def post(self, request, *args, **kwargs):
         user=request.user
-        product_id_choice=request.POST.get('product_id_choice')
-        quantity_product=request.POST.get('quantity_product')
-        item_id=request.POST.get('item_id')
-        deal_id=request.POST.get('deal_id')
-        product_id=request.POST.getlist('product_id')
-        byproduct_id_delete=request.POST.getlist('byproduct_id_delete')
+        product_id=request.data.get('product_id')
+        quantity_product=request.data.get('quantity')
+        item_id=request.data.get('item_id')
+        byproducts=request.data.get('byproduct')
+        deal_id=request.data.get('deal_id')
+        cartitem_id=request.data.get('cartitem_id')
         Byproduct.objects.filter(id__in=byproduct_id_delete).delete()
-        list_quantity=request.POST.getlist('quantity')
-        quantity_byproduct=request.POST.getlist('quantity_byproduct')
-        byproduct_id=request.POST.getlist('byproduct_id')
-        cartitem_id=request.POST.get('cartitem_id')
-        variation_choice=Variation.objects.get(id=product_id_choice)
-        list_variation=Variation.objects.filter(id__in=product_id)
+        variation_choice=Variation.objects.get(id=product_id)
         item=Item.objects.get(id=item_id)
         deal_shock=Buy_with_shock_deal.objects.get(id=deal_id)
         byproduct=Byproduct.objects.filter(id__in=byproduct_id) 
@@ -773,16 +768,21 @@ class AddToCardBatchAPIView(APIView):
                 quantity=int(quantity_product)
                 )
             data.update({'ow':'ow'})
-        for by in byproduct:
-            by.cartitem=cartitem
-            for i in range(len(quantity_byproduct)):
-                if list(byproduct).index(by)==i:
-                    by.quantity=int(quantity_byproduct[i])
-        bulk_update(byproduct)
+        list_byproduct_cart=[product for product in byproducts if product.get('byproduct_id') and product.get('check')]
+        list_byproduct_cart_delete=[product['byproduct_id'] for product in byproducts if product.get('byproduct_id') and product.get('check')==False]
+        list_product_cart=[product['byproduct_id'] for product in byproducts if product.get('byproduct_id')==None and product.get('check')]
+        byproduct_update=[]
+        for byproduct in list_byproduct_cart:
+            byproduct_cart=Byproduct.objects.get(id=byproduct['byproduct_id'])
+            byproduct_cart.cartitem=cartitem
+            byproduct_cart.quantity=byproduct['quantity']
+            byproduct_update.append(byproduct_cart)
+        Byproduct.objects.filter(id__in=list_byproduct_cart_delete).delete()
+        Byproduct.objects.bulk_update(byproduct_update,['quantity'],batch_size=1000)
         Byproduct.objects.bulk_create(
             [
-            Byproduct(user=user,cartitem=cartitem,item_id=item_id,product=list_variation[i],quantity=int(list_quantity[i]))
-            for i in range(len(product_id))]
+            Byproduct(user=user,cartitem=cartitem,item_id=item_id,product=product['product_id'],quantity=product['quantity'])
+            for product in list_product_cart]
         )
         return Response(data)
 class AddToCartAPIView(APIView):

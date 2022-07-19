@@ -26,7 +26,6 @@ class CartItem(models.Model):
     item=models.ForeignKey(to="shop.Item", on_delete=models.CASCADE,related_name='cart_item')
     deal_shock=models.ForeignKey(to="discounts.Buy_with_shock_deal",on_delete=models.SET_NULL, blank=True, null=True)
     promotion_combo=models.ForeignKey(to="discounts.Promotion_combo",on_delete=models.SET_NULL, blank=True, null=True)
-    byproduct=models.ManyToManyField(to='discounts.Variationdeal',blank=True)
     flash_sale=models.ForeignKey(to="discounts.Flash_sale",on_delete=models.SET_NULL, blank=True, null=True)
     quantity=models.SmallIntegerField()
     updated_at = models.DateField(auto_now=True) 
