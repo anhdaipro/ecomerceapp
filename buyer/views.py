@@ -610,10 +610,11 @@ class CartAPIView(APIView):
             list_cart_items=CartItem.objects.filter(ordered=False,user=request.user).select_related('item').select_related('product').prefetch_related('item__main_product').prefetch_related('item__promotion_combo')
             list_cart_item=list_cart_items[0:5]
             count=list_cart_items.count()
-            list_cart_item=[{'item_id':cart_item.item_id,'item_name':cart_item.item.name,'id':cart_item.id,
+            list_cart_item=[{'item_id':cart_item.item_id,
+            'item_name':cart_item.item.name,'id':cart_item.id,
             'item_image':cart_item.get_image(),
             'item_url':cart_item.item.get_absolute_url(),
-            'price':cart_item.product.price-cart_item.product.total_discount(),
+            'price':cart_item.product.get_discount(),
             'shock_deal_type':cart_item.item.shock_deal_type(),
             'promotion':cart_item.item.get_promotion(),
             } for cart_item in list_cart_item]
@@ -721,7 +722,7 @@ class AddToCardBatchAPIView(APIView):
             product=Variation.objects.get(item=item_id)
         
         data={'product_id':product.id,'color_value':product.get_color(),'size_value':product.get_size(),
-            'price':product.price,'discount_price':product.total_discount(),'inventory':product.inventory,
+            'price':product.price,'discount_price':product.get_discount(),'inventory':product.inventory,
             }
         if byproduct_id:
             data.update({'byproduct_id':byproduct_id})
@@ -1239,11 +1240,11 @@ class DealShockAPIView(APIView):
         for item in byproducts:
             if item.get_deal():
                 list_product.append({
-                    'item_id':item.id,'item_name':item.name,'size':item.get_size_deal(),
-                    'color':item.get_color_deal(),'get_deal':item.get_deal(),
+                    'item_id':item.id,'item_name':item.name,'size':item.get_size(),
+                    'color':item.get_color(),'get_deal':item.get_deal(),
                     'color_value':'','quantity':1,'size_value':'',
                     'price':item.max_price(),'show':False,
-                    'item_image':item.media_upload.all()[0].get_media(),
+                    'item_image':item.get_image_cover(),
                     'check':False,'main':False,'item_url':item.get_absolute_url(),
                     })
         
