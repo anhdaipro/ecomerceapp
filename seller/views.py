@@ -683,11 +683,17 @@ class DetailDeal(APIView):
             deal_shock.main_products.set([])
             deal_shock.main_products.add(*list_items)
             return Response({'ok':'ok'})
-        elif action=='addbyproduct': 
+        elif action=='addbyproduct':
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(byproducts)])
             list_byproducts=Item.objects.filter(id__in=byproducts).order_by(preserved)
+            list_variation_deal=[]
             variations=Variation.objects.filter(item_id__in=byproducts)
-            Variationdeal.objects.bulk_create([Variationdeal(promotion_price=0,user_item_limit=0,deal_shock_id=id,item=variation.item,variation=variation) for variation in variations])
+            for variation in variations:
+                if Variationdeal.objects.filter(deal_shock_id=id,item=variation.item,variation=variation).exists():
+                    pass
+                else:
+                    list_variation_deal.append(Variationdeal(promotion_price=0,user_item_limit=0,deal_shock_id=id,item=variation.item,variation=variation))
+            Variationdeal.objects.bulk_create(list_variation_deal)
             data=ByproductSellerSerializer(list_byproducts,many=True).data
             return Response(data) 
         elif action=='savebyproduct':
