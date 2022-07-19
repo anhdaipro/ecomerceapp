@@ -855,13 +855,15 @@ class CartItemAPIView(APIView):
         id_check=request.data.get('id_check')
         voucher_id=request.data.get('voucher_id')
         voucher_id_remove=request.data.get('voucher_id_remove')
-        order_qs = Order.objects.filter(user=user,ordered=False,shop_id__in=shop_id)
         list_shop_order=[]
-        CartItem.objects.filter(id__in=id_checked).update(check=True)
-        CartItem.objects.filter(id__in=id_check).update(check=False)
         ordered_date = timezone.now()
         discount_voucher_shop=0
         if shop_id:
+            if id_checked:
+                CartItem.objects.filter(id__in=id_checked).update(check=True)
+            if id_check:
+                CartItem.objects.filter(id__in=id_check).update(check=False)
+            order_qs = Order.objects.filter(user=user,ordered=False,shop_id__in=shop_id)
             if order_qs.exists():
                 for order in order_qs:
                     if voucher_id:
