@@ -322,7 +322,7 @@ class ByproductdealSerializer(serializers.ModelSerializer):
         model=Buy_with_shock_deal
         fields=('byproduct','sizes_deal','colors_deal')
     def get_byproduct(self,obj):
-        return ItemdealSerializer(obj.byproducts.all(),many=True).data
+        return ItemdealSerializer(obj.byproducts.all()[:4],many=True).data
     def get_colors_deal(self,obj):
         variations=Variationdeal.objects.filter(deal_shock=obj,enable=True).select_related('variation__color')
         colors=Color.objects.filter(variation__variation_deal__in=variations).distinct()

@@ -141,13 +141,18 @@ class Item(models.Model):
     def get_deal_choice(self):
         if self.get_deal_shock_current():
             variationdeal=Variationdeal.objects.filter(enable=True,item=self,deal_shock_id=self.get_deal_shock_current()).first()
-            return {'variation_id':variationdeal.variation_id,'price':variationdeal.variation.price,'color_value':variationdeal.variation.get_color(),'promotion_price':variationdeal.promotion_price,
+            return {'variation_id':variationdeal.variation_id,'discount_price':variationdeal.variation.total_discount(),
+            'price':variationdeal.variation.price,'color_value':variationdeal.variation.get_color(),
             'size_value':variationdeal.variation.get_size()}
     def get_color(self):
         color=Color.objects.filter(variation__item=self,variation__inventory__gt=0)
         list_color=[{'image':i.get_file(),'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in color.distinct()]
         return list_color
-    
+    def get_variation_choice(self,obj):
+        variation=Variation.objects.filter(item=self).first()
+        return {'variation_id':variation.id,'inventory':variation.inventory,
+        'discount_price':variation.get_discount(),
+        'color_value':variation.get_color(),'size_value':variation.get_size()}
     def get_list_color(self):
         color=Color.objects.filter(variation__item=self)
         list_color=[{'file':i.get_file(),'file_preview':None,'filetype':'image','id':i.id,'name':i.name,'value':i.value} for i in color.distinct()]
