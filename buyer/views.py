@@ -860,16 +860,16 @@ class CartItemAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     def post(self, request,count_cartitem=0,price=0,total=0,total_discount=0,discount_deal=0,discount_voucher=0,discount_promotion=0,count=0, *args, **kwargs):
         user=request.user
-        byproduct_id_delete=request.POST.get('byproduct_id_delete')
-        byproduct_id=request.POST.get('byproduct_id')
-        cartitem_id=request.POST.get('cartitem_id')
-        cartitem_id_delete=request.POST.get('cartitem_id_delete')
-        quantity=request.POST.get('quantity')
-        shop_id=request.POST.getlist('shop_id')
-        id_checked=request.POST.getlist('id_checked')
-        id_check=request.POST.getlist('id_check')
-        voucher_id=request.POST.get('voucher_id')
-        voucher_id_remove=request.POST.get('voucher_id_remove')
+        byproduct_id_delete=request.data.get('byproduct_id_delete')
+        byproduct_id=request.data.get('byproduct_id')
+        cartitem_id=request.data.get('cartitem_id')
+        cartitem_id_delete=request.data.get('cartitem_id_delete')
+        quantity=request.data.get('quantity')
+        shop_id=request.data.get('shop_id')
+        id_checked=request.data.get('id_checked')
+        id_check=request.data.get('id_check')
+        voucher_id=request.data.get('voucher_id')
+        voucher_id_remove=request.data.get('voucher_id_remove')
         order_qs = Order.objects.filter(user=user,ordered=False,shop_id__in=shop_id)
         list_shop_order=[]
         CartItem.objects.filter(id__in=id_checked).update(check=True)
@@ -1363,8 +1363,8 @@ def get_review(order):
 
 class BuyagainAPI(APIView):
     def post(self,request):
-        product_id=request.POST.getlist('product_id')
-        shop_id=request.POST.get('shop_id')
+        product_id=request.data.get('product_id')
+        shop_id=request.data.get('shop_id')
         product=Variation.objects.filter(id__in=product_id)
         cartuser=CartItem.objects.filter(user=request.user,ordered=False,product_id__in=product_id)
         list_id=list()

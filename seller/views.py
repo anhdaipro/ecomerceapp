@@ -445,20 +445,20 @@ class Newvoucher(APIView):
     def post(self,request):
         shop=Shop.objects.get(user=request.user)
         items=Item.objects.filter(shop=shop).order_by('-id')
-        item_id=request.POST.getlist('item_id')
-        code_type=request.POST.get('code_type')
-        name_of_the_discount_program=request.POST.get('name_of_the_discount_program')
-        code = request.POST.get('code')
-        valid_from=request.POST.get('valid_from')
-        valid_to=request.POST.get('valid_to')
-        discount_type=request.POST.get('discount_type')
-        amount = request.POST.get('amount')
-        percent = request.POST.get('percent')
-        maximum_usage=request.POST.get('maximum_usage')
-        voucher_type=request.POST.get('voucher_type')
-        maximum_discount=request.POST.get('maximum_discount')
-        minimum_order_value=request.POST.get('minimum_order_value')
-        setting_display=request.POST.get('setting_display')
+        list_items=request.data.get('list_items')
+        code_type=request.data.get('code_type')
+        name_of_the_discount_program=request.data.get('name_of_the_discount_program')
+        code = request.data.get('code')
+        valid_from=request.data.get('valid_from')
+        valid_to=request.data.get('valid_to')
+        discount_type=request.data.get('discount_type')
+        amount = request.data.get('amount')
+        percent = request.data.get('percent')
+        maximum_usage=request.data.get('maximum_usage')
+        voucher_type=request.data.get('voucher_type')
+        maximum_discount=request.data.get('maximum_discount')
+        minimum_order_value=request.data.get('minimum_order_value')
+        setting_display=request.data.get('setting_display')
         vocher,created=Voucher.objects.get_or_create(
             code_type=code_type,#Loại mã
             shop=shop,
@@ -478,7 +478,7 @@ class Newvoucher(APIView):
         if vocher.code_type=="All":
             vocher.products.add(*items)
         else:
-            vocher.products.add(*item_id)
+            vocher.products.add(*list_items)
         data={'ok':'ok' }
         return Response(data)
 
@@ -491,26 +491,26 @@ class DetailVoucher(APIView):
         user=request.user
         shop=Shop.objects.get(user=user)
         items=Item.objects.filter(shop=shop)
-        item_id=request.POST.getlist('item_id')
-        vocher.code_type=request.POST.get('code_type')
+        list_items=request.data.get('list_items')
+        vocher.code_type=request.data.get('code_type')
         vocher.products.set([])
-        vocher.name_of_the_discount_program=request.POST.get('name_of_the_discount_program')
-        vocher.code = request.POST.get('code')
-        vocher.valid_from=request.POST.get('valid_from')
-        vocher.valid_to=request.POST.get('valid_to')
-        vocher.discount_type=request.POST.get('discount_type')
-        vocher.amount = request.POST.get('amount')
-        vocher.percent = request.POST.get('percent')
-        vocher.maximum_usage=request.POST.get('maximum_usage')
-        vocher.voucher_type=request.POST.get('voucher_type')
-        vocher.maximum_discount=request.POST.get('maximum_discount')
-        vocher.minimum_order_value=request.POST.get('minimum_order_value')
-        vocher.setting_display=request.POST.get('setting_display')
+        vocher.name_of_the_discount_program=request.data.get('name_of_the_discount_program')
+        vocher.code = request.data.get('code')
+        vocher.valid_from=request.data.get('valid_from')
+        vocher.valid_to=request.data.get('valid_to')
+        vocher.discount_type=request.data.get('discount_type')
+        vocher.amount = request.data.get('amount')
+        vocher.percent = request.data.get('percent')
+        vocher.maximum_usage=request.data.get('maximum_usage')
+        vocher.voucher_type=request.data.get('voucher_type')
+        vocher.maximum_discount=request.data.get('maximum_discount')
+        vocher.minimum_order_value=request.data.get('minimum_order_value')
+        vocher.setting_display=request.data.get('setting_display')
         vocher.save()
         if vocher.code_type=="All":
             vocher.products.add(*items)
         else:
-            vocher.products.add(*item_id)
+            vocher.products.add(*list_items)
         data={'ok':'ok' }
         return Response(data)
           
@@ -645,13 +645,13 @@ class NewDeal(APIView):
         shop=Shop.objects.get(user=request.user)
         deal_shock,created=Buy_with_shock_deal.objects.get_or_create(
         shop=shop,
-        shock_deal_type=request.POST.get('shock_deal_type'),
-        program_name_buy_with_shock_deal=request.POST.get('program_name_buy_with_shock_deal'),
-        valid_from=request.POST.get('valid_from'),
-        valid_to=request.POST.get('valid_to'),
-        limited_product_bundles=request.POST.get('limited_product_bundles'),
-        minimum_price_to_receive_gift=request.POST.get('minimum_price_to_receive_gift'),
-        number_gift=request.POST.get('number_gift'),
+        shock_deal_type=request.data.get('shock_deal_type'),
+        program_name_buy_with_shock_deal=request.data.get('program_name_buy_with_shock_deal'),
+        valid_from=request.data.get('valid_from'),
+        valid_to=request.data.get('valid_to'),
+        limited_product_bundles=request.data.get('limited_product_bundles'),
+        minimum_price_to_receive_gift=request.data.get('minimum_price_to_receive_gift'),
+        number_gift=request.data.get('number_gift'),
         )
         data={
             'id':deal_shock.id
@@ -669,13 +669,13 @@ class DetailDeal(APIView):
         list_items=request.data.get('list_items')
         byproducts=request.data.get('byproducts')
         discount_model_list=request.data.get('discount_model_list')
-        if action=='edit':
-            deal_shock.program_name_buy_with_shock_deal=request.POST.get('program_name_buy_with_shock_deal')
-            deal_shock.valid_from=request.POST.get('valid_from')
-            deal_shock.valid_to=request.POST.get('valid_to')
-            deal_shock.limited_product_bundles=request.POST.get('limited_product_bundles')
-            deal_shock.minimum_price_to_receive_gift=request.POST.get('minimum_price_to_receive_gift')
-            deal_shock.number_gift=request.POST.get('number_gift')
+        if action=='change':
+            deal_shock.program_name_buy_with_shock_deal=request.data.get('program_name_buy_with_shock_deal')
+            deal_shock.valid_from=request.data.get('valid_from')
+            deal_shock.valid_to=request.data.get('valid_to')
+            deal_shock.limited_product_bundles=request.data.get('limited_product_bundles')
+            deal_shock.minimum_price_to_receive_gift=request.data.get('minimum_price_to_receive_gift')
+            deal_shock.number_gift=request.data.get('number_gift')
             deal_shock.save()
             data=BuywithsockdealinfoSerializer(deal_shock).data
             return Response(data)
@@ -786,7 +786,7 @@ class Detailprogram(APIView):
             Variation_discount.objects.filter(shop_program_id=id).exclude(item_id__in=list_items).delete()
             shop_program.products.set([])
             shop_program.products.add(*list_items)
-            list_variation_update=[variation for variation in discount_model_list if variation['id']]
+            list_variation_update=[variation for variation in discount_model_list if variation.get('id')]
             list_variation=[Variation_discount(shop_program_id=id,
             item_id=variation['item_id'],variation_id=variation['variation_id'],
             promotion_price=variation['promotion_price'],
@@ -794,7 +794,7 @@ class Detailprogram(APIView):
             enable=variation['enable'],
             user_item_limit=variation['user_item_limit'],
             promotion_stock=variation['promotion_stock']) 
-            for variation in discount_model_list if variation['id']==None]
+            for variation in discount_model_list if variation.get('id')==None]
             list_variation_updates=[]
             for variation in list_variation_update:
                 variation_discount=Variation_discount.objects.get(item_id=variation['item_id'],variation_id=variation['variation_id'],shop_program_id=id)
@@ -886,13 +886,13 @@ class DetailFlashsale(APIView):
             flash_sale.save()
             flash_sale.products.set([])
             flash_sale.products.add(*list_items)
-            list_variation_update=[variation for variation in discount_model_list if variation['id']]
+            list_variation_update=[variation for variation in discount_model_list if variation.get('id')]
             listvariation=[Variationflashsale(flash_sale_id=id,
             item_id=variation['item_id'],variation_id=variation['variation_id'],
             promotion_price=variation['promotion_price'],
             enable=variation['enable'],
             user_item_limit=variation['user_item_limit'],
-            promotion_stock=variation['promotion_stock']) for variation in discount_model_list if variation['id']==None]
+            promotion_stock=variation['promotion_stock']) for variation in discount_model_list if variation.get('id')==None]
             list_variation_updates=[]
             for variation in list_variation_update:
                 variation_flash_sale=Variationflashsale.objects.get(item_id=variation['item_id'],variation_id=variation['variation_id'],flash_sale_id=id)
