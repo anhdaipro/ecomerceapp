@@ -728,11 +728,9 @@ class AddToCardBatchAPIView(APIView):
         byproducts=request.data.get('byproduct')
         deal_id=request.data.get('deal_id')
         cartitem_id=request.data.get('cartitem_id')
-        Byproduct.objects.filter(id__in=byproduct_id_delete).delete()
         variation_choice=Variation.objects.get(id=product_id)
         item=Item.objects.get(id=item_id)
         deal_shock=Buy_with_shock_deal.objects.get(id=deal_id)
-        byproduct=Byproduct.objects.filter(id__in=byproduct_id) 
         cartitem=CartItem.objects.filter(id=cartitem_id)
         data={}
         if cartitem.exists():
@@ -925,7 +923,8 @@ class CartItemAPIView(APIView):
                 count+=cartitem.count_item_cart()
                 total+=cartitem.total_price_cartitem()
                 total_discount+=cartitem.discount()
-                discount_deal+=cartitem.discount_deal()
+                if cartitem.discount_deal():
+                    discount_deal+=cartitem.discount_deal()
                 discount_promotion+=cartitem.discount_promotion()
         data={
             'discount_voucher_shop':discount_voucher_shop,
