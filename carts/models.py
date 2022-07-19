@@ -48,7 +48,7 @@ class CartItem(models.Model):
     def count_item_cart(self):
         count=1
         for byproduct in self.byproduct_cart.all():
-            if byproduct.item.get_deal():
+            if byproduct.item.get_deal_shock_current():
                 count+=1
         return count
 
