@@ -305,15 +305,15 @@ class ItemdetailSerializer(ItemcomboSerializer):
 class ItemdealSerializer(ItemSerializer):
     colors=serializers.SerializerMethodField()
     sizes=serializers.SerializerMethodField()
-    first_deal=serializers.SerializerMethodField()
+    deal_choice=serializers.SerializerMethodField()
     class Meta(ItemSerializer.Meta):
-        fields=ItemSerializer.Meta.fields+['colors','sizes','first_deal']
+        fields=ItemSerializer.Meta.fields+['colors','sizes','deal_choice']
     def get_sizes(self,obj):
         return obj.get_size()
     def get_colors(self,obj):
         return obj.get_color()
-    def get_first_deal(self,obj):
-        return obj.get_first_deal()
+    def get_deal_choice(self,obj):
+        return obj.get_deal_choice()
 class ByproductdealSerializer(serializers.ModelSerializer):
     byproduct=serializers.SerializerMethodField()
     colors_deal=serializers.SerializerMethodField()
