@@ -326,7 +326,7 @@ class ByproductdealSerializer(serializers.ModelSerializer):
     def get_colors_deal(self,obj):
         variations=Variationdeal.objects.filter(deal_shock=obj,enable=True)
         colors=Color.objects.filter(variation__variation_deal__in=variations)
-        return [size.id for color in colors]
+        return [color.id for color in colors]
     
     def get_sizes_deal(self,obj):
         variations=Variationdeal.objects.filter(deal_shock=obj,enable=True)
