@@ -90,6 +90,7 @@ class CartItem(models.Model):
     def price_main(self):
         return self.quantity*self.product.price
     def discount_main(self):
+        total_discount=self.price_main()
         if self.item.get_program_current() and self.product.get_discount():
             total_discount=self.quantity*self.product.get_discount()
         return total_discount

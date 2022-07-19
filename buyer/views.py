@@ -610,18 +610,11 @@ class CartAPIView(APIView):
             list_cart_items=CartItem.objects.filter(ordered=False,user=request.user).select_related('item').select_related('product').prefetch_related('item__main_product').prefetch_related('item__promotion_combo')
             list_cart_item=list_cart_items[0:5]
             count=list_cart_items.count()
-            list_cart_item=[{'item_id':cart_item.item_id,
-            'item_name':cart_item.item.name,'id':cart_item.id,
-            'item_image':cart_item.get_image(),
-            'item_url':cart_item.item.get_absolute_url(),
-            'price':cart_item.product.get_discount(),
-            'shock_deal_type':cart_item.item.shock_deal_type(),
-            'promotion':cart_item.item.get_promotion(),
-            } for cart_item in list_cart_item]
+            list_cart_item=CartviewSerializer(cart_item,many=True,context={"request": request}).data
             data={
-                    'count':count,
-                    'a':list_cart_item
-                    }
+                'count':count,
+                'a':list_cart_item
+                }
             return Response(data)
         else:
             data={'error':'error'}
