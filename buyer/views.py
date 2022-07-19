@@ -857,10 +857,8 @@ class CartItemAPIView(APIView):
         ordered_date = timezone.now()
         discount_voucher_shop=0
         if shop_id:
-            if id_checked:
-                CartItem.objects.filter(id__in=id_checked).update(check=True)
-            if id_check:
-                CartItem.objects.filter(id__in=id_check).update(check=False)
+            CartItem.objects.filter(id__in=id_checked).update(check=True)
+            CartItem.objects.filter(id__in=id_check).update(check=False)
             order_qs = Order.objects.filter(user=user,ordered=False,shop_id__in=shop_id)
             if order_qs.exists():
                 for order in order_qs:
