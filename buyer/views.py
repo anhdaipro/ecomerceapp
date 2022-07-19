@@ -732,7 +732,7 @@ class AddToCardBatchAPIView(APIView):
         data={}
         if cartitem.exists():
             cartitem=cartitem.last()
-            cartitem.deal_id=deal_id
+            cartitem.deal_shock_id=deal_id
             cartitem.quantity=int(quantity_product)
             if cartitem.product!=variation_choice:
                 cartitem.product=variation_choice
@@ -745,7 +745,7 @@ class AddToCardBatchAPIView(APIView):
                 item_id=item_id,
                 ordered=False,
                 shop=item.shop,
-                deal_id=deal_id,
+                deal_shock_id=deal_id,
                 quantity=int(quantity_product)
                 )
             data.update({'ow':'ow'})
