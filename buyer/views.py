@@ -608,7 +608,7 @@ class CartAPIView(APIView):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         if token:
             list_cart_items=CartItem.objects.filter(ordered=False,user=request.user).select_related('item').select_related('product').prefetch_related('item__main_product').prefetch_related('item__promotion_combo')
-            list_cart_item=list_cart_items[0:5]
+            cart_item=list_cart_items[0:5]
             count=list_cart_items.count()
             list_cart_item=CartviewSerializer(cart_item,many=True,context={"request": request}).data
             data={
