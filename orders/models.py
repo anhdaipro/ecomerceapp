@@ -80,7 +80,8 @@ class Order(models.Model):
     def discount_deal(self):
         discount_deal=0
         for order_item in self.items.all():
-            discount_deal+=order_item.discount_deal()
+            if order_item.discount_deal():
+                discount_deal+=order_item.discount_deal()
         return discount_deal
     
     def total_price_order(self):
