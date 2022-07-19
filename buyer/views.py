@@ -925,7 +925,7 @@ class CartItemAPIView(APIView):
                     discount_deal+=cartitem.discount_deal()
                 discount_promotion+=cartitem.discount_promotion()
         data={
-            'discount_voucher_shop':discount_voucher_shop,
+            'discount_voucher_shop':discount_voucher_shop,'list_shop_order':list_shop_order,
             'price':price,'count':count,'total':total,'discount_deal':discount_deal,
             'total_discount':total_discount,'count_cartitem':count_cartitem,
             'discount_promotion':discount_promotion,'discount_voucher':discount_voucher
