@@ -148,7 +148,7 @@ class Item(models.Model):
         color=Color.objects.filter(variation__item=self,variation__inventory__gt=0)
         list_color=[{'image':i.get_file(),'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in color.distinct()]
         return list_color
-    def get_variation_choice(self,obj):
+    def get_variation_choice(self):
         variation=Variation.objects.filter(item=self).first()
         return {'variation_id':variation.id,'inventory':variation.inventory,
         'discount_price':variation.get_discount(),
@@ -165,6 +165,7 @@ class Item(models.Model):
         return list_color
     
     def get_size_deal(self):
+        
         size=Size.objects.filter(variation__item=self,variation__percent_discount_deal_shock__gt=0)
         list_size=[{'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in size.distinct()]
         return list_size
