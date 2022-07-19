@@ -121,13 +121,7 @@ class Item(models.Model):
         self.slug = re.sub('[,./\ ]', "-",self.name) + '.' + str(self.id)
     def get_absolute_url(self):
         return reverse("category", kwargs={"slug": self.slug})
-    def  get_absolute_id(self):
-        return reverse("vendor:update_item", kwargs={"id": self.id})
-    def update_result(self):
-        Item.objects.all().update(slug=re.sub('---', "-",self.name) + '.' + str(self.id))
-        # At this point obj.val is still 1, but the value in the database
-        # was updated to 2. The object's updated value needs to be reloaded
-        # from the database.
+    
     def count_review(self):
         return ReView.objects.filter(cartitem__product__item=self).count()
     def average_review(self):
@@ -236,6 +230,18 @@ class Item(models.Model):
             'discount_price':promotion_combo.discount_price,
             'price_special_sale':promotion_combo.price_special_sale}
     
+    def get_program_current(self):
+        shop_program=Shop_program.objects.filter(products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        if shop_program.exists():
+            return shop_program.first().id
+    def get_flash_sale_current(self):
+        flash_sale=Flash_sale.objects.filter(products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        if flash_sale.exists():
+            return flash_sale.first().id
+    def get_deal_shock_current(self):
+        deal_shock=Buy_with_shock_deal.objects.filter(byproducts=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        if deal_shock.exists():
+            return deal_shock.first().id
     def check_promotion(self):
         promotion_combo=Promotion_combo.objects.filter(product=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if promotion_combo.exists():
@@ -254,12 +260,12 @@ class Item(models.Model):
         media_file=[media for media in self.media_upload.all() if media.media_type()=='image'][0].get_media()    
         return media_file
     
-    def get_max_discount(self):
-        if self.program_valid():
+    def max_discount(self):
+        if self.get_program_current():
             variations=Variation_discount.objects.filter(enable=True,item=self,shop_program=self.program_valid()).aggregate(min=Min('promotion_discount'))
             return int(variations['min'])
-    def get_min_discount(self):
-        if self.program_valid():
+    def min_discount(self):
+        if self.get_program_current():
             variations=Variation_discount.objects.filter(enable=True,item=self,shop_program=self.program_valid()).aggregate(max=Max('promotion_discount'))
             return int(variations['max'])
     
@@ -326,18 +332,33 @@ class Variation(models.Model):
     view=models.IntegerField(default=0)
     def __str__(self):
         return str(self.item)
-    def get_absolute_url(self):
-        return reverse("deal_shock", kwargs={"id": self.id})
     
-    def save(self, *args, **kwargs):
-        self.update_percent()        
-        super(Variation, self).save(*args, **kwargs)
-        
     def get_discount(self):
-        if self.item.program_valid():
-            variations=Variation_discount.objects.filter(enable=True,variation=self,shop_program=self.program_valid())
+        if self.item.get_program_current():
+            variations=Variation_discount.objects.filter(enable=True,variation=self,shop_program_id=self.get_program_current())
             if variations.exists():
                 return variations.first().promotion_discount
+    def get_discount_flash_sale(self):
+        if self.item.get_flash_sale_current():
+            variations=Variationflashsale.objects.filter(enable=True,variation=self,flash_sale_id=self.get_flash_sale_current())
+            if variations.exists():
+                return variations.first().promotion_discount
+    def get_discount_deal(self):
+        if self.item.get_deal_shock_current():
+            variations=Variationdeal.objects.filter(enable=True,variation=self,shock_deal_id=self.item.get_deal_shock_current())
+            if variations.exists():
+                return variations.first().promotion_discount
+    def get_total_discount(self):
+        discount=self.price
+        if self.get_discount_flash_sale():
+            discount=self.get_discount_flash_sale()
+        if self.get_discount() and self.get_discount_deal():
+            return discount-(self.price-self.get_discount())-(self.price-self.get_discount_deal())
+        if self.get_discount():
+            discount=self.get_discount()
+        if self.get_discount_deal():
+            discount=self.get_discount_deal()
+        return discount
     class Meta:
         ordering=['color']
     def number_order(self):

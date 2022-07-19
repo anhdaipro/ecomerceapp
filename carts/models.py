@@ -53,18 +53,18 @@ class CartItem(models.Model):
         return count
 
     def discount_deal(self):
-        discount_deal=0
-        if self.deal_shock and self.deal_shock.valid_to>timezone.now():
+        if self.item.get_deal_shock_current():
+            discount_deal=0
             for byproduct in self.byproduct_cart.all():
                 discount_deal+=byproduct.discount_deal_by()
-        return discount_deal
+            return discount_deal
     def get_ref_code(self):
         return Order.objects.filter(items=self).first().ref_code
     def discount_promotion(self):
         discount_promotion=0
         discount_price=self.product.price
-        if self.product.percent_discount and self.product.item.program_valid():
-            discount_price=self.product.price*(100-self.product.percent_discount)/100
+        if self.item.get_program_current() and self.product.get_discount():
+            discount_price=self.product.get_discount()
         if self.promotion_combo and self.promotion_combo.valid_to>timezone.now():
             quantity_in=self.quantity//self.promotion_combo.quantity_to_reduced
             quantity_valid=quantity_in*self.promotion_combo.quantity_to_reduced
@@ -75,13 +75,14 @@ class CartItem(models.Model):
             if self.promotion_combo.combo_type=='3':
                 discount_promotion=self.quantity*discount_price-quantity_in*self.promotion_combo.price_special_sale
         return discount_promotion
+    
     def discount(self):
         total_discount=0
-        if self.product.percent_discount and self.product.item.program_valid():
-            total_discount+=self.quantity*self.product.price*(self.product.percent_discount/100)
-        if self.deal_shock and self.deal_shock.valid_to>timezone.now():
+        if self.item.get_program_current() and self.product.get_discount():
+            total_discount+=self.quantity*self.product.get_discount()
+        if self.item.get_deal_shock_current():
             for byproduct in self.byproduct_cart.all():
-                if byproduct.byproduct.item.program_valid():
+                if byproduct.item.get_discount():
                     total_discount+=byproduct.discount_by()
                 else:
                     total_discount+=0
@@ -89,13 +90,11 @@ class CartItem(models.Model):
     def price_main(self):
         return self.quantity*self.product.price
     def discount_main(self):
-        total_discount=0
-        if self.product.percent_discount and self.product.item.program_valid():
-            total_discount=self.quantity*self.product.price*(self.product.percent_discount/100)
+        if self.item.get_program_current() and self.product.get_discount():
+            total_discount=self.quantity*self.product.get_discount()
         return total_discount
     def total_discount_cartitem(self):
         return self.price_main()-self.discount_main()
-
     def total_price_cartitem(self):
         total=0
         total+=self.quantity*self.product.price
@@ -112,16 +111,18 @@ class Byproduct(models.Model):
     quantity=models.IntegerField()
     updated_at = models.DateField(auto_now=True)
     def discount_deal_by(self):
-        return self.quantity * self.byproduct.discount_price_deal_shock()
+        if self.item.get_deal_shock_current():
+            return self.quantity * self.product.get_discount_deal()
     def price_by(self):
-        return self.quantity*self.byproduct.price
-    def discount_by(self):
-        total_discount=0
-        if self.item.program_valid():
-            total_discount=self.quantity*self.product.price*(self.product.percent_discount/100)
-        return total_discount
+        return self.quantity*self.product.price
+    def discount_by(self):  
+        if self.item.get_program_current() and self.product.get_discount():
+            return self.quantity*self.product.get_discount()
     def total_price(self):
-        return self.price_by()-self.discount_deal_by()-self.discount_by()
+        if self.discount_deal_by() and self.discount_by():
+            return self.price_by()-(self.price_by()-self.discount_by())-(self.price_by()-self.discount_deal_by())
+        if self.discount_deal_by():
+            return self.discount_deal_by()
 
     def get_image(self):
         image=self.item.get_image_cover()
