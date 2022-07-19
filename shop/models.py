@@ -167,7 +167,7 @@ class Item(models.Model):
         return variations['avg']
     def avg_discount_price(self):
         if self.get_program_current():
-            variations=Variation_discount.objects.filter(item=self,shop_program=self.get_program_current()).aggregate(avg=Avg('promotion_discount'))
+            variations=Variation_discount.objects.filter(item=self,shop_program=self.get_program_current()).aggregate(avg=Avg('promotion_price'))
             return variations['avg']
     def percent_discount(self):
         if self.get_program_current():
@@ -324,17 +324,17 @@ class Variation(models.Model):
         if self.item.get_program_current():
             variations=Variation_discount.objects.filter(enable=True,variation=self,shop_program_id=self.get_program_current())
             if variations.exists():
-                return variations.first().promotion_discount
+                return variations.first().promotion_price
     def get_discount_flash_sale(self):
         if self.item.get_flash_sale_current():
             variations=Variationflashsale.objects.filter(enable=True,variation=self,flash_sale_id=self.get_flash_sale_current())
             if variations.exists():
-                return variations.first().promotion_discount
+                return variations.first().promotion_price
     def get_discount_deal(self):
         if self.item.get_deal_shock_current():
             variations=Variationdeal.objects.filter(enable=True,variation=self,shock_deal_id=self.item.get_deal_shock_current())
             if variations.exists():
-                return variations.first().promotion_discount
+                return variations.first().promotion_price
     def total_discount(self):
         discount=self.price
         if self.get_discount_flash_sale():
