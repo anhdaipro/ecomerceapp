@@ -151,7 +151,7 @@ class Item(models.Model):
     def get_variation_choice(self):
         variation=Variation.objects.filter(item=self).first()
         return {'variation_id':variation.id,'inventory':variation.inventory,
-        'discount_price':variation.get_discount(),
+        'discount_price':variation.get_discount(),'price':variation.price,
         'color_value':variation.get_color(),'size_value':variation.get_size()}
     def get_list_color(self):
         color=Color.objects.filter(variation__item=self)

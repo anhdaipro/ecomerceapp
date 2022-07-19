@@ -320,7 +320,7 @@ class ByproductdealSerializer(serializers.ModelSerializer):
     sizes_deal=serializers.SerializerMethodField()
     class Meta:
         model=Buy_with_shock_deal
-        fields=('byproduct','sizes_deal','colors_deal')
+        fields=('byproduct','sizes_deal','colors_deal','id')
     def get_byproduct(self,obj):
         return ItemdealSerializer(obj.byproducts.all()[:4],many=True).data
     def get_colors_deal(self,obj):
