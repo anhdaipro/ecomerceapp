@@ -305,23 +305,33 @@ class ItemdetailSerializer(ItemcomboSerializer):
 class ItemdealSerializer(ItemSerializer):
     colors=serializers.SerializerMethodField()
     sizes=serializers.SerializerMethodField()
-    discount_deal=serializers.SerializerMethodField()
+    first_deal=serializers.SerializerMethodField()
     class Meta(ItemSerializer.Meta):
-        fields=ItemSerializer.Meta.fields+['discount_deal','colors','sizes']
-    def get_discount_deal(self,obj):
-        return obj.discount_deal()
+        fields=ItemSerializer.Meta.fields+['colors','sizes','first_deal']
     def get_sizes(self,obj):
         return obj.get_size()
     def get_colors(self,obj):
         return obj.get_color()
-
+    def get_first_deal(self,obj):
+        return obj.get_first_deal()
 class ByproductdealSerializer(serializers.ModelSerializer):
     byproduct=serializers.SerializerMethodField()
+    colors_deal=serializers.SerializerMethodField()
+    sizes_deal=serializers.SerializerMethodField()
     class Meta:
         model=Buy_with_shock_deal
-        fields=('byproduct',)
+        fields=('byproduct','sizes_seal','colors_deal')
     def get_byproduct(self,obj):
         return ItemdealSerializer(obj.byproducts.all(),many=True).data
+    def get_colors_deal(self,obj):
+        variations=Variationdeal.objects.filter(deal_shock=obj,enable=True)
+        colors=Color.objects.filter(variation__variation_deal__in=variations)
+        return [size.id for color in colors]
+    
+    def get_sizes_deal(self,obj):
+        variations=Variationdeal.objects.filter(deal_shock=obj,enable=True)
+        sizes=Size.objects.filter(variation__variation_deal__in=variations)
+        return [size.id for size in sizes]
 
 class ProductdealSerializer(serializers.ModelSerializer):
     class Meta:
@@ -539,7 +549,7 @@ class ShopinfoSerializer(serializers.ModelSerializer):
     def get_num_follow(self,obj):
         return obj.num_follow()
 
-class ShopdetailSerializer(serializers.ModelSerializer): 
+class ShopdetailSerializer(ShopinfoSerializer): 
     count_followings=serializers.SerializerMethodField()
     num_followers=serializers.SerializerMethodField()
     count_product=serializers.SerializerMethodField()
