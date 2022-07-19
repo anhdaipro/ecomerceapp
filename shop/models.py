@@ -322,12 +322,12 @@ class Variation(models.Model):
     
     def get_discount(self):
         if self.item.get_program_current():
-            variations=Variation_discount.objects.filter(enable=True,variation=self,shop_program_id=self.get_program_current())
+            variations=Variation_discount.objects.filter(enable=True,variation=self,shop_program_id=self.item.get_program_current())
             if variations.exists():
                 return variations.first().promotion_price
     def get_discount_flash_sale(self):
         if self.item.get_flash_sale_current():
-            variations=Variationflashsale.objects.filter(enable=True,variation=self,flash_sale_id=self.get_flash_sale_current())
+            variations=Variationflashsale.objects.filter(enable=True,variation=self,flash_sale_id=self.item.get_flash_sale_current())
             if variations.exists():
                 return variations.first().promotion_price
     def get_discount_deal(self):
