@@ -717,7 +717,7 @@ class AddToCardBatchAPIView(APIView):
             product=Variation.objects.get(item=item_id)
         
         data={'product_id':product.id,'color_value':product.get_color(),'size_value':product.get_size(),
-            'price':product.price,'discount_price':product.get_discount(),'inventory':product.inventory,
+            'price':product.price,'discount_price':product.total_discount(),'inventory':product.inventory,
             }
         if byproduct_id:
             data.update({'byproduct_id':byproduct_id})

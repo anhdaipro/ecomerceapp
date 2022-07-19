@@ -141,7 +141,7 @@ class Item(models.Model):
     def get_deal_choice(self):
         if self.get_deal_shock_current():
             variationdeal=Variationdeal.objects.filter(enable=True,item=self,deal_shock_id=self.get_deal_shock_current()).first()
-            return {'variation_id':variationdeal.variation_id,'discount_price':variationdeal.variation.total_discount(),
+            return {'product_id':variationdeal.variation_id,'discount_price':variationdeal.variation.total_discount(),
             'price':variationdeal.variation.price,'color_value':variationdeal.variation.get_color(),
             'size_value':variationdeal.variation.get_size()}
     def get_color(self):
@@ -150,7 +150,7 @@ class Item(models.Model):
         return list_color
     def get_variation_choice(self):
         variation=Variation.objects.filter(item=self).first()
-        return {'variation_id':variation.id,'inventory':variation.inventory,
+        return {'product_id':variation.id,'inventory':variation.inventory,
         'discount_price':variation.get_discount(),'price':variation.price,
         'color_value':variation.get_color(),'size_value':variation.get_size()}
     def get_list_color(self):

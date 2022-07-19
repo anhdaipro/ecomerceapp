@@ -305,15 +305,18 @@ class ItemdetailSerializer(ItemcomboSerializer):
 class ItemdealSerializer(ItemSerializer):
     colors=serializers.SerializerMethodField()
     sizes=serializers.SerializerMethodField()
-    deal_choice=serializers.SerializerMethodField()
+    count_variation=serializers.SerializerMethodField()
+    variation_choice=serializers.SerializerMethodField()
     class Meta(ItemSerializer.Meta):
-        fields=ItemSerializer.Meta.fields+['colors','sizes','deal_choice']
+        fields=ItemSerializer.Meta.fields+['colors','sizes','variation_choice','count_variation']
     def get_sizes(self,obj):
         return obj.get_size()
     def get_colors(self,obj):
         return obj.get_color()
-    def get_deal_choice(self,obj):
+    def get_variation_choice(self,obj):
         return obj.get_deal_choice()
+    def get_count_variation(self,obj):
+        return obj.count_variation()
 class ByproductdealSerializer(serializers.ModelSerializer):
     byproduct=serializers.SerializerMethodField()
     colors_deal=serializers.SerializerMethodField()
@@ -327,7 +330,7 @@ class ByproductdealSerializer(serializers.ModelSerializer):
         variations=Variationdeal.objects.filter(deal_shock=obj,enable=True).select_related('variation__color')
         colors=Color.objects.filter(variation__variation_deal__in=variations).distinct()
         return [color.id for color in colors]
-      
+
     def get_sizes_deal(self,obj):
         variations=Variationdeal.objects.filter(deal_shock=obj,enable=True).select_related('variation__size')
         sizes=Size.objects.filter(variation__variation_deal__in=variations).distinct()
