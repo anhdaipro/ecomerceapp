@@ -710,10 +710,10 @@ class DetailDeal(APIView):
                     variationdeal.enable=variation['enable']
                 list_variation_deal.append(variationdeal)
             Variationdeal.objects.bulk_update(list_variation_deal, ['enable','promotion_price','user_item_limit'], batch_size=1000)
-            Variationdeal.objects.filter(deal_shock_id=id).exclude(item_id__in=byproducts).delete()
             return Response({'ok':'ok'})
         else:
             list_variation_deal=[]
+            Variationdeal.objects.filter(deal_shock_id=id).exclude(item_id__in=byproducts).delete()
             deal_shock.active=True
             deal_shock.save()
             return Response({'ok':'ok'})
