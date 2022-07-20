@@ -1228,7 +1228,7 @@ class DealShockAPIView(APIView):
             'item_id':variation.item_id,'item_name':variation.item.name,'check':True,'main':True,
             'price':variation.price,'discount_price':variation.total_discount(),'item_url':variation.item.get_absolute_url(),
             'sizes':variation.item.get_size(),'inventory':variation.inventory,
-            'item_image':variation.item.get_image_cover(),'quantity':1,
+            'image':variation.get_image(),'quantity':1,
             'colors':variation.item.get_color()}
         cartitem=CartItem.objects.filter(product=variation,ordered=False,user=user)
         if cartitem.exists():
