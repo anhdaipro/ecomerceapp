@@ -780,7 +780,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 class ByproductSerializer(serializers.ModelSerializer):
     color_value = serializers.SerializerMethodField()
     size_value = serializers.SerializerMethodField()
-    item_image = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
     item_name = serializers.SerializerMethodField()
     item_url = serializers.SerializerMethodField()
     total_price = serializers.SerializerMethodField()
