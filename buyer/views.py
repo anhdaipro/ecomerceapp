@@ -1215,7 +1215,7 @@ class Byproductdeal(APIView):
         listitem=byproductdeal[from_item:to_item]
         byproducts=ByproductdealSerializer(listitem,many=True).data
         data={'byproducts':byproducts,'count':count}
-
+        return Response(data)
 class DealShockAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request,deal_id,id):
@@ -1233,7 +1233,7 @@ class DealShockAPIView(APIView):
         cartitem=CartItem.objects.filter(product=variation,ordered=False,user=user)
         if cartitem.exists():
             cartitem=cartitem.last()
-            variation_info.update({'quantity':cartitem.quantity})
+            variation_choice.update({'quantity':cartitem.quantity})
             cartitem_id=cartitem.id
             for byproduct in cartitem.byproduct_cart.all():
                 byproducts.append({'product_id':byproduct.product_id,'color_value':byproduct.product.get_color(),
