@@ -691,7 +691,8 @@ class UpdateCartAPIView(APIView):
                 count+=cartitem.count_item_cart()
                 total+=cartitem.total_price_cartitem()
                 total_discount+=cartitem.discount()
-                discount_deal+=cartitem.discount_deal()
+                if cartitem.discount_deal():
+                    discount_deal+=cartitem.discount_deal()
                 discount_promotion+=cartitem.discount_promotion()  
         data.update({'orders':{
             'total':total,'total_discount':total_discount,'discount_promotion':discount_promotion,
