@@ -610,13 +610,13 @@ class ShopdetailSerializer(ShopinfoSerializer):
             user=request.user
             if user in obj.followers.all():
                 return True
-    def get_num_followers(self,oj):
+    def get_num_followers(self,obj):
         return obj.num_follow()
-    def get_count_product(self,oj):
+    def get_count_product(self,obj):
         return obj.count_product()
-    def get_total_review(self,oj):
+    def get_total_review(self,obj):
         return obj.total_review()
-    def get_averge_review(self,oj):
+    def get_averge_review(self,obj):
         return obj.averge_review()
     def get_vouchers(self,obj):
         request=self.context.get("request")
@@ -766,9 +766,9 @@ class ReviewSerializer(serializers.ModelSerializer):
     rating_bab_category=serializers.SerializerMethodField()
     class Meta:
         model=ReView
-        fields=('id','review_text','created','item_name','color_value','size_value',
+        fields=['id','review_text','created','item_name','color_value','size_value',
                 'info_more','anonymous_review','list_file','item_url','item_image',
-                'rating_bab_category','review_rating','edited',)
+                'rating_bab_category','review_rating','edited']
     def get_list_file(self,obj):
         return MediareviewSerializer(obj.media_review.all(),many=True).data  
     def get_color_value(self,obj):
@@ -783,7 +783,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         return obj.cartitem.item.name
     def get_item_url(self,obj):
         return obj.cartitem.item.get_absolute_url()
-
+class ReviewshopSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+    class Meta(ReviewSerializer.Meta):
+        fields=ReviewSerializer.Meta.fields+['user']
+    def get_user(self,obj):
+        return UserorderSerializer(obj.user).data
 class ByproductSerializer(serializers.ModelSerializer):
     color_value = serializers.SerializerMethodField()
     size_value = serializers.SerializerMethodField()
