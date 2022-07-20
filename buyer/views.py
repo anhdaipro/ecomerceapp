@@ -757,11 +757,8 @@ class AddToCardBatchAPIView(APIView):
             )
         Byproduct.objects.filter(id__in=list_byproduct_cart_delete).delete()
         Byproduct.objects.bulk_update(byproduct_update,['quantity'],batch_size=1000)
-        Byproduct.objects.bulk_create(
-            [
-            Byproduct(user=user,cartitem=cartitem,item_id=item_id,product=product['product_id'],quantity=product['quantity'])
-            for product in byproduct_create]
-        )
+        Byproduct.objects.bulk_create(byproduct_create)
+        data.update({'length':len(list_product_cart)})
         return Response(data)
 class AddToCartAPIView(APIView):
     def get(self,request):
