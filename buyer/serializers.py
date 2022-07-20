@@ -597,7 +597,7 @@ class ShopdetailSerializer(ShopinfoSerializer):
     combo=serializers.SerializerMethodField()
     deal=serializers.SerializerMethodField()
     class Meta(ShopinfoSerializer.Meta):
-        fields=ShopinfoSerializer.Meta.fields+('created_at','count_followings','vouchers',
+        fields=ShopinfoSerializer.Meta.fields+('create_at','count_followings','vouchers',
         'num_followers','count_product','total_review','averge_review','follow','combo','deal')
     def get_count_followings(self,obj):
         request=self.context.get("request")
