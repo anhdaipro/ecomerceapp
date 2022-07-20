@@ -82,8 +82,8 @@ class CartItem(models.Model):
             total_discount+=self.quantity*self.product.get_discount()
         if self.get_deal_shock_current():
             for byproduct in self.byproduct_cart.all():
-                if byproduct.item.get_discount():
-                    total_discount+=byproduct.discount_by()
+                if byproduct.total_price():
+                    total_discount+=byproduct.total_price()
                 else:
                     total_discount+=0
         return total_discount
