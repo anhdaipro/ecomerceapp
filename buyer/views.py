@@ -1208,7 +1208,7 @@ class Byproductdeal(APIView):
             from_item=int(offset)
         deal_shock=Buy_with_shock_deal.objects.get(id=id)
         byproductdeal=deal_shock.byproducts.all()
-        count=byproduct.count()
+        count=byproductdeal.count()
         to_item=from_item+10
         if from_item+10>=count():
             to_item=count
@@ -1225,7 +1225,7 @@ class DealShockAPIView(APIView):
         cart_item=[]
         byproducts=[]
         variation_choice={'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
-            'quantity':quantity,'item_id':variation.item_id,'item_name':variation.item.name,'check':True,'main':True,
+            'item_id':variation.item_id,'item_name':variation.item.name,'check':True,'main':True,
             'price':variation.price,'discount_price':variation.total_discount(),'item_url':variation.item.get_absolute_url(),
             'sizes':variation.item.get_size(),'inventory':variation.inventory,
             'item_image':variation.item.get_image_cover(),'quantity':1,
