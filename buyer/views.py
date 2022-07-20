@@ -528,7 +528,7 @@ class ShopinfoAPI(APIView):
             promotion_combo=Promotion_combo.objects.filter(shop_id=shop_id,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
             data =ComboItemSerializer(promotion_combo,many=True,context={"request": request}).data
         elif choice=='gettreecategory':
-            categorychild=Category.objects.filter(item__shop_id=shop_id)
+            categorychild=Category.objects.filter(item__shop_id=shop_id,choice=True)
             data=CategorySerializer(categorychild,many=True).data
         return Response(data)
 
