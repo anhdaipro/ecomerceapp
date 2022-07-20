@@ -528,7 +528,7 @@ class ComboItemSerializer(ComboinfoSerializer):
     class Meta(ComboinfoSerializer.Meta):
         fields=(ComboinfoSerializer.Meta.fields)+['products']
     def get_products(self,obj):
-        return ItemSerializer(obj.products.all(),many=True).data
+        return ItemSerializer(obj.products.all()[:6],many=True).data
 
 class CombosellerSerializer(ComboSerializer):
     products=serializers.SerializerMethodField()
