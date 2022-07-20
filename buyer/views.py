@@ -53,7 +53,7 @@ ReviewSerializer,CartitemcartSerializer,CartviewSerializer,
 ProductdealSerializer,ItemcomboSerializer,CombodetailseSerializer,ItempageSerializer,
 ItemdetailsSerializer,ShopdetailSerializer,OrderpurchaseSerializer,
 CategorydetailSerializer,VariationcartSerializer,
-ByproductdealSerializer,ByproductcartSerializer,
+ByproductdealSerializer,ByproductcartSerializer,ComboItemSerializer,
 DealByproductSerializer
 )
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
@@ -470,7 +470,7 @@ class ProductInfoAPI(APIView):
             data.update(deal)
         elif choice=='combo':
             promotion_combo=Promotion_combo.objects.filter(products=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
-            data =ComboSerializer(promotion_combo,context={"request": request}).data
+            data =ComboItemSerializer(promotion_combo,context={"request": request}).data
         elif choice=='shop':
             shop=item.shop
             data = ShopinfoSerializer(shop,context={"request": request}).data 
@@ -526,7 +526,7 @@ class ShopinfoAPI(APIView):
             data=ProductdealSerializer(deal_shock,many=True).data
         elif chocie=='combo':
             promotion_combo=Promotion_combo.objects.filter(shop_id=shop_id,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
-            data =ComboSerializer(promotion_combo,many=True,context={"request": request}).data
+            data =ComboItemSerializer(promotion_combo,many=True,context={"request": request}).data
         elif choice=='gettreecategory':
             categorychild=Category.objects.filter(item__shop_id=shop_id)
             data=CategorySerializer(categorychild,many=True).data

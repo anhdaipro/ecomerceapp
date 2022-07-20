@@ -523,6 +523,13 @@ class ComboSerializer(ComboinfoSerializer):
     def get_products(self,obj):
         return [{'image':item.get_image_cover()} for item in obj.products.all()]
 
+class ComboItemSerializer(ComboinfoSerializer):
+    products=serializers.SerializerMethodField()
+    class Meta(ComboinfoSerializer.Meta):
+        fields=(ComboinfoSerializer.Meta.fields)+['products']
+    def get_products(self,obj):
+        return ItemSerializer(obj.products.all(),many=True).data
+
 class CombosellerSerializer(ComboSerializer):
     products=serializers.SerializerMethodField()
     class Meta(ComboSerializer.Meta):
