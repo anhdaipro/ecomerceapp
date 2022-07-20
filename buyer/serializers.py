@@ -787,13 +787,13 @@ class ByproductSerializer(serializers.ModelSerializer):
     price = serializers.SerializerMethodField()
     class Meta:
         model=Byproduct
-        fields=('id','color_value','size_value','price','item_image','item_id',
+        fields=('id','color_value','size_value','price','image','item_id',
         'item_name','quantity','item_url','total_price',)
     def get_color_value(self,obj):
         return obj.product.get_color()
     def get_size_value(self,obj):
         return obj.product.get_size()
-    def get_item_image(self,obj):
+    def get_image(self,obj):
         return obj.item.get_image_cover()
     def get_price(self,obj):
         return obj.product.price
@@ -805,20 +805,20 @@ class ByproductSerializer(serializers.ModelSerializer):
         return obj.total_price()
 
 class ByproductcartSerializer(ByproductSerializer):
-    discount_deal=serializers.SerializerMethodField()
+    discount_price=serializers.SerializerMethodField()
     sizes=serializers.SerializerMethodField()
     colors=serializers.SerializerMethodField()
     count_variation=serializers.SerializerMethodField()
     inventory=serializers.SerializerMethodField()
     class Meta(ByproductSerializer.Meta):
-        fields=ByproductSerializer.Meta.fields + ('colors','inventory',
-        'discount_deal','sizes','count_variation',)
+        fields=ByproductSerializer.Meta.fields + ('colors','inventory','product_id',
+        'discount_price','sizes','count_variation',)
     def get_colors(self,obj):
         return obj.item.get_color()
     def get_sizes(self,obj):
         return obj.item.get_size()
-    def get_discount_deal(self,obj):
-        return obj.product.get_discount_deal()
+    def get_discount_price(self,obj):
+        return obj.product.total_discount()
     def get_count_variation(self,obj):
         return obj.item.count_variation()
     def get_inventory(self,obj):

@@ -53,7 +53,7 @@ ReviewSerializer,CartitemcartSerializer,CartviewSerializer,
 ProductdealSerializer,ItemcomboSerializer,CombodetailseSerializer,ItempageSerializer,
 ItemdetailsSerializer,ShopdetailSerializer,OrderpurchaseSerializer,
 CategorydetailSerializer,VariationcartSerializer,
-ByproductdealSerializer,
+ByproductdealSerializer,ByproductcartSerializer,
 DealByproductSerializer
 )
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
@@ -1203,11 +1203,17 @@ class Byproductdeal(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request,id):
         from_item=0
+        cart_id=request.GET.get('cart_id')
+        list_id=[]
+        if cart_id:
+            cartitem=CartItem.objects.get(id=cart_id)
+            for byproduct in cartitem.byproduct_cart.all():
+                list_id.append(byproduct.item_id)
         offset=request.GET.get('offset')
         if offset:
             from_item=int(offset)
         deal_shock=Buy_with_shock_deal.objects.get(id=id)
-        byproductdeal=deal_shock.byproducts.all()
+        byproductdeal=deal_shock.byproducts.all().exclude(id__in=list_id)
         count=byproductdeal.count()
         to_item=from_item+10
         if from_item+10>=count:
@@ -1221,7 +1227,7 @@ class DealShockAPIView(APIView):
     def get(self,request,deal_id,id):
         user=request.user
         variation=Variation.objects.get(id=id)
-        cartitem_id=0
+        cartitem_id=None
         cart_item=[]
         byproducts=[]
         variation_choice={
@@ -1236,14 +1242,7 @@ class DealShockAPIView(APIView):
             cartitem=cartitem.last()
             variation_choice.update({'quantity':cartitem.quantity})
             cartitem_id=cartitem.id
-            for byproduct in cartitem.byproduct_cart.all():
-                byproducts.append({'product_id':byproduct.product_id,'color_value':byproduct.product.get_color(),
-                'quantity':byproduct.quantity,'image':byproduct.product.get_image(),
-                'name':byproduct.item.name,'colors':byproduct.item.get_color(),'discount_price':byproduct.product.total_discount(),
-                'sizes':byproduct.item.get_size(),'count_variation':byproduct.item.count_variation()
-                ,'size_value':byproduct.product.get_size(),'item_id':byproduct.item_id,
-                'byproduct_id':byproduct.id,'check':True})
-        item=Item.objects.get(id=variation.item_id)
+            byproducts=ByproductcartSerializer(cartitem.byproduct_cart.all(),many=True).data
         data={
             'cartitem_id':cartitem_id,'deal_id':deal_id,
             'byproducts':byproducts,'variation_choice':variation_choice
