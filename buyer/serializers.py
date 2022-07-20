@@ -372,9 +372,10 @@ class DealByproductSerializer(serializers.ModelSerializer):
         return [size.id for size in sizes]
 
 class ProductdealSerializer(serializers.ModelSerializer):
+    products=serializers.SerializerMethodField()
     class Meta:
         model=Buy_with_shock_deal
-        fields=('products',)
+        fields=('products','id','shock_deal_type')
     def get_products(self,obj):   
         return ItemSerializer(obj.main_products.all(),many=True).data
 
