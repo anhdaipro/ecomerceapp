@@ -1210,7 +1210,7 @@ class Byproductdeal(APIView):
         byproductdeal=deal_shock.byproducts.all()
         count=byproductdeal.count()
         to_item=from_item+10
-        if from_item+10>=count():
+        if from_item+10>=count:
             to_item=count
         listitem=byproductdeal[from_item:to_item]
         byproducts=ByproductdealSerializer(listitem,many=True).data
@@ -1230,7 +1230,6 @@ class DealShockAPIView(APIView):
             'sizes':variation.item.get_size(),'inventory':variation.inventory,
             'item_image':variation.item.get_image_cover(),'quantity':1,
             'colors':variation.item.get_color()}
-        cart_item.append(variation_info)
         cartitem=CartItem.objects.filter(product=variation,ordered=False,user=user)
         if cartitem.exists():
             cartitem=cartitem.last()
