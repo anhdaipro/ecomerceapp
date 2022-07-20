@@ -1224,11 +1224,12 @@ class DealShockAPIView(APIView):
         cartitem_id=0
         cart_item=[]
         byproducts=[]
-        variation_choice={'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
+        variation_choice={
+            'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'item_id':variation.item_id,'item_name':variation.item.name,'check':True,'main':True,
             'price':variation.price,'discount_price':variation.total_discount(),'item_url':variation.item.get_absolute_url(),
             'sizes':variation.item.get_size(),'inventory':variation.inventory,
-            'image':variation.get_image(),'quantity':1,
+            'image':variation.get_image(),'quantity':1,'count_variation':variation.item.count_variation(),
             'colors':variation.item.get_color()}
         cartitem=CartItem.objects.filter(product=variation,ordered=False,user=user)
         if cartitem.exists():
@@ -1237,8 +1238,11 @@ class DealShockAPIView(APIView):
             cartitem_id=cartitem.id
             for byproduct in cartitem.byproduct_cart.all():
                 byproducts.append({'product_id':byproduct.product_id,'color_value':byproduct.product.get_color(),
-                'quantity':byproduct.quantity,'size_value':byproduct.product.get_size(),'item_id':byproduct.item_id,
-                'byproduct_id':byproduct.id})
+                'quantity':byproduct.quantity,'image':byproduct.product.get_image(),
+                'name':byproduct.item.name,'colors':byproduct.item.get_color(),'discount_price':byproduct.product.total_discount(),
+                'sizes':byproduct.item.get_size(),'count_variation':byproduct.item.count_variation()
+                ,'size_value':byproduct.product.get_size(),'item_id':byproduct.item_id,
+                'byproduct_id':byproduct.id,'check':True})
         item=Item.objects.get(id=variation.item_id)
         data={
             'cartitem_id':cartitem_id,'deal_id':deal_id,
