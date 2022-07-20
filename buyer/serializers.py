@@ -322,24 +322,25 @@ class ItemdetailSerializer(ItemcomboSerializer):
     def get_shock_deal_type(self,obj):
         return obj.shock_deal_type()
 
-class ItemdealSerializer(ItemSerializer):
+class ByproductdealSerializer(ItemSerializer):
     colors=serializers.SerializerMethodField()
     sizes=serializers.SerializerMethodField()
     count_variation=serializers.SerializerMethodField()
-    variation_choice=serializers.SerializerMethodField()
     class Meta(ItemSerializer.Meta):
-        fields=ItemSerializer.Meta.fields+['colors','sizes','variation_choice','count_variation']
+        fields=ItemSerializer.Meta.fields+['colors','sizes','count_variation']
     def get_sizes(self,obj):
         return obj.get_size()
     def get_colors(self,obj):
         return obj.get_color()
-    def get_variation_choice(self,obj):
-        return obj.get_deal_choice()
     def get_count_variation(self,obj):
         return obj.count_variation()
-class ByproductdealSerializer(ItemdealSerializer):
-    class Meta(ItemdealSerializer.Meta):
-        fields=ItemdealSerializer.Meta.fields
+class ItemdealSerializer(ByproductdealSerializer):
+    variation_choice=serializers.SerializerMethodField()
+    class Meta(ByproductdealSerializer.Meta):
+        fields=ByproductdealSerializer.Meta.fields+['variation_choice']
+    def get_variation_choice(self,obj):
+        return obj.get_deal_choice()
+   
 class DealByproductSerializer(serializers.ModelSerializer):
     byproduct=serializers.SerializerMethodField()
     colors_deal=serializers.SerializerMethodField()
@@ -857,7 +858,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         return obj.product.get_discount()
     def get_byproduct(self,obj):
         list_byproduct=[]
-        if obj.item.deal_shock():
+        if obj.item.shock_deal():
             list_byproduct=ByproductSerializer(obj.byproduct_cart.all(), many=True).data
         return list_byproduct
 class CartitemcartSerializer(CartItemSerializer):
@@ -884,7 +885,7 @@ class CartitemcartSerializer(CartItemSerializer):
         return obj.item.shock_deal()
     def get_byproduct(self,obj):
         list_byproduct=[]
-        if obj.item.deal_shock():
+        if obj.item.shock_deal():
             list_byproduct=ByproductcartSerializer(obj.byproduct_cart.all(), many=True).data
         return list_byproduct
 class OrdersellerSerializer(OrderSerializer):
