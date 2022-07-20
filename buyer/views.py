@@ -729,7 +729,7 @@ class AddToCardBatchAPIView(APIView):
         if cartitem.exists():
             cartitem=cartitem.last()
             cartitem.deal_shock_id=deal_id
-            cartitem.quantity+=int(quantity_product)
+            cartitem.quantity=int(quantity_product)
             cartitem.save()
             data.update({'o':'o'})
         else:
@@ -744,7 +744,7 @@ class AddToCardBatchAPIView(APIView):
                 )
             data.update({'ow':'ow'})
         list_byproduct_cart_delete=[product['byproduct_id'] for product in byproducts if product.get('byproduct_id') and product['check']==False]
-        list_product_cart=[product for product in byproducts if product.get('byproduct_id')==None and product['check']]
+        list_product_cart=[product for product in byproducts if  (product.get('byproduct_id')==None and product['check']) or (product.get('byproduct_id') and product['check'])]
         byproduct_update=[]
         byproduct_create=[]
         for product in list_product_cart:
