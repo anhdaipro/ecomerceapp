@@ -309,7 +309,7 @@ def product(request):
             first_page = obj_paginator.get_page(1)
             variation=Variation.objects.filter(item__in=first_page).order_by('-color__value')
             list_product=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),
-                'id':i.id,'item_sku':i.sku_product
+                'id':i.id,'item_sku':i.sku_product,
                 } for i in first_page]
             list_variation=[{'number_order':i.number_order(),'inventory':i.inventory,'price':i.price,'sku':i.sku_classify,'color_value':i.get_color(),'size_value':i.get_size(),
             'item__id':i.item_id ,'id':i.id
@@ -1473,8 +1473,8 @@ def my_dashboard(request):
         accepted=[False,True]
         ordered=True
         if accept:
-            accepted=True
-        received=[False, True]
+            accepted=[True]
+        received=[False,True]
         if receive:
             received=[True]
         total_order=Order.objects.filter(shop=shop,ordered_date__date=current_date).annotate(day=TruncHour('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
@@ -1495,9 +1495,9 @@ def my_dashboard(request):
                 hour = [i for i in range(24)]
                 sum_hour=[0 for i in range(current_date.hour+1)]
                 count_hour=[0 for i in range(current_date.hour+1)]
-                total_order_day=Order.objects.filter(shop=shop,ordered_date__date__gte=current_date,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).annotate(day=TruncHour('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
-                total_amount_day=Order.objects.filter(shop=shop,ordered_date__date__gte=current_date,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).annotate(day=TruncHour('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
-                result =Order.objects.filter(shop=shop,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).aggregate(
+                total_order_day=Order.objects.filter(shop=shop,ordered_date__date__gte=current_date,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).annotate(day=TruncHour('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
+                total_amount_day=Order.objects.filter(shop=shop,ordered_date__date__gte=current_date,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).annotate(day=TruncHour('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
+                result =Order.objects.filter(shop=shop,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).aggregate(
                     order=Count('id', filter=Q(ordered_date__date=current_date)),
                     order_last=Count('id', filter=Q(ordered_date__date=(current_date - timedelta(days=1)))),
                     amount=Coalesce(Sum('amount', filter=Q(ordered_date__date=current_date),output_field=FloatField()),0.0),
@@ -1505,9 +1505,9 @@ def my_dashboard(request):
                 )
 
                 if time=='yesterday':
-                    otal_order_day=Order.objects.filter(shop=shop,ordered_date__date=yesterday,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).annotate(day=TruncHour('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
-                    total_amount_day=Order.objects.filter(shop=shop,ordered_date__date=yesterday,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).annotate(day=TruncHour('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
-                    result =Order.objects.filter(shop=shop,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).aggregate(
+                    otal_order_day=Order.objects.filter(shop=shop,ordered_date__date=yesterday,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).annotate(day=TruncHour('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
+                    total_amount_day=Order.objects.filter(shop=shop,ordered_date__date=yesterday,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).annotate(day=TruncHour('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
+                    result =Order.objects.filter(shop=shop,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).aggregate(
                     order=Count('id', filter=Q(ordered_date__date=yesterday)),
                     order_last=Count('id', filter=Q(ordered_date__date=(yesterday - timedelta(days=1)))),
                     amount=Coalesce(Sum('amount', filter=Q(ordered_date__date=yesterday)),0.0),
@@ -1518,9 +1518,9 @@ def my_dashboard(request):
                     
                 elif time=='day':
                     day=pd.to_datetime(time_choice)
-                    total_order=Order.objects.filter(shop=shop,ordered_date__date=day,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).annotate(day=TruncHour('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
-                    total_amount=Order.objects.filter(shop=shop,ordered_date__date=day,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).annotate(day=TruncHour('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
-                    result =Order.objects.filter(shop=shop,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).aggregate(
+                    total_order=Order.objects.filter(shop=shop,ordered_date__date=day,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).annotate(day=TruncHour('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
+                    total_amount=Order.objects.filter(shop=shop,ordered_date__date=day,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).annotate(day=TruncHour('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
+                    result =Order.objects.filter(shop=shop,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).aggregate(
                     order=Count('id', filter=Q(ordered_date__date=day)),
                     order_last=Count('id', filter=Q(ordered_date__date=(day - timedelta(days=1)))),
                     amount=Coalesce(Sum('amount', filter=Q(ordered_date__date=day)),0.0),
@@ -1564,9 +1564,9 @@ def my_dashboard(request):
                 
                 sum_day_week=[0 for i in range(7)]
                 count_day_week=[0 for i in range(7)]
-                total_order=Order.objects.filter(shop=shop,ordered_date__date__gte=week,ordered_date__date__lte=start_date,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
-                total_amount=Order.objects.filter(shop=shop,ordered_date__date__gte=week,ordered_date__date__lte=start_date,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
-                result =Order.objects.filter(shop=shop,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).aggregate(
+                total_order=Order.objects.filter(shop=shop,ordered_date__date__gte=week,ordered_date__date__lte=start_date,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
+                total_amount=Order.objects.filter(shop=shop,ordered_date__date__gte=week,ordered_date__date__lte=start_date,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
+                result =Order.objects.filter(shop=shop,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).aggregate(
                     order=Count('id', filter=Q(ordered_date__date__gt=week)),
                     order_last=Count('id', filter=(Q(ordered_date__date__lt=week)&Q(ordered_date__date__gte=(week - timedelta(days=7))))),
                     amount=Coalesce(Sum('amount', filter=Q(ordered_date__date__gte=week)),0.0),
@@ -1574,9 +1574,9 @@ def my_dashboard(request):
                     )
                 if time=='week':
                     week=pd.to_datetime(time_choice)
-                    total_order=Order.objects.filter(shop=shop,ordered_date__week=week.isocalendar()[1],ordered_date__year=week.year,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
-                    total_amount=Order.objects.filter(shop=shop,ordered_date__week=week.isocalendar()[1],ordered_date__year=week.year,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
-                    result =Order.objects.filter(shop=shop,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).aggregate(
+                    total_order=Order.objects.filter(shop=shop,ordered_date__week=week.isocalendar()[1],ordered_date__year=week.year,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
+                    total_amount=Order.objects.filter(shop=shop,ordered_date__week=week.isocalendar()[1],ordered_date__year=week.year,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
+                    result =Order.objects.filter(shop=shop,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).aggregate(
                     order=Count('id', filter=Q(ordered_date__week=week.isocalendar()[1])),
                     order_last=Count('id', filter=Q(ordered_date__week=(week.isocalendar()[1] - 1))),
                     amount=Coalesce(Sum('amount', filter=Q(ordered_date__week=week.isocalendar()[1])),0.0),
@@ -1618,9 +1618,9 @@ def my_dashboard(request):
                 total_order_months=[]
                 day_month=[]
                 day_months=[int((start_date-datetime.timedelta(days=i)).date().strftime('%d')) for i in range(30)]
-                total_order=Order.objects.filter(shop=shop,ordered_date__date__gte=month,ordered_date__date__lte=start_date,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
-                total_amount=Order.objects.filter(shop=shop,ordered_date__date__gte=month,ordered_date__date__lte=start_date,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
-                result =Order.objects.filter(shop=shop,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).aggregate(
+                total_order=Order.objects.filter(shop=shop,ordered_date__date__gte=month,ordered_date__date__lte=start_date,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
+                total_amount=Order.objects.filter(shop=shop,ordered_date__date__gte=month,ordered_date__date__lte=start_date,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
+                result =Order.objects.filter(shop=shop,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).aggregate(
                     order=Count('id', filter=Q(ordered_date__date__gt=month)),
                     order_last=Count('id', filter=(Q(ordered_date__date__lt=month)&Q(ordered_date__date__gte=(month - timedelta(days=30))))),
                     amount=Coalesce(Sum('amount', filter=Q(ordered_date__date__gt=month)),0.0),
@@ -1628,9 +1628,9 @@ def my_dashboard(request):
                 ) 
                 if time=='month':
                     month=pd.to_datetime(time_choice)
-                    total_order=Order.objects.filter(shop=shop,ordered_date__month=month.month,ordered_date__year=month.year,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
-                    total_amount=Order.objects.filter(shop=shop,ordered_date__month=month.month,ordered_date__year=month.year,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
-                    result =Order.objects.filter(shop=shop,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received,ordered_date__year=month.year).aggregate(
+                    total_order=Order.objects.filter(shop=shop,ordered_date__month=month.month,ordered_date__year=month.year,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
+                    total_amount=Order.objects.filter(shop=shop,ordered_date__month=month.month,ordered_date__year=month.year,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).annotate(day=TruncDay('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
+                    result =Order.objects.filter(shop=shop,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received,ordered_date__year=month.year).aggregate(
                     order=Count('id', filter=Q(ordered_date__month=month.month)),
                     order_last=Count('id', filter=Q(ordered_date__month=(month.month - 1))),
                     amount=Coalesce(Sum('amount', filter=Q(ordered_date__month=month.month)),0.0),
@@ -1673,7 +1673,7 @@ def my_dashboard(request):
                 year=pd.to_datetime(time_choice)
                 total_order=Order.objects.filter(shop=shop,ordered_date__year=year.year,ordered=ordered).annotate(day=TruncMonth('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
                 total_amount=Order.objects.filter(shop=shop,ordered_date__year=year.year,ordered=ordered).annotate(day=TruncMonth('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
-                result =Order.objects.filter(shop=shop,ordered_date__year=year.year,ordered=ordered,accepted=accepted,canceled=canceled,received__in=received).aggregate(
+                result =Order.objects.filter(shop=shop,ordered_date__year=year.year,ordered=ordered,accepted__in=accepted,canceled=canceled,received__in=received).aggregate(
                     order=Count('id', filter=Q(ordered_date__year=year.year)),
                     order_last=Count('id', filter=Q(ordered_date__year=(year.year - 1))),
                     amount=Coalesce(Sum('amount', filter=Q(ordered_date__year=year.year)),0.0),
