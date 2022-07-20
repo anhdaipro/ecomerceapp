@@ -296,7 +296,7 @@ class Topsearch(APIView):
         return Response(data)
 
 class SearchitemshopAPI(APIView):
-    def get(self,id):
+    def get(self,request,id):
         shop_id=request.GET.get('shop_id')
         minprice=request.GET.get('minPrice')
         maxprice=request.GET.get('maxPrice')
@@ -524,7 +524,7 @@ class ShopinfoAPI(APIView):
         if choice=='deal':
             deal_shock=Buy_with_shock_deal.objects.filter(shop_id=shop_id,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
             data=ProductdealSerializer(deal_shock,many=True).data
-        elif chocie=='combo':
+        elif choice=='combo':
             promotion_combo=Promotion_combo.objects.filter(shop_id=shop_id,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
             data =ComboItemSerializer(promotion_combo,many=True,context={"request": request}).data
         elif choice=='gettreecategory':
