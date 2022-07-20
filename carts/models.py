@@ -114,7 +114,7 @@ class Byproduct(models.Model):
     quantity=models.IntegerField()
     updated_at = models.DateField(auto_now=True)
     def discount_deal_by(self):
-        if self.item.get_deal_shock_current():
+        if self.product.get_discount_deal():
             return self.quantity * self.product.get_discount_deal()
     def price_by(self):
         return self.quantity*self.product.price
