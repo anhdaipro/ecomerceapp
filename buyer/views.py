@@ -741,7 +741,6 @@ class AddToCardBatchAPIView(APIView):
                 quantity=int(quantity_product)
                 )
             data.update({'ow':'ow'})
-        list_byproduct_cart=[product for product in byproducts if product.get('byproduct_id') and product.get('check')]
         list_byproduct_cart_delete=[product['byproduct_id'] for product in byproducts if product.get('byproduct_id') and product['check']==False]
         list_product_cart=[product for product in byproducts if product.get('byproduct_id')==None and product['check']]
         byproduct_update=[]
