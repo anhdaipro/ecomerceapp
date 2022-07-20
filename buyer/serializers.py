@@ -620,14 +620,14 @@ class ShopdetailSerializer(ShopinfoSerializer):
         return obj.averge_review()
     def get_vouchers(self,obj):
         request=self.context.get("request")
-        vouchers=Voucher.objects.filter(shop=obj,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
+        vouchers=Voucher.objects.filter(shop=obj,valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
         return VoucherdetailSerializer(vouchers,many=True,context={"request": request}).data
     def get_deal(self,obj):
-        deal_shock=Buy_with_shock_deal.objects.filter(shop_id=shop_id,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
+        deal_shock=Buy_with_shock_deal.objects.filter(shop=obj,valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
         if deal_shock.exists():
             return True
     def get_combo(self,obj):
-        promotion_combo=Promotion_combo.objects.filter(shop_id=shop_id,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
+        promotion_combo=Promotion_combo.objects.filter(shop=obj,valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
         if promotion_combo.exists():
             return True
 
@@ -755,7 +755,8 @@ class MediareviewSerializer(serializers.ModelSerializer):
         return obj.get_media_preview()
     def get_show(self,obj):
         return False
-
+field_review=['id','review_text','created','item_name','color_value',
+        'size_value','info_more','review_rating','item_image']
 class ReviewSerializer(serializers.ModelSerializer):
     color_value = serializers.SerializerMethodField()
     size_value = serializers.SerializerMethodField()
@@ -766,9 +767,8 @@ class ReviewSerializer(serializers.ModelSerializer):
     rating_bab_category=serializers.SerializerMethodField()
     class Meta:
         model=ReView
-        fields=['id','review_text','created','item_name','color_value','size_value',
-                'info_more','anonymous_review','list_file','item_url','item_image',
-                'rating_bab_category','review_rating','edited']
+        fields=field_review+['anonymous_review','list_file','item_url','rating_bab_category',
+        'edited']
     def get_list_file(self,obj):
         return MediareviewSerializer(obj.media_review.all(),many=True).data  
     def get_color_value(self,obj):
@@ -783,12 +783,22 @@ class ReviewSerializer(serializers.ModelSerializer):
         return obj.cartitem.item.name
     def get_item_url(self,obj):
         return obj.cartitem.item.get_absolute_url()
-class ReviewshopSerializer(serializers.ModelSerializer):
+class ReviewshopSerializer(ReviewSerializer):
     user = serializers.SerializerMethodField()
+    reply = serializers.SerializerMethodField()
+    ref_code = serializers.SerializerMethodField()
     class Meta(ReviewSerializer.Meta):
-        fields=ReviewSerializer.Meta.fields+['user']
+        listfiels=list(ReviewSerializer.Meta.fields)
+        listfiels.remove('list_file')
+        listfiels.remove('rating_bab_category')
+        fields=listfiels+['user','reply','ref_code']
     def get_user(self,obj):
         return UserorderSerializer(obj.user).data
+    def get_reply(self,obj):
+        return obj.get_reply()
+    def get_ref_code(self,obj):
+        return obj.cartitem.get_ref_code()
+    
 class ByproductSerializer(serializers.ModelSerializer):
     color_value = serializers.SerializerMethodField()
     size_value = serializers.SerializerMethodField()
