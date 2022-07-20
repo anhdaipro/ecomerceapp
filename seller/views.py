@@ -58,6 +58,7 @@ ComboSerializer,
 CombosellerSerializer,
 BuywithsockdealinfoSerializer,
 FlashSaleSerializer,
+ReviewshopSerializer,
 FlashSaleSellerSerializer,)
 class ListvoucherAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
@@ -226,13 +227,7 @@ class ShopratingAPI(APIView):
         paginator = Paginator(list_review,5)
         page_obj = paginator.get_page(page)
         count_review=list_review.count()
-        data={'reviews':[{'id':review.id,'review_text':review.review_text,'created':review.created,
-        'info_more':review.info_more,'review_rating':review.review_rating,
-        'color_value':review.cartitem.product.get_color(),'get_reply':review.get_reply(),
-        'size_value':review.cartitem.product.get_size(),
-        'item_name':review.cartitem.product.item.name,'ref_code':review.cartitem.get_ref_code(),
-        'user':review.user.username,'image':review.user.profile.avatar.url,
-        } for review in page_obj],'page_count':paginator.num_pages}
+        data={'reviews':ReviewshopSerializer(page_obj,many=True).data,'page_count':paginator.num_pages}
         return Response(data) 
     def post(self,request):
         text=request.POST.get('text')
@@ -767,7 +762,6 @@ class NewprogramAPI(APIView):
             list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
             data=ByproductSellerSerializer(list_products,many=True).data
             return Response(data)
-
 
 class Detailprogram(APIView):
     def get(self,request,id):
