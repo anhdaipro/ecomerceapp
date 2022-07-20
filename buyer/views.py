@@ -49,10 +49,12 @@ SMSPinSerializer,SMSVerificationSerializer,CategorySerializer,SetNewPasswordSeri
 UserprofileSerializer,ShopinfoSerializer,ItemSerializer,ItemdetailSerializer,
 ItemSellerSerializer,ShoporderSerializer,ImagehomeSerializer,ComboSerializer,
 CategoryhomeSerializer,AddressSerializer,OrderSerializer,OrderdetailSerializer,
-ReviewSerializer,CartitemcartSerializer,CartviewSerializer,ByproductdealSerializer,
+ReviewSerializer,CartitemcartSerializer,CartviewSerializer,
 ProductdealSerializer,ItemcomboSerializer,CombodetailseSerializer,ItempageSerializer,
 ItemdetailsSerializer,ShopdetailSerializer,OrderpurchaseSerializer,
-CategorydetailSerializer,VariationcartSerializer
+CategorydetailSerializer,VariationcartSerializer,
+ByproductdealSerializer,
+DealByproductSerializer
 )
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
@@ -464,7 +466,7 @@ class ProductInfoAPI(APIView):
         if choice=='deal':
             data.update({'variation_choice':item.get_variation_choice()})
             deal_shock=Buy_with_shock_deal.objects.filter(main_products=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).order_by('valid_to').first()
-            deal =ByproductdealSerializer(deal_shock,context={"request": request}).data
+            deal =DealByproductSerializer(deal_shock,context={"request": request}).data
             data.update(deal)
         elif choice=='combo':
             promotion_combo=Promotion_combo.objects.filter(products=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
@@ -758,6 +760,7 @@ class AddToCardBatchAPIView(APIView):
         Byproduct.objects.bulk_update(byproduct_update,['quantity'],batch_size=1000)
         Byproduct.objects.bulk_create(byproduct_create)
         return Response(data)
+
 class AddToCartAPIView(APIView):
     def get(self,request):
         item_id=request.GET.get('item_id')
@@ -1127,6 +1130,8 @@ class CheckoutAPIView(APIView):
                     products=Variation.objects.get(id=item.product_id)
                     products.inventory -= item.quantity
                     products.save()
+                    if product.get_discount():
+                        Variation_discount.objects.filter(shop_program_id=product.item.get_program_current,variation=product).update(promotion_stock=F('promotion_stock')-item.quantity)
                     for byproduct in item.byproduct_cart.all():
                         product=Variation.objects.get(id=byproduct.product_id)
                         product.inventory -= byproduct.quantity
@@ -1175,10 +1180,15 @@ def payment_complete(request):
                 products=Variation.objects.get(id=item.product_id)
                 products.inventory -= item.quantity
                 products.save()
-                for byproduct in item.byproduct_cart.all():
-                    product=Variation.objects.get(id=byproduct.product_id)
-                    product.inventory -= byproduct.quantity
-                    product.save()
+                if product.get_discount_flash_sale():
+                    Variation_discount.objects.filter(flash_sale_id=product.item.get_flash_sale_current(),variation=product).update(promotion_stock=F('promotion_stock')-item.quantity)
+                if product.get_discount():
+                    Variation_discount.objects.filter(shop_program_id=product.item.get_program_current(),variation=product).update(promotion_stock=F('promotion_stock')-item.quantity)
+                if item.get_deal_shock_current():
+                    for byproduct in item.byproduct_cart.all():
+                        product=Variation.objects.get(id=byproduct.product_id)
+                        product.inventory -= byproduct.quantity
+                        product.save()
         bulk_update(list_orders)
         Payment.objects.filter(paid=False,user=user).delete()
         return Response({'ok':'ok'})
@@ -1189,60 +1199,51 @@ def payment_complete(request):
             amount+=order.total_final_order()
         return Response({'amount':amount})  
 
-class DealShockAPIView(APIView):
+class Byproductdeal(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request,id):
+        from_item=0
+        offset=request.GET.get('offset')
+        if offset:
+            from_item=int(offset)
+        deal_shock=Buy_with_shock_deal.objects.get(id=id)
+        byproductdeal=deal_shock.byproducts.all()
+        count=byproduct.count()
+        to_item=from_item+10
+        if from_item+10>=count():
+            to_item=count
+        listitem=byproductdeal[from_item:to_item]
+        byproducts=ByproductdealSerializer(listitem,many=True).data
+        data={'byproducts':byproducts,'count':count}
+
+class DealShockAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    def get(self,request,deal_id,id):
         user=request.user
         variation=Variation.objects.get(id=id)
-        quantity=1
         cartitem_id=0
         cart_item=[]
-        list_product=[]
-        variation_info={'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
+        byproducts=[]
+        variation_choice={'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'quantity':quantity,'item_id':variation.item_id,'item_name':variation.item.name,'check':True,'main':True,
             'price':variation.price,'discount_price':variation.total_discount(),'item_url':variation.item.get_absolute_url(),
-            'sizes':variation.item.get_size(),'inventory':variation.inventory,'show':False,
-            'item_image':variation.item.get_image_cover(),
+            'sizes':variation.item.get_size(),'inventory':variation.inventory,
+            'item_image':variation.item.get_image_cover(),'quantity':1,
             'colors':variation.item.get_color()}
-        list_product.append(variation_info)
+        cart_item.append(variation_info)
         cartitem=CartItem.objects.filter(product=variation,ordered=False,user=user)
         if cartitem.exists():
             cartitem=cartitem.last()
-            quantity=cartitem.quantity
+            variation_info.update({'quantity':cartitem.quantity})
             cartitem_id=cartitem.id
             for byproduct in cartitem.byproduct_cart.all():
-                cart_item.append({'product_id':byproduct.product_id,'color_value':byproduct.product.get_color(),
+                byproducts.append({'product_id':byproduct.product_id,'color_value':byproduct.product.get_color(),
                 'quantity':byproduct.quantity,'size_value':byproduct.product.get_size(),'item_id':byproduct.item_id,
-                'item_name':byproduct.item.name,
-                'discount_price':byproduct.product.total_discount(),'byproduct_id':byproduct.id})
+                'byproduct_id':byproduct.id})
         item=Item.objects.get(id=variation.item_id)
-        shock_deal=Buy_with_shock_deal.objects.get(main_products=item,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
-        byproducts=shock_deal.byproducts.all()
-        for item in byproducts:
-            if item.get_deal():
-                list_product.append({
-                    'item_id':item.id,'item_name':item.name,'size':item.get_size(),
-                    'color':item.get_color(),'get_deal':item.get_deal(),
-                    'color_value':'','quantity':1,'size_value':'',
-                    'price':item.max_price(),'show':False,
-                    'item_image':item.get_image_cover(),
-                    'check':False,'main':False,'item_url':item.get_absolute_url(),
-                    })
-        
-        for i in range(len(list_product)):
-            for j in range(len(cart_item)):
-                if list_product[i]['item_id']==cart_item[j]['item_id'] and list_product[i]['main']==False:
-                    list_product[i]['product_id']=cart_item[j]['product_id']
-                    list_product[i]['color_value']=cart_item[j]['color_value']
-                    list_product[i]['size_value']=cart_item[j]['size_value']
-                    list_product[i]['quantity']=cart_item[j]['quantity']
-                    list_product[i]['discount_price']=cart_item[j]['discount_price']
-                    list_product[i]['check']=True
-                    list_product[i]['byproduct_id']=cart_item[j]['byproduct_id']
-        
         data={
-            'cartitem_id':cartitem_id,'deal_id':shock_deal.id,
-            'list_product':list_product
+            'cartitem_id':cartitem_id,'deal_id':deal_id,
+            'byproducts':byproducts,'variation_choice':variation_choice
         }
         return Response(data)
 
@@ -1431,6 +1432,10 @@ class PurchaseAPIView(APIView):
                 products=Variation.objects.get(id=item.product_id)
                 products.inventory += item.quantity
                 products.save()
+                if product.get_discount_flash_sale():
+                    Variation_discount.objects.filter(flash_sale_id=product.item.get_flash_sale_current(),variation=product).update(promotion_stock=F('promotion_stock')+item.quantity)
+                if product.get_discount():
+                    Variation_discount.objects.filter(shop_program_id=product.item.get_program_current(),variation=product).update(promotion_stock=F('promotion_stock')+item.quantity)
                 for byproduct in item.byproduct_cart.all():
                     product=Variation.objects.get(id=byproduct.product_id)
                     product.inventory+=byproduct.quantity

@@ -198,16 +198,19 @@ class VariationcartSerializer(serializers.ModelSerializer):
     size_value=serializers.SerializerMethodField()
     product_id=serializers.SerializerMethodField()
     discount_price=serializers.SerializerMethodField()
+    user_item_limit=serializers.SerializerMethodField()
     class Meta:
         model = Variation
         field_variation.remove('variation_id')
-        fields =field_variation+['product_id','discount_price']
+        fields =field_variation+['product_id','discount_price','user_item_limit']
     def get_color_value(self,obj):
         return obj.get_color()
     def get_size_value(self,obj):
         return obj.get_size()
     def get_product_id(self,obj):
         return obj.id
+    def get_user_item_limit(self,obj):
+        return obj.get_limit_deal()
     def get_discount_price(self,obj):
         return obj.total_discount()
 class ItempageSerializer(ItemSerializer):
@@ -334,24 +337,33 @@ class ItemdealSerializer(ItemSerializer):
         return obj.get_deal_choice()
     def get_count_variation(self,obj):
         return obj.count_variation()
-class ByproductdealSerializer(serializers.ModelSerializer):
+class ByproductdealSerializer(ItemdealSerializer):
+    class Meta(ItemdealSerializer.Meta):
+        list_fields=ItemdealSerializer.Meta.fields
+        list_fields.remove('variation_choice')
+        fields=list_fields
+class DealByproductSerializer(serializers.ModelSerializer):
     byproduct=serializers.SerializerMethodField()
     colors_deal=serializers.SerializerMethodField()
     sizes_deal=serializers.SerializerMethodField()
     class Meta:
         model=Buy_with_shock_deal
-        fields=('byproduct','sizes_deal','colors_deal','id')
+        fields=('byproduct','sizes_deal','colors_deal','id','limited_product_bundles',
+        'minimum_price_to_receive_gift','shock_deal_type')
     def get_byproduct(self,obj):
-        return ItemdealSerializer(obj.byproducts.all()[:4],many=True).data
+        listitem=ItemdealSerializer(obj.byproducts.all()[:4],many=True).data
+        if obj.limited_product_bundles:
+            listitem=ItemdealSerializer(obj.byproducts.all()[:obj.limited_product_bundles],many=True).data
+        return listitem
     def get_colors_deal(self,obj):
         variations=Variationdeal.objects.filter(deal_shock=obj,enable=True).select_related('variation__color')
         colors=Color.objects.filter(variation__variation_deal__in=variations).distinct()
         return [color.id for color in colors]
-
     def get_sizes_deal(self,obj):
         variations=Variationdeal.objects.filter(deal_shock=obj,enable=True).select_related('variation__size')
         sizes=Size.objects.filter(variation__variation_deal__in=variations).distinct()
         return [size.id for size in sizes]
+
 class ProductdealSerializer(serializers.ModelSerializer):
     class Meta:
         model=Buy_with_shock_deal
@@ -856,10 +868,10 @@ class CartitemcartSerializer(CartItemSerializer):
     count_variation=serializers.SerializerMethodField()
     inventory=serializers.SerializerMethodField()
     promotion=serializers.SerializerMethodField()
-    shock_deal_type=serializers.SerializerMethodField()
+    shock_deal=serializers.SerializerMethodField()
     class Meta(CartItemSerializer.Meta):
         fields = CartItemSerializer.Meta.fields + ('colors','sizes','count_variation',
-        'promotion','shop_id','check','inventory','shock_deal_type',)
+        'promotion','shop_id','check','inventory','shock_deal',)
     def get_colors(self,obj):
         return obj.item.get_color()
     def get_sizes(self,obj):
@@ -870,8 +882,8 @@ class CartitemcartSerializer(CartItemSerializer):
         return obj.product.inventory
     def get_promotion(self,obj):
         return obj.item.get_promotion()
-    def get_shock_deal_type(self,obj):
-        return obj.item.shock_deal_type()
+    def get_shock_deal(self,obj):
+        return obj.item.shock_deal()
     def get_byproduct(self,obj):
         list_byproduct=[]
         if obj.item.get_deal_shock_current():

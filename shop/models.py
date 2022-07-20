@@ -248,6 +248,15 @@ class Item(models.Model):
         deal_shock=Buy_with_shock_deal.objects.filter(byproducts=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if deal_shock.exists():
             return deal_shock.first().id
+    def shock_deal(self):
+        deal_shock=Buy_with_shock_deal.objects.filter(byproducts=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        if deal_shock.exists():
+            deal_shock=deal_shock.first()
+            return {'id':deal_shock.id,
+            'limited_product_bundles':deal_shock.limited_product_bundles,
+            'minimum_price_to_receive_gift':deal_shock.minimum_price_to_receive_gift,
+            'number_gift':deal_shock.number_gift,
+            'shock_deal_type':deal_shock.shock_deal_type}
     def check_promotion(self):
         promotion_combo=Promotion_combo.objects.filter(products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if promotion_combo.exists():
@@ -329,11 +338,25 @@ class Variation(models.Model):
     view=models.IntegerField(default=0)
     def __str__(self):
         return str(self.item)
-    
+    def get_limit_deal(self):
+        if self.item.get_deal_shock_current():
+            variations=Variationdeal.objects.filter(enable=True,variation=self,deal_shock_id=self.item.get_deal_shock_current())
+            if variations.exists():
+                return variations.first().user_item.limit
+    def get_variation_program(self):
+        if self.item.get_program_current():
+            variations=Variation_discount.objects.filter(enable=True,variation=self,shop_prgram_id=self.item.get_program_current())
+            if variations.exists():
+                return variations.first().user_item.limit
+    def get_limit_flash_sale(self):
+        if self.item.get_flash_sale_current():
+            variations=Variationflashsale.objects.filter(enable=True,variation=self,flash_sale_id=self.item.get_flash_sale_current())
+            if variations.exists() and variations.first().promotion_stock>0:
+                return variations.first().user_item.limit
     def get_discount(self):
         if self.item.get_program_current():
             variations=Variation_discount.objects.filter(enable=True,variation=self,shop_program_id=self.item.get_program_current())
-            if variations.exists():
+            if variations.exists() and variations.first().promotion_stock>0:
                 return variations.first().promotion_price
     def get_discount_flash_sale(self):
         if self.item.get_flash_sale_current():
