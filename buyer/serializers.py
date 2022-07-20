@@ -177,7 +177,10 @@ class ItemSerializer(IteminfoSerializer):
         return obj.min_price()
     def get_percent_discount(self,obj):
         return obj.percent_discount_total()
-    
+class ItemproductSerializer(IteminfoSerializer):
+    class Meta(IteminfoSerializer.Meta):
+        fields=IteminfoSerializer.Meta.fields+['sku_product']
+
 field_variation=['variation_id','inventory','color_value','size_value','price','item_id']
 class VariationSerializer(serializers.ModelSerializer):
     color_value=serializers.SerializerMethodField()
@@ -192,7 +195,12 @@ class VariationSerializer(serializers.ModelSerializer):
         return obj.get_size()
     def get_variation_id(self,obj):
         return obj.id
-
+class VariationsellerSerializer(VariationSerializer):
+    number_order=serializers.SerializerMethodField()
+    class Meta(VariationSerializer.Meta):
+        fields=VariationSerializer.Meta.fields+['id','sku_classify','number_order']
+    def get_number_order(self,obj):
+        return obj.number_order()
 class VariationcartSerializer(serializers.ModelSerializer):
     color_value=serializers.SerializerMethodField()
     size_value=serializers.SerializerMethodField()

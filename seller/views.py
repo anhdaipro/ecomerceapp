@@ -59,7 +59,9 @@ CombosellerSerializer,
 BuywithsockdealinfoSerializer,
 FlashSaleSerializer,
 ReviewshopSerializer,
-FlashSaleSellerSerializer,)
+FlashSaleSellerSerializer,
+VariationsellerSerializer,
+ItemproductSerializer,)
 class ListvoucherAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = VoucherSerializer
@@ -240,7 +242,7 @@ class ShopratingAPI(APIView):
 def product(request):
     user=request.user
     shop=Shop.objects.get(user=user)
-    product=Item.objects.filter(shop=shop)
+    items=Item.objects.filter(shop=shop)
     item_id=request.GET.get('item_id')
     page_no=request.GET.get('page_no')
     per_page=request.GET.get('per_page')
@@ -252,85 +254,42 @@ def product(request):
         item_id=request.POST.getlist('item_id')
         Item.objects.filter(id__in=item_id).delete()
         data={
-            'count_product':product.count()
+            'count_product':items.count()
         }
         return Response(data)
     else:
         if item_id:
-            item=Item.objects.get(id=item_id)
-            variation=Variation.objects.filter(item=item).order_by('-color__value')[3:]
-            list_variation=[{'number_order':i.number_order(),'inventory':i.inventory,'price':i.price,'sku':i.sku_classify,'color_value':i.color.value,'size_value':i.size.value
-                } for i in variation]
-            data={'a':list_variation,'count_variation':variation.count()}
-            return Response(data)
-        elif page_no:
-            obj_paginator = Paginator(product, per_page)
-            first_page = obj_paginator.get_page(page_no)
-            variation=Variation.objects.filter(item__in=first_page).order_by('-color__value')
-            list_product=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),
-                'id':i.id,'item_sku':i.sku_product,
-                } for i in first_page]
-            list_variation=[{'number_order':i.number_order(),'inventory':i.inventory,'price':i.price,'sku':i.sku_classify,'color_value':i.get_color(),'size_value':i.get_size(),
-            'item_id':i.item_id ,'id':i.id
-                    } for i in variation]
-            data={
-                'a':list_product,'b':list_variation,'page_range':obj_paginator.num_pages,'count_product':product.count()
-            }
-            return Response(data)
-        elif price and sort:
+            items=Item.objects.get(id=item_id)     
+        if price and sort:
             if sort == "sort-asc":
-                product=product.order_by('variation__price').distinct()
+                items=items.order_by('variation__price').distinct()
             else:
-                product=product.order_by('-variation__price').distinct()
-            obj_paginator = Paginator(product, per_page)
-            first_page = obj_paginator.get_page(1)
-            variation=Variation.objects.filter(item__in=first_page).order_by('-color__value')
-            list_product=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),
-                'id':i.id,'item_sku':i.sku_product,'get_absolute_id':i.get_absolute_id()
-                } for i in first_page]
-            list_variation=[{'number_order':i.number_order(),'inventory':i.inventory,'price':i.price,'sku':i.sku_classify,'color_value':i.get_color(),'size_value':i.get_size(),
-            'item__id':i.item.id ,'id':i.id
-                    } for i in variation]
-            data={
-                'a':list_product,'b':list_variation,'page_range':obj_paginator.num_pages,'count_product':product.count()
-            }
+                items=items.order_by('-variation__price').distinct()
+            
             return Response(data)
-        elif order and sort:
+        if order and sort:
             if sort == "sort-asc":
-                product=product.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('count')
             else:
-                product=product.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
-            obj_paginator = Paginator(product, per_page)
-            first_page = obj_paginator.get_page(1)
-            variation=Variation.objects.filter(item__in=first_page).order_by('-color__value')
-            list_product=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),
-                'id':i.id,'item_sku':i.sku_product,
-                } for i in first_page]
-            list_variation=[{'number_order':i.number_order(),'inventory':i.inventory,'price':i.price,'sku':i.sku_classify,'color_value':i.get_color(),'size_value':i.get_size(),
-            'item__id':i.item_id ,'id':i.id
-                    } for i in variation]
-            data={
-                'a':list_product,'b':list_variation,'page_range':obj_paginator.num_pages,'count_product':product.count()
-            }
+                items=items.annotate(count=Count('variation__cartitem__order__id')).order_by('-count')
+            
             return Response(data)
-        elif inventory and sort:
+        if inventory and sort:
             if sort == "sort-asc":
-                product=product.order_by('variation__inventory').distinct()
+                items=items.order_by('variation__inventory').distinct()
             else:
-                product=product.order_by('-variation__inventory').distinct()
-            obj_paginator = Paginator(product, per_page)
-            first_page = obj_paginator.get_page(1)
-            variation=Variation.objects.filter(item__in=first_page).order_by('-color__value')
-            list_product=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),
-                'id':i.id,'item_sku':i.sku_product,'get_absolute_id':i.get_absolute_id()
-                } for i in first_page]
-            list_variation=[{'number_order':i.number_order(),'inventory':i.inventory,'price':i.price,'sku':i.sku_classify,'color_value':i.get_color(),'size_value':i.get_size(),
-            'item__id':i.item_id ,'id':i.id
-                    } for i in variation]
-            data={
-                'a':list_product,'b':list_variation,'page_range':obj_paginator.num_pages,'count_product':product.count()
-            }
-            return Response(data)
+                items=items.order_by('-variation__inventory').distinct()
+        obj_paginator = Paginator(items, per_page)
+        first_page = obj_paginator.get_page(1)
+        if page_no:
+            first_page = obj_paginator.get_page(page_no)   
+        variations=Variation.objects.filter(item__in=first_page).order_by('-color__value')
+        list_product=ItemproductSerializer(first_page,many=True).data
+        list_variation=VariationsellerSerializer(variations,many=True).data
+        data={
+            'a':list_product,'b':list_variation,'page_range':obj_paginator.num_pages,'count_product':product.count()
+        }
+        return Response(data)
 
 @api_view(['GET', 'POST'])
 def get_product(request):
@@ -352,12 +311,8 @@ def get_product(request):
     else:
         if item_id:
             item=Item.objects.get(id=item_id)
-            data={
-                'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),
-                'size_value':variation.get_size(),'inventory':variation.inventory,
-                'discount':variation.total_discount(),
-                'num_order':variation.number_order()} for variation in item.variation_item.all()[2:item.variation_item.all().count()]]
-            }
+            variations=item.variation_item.all()[2:item.variation_item.all().count()]
+            data=VariationsellerSerializer(variations,many=True).data
             return Response(data)
         else:
             if page_no and per_page:
@@ -366,13 +321,10 @@ def get_product(request):
             obj_paginator = Paginator(list_product, pagesize)
             pageitem = obj_paginator.get_page(page)
             data={'count_product':list_product.count(),
-                    'pageitem':[{'item_name':item.name,'item_image':item.get_image_cover(),
-                    'item_id':item.id,'item_sku':item.sku_product,
+                    'pageitem':[{'name':item.name,'image':item.get_image_cover(),
+                    'id':item.id,'sku_product':item.sku_product,
                     'count_variation':item.variation_item.all().count(),
-                    'list_variation':[{'product_id':variation.id,'color_value':variation.get_color(),
-                    'size_value':variation.get_size(),'inventory':variation.inventory,
-                    'discount':variation.total_discount(),
-                    'num_order':variation.number_order()} for variation in item.variation_item.all()[0:3]]
+                    'list_variation':VariationsellerSerializer(item.variation_item.all()[0:3],many=True).data
                     } for item in pageitem]
                 }
             return Response(data)
@@ -389,13 +341,9 @@ def delete_product(request):
         per_page=request.POST.get('per_page')
         obj_paginator = Paginator(product, per_page)
         first_page = obj_paginator.get_page(page_no)
-        variation=Variation.objects.filter(item__in=first_page).order_by('-color__value')
-        list_product=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),
-            'id':i.id,'item_sku':i.sku_product,'get_absolute_id':i.get_absolute_id()
-            } for i in first_page]
-        list_variation=[{'number_order':i.number_order(),'inventory':i.inventory,'price':i.price,'sku':i.sku_classify,'color_value':i.get_color(),'size_value':i.get_size(),
-        'item__id':i.item_id ,'id':i.id
-                } for i in variation]
+        variations=Variation.objects.filter(item__in=first_page).order_by('-color__value')
+        list_product=ItemproductSerializer(first_page,many=True).data
+        list_variation=VariationsellerSerializer(variations,many=True).data
         data={
             'a':list_product,'b':list_variation,'page_range':obj_paginator.num_pages,'count_product':product.count()
         }
@@ -1441,8 +1389,7 @@ def create_shop(request):
         address=Address.objects.filter(user=user,address_type='B')
         data={'address':address.values(),'info':{'username':user.username,'email':user.email,'name':user.shop.name,'phone_number':str(user.profile.phone)}}
         return Response(data)
-                
-    
+                    
 import calendar
 import pandas as pd
 @api_view(['GET', 'POST'])
