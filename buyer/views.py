@@ -722,6 +722,7 @@ class AddToCardBatchAPIView(APIView):
         item_id=request.data.get('item_id')
         byproducts=request.data.get('byproducts')
         deal_id=request.data.get('deal_id')
+        action=request.data.get('action')
         variation_choice=Variation.objects.get(id=product_id)
         cartitem=CartItem.objects.filter(user=request.user,product_id=product_id,ordered=False)
         item=Item.objects.get(id=item_id)
@@ -729,7 +730,10 @@ class AddToCardBatchAPIView(APIView):
         if cartitem.exists():
             cartitem=cartitem.last()
             cartitem.deal_shock_id=deal_id
-            cartitem.quantity=int(quantity_product)
+            if action=='add':
+                cartitem.quantity+=int(quantity_product)
+            else:
+                cartitem.quantity=int(quantity_product)
             cartitem.save()
             data.update({'o':'o'})
         else:
@@ -741,7 +745,7 @@ class AddToCardBatchAPIView(APIView):
                 shop=item.shop,
                 deal_shock_id=deal_id,
                 quantity=int(quantity_product)
-                )
+            )
             data.update({'ow':'ow'})
         list_byproduct_cart_delete=[product['byproduct_id'] for product in byproducts if product.get('byproduct_id') and product['check']==False]
         list_product_cart=[product for product in byproducts if  (product.get('byproduct_id')==None and product['check']) or (product.get('byproduct_id') and product['check'])]
@@ -751,7 +755,10 @@ class AddToCardBatchAPIView(APIView):
             byproduct_cart=Byproduct.objects.filter(product_id=product['product_id'],cartitem=cartitem,user=request.user)
             if byproduct_cart.exists():
                 byproduct_cart=byproduct_cart.first()
-                byproduct_cart.quantity+=product['quantity']
+                if action=='add':
+                    byproduct_cart.quantity+=product['quantity']
+                else:
+                    byproduct_cart.quantity=product['quantity']
                 byproduct_update.append(byproduct_cart)
             else:
                 byproduct_create.append(Byproduct(user=user,cartitem=cartitem,item_id=product['item_id'],product_id=product['product_id'],quantity=product['quantity'])
