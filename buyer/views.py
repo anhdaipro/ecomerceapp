@@ -862,17 +862,16 @@ class CartItemAPIView(APIView):
                         if voucher.shop_id==order.shop_id:
                             order.voucher=voucher
                             discount_voucher_shop=order.discount_voucher()
-                            order.save()
                     if voucher_id_remove:
                         voucher=Voucher.objects.get(id=voucher_id_remove)
                         if voucher.shop_id==order.shop_id:
                             order.voucher=None
-                            order.save()
                     list_shop_order.append(order.shop_id)
                     list_cart_item_remove=CartItem.objects.filter(shop_id=order.shop_id,id__in=id_check)
                     order.items.remove(*list_cart_item_remove)
                     list_cart_item_add=CartItem.objects.filter(shop_id=order.shop_id,id__in=id_checked)
                     order.items.add(*list_cart_item_add) 
+                bulk_update(order_qs)
                 list_shop_remain=list(set(shop_id) - set(list_shop_order))
                 if len(list_shop_remain)>0:
                     order = Order.objects.bulk_create([
