@@ -339,9 +339,7 @@ class ItemdealSerializer(ItemSerializer):
         return obj.count_variation()
 class ByproductdealSerializer(ItemdealSerializer):
     class Meta(ItemdealSerializer.Meta):
-        list_fields=ItemdealSerializer.Meta.fields
-        list_fields.remove('variation_choice')
-        fields=list_fields
+        fields=ItemdealSerializer.Meta.fields.remove('variation_choice')
 class DealByproductSerializer(serializers.ModelSerializer):
     byproduct=serializers.SerializerMethodField()
     colors_deal=serializers.SerializerMethodField()
