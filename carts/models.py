@@ -104,7 +104,6 @@ class CartItem(models.Model):
                 total+=byproduct.price_by()
         return total
     def get_deal_shock_current(self):
-        deal_shock=Buy_with_shock_deal.objects.filter(byproducts=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if self.deal_shock and self.deal_shock.valid_to>timezone.now() and self.deal_shock.valid_from<timezone.now():
             return self.deal_shock.id
 class Byproduct(models.Model):
