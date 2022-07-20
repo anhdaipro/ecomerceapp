@@ -833,12 +833,12 @@ class CartItemSerializer(serializers.ModelSerializer):
     discount_price=serializers.SerializerMethodField()
     total_price=serializers.SerializerMethodField()
     price=serializers.SerializerMethodField()
-    byproduct=serializers.SerializerMethodField()
+    byproducts=serializers.SerializerMethodField()
     class Meta:
         model = CartItem
         fields = ('id','item_id','item_name','item_url','product_id',
         'color_value','size_value','quantity','discount_price','item_image',
-        'price','total_price','byproduct',
+        'price','total_price','byproducts',
         )
     def get_color_value(self,obj):
         return obj.product.get_color()
@@ -856,7 +856,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         return obj.discount_main()
     def get_discount_price(self,obj):
         return obj.product.get_discount()
-    def get_byproduct(self,obj):
+    def get_byproducts(self,obj):
         list_byproduct=[]
         if obj.item.shock_deal():
             list_byproduct=ByproductSerializer(obj.byproduct_cart.all(), many=True).data
@@ -883,7 +883,7 @@ class CartitemcartSerializer(CartItemSerializer):
         return obj.item.get_promotion()
     def get_shock_deal(self,obj):
         return obj.item.shock_deal()
-    def get_byproduct(self,obj):
+    def get_byproducts(self,obj):
         list_byproduct=[]
         if obj.item.shock_deal():
             list_byproduct=ByproductcartSerializer(obj.byproduct_cart.all(), many=True).data
