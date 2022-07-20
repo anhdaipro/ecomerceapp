@@ -343,9 +343,9 @@ class SearchitemAPIView(APIView):
         list_shop=Shop.objects.all()
         category_choice=Category.objects.filter(choice=True)
         if keyword:
-            list_items = list_items.filter(Q(name__icontains=keyword)|Q(shop__name=keyword) | Q(brand__in=keyword)|Q(category__title__in=keyword)).order_by('name').distinct()
+            list_items = list_items.filter(Q(name__icontains=keyword)|Q(shop__name=keyword) | Q(brand__in=keyword)|Q(category__title=keyword)).order_by('name').distinct()
             items = Item.objects.filter(Q(name__icontains=keyword) | Q(
-            brand__in=keyword)|Q(category__title__in=keyword)).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').distinct()
+            brand__in=keyword)|Q(category__title=keyword)).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').distinct()
             category_choice=Category.objects.filter(item__in=list_items).order_by('name').distinct()
             list_shop=Shop.objects.filter(item__in=list_items)
             SearchKey.objects.get_or_create(keyword=keyword)
