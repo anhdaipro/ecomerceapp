@@ -846,8 +846,10 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_discount_price(self,obj):
         return obj.product.get_discount()
     def get_byproduct(self,obj):
-        return ByproductSerializer(obj.byproduct_cart.all().filter(item__byproduct__valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)), many=True).data
-
+        list_byproduct=[]
+        if obj.item.get_deal_shock_current():
+            list_byproduct=ByproductSerializer(obj.byproduct_cart.all(), many=True).data
+        return list_byproduct
 class CartitemcartSerializer(CartItemSerializer):
     sizes=serializers.SerializerMethodField()
     colors=serializers.SerializerMethodField()
@@ -870,7 +872,11 @@ class CartitemcartSerializer(CartItemSerializer):
         return obj.item.get_promotion()
     def get_shock_deal_type(self,obj):
         return obj.item.shock_deal_type()
-
+    def get_byproduct(self,obj):
+        list_byproduct=[]
+        if obj.item.get_deal_shock_current():
+            list_byproduct=ByproductcartSerializer(obj.byproduct_cart.all(), many=True).data
+        return list_byproduct
 class OrdersellerSerializer(OrderSerializer):
     user=serializers.SerializerMethodField()
     class Meta(OrderSerializer.Meta):

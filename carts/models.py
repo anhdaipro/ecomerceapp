@@ -53,7 +53,7 @@ class CartItem(models.Model):
         return count
 
     def discount_deal(self):
-        if self.item.get_deal_shock_current():
+        if self.get_deal_shock_current():
             discount_deal=0
             for byproduct in self.byproduct_cart.all():
                 discount_deal+=byproduct.discount_deal_by()
@@ -80,7 +80,7 @@ class CartItem(models.Model):
         total_discount=0
         if self.item.get_program_current() and self.product.get_discount():
             total_discount+=self.quantity*self.product.get_discount()
-        if self.item.get_deal_shock_current():
+        if self.get_deal_shock_current():
             for byproduct in self.byproduct_cart.all():
                 if byproduct.item.get_discount():
                     total_discount+=byproduct.discount_by()
@@ -99,11 +99,14 @@ class CartItem(models.Model):
     def total_price_cartitem(self):
         total=0
         total+=self.quantity*self.product.price
-        if self.deal_shock and self.deal_shock.valid_to>timezone.now():
+        if self.deal_shock and self.deal_shock.valid_to>timezone.now() and self.deal_shock.valid_from<timezone.now():
             for byproduct in self.byproduct_cart.all():
                 total+=byproduct.price_by()
         return total
-
+    def get_deal_shock_current(self):
+        deal_shock=Buy_with_shock_deal.objects.filter(byproducts=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        if self.deal_shock and self.deal_shock.valid_to>timezone.now() and self.deal_shock.valid_from<timezone.now():
+            return self.deal_shock.id
 class Byproduct(models.Model):
     cartitem=models.ForeignKey(CartItem, on_delete=models.CASCADE,related_name='byproduct_cart')
     user = models.ForeignKey(User,on_delete=models.CASCADE)
