@@ -273,7 +273,7 @@ def product(request):
             first_page = obj_paginator.get_page(page_no)
             variation=Variation.objects.filter(item__in=first_page).order_by('-color__value')
             list_product=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),
-                'id':i.id,'item_sku':i.sku_product,'get_absolute_id':i.get_absolute_id()
+                'id':i.id,'item_sku':i.sku_product,
                 } for i in first_page]
             list_variation=[{'number_order':i.number_order(),'inventory':i.inventory,'price':i.price,'sku':i.sku_classify,'color_value':i.get_color(),'size_value':i.get_size(),
             'item_id':i.item_id ,'id':i.id
@@ -309,7 +309,7 @@ def product(request):
             first_page = obj_paginator.get_page(1)
             variation=Variation.objects.filter(item__in=first_page).order_by('-color__value')
             list_product=[{'item_name':i.name,'item_image':i.media_upload.all()[0].get_media(),
-                'id':i.id,'item_sku':i.sku_product,'get_absolute_id':i.get_absolute_id()
+                'id':i.id,'item_sku':i.sku_product
                 } for i in first_page]
             list_variation=[{'number_order':i.number_order(),'inventory':i.inventory,'price':i.price,'sku':i.sku_classify,'color_value':i.get_color(),'size_value':i.get_size(),
             'item__id':i.item_id ,'id':i.id

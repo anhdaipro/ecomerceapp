@@ -176,7 +176,7 @@ class ItemSerializer(IteminfoSerializer):
     def get_min_price(self,obj):
         return obj.min_price()
     def get_percent_discount(self,obj):
-        return obj.percent_discount()
+        return obj.percent_discount_total()
     
 field_variation=['variation_id','inventory','color_value','size_value','price','item_id']
 class VariationSerializer(serializers.ModelSerializer):

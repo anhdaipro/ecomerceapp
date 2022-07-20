@@ -179,9 +179,29 @@ class Item(models.Model):
         if self.get_program_current():
             variations=Variation_discount.objects.filter(item=self,shop_program=self.get_program_current()).aggregate(avg=Avg('promotion_price'))
             return variations['avg']
+    def avg_discount_price_deal(self):
+        if self.get_deal_shock_current():
+            variations=Variationdeal.objects.filter(item=self,deal_shock=self.get_deal_shock_current()).aggregate(avg=Avg('promotion_price'))
+            return variations['avg']
+    def avg_discount_price_flash_sale(self):
+        if self.get_deal_shock_current():
+            variations=Variationflashsale.objects.filter(item=self,flash_sale=self.get_flash_sale_current()).aggregate(avg=Avg('promotion_price'))
+            return variations['avg']
     def percent_discount(self):
+        percent=0
         if self.get_program_current():
-            return int((float(self.avg_price())-float(self.avg_discount_price()))*100/float(self.avg_price()))
+            percent= int((float(self.avg_price())-float(self.avg_discount_price()))*100/float(self.avg_price()))
+        return percent
+    def percent_discount_deal(self):
+        percent=0
+        if self.get_deal_shock_current():
+            percent= int((float(self.avg_price())-float(self.avg_discount_price_deal()))*100/float(self.avg_price()))
+        return percent
+    def percent_discount_flash_sale(self):
+        percent=0
+        if self.get_flash_sale_current():
+            percent= int((float(self.avg_price())-float(self.avg_discount_price_flash_sale()))*100/float(self.avg_price()))
+        return percent
     def total_inventory(self):
         variations = Variation.objects.filter(item=self).aggregate(sum=Sum('inventory'))
         total_inventory = 0
@@ -189,6 +209,9 @@ class Item(models.Model):
             total_inventory=int(variations["sum"])
         return total_inventory
     
+    def percent_discount_total(self):
+        return self.percent_discount()+self.percent_discount_deal()
+
     def max_price(self):
         variations = Variation.objects.filter(item=self).aggregate(max=Max('price'))
         max_price=int(variations["max"])
