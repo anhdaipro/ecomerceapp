@@ -296,7 +296,7 @@ class Topsearch(APIView):
         return Response(data)
 
 class SearchitemshopAPI(APIView):
-    def get(self,request,id):
+    def get(self,request):
         shop_id=request.GET.get('shop_id')
         minprice=request.GET.get('minPrice')
         maxprice=request.GET.get('maxPrice')
