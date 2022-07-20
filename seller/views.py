@@ -149,6 +149,7 @@ def infoseller(request):
     address=Address.objects.filter(user=user,address_type='B')
     data={'name':user.username,'image':profile.avatar.url,'user_type':profile.user_type,'phone':str(profile.phone)}
     return Response(data)
+
 @api_view(['GET', 'POST'])
 def homeseller(request):
     user=request.user
@@ -196,7 +197,7 @@ def homeseller(request):
 class Listordershop(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
-        orders=Order.objects.filter(shop=shop,ordered=True).prefetch_related('items__item__media_upload').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__byproduct').prefetch_related('items__item__shop_program').prefetch_related('items__product__color').prefetch_related('items__product__size').prefetch_related('items__byproduct')
+        orders=Order.objects.filter(shop=shop,ordered=True).prefetch_related('items__item__media_upload').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__byproduct').prefetch_related('items__item__shop_program').prefetch_related('items__product__color').prefetch_related('items__product__size').prefetch_related('items__byproduct_cart')
         type_order=request.GET.get('type')
         source=request.GET.get('source')
         if type_order:
@@ -221,6 +222,7 @@ class Listordershop(APIView):
         order.accepted=True
         order.save()
         return Response(data)
+
 class ShopratingAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
@@ -238,6 +240,7 @@ class ShopratingAPI(APIView):
         reply=Reply.objects.create(text=text,review=review,user=request.user)
         data={'id':reply.id,'text':reply.text}
         return Response(data)
+
 @api_view(['GET', 'POST'])
 def product(request):
     user=request.user
@@ -324,7 +327,7 @@ def get_product(request):
                     'pageitem':[{'name':item.name,'image':item.get_image_cover(),
                     'id':item.id,'sku_product':item.sku_product,
                     'count_variation':item.variation_item.all().count(),
-                    'list_variation':VariationsellerSerializer(item.variation_item.all()[0:3],many=True).data
+                    'variations':VariationsellerSerializer(item.variation_item.all()[0:3],many=True).data
                     } for item in pageitem]
                 }
             return Response(data)
@@ -1122,15 +1125,13 @@ def add_item(request):
     else:
         list_category=Category.objects.all()
         data={
-            
             'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
             'parent':category.getparent()} for category in list_category]
         } 
         return Response(data)
 
 @api_view(['GET', 'POST'])
-def update_item(request,id):
-    
+def update_item(request,id): 
     user=request.user
     shop=Shop.objects.get(user=user)
     item=Item.objects.get(id=id,shop=shop)
