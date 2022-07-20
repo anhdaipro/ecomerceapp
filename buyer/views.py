@@ -302,6 +302,7 @@ class SearchitemshopAPI(APIView):
         maxprice=request.GET.get('maxPrice')
         order=request.GET.get('order')
         sortby=request.GET.get('sortby')
+        page=request.GET.get('page')
         categoryID=request.GET.get('categoryID')
         items=Item.objects.filter(shop_id=shop_id)
         if categoryID:
@@ -528,7 +529,8 @@ class ShopinfoAPI(APIView):
             promotion_combo=Promotion_combo.objects.filter(shop_id=shop_id,valid_to__gt=timezone.now(),valid_from__lte=timezone.now())
             data =ComboItemSerializer(promotion_combo,many=True,context={"request": request}).data
         elif choice=='gettreecategory':
-            categorychild=Category.objects.filter(item__shop_id=shop_id,choice=True)
+            items=Item.objects.filter(shop_id=shop_id)
+            categorychild=Category.objects.filter(item__in=items,choice=True)
             data=CategorySerializer(categorychild,many=True).data
         return Response(data)
 
