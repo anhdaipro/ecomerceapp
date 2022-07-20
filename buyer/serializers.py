@@ -339,7 +339,7 @@ class ItemdealSerializer(ItemSerializer):
         return obj.count_variation()
 class ByproductdealSerializer(ItemdealSerializer):
     class Meta(ItemdealSerializer.Meta):
-        fields=ItemdealSerializer.Meta.fields.remove('variation_choice')
+        fields=ItemdealSerializer.Meta.fields
 class DealByproductSerializer(serializers.ModelSerializer):
     byproduct=serializers.SerializerMethodField()
     colors_deal=serializers.SerializerMethodField()
@@ -857,7 +857,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         return obj.product.get_discount()
     def get_byproduct(self,obj):
         list_byproduct=[]
-        if obj.item.get_deal_shock_current():
+        if obj.item.deal_shock():
             list_byproduct=ByproductSerializer(obj.byproduct_cart.all(), many=True).data
         return list_byproduct
 class CartitemcartSerializer(CartItemSerializer):
@@ -884,7 +884,7 @@ class CartitemcartSerializer(CartItemSerializer):
         return obj.item.shock_deal()
     def get_byproduct(self,obj):
         list_byproduct=[]
-        if obj.item.get_deal_shock_current():
+        if obj.item.deal_shock():
             list_byproduct=ByproductcartSerializer(obj.byproduct_cart.all(), many=True).data
         return list_byproduct
 class OrdersellerSerializer(OrderSerializer):

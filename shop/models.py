@@ -249,7 +249,7 @@ class Item(models.Model):
         if deal_shock.exists():
             return deal_shock.first().id
     def shock_deal(self):
-        deal_shock=Buy_with_shock_deal.objects.filter(byproducts=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        deal_shock=Buy_with_shock_deal.objects.filter(main_products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
         if deal_shock.exists():
             deal_shock=deal_shock.first()
             return {'id':deal_shock.id,
