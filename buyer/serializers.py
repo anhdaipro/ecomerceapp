@@ -781,14 +781,14 @@ class ByproductSerializer(serializers.ModelSerializer):
     color_value = serializers.SerializerMethodField()
     size_value = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
-    item_name = serializers.SerializerMethodField()
-    item_url = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
     total_price = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
     class Meta:
         model=Byproduct
         fields=('id','color_value','size_value','price','image','item_id',
-        'item_name','quantity','item_url','total_price',)
+        'name','quantity','url','total_price',)
     def get_color_value(self,obj):
         return obj.product.get_color()
     def get_size_value(self,obj):
@@ -797,9 +797,9 @@ class ByproductSerializer(serializers.ModelSerializer):
         return obj.item.get_image_cover()
     def get_price(self,obj):
         return obj.product.price
-    def get_item_name(self,obj):
+    def get_name(self,obj):
         return obj.item.name
-    def get_item_url(self,obj):
+    def get_url(self,obj):
         return obj.item.get_absolute_url()
     def get_total_price(self,obj):
         return obj.total_price()
@@ -825,32 +825,32 @@ class ByproductcartSerializer(ByproductSerializer):
         return obj.product.inventory
 
 class CartItemSerializer(serializers.ModelSerializer):
-    item_name = serializers.SerializerMethodField()
-    item_url=serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    url=serializers.SerializerMethodField()
     color_value=serializers.SerializerMethodField()
     size_value=serializers.SerializerMethodField()
-    item_image=serializers.SerializerMethodField()
+    image=serializers.SerializerMethodField()
     discount_price=serializers.SerializerMethodField()
     total_price=serializers.SerializerMethodField()
     price=serializers.SerializerMethodField()
     byproducts=serializers.SerializerMethodField()
     class Meta:
         model = CartItem
-        fields = ('id','item_id','item_name','item_url','product_id',
-        'color_value','size_value','quantity','discount_price','item_image',
+        fields = ('id','item_id','name','url','product_id',
+        'color_value','size_value','quantity','discount_price','image',
         'price','total_price','byproducts',
         )
     def get_color_value(self,obj):
         return obj.product.get_color()
     def get_size_value(self,obj):
         return obj.product.get_size()
-    def get_item_image(self,obj):
+    def get_image(self,obj):
         return obj.get_image()
     def get_price(self,obj):
         return obj.product.price
-    def get_item_name(self,obj):
+    def get_name(self,obj):
         return obj.item.name
-    def get_item_url(self,obj):
+    def get_url(self,obj):
         return obj.item.get_absolute_url()
     def get_total_price(self,obj):
         return obj.discount_main()
