@@ -342,17 +342,17 @@ class Variation(models.Model):
         if self.item.get_deal_shock_current():
             variations=Variationdeal.objects.filter(enable=True,variation=self,deal_shock_id=self.item.get_deal_shock_current())
             if variations.exists():
-                return variations.first().user_item.limit
+                return variations.first().user_item_limit
     def get_variation_program(self):
         if self.item.get_program_current():
             variations=Variation_discount.objects.filter(enable=True,variation=self,shop_prgram_id=self.item.get_program_current())
             if variations.exists():
-                return variations.first().user_item.limit
+                return variations.first().user_item_limit
     def get_limit_flash_sale(self):
         if self.item.get_flash_sale_current():
             variations=Variationflashsale.objects.filter(enable=True,variation=self,flash_sale_id=self.item.get_flash_sale_current())
             if variations.exists() and variations.first().promotion_stock>0:
-                return variations.first().user_item.limit
+                return variations.first().user_item_limit
     def get_discount(self):
         if self.item.get_program_current():
             variations=Variation_discount.objects.filter(enable=True,variation=self,shop_program_id=self.item.get_program_current())
