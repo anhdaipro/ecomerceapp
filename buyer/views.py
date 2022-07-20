@@ -754,7 +754,7 @@ class AddToCardBatchAPIView(APIView):
                 byproduct_cart.quantity+=product['quantity']
                 byproduct_update.append(byproduct_cart)
             else:
-                byproduct_create.append(Byproduct(user=user,cartitem=cartitem,item_id=item_id,product_id=product['product_id'],quantity=product['quantity'])
+                byproduct_create.append(Byproduct(user=user,cartitem=cartitem,item_id=product['item_id'],product_id=product['product_id'],quantity=product['quantity'])
             )
         Byproduct.objects.filter(id__in=list_byproduct_cart_delete).delete()
         Byproduct.objects.bulk_update(byproduct_update,['quantity'],batch_size=1000)
