@@ -56,7 +56,8 @@ class CartItem(models.Model):
         if self.get_deal_shock_current():
             discount_deal=0
             for byproduct in self.byproduct_cart.all():
-                discount_deal+=byproduct.discount_deal_by()
+                if byproduct.discount_deal_by():
+                    discount_deal+=byproduct.discount_deal_by()
             return discount_deal
     def get_ref_code(self):
         return Order.objects.filter(items=self).first().ref_code
