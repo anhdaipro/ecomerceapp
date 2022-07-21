@@ -505,12 +505,7 @@ def follower_offer(request):
 class NewcomboAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
-        promotion_combo_id=request.GET.get('combo_id')
-        list_id=[]
-        if promotion_combo_id:
-            promotion=Promotion_combo.objects.get(id=promotion_combo_id)
-            list_id=[item.id for item in promotion.products.all()]
-        items=Item.objects.filter(shop=shop).filter(Q(promotion_combo=None)| Q(id__in=list_id) | (Q(promotion_combo__valid_to__lt=datetime.datetime.now()) & Q(promotion_combo__isnull=False))).distinct().order_by('-id')
+        items=Item.objects.filter(shop=shop).order_by('-id')
         order=request.GET.get('order')
         price=request.GET.get('price')
         sort=request.GET.get('sort')
@@ -591,13 +586,14 @@ class NewDeal(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
         deal_id=request.GET.get('deal_id')
-        items=Item.objects.filter(shop=shop)
+        byproduct=request.GET.get('byprducts')
+        items=Item.objects.filter(shop=shop).order_by('-id')
         list_id=[]
         if deal_id:
             deal_shock=Buy_with_shock_deal.objects.get(id=deal_id)
             item_deal=deal_shock.main_products.all()
             list_id=[item.id for item in item_deal]
-        items=items.filter(Q(main_product=None)| Q(id__in=list_id) | (Q(main_product__valid_to__lt=datetime.datetime.now()) & Q(main_product__isnull=False))).distinct().order_by('-id')
+            items=items.exclude(id__in=list_id)
         order=request.GET.get('order')
         price=request.GET.get('price')
         sort=request.GET.get('sort')
@@ -701,11 +697,7 @@ class NewprogramAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
         program_id=request.GET.get('program_id')
-        list_id=[]
-        if program_id:
-            shop_program=Shop_program.objects.get(id=program_id)
-            list_id=[item.id for item in shop_program.products.all()]
-        items=Item.objects.filter(shop=shop).filter(Q(shop_program=None) |Q(id__in=list_id)  | (Q(shop_program__valid_to__lt=datetime.datetime.now()) & Q(shop_program__isnull=False))).distinct()
+        items=Item.objects.filter(shop=shop).order_by('-id')
         order=request.GET.get('order')
         price=request.GET.get('price')
         sort=request.GET.get('sort')
@@ -829,12 +821,7 @@ class Newflashsale(APIView):
         item=request.GET.get('item')
         title=request.GET.get('title')
         q=request.GET.get('q')
-        list_id=[]
-        if flash_sale_id:
-            flash_sale=Flash_sale.objects.get(id=flash_sale_id)
-            item_flash_sale=flash_sale.products.all()
-            list_id=[item.id for item in item_flash_sale]
-        items=Item.objects.filter(shop=shop).filter(Q(flash_sale=None) |Q(id__in=list_id) | (Q(flash_sale__valid_to__lt=datetime.datetime.now()) & Q(flash_sale__isnull=False))).distinct()
+        items=Item.objects.filter(shop=shop).order_by('-id')
         filteritem(price, sort, order, name, q, sku, item, items)
         data=ItemSellerSerializer(items,many=True).data
         return Response(data) 
