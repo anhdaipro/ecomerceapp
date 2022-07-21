@@ -527,6 +527,7 @@ class NewcomboAPI(APIView):
     def post(self,request):
         shop=Shop.objects.get(user=request.user)
         valid_from=request.data.get('valid_from')
+        action=request.data.get('action')
         valid_to=request.data.get('valid_to')
         list_items=request.data.get('list_items')
         shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
@@ -564,6 +565,7 @@ class DetailComboAPI(APIView):
         list_items=request.data.get('list_items')
         valid_from=request.data.get('valid_from')
         valid_to=request.data.get('valid_to')
+        action=request.data.get('action')
         promotion_combo=Promotion_combo.objects.get(id=id)
         data={}
         shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
