@@ -525,6 +525,7 @@ class NewcomboAPI(APIView):
     def post(self,request):
         shop=Shop.objects.get(user=request.user)
         valid_from=request.data.get('valid_from')
+        valid_to=request.data.get('valid_to')
         list_items=request.data.get('list_items')
         shockdeals=Buy_with_shock_deal.objects.filter(valid_from__gte=valid_to,valid_to__gt=datetime.datetime.now())
         promotions=Promotion_combo.objects.filter(valid_from__gte=valid_to,valid_to__gt=datetime.datetime.now())
@@ -538,7 +539,7 @@ class NewcomboAPI(APIView):
                 shop=shop,
                 promotion_combo_name=request.data.get('promotion_combo_name'),
                 valid_from=valid_from,
-                valid_to=request.data.get('valid_to'),
+                valid_to=valid_to,
                 combo_type=request.data.get('combo_type'),
                 discount_percent=request.data.get('discount_percent'),
                 discount_price=request.data.get('discount_price'),
@@ -559,6 +560,7 @@ class DetailComboAPI(APIView):
     def post(self,request,id):
         list_items=request.data.get('list_items')
         valid_from=request.data.get('valid_from')
+        valid_to=request.data.get('valid_to')
         shop=Shop.objects.get(user=request.user)
         promotion_combo=Promotion_combo.objects.get(id=id)
         shockdeals=Buy_with_shock_deal.objects.filter(valid_from__gte=valid_to,valid_to__gt=datetime.datetime.now())
@@ -572,7 +574,7 @@ class DetailComboAPI(APIView):
             promotion_combo.products.set([])
             promotion_combo.promotion_combo_name=request.data.get('promotion_combo_name')
             promotion_combo.valid_from=valid_from
-            promotion_combo.valid_to=request.data.get('valid_to')
+            promotion_combo.valid_to=valid_to
             promotion_combo.combo_type=request.data.get('combo_type')
             promotion_combo.discount_percent=request.data.get('discount_percent')
             promotion_combo.discount_price=request.data.get('discount_price')
@@ -636,11 +638,12 @@ class DetailDeal(APIView):
         byproducts=request.data.get('byproducts')
         discount_model_list=request.data.get('discount_model_list')
         valid_from=request.data.get('valid_from')
+        valid_to=request.data.get('valid_to')
         data={}
         if action=='change':
             deal_shock.program_name_buy_with_shock_deal=request.data.get('program_name_buy_with_shock_deal')
             deal_shock.valid_from=valid_from
-            deal_shock.valid_to=request.data.get('valid_to')
+            deal_shock.valid_to=valid_to
             deal_shock.limited_product_bundles=request.data.get('limited_product_bundles')
             deal_shock.minimum_price_to_receive_gift=request.data.get('minimum_price_to_receive_gift')
             deal_shock.number_gift=request.data.get('number_gift')
@@ -718,7 +721,7 @@ class NewprogramAPI(APIView):
         shop=Shop.objects.get(user=request.user)
         name_program=request.data.get('name_program')
         valid_from=request.data.get('valid_from')
-        valid_to=request.data.get('valid_from')
+        valid_to=request.data.get('valid_to')
         list_items=request.data.get('list_items')
         action=request.data.get('action')
         discount_model_list=request.data.get('discount_model_list')
@@ -839,6 +842,7 @@ class Newflashsale(APIView):
         shop=Shop.objects.get(user=request.user)
         list_items=request.data.get('list_items')
         action=request.data.get('action')
+        valid_to=request.data.get('valid_to')
         data={}
         if action=='submit':
             flash_sale=Flash_sale.objects.filter(valid_from__gte=valid_to,valid_to__gt=datetime.datetime.now())
@@ -850,7 +854,7 @@ class Newflashsale(APIView):
                 flash_sale,created=Flash_sale.objects.get_or_create(
                     shop=shop,
                     valid_from=request.data.get('valid_from'),
-                    valid_to=request.data.get('valid_to')
+                    valid_to=valid_to
                     )
                 flash_sale.products.add(*list_items)
                 listvariation=[Variationflashsale(flash_sale=flash_sale,
@@ -878,6 +882,7 @@ class DetailFlashsale(APIView):
         flash_sale=Flash_sale.objects.get(id=id)
         list_items=request.data.get('list_items')
         action=request.data.get('action')
+        valid_to=request.data.get('valid_to')
         data={}
         if action=='submit':
             flash_sale=Flash_sale.objects.filter(valid_from__gte=valid_to,valid_to__gt=datetime.datetime.now()).exclude(id=id)
@@ -890,7 +895,7 @@ class DetailFlashsale(APIView):
                 item_remove=item_flash_sale.exclude(id__in=list_items)
                 Variationflashsale.objects.filter(flash_sale_id=id).exclude(item_id__in=list_items).delete()
                 flash_sale.valid_from=request.data.get('valid_from')
-                flash_sale.valid_to=request.data.get('valid_to')
+                flash_sale.valid_to=valid_to
                 flash_sale.save()
                 flash_sale.products.set([])
                 flash_sale.products.add(*list_items)
