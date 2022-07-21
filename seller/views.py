@@ -528,7 +528,6 @@ class NewcomboAPI(APIView):
         valid_from=request.data.get('valid_from')
         valid_to=request.data.get('valid_to')
         list_items=request.data.get('list_items')
-        data={}
         promotion_combo,created=Promotion_combo.objects.get_or_create(
             shop=shop,
             promotion_combo_name=request.data.get('promotion_combo_name'),
@@ -542,8 +541,7 @@ class NewcomboAPI(APIView):
             quantity_to_reduced=request.data.get('quantity_to_reduced'),
             ) 
         promotion_combo.products.add(*list_items)
-        data.update({'error':True,'sameitem':sameitem})
-        return Response(data)
+        return Response({'suscess':True})
     
 class DetailComboAPI(APIView):
     def get(self,request,id):
