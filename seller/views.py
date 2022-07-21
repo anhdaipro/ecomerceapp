@@ -586,14 +586,17 @@ class NewDeal(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
         deal_id=request.GET.get('deal_id')
-        byproduct=request.GET.get('byprducts')
+        byproducts=request.GET.get('byprducts')
+        mainproducts=request.GET.get('mainproducts')
         items=Item.objects.filter(shop=shop).order_by('-id')
         list_id=[]
         if deal_id:
             deal_shock=Buy_with_shock_deal.objects.get(id=deal_id)
-            item_deal=deal_shock.main_products.all()
+            item_deal=deal_shock.byproducts.all()
+            if byproducts:
+                item_deal=deal_shock.main_products.all()
             list_id=[item.id for item in item_deal]
-            items=items.exclude(id__in=list_id)
+        items=items.exclude(id__in=list_id)
         order=request.GET.get('order')
         price=request.GET.get('price')
         sort=request.GET.get('sort')
