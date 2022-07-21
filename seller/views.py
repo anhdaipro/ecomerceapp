@@ -608,7 +608,7 @@ class NewDeal(APIView):
         if mainproducts:
             item_deal=deal_shock.byproducts.all()
             list_id=[item.id for item in item_deal]
-            shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=id)
+            shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=deal_id)
             promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
             items=items.exclude(Q(id__in=list_id) |Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
         order=request.GET.get('order')
