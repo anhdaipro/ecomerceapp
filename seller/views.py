@@ -529,7 +529,7 @@ class NewcomboAPI(APIView):
         list_items=request.data.get('list_items')
         shockdeals=Buy_with_shock_deal.objects.filter(valid_from__gte=valid_to,valid_to__gt=datetime.datetime.now())
         promotions=Promotion_combo.objects.filter(valid_from__gte=valid_to,valid_to__gt=datetime.datetime.now())
-        itemdeal=Item.objects.filter(main_product__in=shockdeal)
+        itemdeal=Item.objects.filter(main_product__in=shockdeals)
         itemcombo=Item.objects.filter(promotion_combo__in=promotions)
         listitem=[item.id for item in itemdeal.union(itemcombo)]
         sameitem=list(set(listitem).intersection(list_items))
@@ -565,7 +565,7 @@ class DetailComboAPI(APIView):
         promotion_combo=Promotion_combo.objects.get(id=id)
         shockdeals=Buy_with_shock_deal.objects.filter(valid_from__gte=valid_to,valid_to__gt=datetime.datetime.now())
         promotions=Promotion_combo.objects.filter(valid_from__gte=valid_to,valid_to__gt=datetime.datetime.now()).exclude(id=id)
-        itemdeal=Item.objects.filter(main_product__in=shockdeal)
+        itemdeal=Item.objects.filter(main_product__in=shockdeals)
         itemcombo=Item.objects.filter(promotion_combo__in=promotions)
         listitem=[item.id for item in itemdeal.union(itemcombo)]
         sameitem=list(set(listitem).intersection(list_items))
@@ -652,7 +652,7 @@ class DetailDeal(APIView):
         elif action=='savemain':
             shockdeals=Buy_with_shock_deal.objects.filter(valid_from__gte=valid_to,valid_to__gt=datetime.datetime.now()).exclude(id=id)
             promotions=Promotion_combo.objects.filter(valid_from__gte=valid_to,valid_to__gt=datetime.datetime.now())
-            itemdeal=Item.objects.filter(main_product__in=shockdeal)
+            itemdeal=Item.objects.filter(main_product__in=shockdeals)
             itemcombo=Item.objects.filter(promotion_combo__in=promotions)
             listitem=[item.id for item in itemdeal.union(itemcombo)]
             sameitem=list(set(listitem).intersection(list_items))
