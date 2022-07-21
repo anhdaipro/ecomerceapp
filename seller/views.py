@@ -522,8 +522,8 @@ class NewcomboAPI(APIView):
         valid_from=request.data.get('valid_from')
         valid_to=request.data.get('valid_to')
         list_items=request.data.get('list_items')
-        shockdeals=Buy_with_shock_deal.objects.filter(valid_to__gte=valid_to,valid_to__gt=datetime.datetime.now())
-        promotions=Promotion_combo.objects.filter(valid_to__gte=valid_to,valid_to__gt=datetime.datetime.now())
+        shockdeals=Buy_with_shock_deal.objects.filter(valid_to__gt=valid_from,valid_to__gt=datetime.datetime.now())
+        promotions=Promotion_combo.objects.filter(valid_to__gt=valid_from,valid_to__gt=datetime.datetime.now())
         itemdeal=Item.objects.filter(main_product__in=shockdeals)
         itemcombo=Item.objects.filter(promotion_combo__in=promotions)
         listitem=[item.id for item in itemdeal.union(itemcombo)]
@@ -558,8 +558,8 @@ class DetailComboAPI(APIView):
         valid_to=request.data.get('valid_to')
         shop=Shop.objects.get(user=request.user)
         promotion_combo=Promotion_combo.objects.get(id=id)
-        shockdeals=Buy_with_shock_deal.objects.filter(valid_to__gte=valid_to,valid_to__gt=datetime.datetime.now())
-        promotions=Promotion_combo.objects.filter(valid_to__gte=valid_to,valid_to__gt=datetime.datetime.now()).exclude(id=id)
+        shockdeals=Buy_with_shock_deal.objects.filter(valid_to__gt=valid_from,valid_to__gt=datetime.datetime.now())
+        promotions=Promotion_combo.objects.filter(valid_to__gt=valid_from,valid_to__gt=datetime.datetime.now()).exclude(id=id)
         itemdeal=Item.objects.filter(main_product__in=shockdeals)
         itemcombo=Item.objects.filter(promotion_combo__in=promotions)
         listitem=[item.id for item in itemdeal.union(itemcombo)]
@@ -649,8 +649,8 @@ class DetailDeal(APIView):
             deal_shock.save()
             data=BuywithsockdealinfoSerializer(deal_shock).data
         elif action=='savemain':
-            shockdeals=Buy_with_shock_deal.objects.filter(valid_to__gte=valid_to,valid_to__gt=datetime.datetime.now()).exclude(id=id)
-            promotions=Promotion_combo.objects.filter(valid_to__gte=valid_to,valid_to__gt=datetime.datetime.now())
+            shockdeals=Buy_with_shock_deal.objects.filter(valid_to__gt=valid_from,valid_to__gt=datetime.datetime.now()).exclude(id=id)
+            promotions=Promotion_combo.objects.filter(valid_to__gt=valid_from,valid_to__gt=datetime.datetime.now())
             itemdeal=Item.objects.filter(main_product__in=shockdeals)
             itemcombo=Item.objects.filter(promotion_combo__in=promotions)
             listitem=[item.id for item in itemdeal.union(itemcombo)]
@@ -722,7 +722,7 @@ class NewprogramAPI(APIView):
         discount_model_list=request.data.get('discount_model_list')
         data={}
         if action=='submit':
-            programs=Shop_program.objects.filter(valid_to__gte=valid_to,valid_to__gt=datetime.datetime.now())
+            programs=Shop_program.objects.filter(valid_to__gt=valid_from,valid_to__gt=datetime.datetime.now())
             itemprogram=Item.objects.filter(shop_program__in=shop_program)
             listitem=[item.id for item in itemprogram]
             sameitem=list(set(listitem).intersection(list_items))
@@ -764,7 +764,7 @@ class Detailprogram(APIView):
         discount_model_list=request.data.get('discount_model_list')
         data={}
         if action=='submit':
-            programs=Shop_program.objects.filter(valid_to__gte=valid_to,valid_to__gt=datetime.datetime.now()).exclude(id=id)
+            programs=Shop_program.objects.filter(valid_to__gt=valid_from,valid_to__gt=datetime.datetime.now()).exclude(id=id)
             itemprogram=Item.objects.filter(shop_program__in=shop_program)
             listitem=[item.id for item in itemprogram]
             sameitem=list(set(listitem).intersection(list_items))
@@ -835,7 +835,7 @@ class Newflashsale(APIView):
         valid_to=request.data.get('valid_to')
         data={}
         if action=='submit':
-            flash_sale=Flash_sale.objects.filter(valid_to__gte=valid_to,valid_to__gt=datetime.datetime.now())
+            flash_sale=Flash_sale.objects.filter(valid_to__gt=valid_from,valid_to__gt=datetime.datetime.now())
             itemflash=Item.objects.filter(flash_sale__in=flash_sale)
             listitem=[item.id for item in itemflash]
             sameitem=list(set(listitem).intersection(list_items))
@@ -875,7 +875,7 @@ class DetailFlashsale(APIView):
         valid_to=request.data.get('valid_to')
         data={}
         if action=='submit':
-            flash_sale=Flash_sale.objects.filter(valid_to__gte=valid_to,valid_to__gt=datetime.datetime.now()).exclude(id=id)
+            flash_sale=Flash_sale.objects.filter(valid_to__gt=valid_from,valid_to__gt=datetime.datetime.now()).exclude(id=id)
             itemflash=Item.objects.filter(flash_sale__in=flash_sale)
             listitem=[item.id for item in itemflash]
             sameitem=list(set(listitem).intersection(list_items))
