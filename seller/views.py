@@ -597,7 +597,7 @@ class NewDeal(APIView):
         shop=Shop.objects.get(user=request.user)
         deal_id=request.GET.get('deal_id')
         byproducts=request.GET.get('byprducts')
-        mainproduct=request.GET.get('mainproducts')
+        mainproducts=request.GET.get('mainproducts')
         valid_to=request.GET.get('valid_to')
         valid_from=request.GET.get('valid_from')
         items=Item.objects.filter(shop=shop).order_by('-id')
