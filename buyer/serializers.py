@@ -209,8 +209,9 @@ class VariationcartSerializer(serializers.ModelSerializer):
     user_item_limit=serializers.SerializerMethodField()
     class Meta:
         model = Variation
-        field_variation.remove('variation_id')
-        fields =field_variation+['product_id','discount_price','user_item_limit']
+        list_file=list(field_variation)
+        list_file.remove('variation_id')
+        fields =list_file+['product_id','discount_price','user_item_limit']
     def get_color_value(self,obj):
         return obj.get_color()
     def get_size_value(self,obj):
