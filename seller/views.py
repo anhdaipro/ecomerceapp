@@ -536,7 +536,8 @@ class NewcomboAPI(APIView):
         data={}
         sameitem=list(set(listitemdeal).intersection(list_items))
         if len(sameitem)==0:
-            promotion_combo,created=Promotion_combo.objects.get_or_create(
+            if action=='submit':
+                promotion_combo,created=Promotion_combo.objects.get_or_create(
                 shop=shop,
                 promotion_combo_name=request.data.get('promotion_combo_name'),
                 valid_from=valid_from,
@@ -548,7 +549,7 @@ class NewcomboAPI(APIView):
                 limit_order=request.data.get('limit_order'),
                 quantity_to_reduced=request.data.get('quantity_to_reduced'),
                 ) 
-            promotion_combo.products.add(*list_items)
+                promotion_combo.products.add(*list_items)
             data.update({'suscess':True})
         else:
             data.update({'error':True,'sameitem':sameitem})
@@ -571,18 +572,19 @@ class DetailComboAPI(APIView):
         listitemdeal=[item.id for item in items]
         sameitem=list(set(listitemdeal).intersection(list_items))
         if len(sameitem)==0:
-            promotion_combo.products.set([])
-            promotion_combo.promotion_combo_name=request.data.get('promotion_combo_name')
-            promotion_combo.valid_from=valid_from
-            promotion_combo.valid_to=valid_to
-            promotion_combo.combo_type=request.data.get('combo_type')
-            promotion_combo.discount_percent=request.data.get('discount_percent')
-            promotion_combo.discount_price=request.data.get('discount_price')
-            promotion_combo.price_special_sale=request.data.get('price_special_sale')
-            promotion_combo.limit_order=request.data.get('limit_order')
-            promotion_combo.quantity_to_reduced=request.data.get('quantity_to_reduced')
-            promotion_combo.save()
-            promotion_combo.products.add(*list_items)
+            if action=='submit':
+                promotion_combo.products.set([])
+                promotion_combo.promotion_combo_name=request.data.get('promotion_combo_name')
+                promotion_combo.valid_from=valid_from
+                promotion_combo.valid_to=valid_to
+                promotion_combo.combo_type=request.data.get('combo_type')
+                promotion_combo.discount_percent=request.data.get('discount_percent')
+                promotion_combo.discount_price=request.data.get('discount_price')
+                promotion_combo.price_special_sale=request.data.get('price_special_sale')
+                promotion_combo.limit_order=request.data.get('limit_order')
+                promotion_combo.quantity_to_reduced=request.data.get('quantity_to_reduced')
+                promotion_combo.save()
+                promotion_combo.products.add(*list_items)
             data.update({'suscess':True})
         else:
             data.update({'error':True,'sameitem':sameitem})
@@ -658,18 +660,6 @@ class DetailDeal(APIView):
             deal_shock.number_gift=request.data.get('number_gift')
             deal_shock.save()
             data=BuywithsockdealinfoSerializer(deal_shock).data
-        elif action=='savemain':
-            shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=id)
-            promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
-            items=Item.objects.filter(shop_id=deal_shock.shop_id).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
-            listitemdeal=[item.id for item in items]
-            sameitem=list(set(listitemdeal).intersection(list_items))
-            if len(sameitem)==0:
-                deal_shock.main_products.set([])
-                deal_shock.main_products.add(*list_items)
-                data.update({'suscess':True})
-            else:
-                data.update({'error':True,'sameitem':sameitem})
         elif action=='addbyproduct':
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(byproducts)])
             list_byproducts=Item.objects.filter(id__in=byproducts).order_by(preserved)
@@ -697,12 +687,25 @@ class DetailDeal(APIView):
                 list_variation_deal.append(variationdeal)
             Variationdeal.objects.bulk_update(list_variation_deal, ['enable','promotion_price','user_item_limit'], batch_size=1000)
             data.update({'suscess':True})
-        else:
+        elif action=='submit':
             list_variation_deal=[]
             Variationdeal.objects.filter(deal_shock_id=id).exclude(item_id__in=byproducts).delete()
             deal_shock.active=True
             deal_shock.save()
             data.update({'suscess':True})
+        else:
+            shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=id)
+            promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
+            items=Item.objects.filter(shop_id=deal_shock.shop_id).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
+            listitemdeal=[item.id for item in items]
+            sameitem=list(set(listitemdeal).intersection(list_items))
+            if len(sameitem)==0:
+                if action=='savemain':
+                    deal_shock.main_products.set([])
+                    deal_shock.main_products.add(*list_items)
+                    data.update({'suscess':True})
+            else:
+                data.update({'error':True,'sameitem':sameitem})
         return Response(data)
 
 class NewprogramAPI(APIView):
@@ -735,32 +738,34 @@ class NewprogramAPI(APIView):
         action=request.data.get('action')
         discount_model_list=request.data.get('discount_model_list')
         data={}
-        if action=='submit':
+        if action=='addproduct':
+            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
+            list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
+            data=ByproductSellerSerializer(list_products,many=True).data
+        else:
             shop_programs=Shop_program.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
             items=Item.objects.filter(shop=shop,shop_program__in=shop_programs)
             listitemprogram=[item.id for item in items]
             sameitem=list(set(listitemprogram).intersection(list_items))
             if len(sameitem)==0:
-                shop_program,created=Shop_program.objects.get_or_create(
-                        name_program=name_program,
-                        valid_from=valid_from,
-                        valid_to=valid_to,
-                        shop=shop,
-                        )
-                shop_program.products.add(*list_items)
-                listvariation=[Variation_discount(shop_program=shop_program,
-                item_id=variation['item_id'],variation_id=variation['variation_id'],
-                promotion_price=variation['promotion_price'],promotion_price_after_tax=variation['promotion_price'],
-                enable=variation['enable'],
-                user_item_limit=variation['user_item_limit'],promotion_stock=variation['promotion_stock']) for variation in discount_model_list]
-                Variation_discount.objects.bulk_create(listvariation)
                 data.update({'suscess':True})
+                if action=='submit':
+                    shop_program,created=Shop_program.objects.get_or_create(
+                            name_program=name_program,
+                            valid_from=valid_from,
+                            valid_to=valid_to,
+                            shop=shop,
+                            )
+                    shop_program.products.add(*list_items)
+                    listvariation=[Variation_discount(shop_program=shop_program,
+                    item_id=variation['item_id'],variation_id=variation['variation_id'],
+                    promotion_price=variation['promotion_price'],promotion_price_after_tax=variation['promotion_price'],
+                    enable=variation['enable'],
+                    user_item_limit=variation['user_item_limit'],promotion_stock=variation['promotion_stock']) for variation in discount_model_list]
+                    Variation_discount.objects.bulk_create(listvariation)
             else:
                 data.update({'error':True,'sameitem':sameitem})
-        else:
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
-            list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
-            data=ByproductSellerSerializer(list_products,many=True).data
+            
         return Response(data)
 
 class Detailprogram(APIView):
@@ -777,53 +782,55 @@ class Detailprogram(APIView):
         action=request.data.get('action')
         discount_model_list=request.data.get('discount_model_list')
         data={}
-        if action=='submit':
+        if action=='addproduct':
+            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
+            list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
+            data=ByproductSellerSerializer(list_products,many=True).data
+        else:
             shop_programs=Shop_program.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=id)
             items=Item.objects.filter(shop_id=shop_program.shop_id,shop_program__in=shop_programs)
             itemprogram=[item.id for item in items]
             sameitem=list(set(listitemprogram).intersection(list_items))
             if len(sameitem)==0:
-                item_programs=shop_program.products.all()
-                item_remove=item_programs.exclude(id__in=list_items)
-                shop_program.name_program=name_program
-                shop_program.valid_from=valid_from
-                shop_program.valid_to=valid_to
-                shop_program.save()
-                Variation_discount.objects.filter(shop_program_id=id).exclude(item_id__in=list_items).delete()
-                shop_program.products.set([])
-                shop_program.products.add(*list_items)
-                list_variation_update=[variation for variation in discount_model_list if variation.get('id')]
-                list_variation=[Variation_discount(shop_program_id=id,
-                item_id=variation['item_id'],variation_id=variation['variation_id'],
-                promotion_price=variation['promotion_price'],
-                promotion_price_after_tax=variation['promotion_price'],
-                enable=variation['enable'],
-                user_item_limit=variation['user_item_limit'],
-                promotion_stock=variation['promotion_stock']) 
-                for variation in discount_model_list if variation.get('id')==None]
-                list_variation_updates=[]
-                for variation in list_variation_update:
-                    variation_discount=Variation_discount.objects.get(item_id=variation['item_id'],variation_id=variation['variation_id'],shop_program_id=id)
-                    if variation_discount.promotion_price!=variation['promotion_price']:
-                        variation_discount.promotion_price=variation['promotion_price']
-                        variation_discount.promotion_price_after_tax=variation['promotion_price']
-                    if variation_discount.promotion_stock!=variation['promotion_stock']:
-                        variation_discount.promotion_stock=variation['promotion_stock']
-                    if variation_discount.user_item_limit!=variation['user_item_limit']:
-                        variation_discount.user_item_limit=variation['user_item_limit']
-                    if variation_discount.enable!=variation['enable']:
-                        variation_discount.enable=variation['enable']
-                    
-                list_variation_updates.append(variation_discount)
-                Variation_discount.objects.bulk_create(list_variation)
-                Variation_discount.objects.bulk_update(list_variation_updates, ['promotion_stock','promotion_price','user_item_limit','enable'], batch_size=1000)
                 data.update({'suscess':True})
+                if action=='submit':
+                    item_programs=shop_program.products.all()
+                    item_remove=item_programs.exclude(id__in=list_items)
+                    shop_program.name_program=name_program
+                    shop_program.valid_from=valid_from
+                    shop_program.valid_to=valid_to
+                    shop_program.save()
+                    Variation_discount.objects.filter(shop_program_id=id).exclude(item_id__in=list_items).delete()
+                    shop_program.products.set([])
+                    shop_program.products.add(*list_items)
+                    list_variation_update=[variation for variation in discount_model_list if variation.get('id')]
+                    list_variation=[Variation_discount(shop_program_id=id,
+                    item_id=variation['item_id'],variation_id=variation['variation_id'],
+                    promotion_price=variation['promotion_price'],
+                    promotion_price_after_tax=variation['promotion_price'],
+                    enable=variation['enable'],
+                    user_item_limit=variation['user_item_limit'],
+                    promotion_stock=variation['promotion_stock']) 
+                    for variation in discount_model_list if variation.get('id')==None]
+                    list_variation_updates=[]
+                    for variation in list_variation_update:
+                        variation_discount=Variation_discount.objects.get(item_id=variation['item_id'],variation_id=variation['variation_id'],shop_program_id=id)
+                        if variation_discount.promotion_price!=variation['promotion_price']:
+                            variation_discount.promotion_price=variation['promotion_price']
+                            variation_discount.promotion_price_after_tax=variation['promotion_price']
+                        if variation_discount.promotion_stock!=variation['promotion_stock']:
+                            variation_discount.promotion_stock=variation['promotion_stock']
+                        if variation_discount.user_item_limit!=variation['user_item_limit']:
+                            variation_discount.user_item_limit=variation['user_item_limit']
+                        if variation_discount.enable!=variation['enable']:
+                            variation_discount.enable=variation['enable']
+                        
+                    list_variation_updates.append(variation_discount)
+                    Variation_discount.objects.bulk_create(list_variation)
+                    Variation_discount.objects.bulk_update(list_variation_updates, ['promotion_stock','promotion_price','user_item_limit','enable'], batch_size=1000)   
             else:
                 data.update({'error':True,'sameitem':sameitem})
-        else:
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
-            list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
-            data=ByproductSellerSerializer(list_products,many=True).data
+        
         return Response(data)
     
 class Newflashsale(APIView):
@@ -853,34 +860,34 @@ class Newflashsale(APIView):
         action=request.data.get('action')
         valid_to=request.data.get('valid_to')
         data={}
-        if action=='submit': 
+        if action=='addproduct':
+            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
+            list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
+            data=ByproductSellerSerializer(list_products,many=True).data
+        else:
             flash_sales=Flash_sale.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
             items=Item.objects.filter(shop=shop,flash_sale__in=flash_sales)
             listitemflash=[item.id for item in items]
             sameitem=list(set(listitemflash).intersection(list_items))
             if len(sameitem)==0:
-                discount_model_list=request.data.get('discount_model_list')
-                flash_sale,created=Flash_sale.objects.get_or_create(
-                        shop=shop,
-                        valid_from=request.data.get('valid_from'),
-                        valid_to=valid_to
-                    )
-                flash_sale.products.add(*list_items)
-                listvariation=[Variationflashsale(flash_sale=flash_sale,
-                item_id=variation['item_id'],variation_id=variation['variation_id'],
-                promotion_price=variation['promotion_price'],
-                enable=variation['enable'],
-                user_item_limit=variation['user_item_limit'],
-                promotion_stock=variation['promotion_stock']) for variation in discount_model_list]
-                Variationflashsale.objects.bulk_create(listvariation)
                 data.update({'suscess':True})
+                if action=='submit': 
+                    discount_model_list=request.data.get('discount_model_list')
+                    flash_sale,created=Flash_sale.objects.get_or_create(
+                            shop=shop,
+                            valid_from=request.data.get('valid_from'),
+                            valid_to=valid_to
+                        )
+                    flash_sale.products.add(*list_items)
+                    listvariation=[Variationflashsale(flash_sale=flash_sale,
+                    item_id=variation['item_id'],variation_id=variation['variation_id'],
+                    promotion_price=variation['promotion_price'],
+                    enable=variation['enable'],
+                    user_item_limit=variation['user_item_limit'],
+                    promotion_stock=variation['promotion_stock']) for variation in discount_model_list]
+                    Variationflashsale.objects.bulk_create(listvariation) 
             else:
                 data.update({'error':True,'sameitem':sameitem})
-
-        else:
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
-            list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
-            data=ByproductSellerSerializer(list_products,many=True).data
         return Response(data)
    
 class DetailFlashsale(APIView):
@@ -894,49 +901,52 @@ class DetailFlashsale(APIView):
         action=request.data.get('action')
         valid_to=request.data.get('valid_to')
         data={}
-        if action=='submit':
+        if action=='addproduct':
+            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
+            list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
+            data=ByproductSellerSerializer(list_products,many=True).data
+        else:
             flash_sales=Flash_sale.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=id)
             items=Item.objects.filter(shop_id=flash_sale.shop_id,flash_sale__in=flash_sales)
             listitemflash=[item.id for item in items]
             sameitem=list(set(listitemflash).intersection(list_items))
             if len(sameitem)==0:
-                discount_model_list=request.data.get('discount_model_list')
-                item_flash_sale=flash_sale.products.all()
-                item_remove=item_flash_sale.exclude(id__in=list_items)
-                Variationflashsale.objects.filter(flash_sale_id=id).exclude(item_id__in=list_items).delete()
-                flash_sale.valid_from=request.data.get('valid_from')
-                flash_sale.valid_to=valid_to
-                flash_sale.save()
-                flash_sale.products.set([])
-                flash_sale.products.add(*list_items)
-                list_variation_update=[variation for variation in discount_model_list if variation.get('id')]
-                listvariation=[Variationflashsale(flash_sale_id=id,
-                item_id=variation['item_id'],variation_id=variation['variation_id'],
-                promotion_price=variation['promotion_price'],
-                enable=variation['enable'],
-                user_item_limit=variation['user_item_limit'],
-                promotion_stock=variation['promotion_stock']) for variation in discount_model_list if variation.get('id')==None]
-                list_variation_updates=[]
-                for variation in list_variation_update:
-                    variation_flash_sale=Variationflashsale.objects.get(item_id=variation['item_id'],variation_id=variation['variation_id'],flash_sale_id=id)
-                    if variation_flash_sale.promotion_price!=variation['promotion_price']:
-                        variation_flash_sale.promotion_price=variation['promotion_price']
-                    if variation_flash_sale.user_item_limit!=variation['user_item_limit']:
-                        variation_flash_sale.user_item_limit=variation['user_item_limit']
-                    if variation_flash_sale.promotion_stock!=variation['promotion_stock']:
-                        variation_flash_sale.promotion_stock=variation['promotion_stock']
-                    if variation_flash_sale.enable!=variation['enable']:
-                        variation_flash_sale.enable=variation['enable']
-                    list_variation_updates.append(variation_flash_sale)
-                Variationflashsale.objects.bulk_create(listvariation)
-                Variationflashsale.objects.bulk_update(list_variation_updates, ['promotion_stock','promotion_price','user_item_limit','enable'], batch_size=1000)
                 data.update({'suscess':True})
+                if action=='submit':
+                    discount_model_list=request.data.get('discount_model_list')
+                    item_flash_sale=flash_sale.products.all()
+                    item_remove=item_flash_sale.exclude(id__in=list_items)
+                    Variationflashsale.objects.filter(flash_sale_id=id).exclude(item_id__in=list_items).delete()
+                    flash_sale.valid_from=request.data.get('valid_from')
+                    flash_sale.valid_to=valid_to
+                    flash_sale.save()
+                    flash_sale.products.set([])
+                    flash_sale.products.add(*list_items)
+                    list_variation_update=[variation for variation in discount_model_list if variation.get('id')]
+                    listvariation=[Variationflashsale(flash_sale_id=id,
+                    item_id=variation['item_id'],variation_id=variation['variation_id'],
+                    promotion_price=variation['promotion_price'],
+                    enable=variation['enable'],
+                    user_item_limit=variation['user_item_limit'],
+                    promotion_stock=variation['promotion_stock']) for variation in discount_model_list if variation.get('id')==None]
+                    list_variation_updates=[]
+                    for variation in list_variation_update:
+                        variation_flash_sale=Variationflashsale.objects.get(item_id=variation['item_id'],variation_id=variation['variation_id'],flash_sale_id=id)
+                        if variation_flash_sale.promotion_price!=variation['promotion_price']:
+                            variation_flash_sale.promotion_price=variation['promotion_price']
+                        if variation_flash_sale.user_item_limit!=variation['user_item_limit']:
+                            variation_flash_sale.user_item_limit=variation['user_item_limit']
+                        if variation_flash_sale.promotion_stock!=variation['promotion_stock']:
+                            variation_flash_sale.promotion_stock=variation['promotion_stock']
+                        if variation_flash_sale.enable!=variation['enable']:
+                            variation_flash_sale.enable=variation['enable']
+                        list_variation_updates.append(variation_flash_sale)
+                    Variationflashsale.objects.bulk_create(listvariation)
+                    Variationflashsale.objects.bulk_update(list_variation_updates, ['promotion_stock','promotion_price','user_item_limit','enable'], batch_size=1000)
+                
             else:
                 data.update({'error':True,'sameitem':sameitem})
-        else:
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
-            list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
-            data=ByproductSellerSerializer(list_products,many=True).data
+        
         return Response(data)
 
 @api_view(['GET', 'POST'])
