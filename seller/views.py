@@ -567,7 +567,7 @@ class DetailComboAPI(APIView):
         data={}
         shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
         promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=id)
-        items=Items.filter(shop_id=promotion_combo.shop_id).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
+        items=Item.objects.filter(shop_id=promotion_combo.shop_id).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
         listitemdeal=[item.id for item in items]
         sameitem=list(set(listitemdeal).intersection(list_items))
         if len(sameitem)==0:
@@ -661,7 +661,7 @@ class DetailDeal(APIView):
         elif action=='savemain':
             shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=id)
             promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
-            items=Items.filter(shop_id=deal_shock.shop_id).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
+            items=Item.objects.filter(shop_id=deal_shock.shop_id).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
             listitemdeal=[item.id for item in items]
             sameitem=list(set(listitemdeal).intersection(list_items))
             if len(sameitem)==0:
