@@ -41,6 +41,7 @@ from .views import (
     ShopdetailAPI,
     CategorydetailAPI,
     ShopinfoAPI,
+    FlashsaleAPI,
     ProfileAPI,
     CategoryinfoAPI,
     SearchitemshopAPI
@@ -81,6 +82,8 @@ urlpatterns = [
     path('deal/byproduct/<int:id>', Byproductdeal.as_view()),
     path('add-to-cart', AddToCartAPIView.as_view()),
     path('cart', CartAPIView.as_view()),
+    path('flash_sale', FlashsaleAPI.as_view()),
+    
     path('listorder',  ListorderAPIView.as_view()),
     path('order/<int:id>',  OrderinfoAPIView.as_view()),
     path('category/<slug>',CategorydetailAPI.as_view()),
