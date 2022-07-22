@@ -52,9 +52,9 @@ CategoryhomeSerializer,AddressSerializer,OrderSerializer,OrderdetailSerializer,
 ReviewSerializer,CartitemcartSerializer,CartviewSerializer,
 ProductdealSerializer,ItemcomboSerializer,CombodetailseSerializer,ItempageSerializer,
 ItemdetailsSerializer,ShopdetailSerializer,OrderpurchaseSerializer,
-CategorydetailSerializer,VariationcartSerializer,
+CategorydetailSerializer,VariationcartSerializer,ItemflasaleSerializer,
 ByproductdealSerializer,ByproductcartSerializer,ComboItemSerializer,
-DealByproductSerializer
+DealByproductSerializer,FlashSaleinfoSerializer,
 )
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
@@ -240,14 +240,16 @@ class LogoutView(APIView):
 class HomeAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
-        list_flashsale=Flash_sale.objects.filter(valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
-        list_items=Item.objects.filter(flash_sale__in=list_flashsale).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').distinct()
-        data={
-            'a':[{'name':i.name,'image':i.get_image_cover(),'number_order':i.number_order(),
-            'percent_discount':i.percent_discount_flash_sale(),'id':i.id,'total_inventory':i.total_inventory(),'max_price':i.max_price(),'url':i.get_absolute_url(),
-            'min_price':i.min_price(),'quantity_limit_flash_sale':i.quantity_limit_flash_sale} for i in list_items],
-            'list_flashsale':list_flashsale.values('valid_from','valid_to')
-        }
+        flash_sales=Flash_sale.objects.filter(valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
+        data={}
+        if flash_sale.exists():
+            flash_sales=flash_sales.first()
+            flash_sale=FlashSaleinfoSerializer(flash_sales.data)
+            data.update(flash_sale)
+        
+        list_items=Item.objects.filter(flash_sale__in=list_flashsale).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem')[:15]
+        items_flash_sale=ItemflasaleSerializer(list_items,many=True).data
+        data.update({'items_flash_sale':items_flash_sale})
         return Response(data)
 
 class CategoryListView(ListAPIView):
@@ -1135,12 +1137,18 @@ class CheckoutAPIView(APIView):
                 items = order.items.all()
                 items.update(ordered=True) 
                 for item in items:
+                    if item.item.get_flash_sale_current():
+                        item.flash_sale_id=item.item.get_flash_sale_current()
+                    if item.item.get_combo_current():
+                        item.promotion_combo_id=item.item.get_combo_current()
                     item.save()   
                     products=Variation.objects.get(id=item.product_id)
                     products.inventory -= item.quantity
                     products.save()
-                    if product.get_discount():
-                        Variation_discount.objects.filter(shop_program_id=product.item.get_program_current,variation=product).update(promotion_stock=F('promotion_stock')-item.quantity)
+                    if product.get_discount() and not product.get_discount_flash_sale():
+                        Variation_discount.objects.filter(shop_program_id=product.item.get_program_current(),variation=product).update(promotion_stock=F('promotion_stock')-item.quantity)
+                    if product.get_discount_flash_sale():
+                        Variationflashsale.objects.filter(flash_sale_id=product.item.get_flash_sale_current(),variation=product).update(promotion_stock=F('promotion_stock')-item.quantity)
                     for byproduct in item.byproduct_cart.all():
                         product=Variation.objects.get(id=byproduct.product_id)
                         product.inventory -= byproduct.quantity

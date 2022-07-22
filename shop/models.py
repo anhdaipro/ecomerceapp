@@ -187,6 +187,22 @@ class Item(models.Model):
         if self.get_flash_sale_current():
             variations=Variationflashsale.objects.filter(item=self,flash_sale=self.get_flash_sale_current()).aggregate(avg=Avg('promotion_price'))
             return variations['avg']
+    def get_promotion_stock(self):
+        if self.get_flash_sale_current():
+            variations=Variationflashsale.objects.filter(item=self,flash_sale=self.get_flash_sale_current()).aggregate(sum=Sum('promotion_stock'))
+            return variations['sum']
+    def get_combo_current(self):
+        promotion_combo=Promotion_combo.objects.filter(products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        if promotion_combo.exists():
+            return promotion_combo.first().id
+    def number_order_flash_sale(self):
+        quantity=0
+        if self.get_flash_sale_current():
+            flash_sale=Flash_sale.objects.get(id=self.get_flash_sale_current())
+            orders=Order.objects.filter(ordered=True,canceled=False,ordered_date__gte=flash_sales.valid_from,ordered_date__lte=flash_sales.valid_to)
+            cartitem=CartItem.objects.filter(order_cartitem__in=orders,item=self).aggregate(sum=Sum('quantity'))
+            quantity=cartitem['sum']
+        return quantity
     def percent_discount(self):
         percent=0
         if self.get_program_current():

@@ -177,6 +177,22 @@ class ItemSerializer(IteminfoSerializer):
         return obj.min_price()
     def get_percent_discount(self,obj):
         return obj.percent_discount_total()
+
+class ItemflasaleSerializer(ItemSerializer):
+    percent_discount=serializers.SerializerMethodField()
+    number_order=serializers.SerializerMethodField()
+    discount_price=serializers.SerializerMethodField()
+    promotion_stock=serializers.SerializerMethodField()
+    class Meta(ItemSerializer.Meta):
+        fields=IteminfoSerializer.Meta.fields+['number_order','discount_price','promotion_stock']
+    def get_percent_discount(self,obj):
+        return obj.percent_discount_flash_sale()
+    def get_number_order(self,obj):
+        return obj.number_order_flash_sale()
+    def get_discount_price():
+        return obj.avg_discount_price_flash_sale()
+    def get_promotion_stock():
+        return obj.get_promotion_stock()
 class ItemproductSerializer(IteminfoSerializer):
     class Meta(IteminfoSerializer.Meta):
         fields=IteminfoSerializer.Meta.fields+['sku_product']
@@ -247,6 +263,7 @@ class ItempageSerializer(ItemSerializer):
         return obj.get_voucher()
     def get_number_order(self,obj):
         return obj.number_order()
+
 
 class ItemSellerSerializer(ItemSerializer):
     total_inventory=serializers.SerializerMethodField()
