@@ -184,7 +184,7 @@ class Item(models.Model):
             variations=Variationdeal.objects.filter(item=self,deal_shock=self.get_deal_shock_current()).aggregate(avg=Avg('promotion_price'))
             return variations['avg']
     def avg_discount_price_flash_sale(self):
-        if self.get_deal_shock_current():
+        if self.get_flash_sale_current():
             variations=Variationflashsale.objects.filter(item=self,flash_sale=self.get_flash_sale_current()).aggregate(avg=Avg('promotion_price'))
             return variations['avg']
     def percent_discount(self):

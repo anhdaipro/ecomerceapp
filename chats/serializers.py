@@ -84,7 +84,7 @@ class MessageSerializer(serializers.ModelSerializer):
     def get_message_product(self,obj):
         return obj.message_product()
     def get_message_order(self,obj):
-        return obj.message_product()
+        return obj.message_order()
 
 class ThreaddetailSerializer(serializers.ModelSerializer):
     members=serializers.SerializerMethodField()
