@@ -868,7 +868,7 @@ class Newflashsale(APIView):
             list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
             data=ByproductSellerSerializer(list_products,many=True).data
         else:
-            flash_sales=Flash_sale.objects.filter((Q(valid_from=valid_from)&Q(valid_to=valid_to))  & Q(valid_to__gt=datetime.datetime.now()))
+            flash_sales=Flash_sale.objects.filter(shop=shop).filter((Q(valid_from=valid_from)&Q(valid_to=valid_to))  & Q(valid_to__gt=datetime.datetime.now()))
             if flash_sales.exists():
                 data.update({'error':True})
             else:
@@ -908,7 +908,7 @@ class DetailFlashsale(APIView):
             list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
             data=ByproductSellerSerializer(list_products,many=True).data
         else:
-            flash_sales=Flash_sale.objects.filter((Q(valid_from=valid_from)&Q(valid_to=valid_to))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=id)
+            flash_sales=Flash_sale.objects.filter(shop_id=flash_sale.shop_id).filter((Q(valid_from=valid_from)&Q(valid_to=valid_to))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=id)
             if flash_sales.exists():
                 data.update({'error':True})
             else:
