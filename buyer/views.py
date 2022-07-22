@@ -259,8 +259,8 @@ class FlashsaleAPI(APIView):
         if promotionId:
             flash_sale=Flash_sale.objects.get(id=promotionId)
             list_flash_sales=Flash_sale.objects.filter(valid_from=flash_sale.valid_from)
-        if list_flash_sale.exists():
-            flash_sale=list_flash_sale.first()
+        if list_flash_sales.exists():
+            flash_sale=list_flash_sales.first()
             data.update(FlashSaleinfoSerializer(flash_sale).data)
         list_items=Item.objects.filter(flash_sale__in=list_flash_sales).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem')[:15]
         count=list_items.count()
