@@ -251,11 +251,10 @@ class HomeAPIView(APIView):
 
 class FlashsaleAPI(APIView):
     def get(self,request):
-        flash_sales=Flash_sale.objects.filter(valid_to__gt=timezone.now()).order_by('valid_from').distinct('valid_from')
+        flash_sales=Flash_sale.objects.filter(valid_to__gt=timezone.now()).order_by('valid_from').distinct('valid_from')[:5]
         data={}
-       
-        flash_sale=FlashSaleinfoSerializer(flash_sales,many=True).data
-        data.update(flash_sale)
+        list_flash_sale=FlashSaleinfoSerializer(flash_sales,many=True).data
+        data.update({'list_flash_sale':list_flash_sale)
         list_items=Item.objects.filter(flash_sale__in=flash_sales).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem')[:15]
         count=list_items.count()
         offset=request.GET.get('offset')
