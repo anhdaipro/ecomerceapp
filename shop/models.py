@@ -303,7 +303,7 @@ class Item(models.Model):
             return True
 
     def get_flash_sale(self):
-        flash_sale=Flash_sale.objects.filter(products=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        flash_sale=Flash_sale.objects.filter(products=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=1)).order_by('valid_to')
         if flash_sale.exists():
             flash_sale=flash_sale.first()
             return {'id':flash_sale.id,'valid_to':flash_sale.valid_to}
