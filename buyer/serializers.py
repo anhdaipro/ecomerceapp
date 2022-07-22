@@ -189,9 +189,9 @@ class ItemflasaleSerializer(ItemSerializer):
         return obj.percent_discount_flash_sale()
     def get_number_order(self,obj):
         return obj.number_order_flash_sale()
-    def get_discount_price():
+    def get_discount_price(self,obj):
         return obj.avg_discount_price_flash_sale()
-    def get_promotion_stock():
+    def get_promotion_stock(self,obj):
         return obj.get_promotion_stock()
 class ItemproductSerializer(IteminfoSerializer):
     class Meta(IteminfoSerializer.Meta):
