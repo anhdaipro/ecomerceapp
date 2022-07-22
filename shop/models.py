@@ -306,7 +306,7 @@ class Item(models.Model):
         flash_sale=Flash_sale.objects.filter(products=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=1)).order_by('valid_to')
         if flash_sale.exists():
             flash_sale=flash_sale.first()
-            return {'id':flash_sale.id,'valid_to':flash_sale.valid_to}
+            return {'id':flash_sale.id,'valid_to':flash_sale.valid_to,'valid_from':flash_sale.valid_from}
 
     def get_media(self):
         return [{'typefile':media.media_type(),'file':media.get_media(),'image_preview':media.file_preview(),'duration':media.duration} for media in self.media_upload.all()]
