@@ -861,6 +861,7 @@ class Newflashsale(APIView):
         list_items=request.data.get('list_items')
         action=request.data.get('action')
         valid_to=request.data.get('valid_to')
+        valid_from=request.data.get('valid_from')
         data={}
         if action=='addproduct':
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
@@ -876,7 +877,7 @@ class Newflashsale(APIView):
                     discount_model_list=request.data.get('discount_model_list')
                     flash_sale,created=Flash_sale.objects.get_or_create(
                             shop=shop,
-                            valid_from=request.data.get('valid_from'),
+                            valid_from=valid_from,
                             valid_to=valid_to
                         )
                     flash_sale.products.add(*list_items)
@@ -900,6 +901,7 @@ class DetailFlashsale(APIView):
         list_items=request.data.get('list_items')
         action=request.data.get('action')
         valid_to=request.data.get('valid_to')
+        valid_from=request.data.get('valid_from')
         data={}
         if action=='addproduct':
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
