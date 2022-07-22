@@ -305,14 +305,16 @@ class ItemdetailSerializer(ItemcomboSerializer):
     vouchers=serializers.SerializerMethodField()
     like=serializers.SerializerMethodField()
     user_id=serializers.SerializerMethodField()
+    number_order=serializers.SerializerMethodField()
     class Meta(ItemcomboSerializer.Meta):
         fields =ItemcomboSerializer.Meta.fields+ [
             'user_id','category','count_variation','description','media_upload',
             'shock_deal_type','promotion','flash_sale','num_like'
-            ,'review_rating','count_review',
+            ,'review_rating','count_review','number_order',
             'vouchers','like','category_id'
         ]
-    
+    def get_number_order(self,obj):
+        return obj.number_order()
     def get_like(self,obj): 
         request=self.context.get("request")
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
