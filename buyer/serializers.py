@@ -750,7 +750,7 @@ class CombodetailseSerializer(ComboinfoSerializer):
     def get_products(self,obj):
         return ItemcomboSerializer(obj.products.all(),many=True).data
 
-class OrderpurchaseSerializer(serializers.ModelSerializer):
+class OrderpurchaseSerializer(OrderSerializer):
     shop_url=serializers.SerializerMethodField()
     class Meta(OrderSerializer.Meta):
         fields=OrderSerializer.Meta.fields+(
