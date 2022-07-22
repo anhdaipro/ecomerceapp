@@ -248,14 +248,16 @@ class HomeAPIView(APIView):
         list_items=Item.objects.filter(flash_sale__in=flash_sales).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem')[:15]
         data.update({'items_flash_sale':ItemflasaleSerializer(list_items,many=True).data})
         return Response(data)
-
+class ListFlashsaleAPI(APIView):
+    flash_sales=Flash_sale.objects.filter(valid_to__gt=timezone.now()).order_by('valid_from').distinct('valid_from')[:5]
+    list_flash_sale=FlashSaleinfoSerializer(flash_sales,many=True).data
+    return Response(list_flash_sale)
 class FlashsaleAPI(APIView):
     def get(self,request):
-        flash_sales=Flash_sale.objects.filter(valid_to__gt=timezone.now()).order_by('valid_from').distinct('valid_from')[:5]
-        data={}
-        list_flash_sale=FlashSaleinfoSerializer(flash_sales,many=True).data
-        data.update({'list_flash_sale':list_flash_sale)
-        list_items=Item.objects.filter(flash_sale__in=flash_sales).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem')[:15]
+        promotionId=request.GET.get('promotionId')
+        flash_sales=Flash_sale.objects.get(id=promotionId)
+        list_flash_sale=Flash_sale.objects.filter(valid_from=flash_sale.valid_from)
+        list_items=Item.objects.filter(flash_sale__in=list_flash_sales).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem')[:15]
         count=list_items.count()
         offset=request.GET.get('offset')
         from_item=0
@@ -265,7 +267,7 @@ class FlashsaleAPI(APIView):
         if from_item+20>=count:
             to_item=count
         list_items=list_items[from_item:to_item]
-        data.update({'items_flash_sale':ItemflasaleSerializer(list_items,many=True).data})
+        data=ItemflasaleSerializer(list_items,many=True).data
         return Response(data)
 
 class CategoryListView(ListAPIView):
