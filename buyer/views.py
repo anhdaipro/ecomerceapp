@@ -244,7 +244,7 @@ class HomeAPIView(APIView):
         data={}
         if flash_sales.exists():
             flash_sales=flash_sales.first()
-            flash_sale=FlashSaleinfoSerializer(flash_sales.data)
+            flash_sale=FlashSaleinfoSerializer(flash_sales).data
             data.update(flash_sale)
         list_items=Item.objects.filter(flash_sale__in=flash_sales).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem')[:15]
         data.update({'items_flash_sale':ItemflasaleSerializer(list_items,many=True).data})
@@ -256,7 +256,7 @@ class FlashsaleAPI(APIView):
         data={}
         if flash_sale.exists():
             flash_sales=flash_sales.first()
-            flash_sale=FlashSaleinfoSerializer(flash_sales.data)
+            flash_sale=FlashSaleinfoSerializer(flash_sales).data
             data.update(flash_sale)
         list_items=Item.objects.filter(flash_sale__in=flash_sales).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem')[:15]
         count=list_items.count()
