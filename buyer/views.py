@@ -455,9 +455,23 @@ class ShopdetailAPI(APIView):
 class CategorydetailAPI(APIView):
     permission_classes = (AllowAny,)
     def get(self, request,slug):
-        category=Category.objects.get(slug=slug)
-        data=CategorydetailSerializer(category).data
-        return Response(data)
+        category=Category.objects.filter(slug=slug)
+        if category.exists():
+            category=category.first()
+            data=CategorydetailSerializer(category).data
+            return Response(data)
+        else:
+            shop=Shop.objects.get(slug=slug)
+            shop=item.shop
+            shop.views += 1
+            shop.save()
+            serializer =ShopdetailSerializer(shop,context={"request": request})
+            return Response(serializer.data, status=status.HTTP_200_OK) 
+            if token:
+                user=request.user
+                if ShopViews.objects.filter(shop=shop,user=user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
+                    ShopViews.objects.create(shop=shop,user=user)
+        
 
 class CategoryinfoAPI(APIView):
     permission_classes = (AllowAny,)
