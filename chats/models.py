@@ -62,14 +62,14 @@ class Message(models.Model):
     order=models.ForeignKey(to='orders.Order', on_delete=models.CASCADE,null=True,related_name='message_order')
     date_created = models.DateTimeField(auto_now=True)
     def message_product(self):
-        if self.product:
+        if self.message_type=='4':
             return ({'name':self.product.name,'id':self.product_id,'slug':self.product.get_absolute_url(),
             'max_price':self.product.max_price(),'min_price':self.product.min_price(),
             'percent_discount':self.product.percent_discount(),
             'image':self.product.get_image_cover()})
 
     def message_order(self):
-        if self.order:
+        if self.message_type=='5':
             return({'id':self.order.id,'received':self.order.received,'canceled':self.order.canceled,
             'accepted':self.order.accepted,'amount':self.order.amount,
             'item_image':self.order.items.all().last().get_image(),
