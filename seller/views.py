@@ -849,7 +849,7 @@ class Newflashsale(APIView):
         item=request.GET.get('item')
         title=request.GET.get('title')
         q=request.GET.get('q')
-        flash_sales=Flash_sale.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
+        flash_sales=Flash_sale.objects.filter((Q(valid_from=valid_from)&Q(valid_to=valid_to)) & Q(valid_to__gt=datetime.datetime.now()))
         if flash_sale_id:
             flash_sales=flash_sales.exclude(id=flash_sale_id)
         items=Item.objects.filter(shop=shop).exclude(flash_sale__in=flash_sales).order_by('-id')
@@ -867,11 +867,10 @@ class Newflashsale(APIView):
             list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
             data=ByproductSellerSerializer(list_products,many=True).data
         else:
-            flash_sales=Flash_sale.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
-            items=Item.objects.filter(shop=shop,flash_sale__in=flash_sales)
-            listitemflash=[item.id for item in items]
-            sameitem=list(set(listitemflash).intersection(list_items))
-            if len(sameitem)==0:
+            flash_sales=Flash_sale.objects.filter((Q(valid_from=valid_from)&Q(valid_to=valid_to))  & Q(valid_to__gt=datetime.datetime.now()))
+            if flash_sale.exists():
+                data.update({'error':True})
+            else:
                 data.update({'suscess':True})
                 if action=='submit': 
                     discount_model_list=request.data.get('discount_model_list')
@@ -888,8 +887,7 @@ class Newflashsale(APIView):
                     user_item_limit=variation['user_item_limit'],
                     promotion_stock=variation['promotion_stock']) for variation in discount_model_list]
                     Variationflashsale.objects.bulk_create(listvariation) 
-            else:
-                data.update({'error':True,'sameitem':sameitem})
+            
         return Response(data)
    
 class DetailFlashsale(APIView):
@@ -908,11 +906,10 @@ class DetailFlashsale(APIView):
             list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
             data=ByproductSellerSerializer(list_products,many=True).data
         else:
-            flash_sales=Flash_sale.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=id)
-            items=Item.objects.filter(shop_id=flash_sale.shop_id,flash_sale__in=flash_sales)
-            listitemflash=[item.id for item in items]
-            sameitem=list(set(listitemflash).intersection(list_items))
-            if len(sameitem)==0:
+            flash_sales=Flash_sale.objects.filter((Q(valid_from=valid_from)&Q(valid_to=valid_to))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=id)
+            if flash_sales.exists():
+                data.update({'error':True})
+            else:
                 data.update({'suscess':True})
                 if action=='submit':
                     discount_model_list=request.data.get('discount_model_list')
@@ -946,8 +943,7 @@ class DetailFlashsale(APIView):
                     Variationflashsale.objects.bulk_create(listvariation)
                     Variationflashsale.objects.bulk_update(list_variation_updates, ['promotion_stock','promotion_price','user_item_limit','enable'], batch_size=1000)
                 
-            else:
-                data.update({'error':True,'sameitem':sameitem})
+            
         
         return Response(data)
 
