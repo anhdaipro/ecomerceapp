@@ -262,7 +262,7 @@ class FlashsaleAPI(APIView):
         from_item=0
         if offset:
             from_item=int(offset)
-        to_item=offset+20
+        to_item=from_item+20
         if from_item+20>=count:
             to_item=count
         list_items=list_items[from_item:to_item]

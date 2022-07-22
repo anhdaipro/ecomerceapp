@@ -184,7 +184,7 @@ class ItemflasaleSerializer(ItemSerializer):
     discount_price=serializers.SerializerMethodField()
     promotion_stock=serializers.SerializerMethodField()
     class Meta(ItemSerializer.Meta):
-        fields=IteminfoSerializer.Meta.fields+['number_order','discount_price','promotion_stock']
+        fields=ItemSerializer.Meta.fields+['number_order','discount_price','promotion_stock']
     def get_percent_discount(self,obj):
         return obj.percent_discount_flash_sale()
     def get_number_order(self,obj):
