@@ -869,7 +869,7 @@ class Newflashsale(APIView):
             data=ByproductSellerSerializer(list_products,many=True).data
         else:
             flash_sales=Flash_sale.objects.filter((Q(valid_from=valid_from)&Q(valid_to=valid_to))  & Q(valid_to__gt=datetime.datetime.now()))
-            if flash_sale.exists():
+            if flash_sales.exists():
                 data.update({'error':True})
             else:
                 data.update({'suscess':True})
