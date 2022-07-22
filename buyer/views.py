@@ -251,7 +251,7 @@ class HomeAPIView(APIView):
 
 class FlashsaleAPI(APIView):
     def get(self,request):
-        flash_sales=Flash_sale.objects.filter(valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
+        flash_sales=Flash_sale.objects.filter(valid_to__gt=timezone.now()).distinct('valid_from')
         data={}
         if flash_sales.exists():
             flash_sale=FlashSaleinfoSerializer(flash_sales.first()).data
