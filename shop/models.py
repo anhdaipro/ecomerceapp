@@ -199,7 +199,7 @@ class Item(models.Model):
         quantity=0
         if self.get_flash_sale_current():
             flash_sale=Flash_sale.objects.get(id=self.get_flash_sale_current())
-            orders=Order.objects.filter(ordered=True,canceled=False,ordered_date__gte=flash_sales.valid_from,ordered_date__lte=flash_sales.valid_to)
+            orders=Order.objects.filter(ordered=True,canceled=False,ordered_date__gte=flash_sale.valid_from,ordered_date__lte=flash_sale.valid_to)
             cartitem=CartItem.objects.filter(order_cartitem__in=orders,item=self).aggregate(sum=Sum('quantity'))
             quantity=cartitem['sum']
         return quantity
