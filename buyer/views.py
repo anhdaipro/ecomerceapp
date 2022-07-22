@@ -242,7 +242,7 @@ class HomeAPIView(APIView):
     def get(self,request):
         flash_sales=Flash_sale.objects.filter(valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
         data={}
-        if flash_sale.exists():
+        if flash_sales.exists():
             flash_sales=flash_sales.first()
             flash_sale=FlashSaleinfoSerializer(flash_sales.data)
             data.update(flash_sale)
