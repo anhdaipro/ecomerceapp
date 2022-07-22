@@ -249,9 +249,10 @@ class HomeAPIView(APIView):
         data.update({'items_flash_sale':ItemflasaleSerializer(list_items,many=True).data})
         return Response(data)
 class ListFlashsaleAPI(APIView):
-    flash_sales=Flash_sale.objects.filter(valid_to__gt=timezone.now()).order_by('valid_from').distinct('valid_from')[:5]
-    list_flash_sale=FlashSaleinfoSerializer(flash_sales,many=True).data
-    return Response(list_flash_sale)
+    def get(self,request):
+        flash_sales=Flash_sale.objects.filter(valid_to__gt=timezone.now()).order_by('valid_from').distinct('valid_from')[:5]
+        list_flash_sale=FlashSaleinfoSerializer(flash_sales,many=True).data
+        return Response(list_flash_sale)
 class FlashsaleAPI(APIView):
     def get(self,request):
         promotionId=request.GET.get('promotionId')
