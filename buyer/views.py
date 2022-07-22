@@ -261,7 +261,7 @@ class FlashsaleAPI(APIView):
         if promotionId:
             flash_sale=Flash_sale.objects.get(id=promotionId)
             list_flash_sales=Flash_sale.objects.filter(valid_from=flash_sale.valid_from)
-        if not promotionId:
+        if promotionId is None:
             list_flash_sales=list_flash_sales.filter(valid_from__lt=timezone.now())
             if list_flash_sales.exists():
                 flash_sale=list_flash_sales.first()
