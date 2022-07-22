@@ -250,7 +250,7 @@ class HomeAPIView(APIView):
         return Response(data)
 
 class FlashsaleAPI(APIView):
-    def get(self,obj):
+    def get(self,request):
         flash_sales=Flash_sale.objects.filter(valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
         data={}
         if flash_sales.exists():

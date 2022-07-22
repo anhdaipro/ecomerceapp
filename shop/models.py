@@ -201,7 +201,8 @@ class Item(models.Model):
             flash_sale=Flash_sale.objects.get(id=self.get_flash_sale_current())
             orders=Order.objects.filter(ordered=True,canceled=False,ordered_date__gte=flash_sale.valid_from,ordered_date__lte=flash_sale.valid_to)
             cartitem=CartItem.objects.filter(order_cartitem__in=orders,item=self).aggregate(sum=Sum('quantity'))
-            quantity=cartitem['sum']
+            if cartitem['sum']:
+                quantity=cartitem['sum']
         return quantity
     def percent_discount(self):
         percent=0
@@ -226,7 +227,7 @@ class Item(models.Model):
         return total_inventory
     
     def percent_discount_total(self):
-        return self.percent_discount()+self.percent_discount_deal()
+        return self.percent_discount()+self.percent_discount_deal()+self.percent_discount_flash_sale()
 
     def max_price(self):
         variations = Variation.objects.filter(item=self).aggregate(max=Max('price'))
