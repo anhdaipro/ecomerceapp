@@ -243,8 +243,7 @@ class HomeAPIView(APIView):
         flash_sales=Flash_sale.objects.filter(valid_to__gt=timezone.now(),valid_from__lt=timezone.now())
         data={}
         if flash_sales.exists():
-            flash_sales=flash_sales.first()
-            flash_sale=FlashSaleinfoSerializer(flash_sales).data
+            flash_sale=FlashSaleinfoSerializer(flash_sales.first()).data
             data.update(flash_sale)
         list_items=Item.objects.filter(flash_sale__in=flash_sales).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem')[:15]
         data.update({'items_flash_sale':ItemflasaleSerializer(list_items,many=True).data})
