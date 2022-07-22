@@ -260,6 +260,7 @@ class FlashsaleAPI(APIView):
         data={}
         if promotionId:
             flash_sale=Flash_sale.objects.get(id=promotionId)
+            data.update(FlashSaleinfoSerializer(flash_sale).data)
             list_flash_sales=Flash_sale.objects.filter(valid_from=flash_sale.valid_from)
         if promotionId is None:
             list_flash_sales=list_flash_sales.filter(valid_from__lt=timezone.now())
