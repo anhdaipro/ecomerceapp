@@ -256,13 +256,16 @@ class ListFlashsaleAPI(APIView):
 class FlashsaleAPI(APIView):
     def get(self,request):
         promotionId=request.GET.get('promotionId')
-        list_flash_sales=Flash_sale.objects.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
+        list_flash_sales=Flash_sale.objects.filter(valid_to__gt=timezone.now())
+        data={}
         if promotionId:
             flash_sale=Flash_sale.objects.get(id=promotionId)
             list_flash_sales=Flash_sale.objects.filter(valid_from=flash_sale.valid_from)
-        if list_flash_sales.exists():
-            flash_sale=list_flash_sales.first()
-            data.update(FlashSaleinfoSerializer(flash_sale).data)
+        if not promotionId:
+            list_flash_sales=list_flash_sales.filter(valid_from__lt=timezone.now())
+            if list_flash_sales.exists():
+                flash_sale=list_flash_sales.first()
+                data.update(FlashSaleinfoSerializer(flash_sale).data)
         list_items=Item.objects.filter(flash_sale__in=list_flash_sales).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem')[:15]
         count=list_items.count()
         offset=request.GET.get('offset')
