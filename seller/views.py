@@ -1476,7 +1476,7 @@ def create_shop(request):
                     
 import calendar
 import pandas as pd
-class Dashboarchpromotion(APIView):
+class Dashboardpromotion(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=user)
         current_date=datetime.datetime.now()
@@ -1520,6 +1520,7 @@ class Dashboarchpromotion(APIView):
             orders=orders.filter(ordered_date__year=year.year).annotate(day=TruncMonth('ordered_date'))
             orders_last=orders_last.filter(Q(ordered_date__year=(year.year - 1)))
         if choice=='voucher':
+            count_use_voucher=orders.count()
             orders=orders.exclude(voucher=None)
         if choice=='deal_shock':
             orders=orders.exclude(items__deal_shock=None)

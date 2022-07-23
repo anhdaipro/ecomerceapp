@@ -12,6 +12,7 @@ NewprogramAPI,
 Detailprogram,
 Newflashsale,
 DetailFlashsale,
+Dashboardpromotion
 )
 urlpatterns = [
     
@@ -32,6 +33,8 @@ urlpatterns = [
     path("shipping/shop/list", views.get_shipping),
     path("shop/create", views.create_shop,name="create_shop"),
     path("dashboard", views.my_dashboard,name="dashboard"),
+    
+    path('dashboard/promotion',Dashboardpromotion.as_view()),
     path('voucher/new',Newvoucher.as_view()),
     path('voucher/<int:id>',DetailVoucher.as_view()),
     path("follower-offer/create", views.follower_offer,name="follower_offer"),
