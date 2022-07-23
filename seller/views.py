@@ -1478,7 +1478,7 @@ import calendar
 import pandas as pd
 class Dashboardpromotion(APIView):
     def get(self,request):
-        shop=Shop.objects.get(user=user)
+        shop=Shop.objects.get(user=request.user)
         current_date=datetime.datetime.now()
         start_date=datetime.datetime.now()-timedelta(days=1)
         yesterday=current_date-timedelta(days=1)
