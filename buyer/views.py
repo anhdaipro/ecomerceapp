@@ -473,7 +473,6 @@ class CategorydetailAPI(APIView):
             return Response(data)
         else:
             shop=Shop.objects.get(slug=slug)
-            shop=item.shop
             shop.views += 1
             shop.save()
             serializer =ShopdetailSerializer(shop,context={"request": request})
