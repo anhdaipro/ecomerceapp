@@ -41,6 +41,7 @@ class Order(models.Model):
     refund_granted = models.BooleanField(default=False)
     canceled=models.BooleanField(default=False)
     amount=models.FloatField(default=0)
+    discount_voucher=models.FloatField(default=0,null=True)
     class Meta:
         ordering=['-id']
     def __str__(self):
@@ -53,7 +54,7 @@ class Order(models.Model):
         if vouchers.exists():
             return vouchers.first().id
         
-    def discount_voucher(self):
+    def get_discount_voucher(self):
         discount_voucher=0
         if self.voucher and self.voucher.valid_to>timezone.now():
             if self.total_discount_order()>=self.voucher.minimum_order_value:
@@ -70,7 +71,10 @@ class Order(models.Model):
         for order_item in self.items.all():
             total_discount+=order_item.discount()
         return total_discount
-
+    def discount_flash_sale(self):
+        discount=0
+        for order_item in self.items.all():
+            discount+=order_item.discount_flash_sale()
     def discount_promotion(self):
         discount_promotion=0
         for order_item in self.items.all():
@@ -91,7 +95,7 @@ class Order(models.Model):
         return total
 
     def total_discount_order(self):
-        return self.total_price_order()-self.discount_deal()-self.discount()
+        return self.total_price_order()-self.discount_deal()-self.discount()-discount_flash_sale()
 
     def fee_shipping(self):
         fee_shipping=0

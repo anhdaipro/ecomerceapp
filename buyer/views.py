@@ -729,7 +729,7 @@ class UpdateCartAPIView(APIView):
             }})
         order_check = Order.objects.filter(user=user, ordered=False).exclude(items=None)
         for order in order_check:
-            discount_voucher_shop+=order.discount_voucher()
+            discount_voucher_shop+=order.get_discount_voucher()
             count_cartitem+=order.count_item_cart()
             for cartitem in order.items.all():
                 count+=cartitem.count_item_cart()
@@ -909,7 +909,7 @@ class CartItemAPIView(APIView):
                         voucher=Voucher.objects.get(id=voucher_id)
                         if voucher.shop_id==order.shop_id:
                             order.voucher=voucher
-                            discount_voucher_shop=order.discount_voucher()
+                            discount_voucher_shop=order.get_discount_voucher()
                     if voucher_id_remove:
                         voucher=Voucher.objects.get(id=voucher_id_remove)
                         if voucher.shop_id==order.shop_id:
@@ -957,7 +957,7 @@ class CartItemAPIView(APIView):
                 Byproduct.objects.filter(cartitem=None).delete()
         order_check = Order.objects.filter(user=user, ordered=False).exclude(items=None).select_related('voucher').prefetch_related('items__item__media_upload').prefetch_related('items__byproduct_cart').prefetch_related('items__item__main_product').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__shop_program').prefetch_related('items__product__size').prefetch_related('items__product__color')
         for order in order_check:
-            discount_voucher_shop+=order.discount_voucher()
+            discount_voucher_shop+=order.get_discount_voucher()
             count_cartitem+=order.count_cartitem()
             for cartitem in order.items.all():
                 count+=cartitem.count_item_cart()
@@ -980,7 +980,7 @@ class ListorderAPIView(APIView):
         user=request.user
         order_check = Order.objects.filter(user=user, ordered=False).select_related('shop').select_related('voucher').prefetch_related('items__byproduct_cart').prefetch_related('items__item__main_product').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__shop_program').prefetch_related('items__product').exclude(items=None)
         data={
-        'orders':[{'discount_voucher_shop':order.discount_voucher(),'total':order.total_price_order(),
+        'orders':[{'discount_voucher_shop':order.get_discount_voucher(),'total':order.total_price_order(),
             'discount_deal':order.discount_deal(),'count':order.count_item_cart(),
             'count_cartitem':order.count_cartitem(),'shop_id':order.shop_id,
             'discount_promotion':order.discount_promotion(),'total_discount':order.discount(),
@@ -1171,6 +1171,10 @@ class CheckoutAPIView(APIView):
                 order.amount=order.total_discount_order()
                 order.ref_code = create_ref_code()
                 order.ordered_date=datetime.datetime.now()
+                if order.get_discount_voucher()>0:
+                    order.discount_voucher=order.get_discount_voucher()
+                else:
+                    order.voucher=None
                 order.accepted_date=datetime.datetime.now()+timedelta(minutes=30)
                 order.payment_choice=payment_option
                 items = order.items.all()
@@ -1232,6 +1236,10 @@ def payment_complete(request):
             order.amount=order.total_final_order()
             order.ref_code = create_ref_code()
             order.ordered_date=timezone.now()
+            if order.get_discount_voucher()>0:
+                order.discount_voucher=order.get_discount_voucher()
+            else:
+                order.voucher=None
             order.payment_choice="Paypal"
             order.payment_number=pay_id
             items = order.items.all()
@@ -1497,7 +1505,7 @@ class PurchaseAPIView(APIView):
                 user=user
             )
             cart_items = order.items.all()
-            cart_items.update(ordered=False,flash_sale=None,program=None,promotion_combo=None)
+            cart_items.update(ordered=False,vouvher=None,flash_sale=None,program=None,promotion_combo=None)
             for item in cart_items:
                 item.save()
                 products=Variation.objects.get(id=item.product_id)

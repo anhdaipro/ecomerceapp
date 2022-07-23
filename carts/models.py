@@ -78,7 +78,11 @@ class CartItem(models.Model):
             if promotion_combo.combo_type=='3':
                 discount_promotion=self.quantity*discount_price-quantity_in*promotion_combo.price_special_sale
         return discount_promotion
-    
+    def discount_flash_sale(self):
+        discount=0
+        if self.product.get_discount_flash_sale():
+            discount= self.quantity*self.product.get_discount_flash_sale()
+        return discount
     def discount(self):
         total_discount=0
         if self.item.get_program_current() and self.product.get_discount():

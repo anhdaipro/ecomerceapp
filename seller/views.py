@@ -1476,6 +1476,79 @@ def create_shop(request):
                     
 import calendar
 import pandas as pd
+class Dashboarchpromotion(APIView):
+    def get(self,request):
+        shop=Shop.objects.get(user=user)
+        current_date=datetime.datetime.now()
+        start_date=datetime.datetime.now()-timedelta(days=1)
+        yesterday=current_date-timedelta(days=1)
+        week=current_date-timedelta(days=7)
+        last_weeks=current_date-timedelta(days=14)
+        month=current_date-timedelta(days=30)
+        time=request.GET.get('time')
+        choice=request.GET.get('choice')
+        time_choice=request.GET.get('time_choice')
+        orders=Order.objects.filter(shop=shop,accepted=True)
+        orders_last=orders
+        data={}
+        if time=='currentday' or time=='day' or time=='yesterday':
+            orders=orders.filter(ordered_date__date__gte=current_date).annotate(day=TruncHour('ordered_date'))
+            orders_last=orders_last.filter(ordered_date__date=(current_date - timedelta(days=1)))
+            if time=='yesterday':
+                orders=orders.filter(ordered_date__date=yesterday).annotate(day=TruncHour('ordered_date'))
+                orders_last=orders_last.filter(Q(ordered_date__date=(yesterday - timedelta(days=1))))
+            elif time=='day':
+                day=pd.to_datetime(time_choice)
+                order=orders.filter(ordered_date__date=day).annotate(day=TruncHour('ordered_date'))
+                orders_last=orders_last.filter(Q(ordered_date__date=(day - timedelta(days=1))))
+        if time=='week_before' or time=='week':
+            orders=orders.filter(ordered_date__date__gte=week,ordered_date__date__lte=start_date).annotate(day=TruncDay('ordered_date'))
+            orders_last=orders_last.filter(Q(ordered_date__date__lt=week)&Q(ordered_date__date__gte=(week - timedelta(days=7))))
+            if time=='week':    
+                week=pd.to_datetime(time_choice)
+                orders=Order.objects.filter(ordered_date__week=week.isocalendar()[1],ordered_date__year=week.year).annotate(day=TruncDay('ordered_date'))
+                orders_last=orders_last.filter(Q(ordered_date__week=(week.isocalendar()[1] - 1)))
+        if time=='month' or time=='month_before':
+            orders=orders.filter(ordered_date__date__gte=month,ordered_date__date__lte=start_date).annotate(day=TruncDay('ordered_date'))
+            orders_last=list_order_last.filter(Q(ordered_date__date__lt=month)&Q(ordered_date__date__gte=(month - timedelta(days=30))))
+            if time=='month':
+                month=pd.to_datetime(time_choice)
+                orders=orders.filter(ordered_date__month=month.month,ordered_date__year=month.year).annotate(day=TruncDay('ordered_date'))
+                orders_last=orders_last.filter(Q(ordered_date__month=(month.month - 1)))
+        if time=='year':
+            year=pd.to_datetime(time_choice)
+            orders=orders.filter(ordered_date__year=year.year).annotate(day=TruncMonth('ordered_date'))
+            orders_last=orders_last.filter(Q(ordered_date__year=(year.year - 1)))
+        if choice=='voucher':
+            orders=orders.exclude(voucher=None)
+        if choice=='deal_shock':
+            orders=orders.exclude(items__deal_shock=None)
+        if choice=='combo':
+            orders=orders.exclude(items__promotion_combo=None)
+            count_promotion_order=orders.objects.aggregate(count_promotion_order=Sum(F('items')//F('items__promotion_combo__quantity_to_reduced')))
+            count_promotion_last=order_lasts.objects.aggregate(count_promotion_last=Sum(F('items')//F('items__promotion_combo__quantity_to_reduced')))
+            data.update(count_promotion_order)
+            data.update(count_promotion_last)
+        if choice=='flash_sale':
+            orders=orders.exclude(items__flash_sale=None)
+        if choice=='program':
+            orders=orders.exclude(items__program=None)
+        list_total_order=orders.values('day').annotate(count=Count('id')).values('day','count')
+        list_total_amount=orders.values('day').annotate(sum=Sum('amount')).values('day','sum')
+        total_quantity=orders.aggregate(sum=Sum('items__quantity'))
+        number_buyer=orders.order_by('user').distinct('user').count()
+        total_amount=orders.aggregate(sum=Sum('ammount'))
+        total_order=orders.aggregate(count=Count('id'))
+        total_quantity_last=orders_last.aggregate(sum=Sum('items__quantity'))
+        number_buyer_last=orders_last.order_by('user').distinct('user').count()
+        total_amount_last=orders_last.aggregate(sum=Sum('ammount'))
+        total_order_last=orders_last.aggregate(count=Count('id'))
+        dataseller={**list_total_order,**list_total_amount,**number_buyer,**data,
+        **total_amount,**total_order_last,**total_quantity_last,**number_buyer_last,
+        **total_amount_last,**total_order,'count':list_total_order,'sum':list_total_amount}
+        return Response(dataseller)
+
+
 @api_view(['GET', 'POST'])
 def my_dashboard(request):
         user=request.user

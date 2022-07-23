@@ -430,7 +430,7 @@ class OrderdetailSerializer(serializers.ModelSerializer):
     def get_cart_item(self,obj):
         return CartItemSerializer(obj.items.all(),many=True).data
     def get_discount_voucher(self,obj):
-        return obj.discount_voucher()
+        return obj.get_discount_voucher()
     def get_total(self,obj):
         return obj.total_price_order()
     def get_total_final(self,obj):
@@ -464,7 +464,7 @@ class OrderSerializer(serializers.ModelSerializer):
     def get_cart_item(self,obj):
         return CartItemSerializer(obj.items.all(),many=True).data
     def get_discount_voucher(self,obj):
-        return obj.discount_voucher()
+        return obj.get_discount_voucher()
     def get_total(self,obj):
         return obj.total_price_order()
     def get_total_final(self,obj):
