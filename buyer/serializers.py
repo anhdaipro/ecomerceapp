@@ -907,7 +907,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_total_price(self,obj):
         return obj.discount_main()
     def get_discount_price(self,obj):
-        return obj.product.total_discount()
+        return obj.product.discount_product()
     def get_byproducts(self,obj):
         list_byproduct=[]
         if obj.item.shock_deal():
