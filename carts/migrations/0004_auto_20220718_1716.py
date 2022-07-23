@@ -14,19 +14,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='Byproduct',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('quantity', models.IntegerField()),
-                ('updated_at', models.DateField(auto_now=True)),
-                ('cartitem', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='byproduct_cart', to='carts.cartitem')),
-                ('item', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='byproduct_item', to='shop.item')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='byproduct_product', to='shop.variation')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-        ),
-        migrations.DeleteModel(
-            name='Byproductcart',
-        ),
+        
+    
     ]

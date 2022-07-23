@@ -1180,16 +1180,23 @@ class CheckoutAPIView(APIView):
                         item.flash_sale_id=item.item.get_flash_sale_current()
                     if item.item.get_combo_current():
                         item.promotion_combo_id=item.item.get_combo_current()
+                    if item.item.get_program_current() and item.item.get_flash_sale_current() is None:
+                        item.program=item.item.get_program_curren()
+                    if item.get_deal_shock_current() is None:
+                        item.deal_shock=None
                     item.save()   
                     products=Variation.objects.get(id=item.product_id)
                     products.inventory -= item.quantity
                     products.save()
-                    if products.get_discount() and not products.get_discount_flash_sale():
-                        Variation_discount.objects.filter(shop_program_id=products.item.get_program_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity)
-                    for byproduct in item.byproduct_cart.all():
-                        product=Variation.objects.get(id=byproduct.product_id)
-                        product.inventory -= byproduct.quantity
-                        product.save()
+                    if products.get_discount_flash_sale():
+                        Variationflashsale.objects.filter(flash_sale_id=products.item.get_flash_sale_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity,number_order=F('number_order')+item.quantity)
+                    if products.get_discount() and products.get_discount_flash_sale() is None:
+                        Variation_discount.objects.filter(shop_program_id=products.item.get_program_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity,number_order=F('number_order')+item.quantity)
+                    if item.get_deal_shock_current():
+                        for byproduct in item.byproduct_cart.all():
+                            product=Variation.objects.get(id=byproduct.product_id)
+                            product.inventory -= byproduct.quantity
+                            product.save()
                 email_body = f"Hello {user.username}, \n {order.shop.user.username} cảm ơn bạn đã đặt hàng"
                 data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Thanks order!'}
@@ -1230,12 +1237,22 @@ def payment_complete(request):
             items = order.items.all()
             items.update(ordered=True) 
             for item in items:
+                if item.item.get_flash_sale_current():
+                    item.flash_sale_id=item.item.get_flash_sale_current()
+                if item.item.get_combo_current():
+                    item.promotion_combo_id=item.item.get_combo_current()
+                if item.item.get_program_current() and item.item.get_flash_sale_current() is None:
+                    item.program=item.item.get_program_curren()
+                if item.get_deal_shock_current() is None:
+                    item.deal_shock=None
                 item.save()   
                 products=Variation.objects.get(id=item.product_id)
                 products.inventory -= item.quantity
                 products.save()
-                if products.get_discount() and not products.get_discount_flash_sale():
-                    Variation_discount.objects.filter(shop_program_id=product.item.get_program_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity)
+                if products.get_discount_flash_sale():
+                    Variationflashsale.objects.filter(flash_sale_id=products.item.get_flash_sale_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity,number_order=F('number_order')+item.quantity)
+                if products.get_discount() and products.get_discount_flash_sale() is None:
+                    Variation_discount.objects.filter(shop_program_id=products.item.get_program_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity,number_order=F('number_order')+item.quantity)
                 if item.get_deal_shock_current():
                     for byproduct in item.byproduct_cart.all():
                         product=Variation.objects.get(id=byproduct.product_id)
@@ -1480,18 +1497,21 @@ class PurchaseAPIView(APIView):
                 user=user
             )
             cart_items = order.items.all()
-            cart_items.update(ordered=False)
+            cart_items.update(ordered=False,flash_sale=None,program=None,promotion_combo=None)
             for item in cart_items:
                 item.save()
                 products=Variation.objects.get(id=item.product_id)
                 products.inventory += item.quantity
                 products.save()
+                if products.get_discount_flash_sale():
+                    Variationflashsale.objects.filter(flash_sale_id=products.item.get_flash_sale_current(),variation=products).update(promotion_stock=F('promotion_stock')+item.quantity,number_order=F('number_order')-item.quantity)
                 if products.get_discount() and not products.get_discount_flash_sale():
-                    Variation_discount.objects.filter(shop_program_id=products.item.get_program_current(),variation=products).update(promotion_stock=F('promotion_stock')+item.quantity)
-                for byproduct in item.byproduct_cart.all():
-                    product=Variation.objects.get(id=byproduct.product_id)
-                    product.inventory+=byproduct.quantity
-                    product.save()
+                    Variation_discount.objects.filter(shop_program_id=products.item.get_program_current(),variation=products).update(promotion_stock=F('promotion_stock')+item.quantity,number_order=F('number_order')-item.quantity)
+                if item.get_deal_shock_current():
+                    for byproduct in item.byproduct_cart.all():
+                        product=Variation.objects.get(id=byproduct.product_id)
+                        product.inventory+=byproduct.quantity
+                        product.save()
             data={
                 'cancel':'cancel'
             }

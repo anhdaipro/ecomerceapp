@@ -75,6 +75,7 @@ class Variation_discount(models.Model):
     promotion_price=models.DecimalField(decimal_places=2, max_digits=12)
     promotion_stock=models.IntegerField(default=0)
     user_item_limit=models.IntegerField(default=0)
+    number_order=models.IntegerField(default=0,null=True)
     promotion_price_after_tax=models.DecimalField(decimal_places=2, max_digits=12)
     enable=models.BooleanField(default=True)
 
@@ -117,6 +118,7 @@ class Variationdeal(models.Model):
     variation=models.ForeignKey(to='shop.Variation',on_delete=models.CASCADE,related_name='variation_deal')
     promotion_price=models.DecimalField(decimal_places=2, max_digits=12)
     user_item_limit=models.IntegerField(default=0)
+    number_order=models.IntegerField(default=0,null=True)
     enable=models.BooleanField(default=False)
     created=models.DateTimeField(auto_now=True)
     def get_discount(self):
@@ -142,6 +144,7 @@ class Variationflashsale(models.Model):
     promotion_price=models.DecimalField(decimal_places=2, max_digits=12)
     user_item_limit=models.IntegerField(default=0)
     promotion_stock=models.IntegerField()
+    number_order=models.IntegerField(default=0,null=True)
     created=models.DateTimeField(auto_now=True)
     enable=models.BooleanField(default=False)
 

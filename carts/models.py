@@ -27,6 +27,7 @@ class CartItem(models.Model):
     deal_shock=models.ForeignKey(to="discounts.Buy_with_shock_deal",on_delete=models.SET_NULL, blank=True, null=True)
     promotion_combo=models.ForeignKey(to="discounts.Promotion_combo",on_delete=models.SET_NULL, blank=True, null=True)
     flash_sale=models.ForeignKey(to="discounts.Flash_sale",on_delete=models.SET_NULL, blank=True, null=True)
+    program=models.ForeignKey(to="discounts.Shop_program",on_delete=models.SET_NULL, blank=True, null=True)
     quantity=models.SmallIntegerField()
     updated_at = models.DateField(auto_now=True) 
     ordered=models.BooleanField(default=False)
