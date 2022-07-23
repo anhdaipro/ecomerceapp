@@ -1476,7 +1476,7 @@ def create_shop(request):
 import calendar
 import pandas as pd
 
-def dashboard(shop,time,time_choice,choice,year,month,day,hours,orders,order_last):
+def dashboard(shop,time,time_choice,choice,orders,order_last):
         current_date=datetime.datetime.now()
         start_date=datetime.datetime.now()-timedelta(days=1)
         yesterday=current_date-timedelta(days=1)

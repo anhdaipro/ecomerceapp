@@ -54,8 +54,8 @@ class CartItem(models.Model):
         return count
 
     def discount_deal(self):
+        discount_deal=0
         if self.get_deal_shock_current():
-            discount_deal=0
             for byproduct in self.byproduct_cart.all():
                 if byproduct.discount_deal_by():
                     discount_deal+=byproduct.discount_deal_by()
