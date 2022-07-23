@@ -379,7 +379,7 @@ class DealByproductSerializer(serializers.ModelSerializer):
         'minimum_price_to_receive_gift','shock_deal_type')
     def get_byproduct(self,obj):
         listitem=ItemdealSerializer(obj.byproducts.all()[:4],many=True).data
-        if obj.limited_product_bundles:
+        if obj.limited_product_bundles and obj.limited_product_bundles<4:
             listitem=ItemdealSerializer(obj.byproducts.all()[:obj.limited_product_bundles],many=True).data
         return listitem
     def get_colors_deal(self,obj):
