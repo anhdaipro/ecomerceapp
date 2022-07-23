@@ -1490,7 +1490,7 @@ class Dashboardpromotion(APIView):
         time_choice=request.GET.get('time_choice')
         orders=Order.objects.filter(shop=shop,accepted=True)
         orders_last=orders
-        data={}
+        data={'ok':'ok'}
         if time=='currentday' or time=='day' or time=='yesterday':
             orders=orders.filter(ordered_date__date__gte=current_date).annotate(day=TruncHour('ordered_date'))
             orders_last=orders_last.filter(ordered_date__date=(current_date - timedelta(days=1)))
@@ -1545,8 +1545,11 @@ class Dashboardpromotion(APIView):
         total_amount_last=orders_last.aggregate(sum=Sum('amount'))
         total_order_last=orders_last.aggregate(count=Count('id'))
         dataseller={'number_buyer':number_buyer,**data,
-        **total_amount,**total_order_last,**total_quantity_last,'number_buyer_last':number_buyer_last,
-        **total_amount_last,**total_order,'count':list(list_total_order),'sum':list(list_total_amount)}
+        'total_amount':total_amount,'total_order_last':total_order_last,
+        'total_quantity_last':total_quantity_last,
+        'number_buyer_last':number_buyer_last,
+        'total_amount_last':total_amount_last,'total_order':total_order,
+        'count':list(list_total_order),'sum':list(list_total_amount)}
         return Response(dataseller)
 
 
