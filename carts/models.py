@@ -66,14 +66,14 @@ class CartItem(models.Model):
         discount_price=self.product.price
         if self.item.get_program_current() and self.product.get_discount():
             discount_price=self.product.get_discount()
-        if self.promotion_combo and self.promotion_combo.valid_to>timezone.now():
+        if self.item.promotion_combo and self.item.promotion_combo.valid_to>timezone.now():
             quantity_in=self.quantity//self.promotion_combo.quantity_to_reduced
             quantity_valid=quantity_in*self.promotion_combo.quantity_to_reduced
-            if self.promotion_combo.combo_type=='1':
+            if self.item.promotion_combo.combo_type=='1':
                 discount_promotion=quantity_valid*discount_price*self.promotion_combo.discount_percent/100
-            if self.promotion_combo.combo_type=='2':
+            if self.item.promotion_combo.combo_type=='2':
                 discount_promotion=self.quantity*discount_price-quantity_in*self.promotion_combo.discount_price
-            if self.promotion_combo.combo_type=='3':
+            if self.item.promotion_combo.combo_type=='3':
                 discount_promotion=self.quantity*discount_price-quantity_in*self.promotion_combo.price_special_sale
         return discount_promotion
     
