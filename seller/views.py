@@ -1544,7 +1544,7 @@ class Dashboardpromotion(APIView):
         number_buyer_last=orders_last.order_by('user').distinct('user').count()
         total_amount_last=orders_last.aggregate(sum=Sum('amount'))
         total_order_last=orders_last.aggregate(count=Count('id'))
-        dataseller={**list_total_order,**list_total_amount,**number_buyer,**data,
+        dataseller={**number_buyer,**data,
         **total_amount,**total_order_last,**total_quantity_last,**number_buyer_last,
         **total_amount_last,**total_order,'count':list(list_total_order),'sum':list(list_total_amount)}
         return Response(dataseller)
