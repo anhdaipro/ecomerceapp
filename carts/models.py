@@ -104,7 +104,10 @@ class CartItem(models.Model):
         return total
 
     def total_discount_cartitem(self):
-        return self.total_price_cartitem()-(self.price_main()-self.discount_main())-self.discount_promotion()-self.discount_product()
+        discount = self.total_price_cartitem()-(self.price_main()-self.discount_main())-self.discount_promotion()-self.discount_product()
+        if cartitem.discount_deal():
+            discount=discount-cartitem.discount_deal()
+        return discount
     def get_deal_shock_current(self):
         if self.deal_shock and self.deal_shock.valid_to>timezone.now() and self.deal_shock.valid_from<timezone.now():
             return self.deal_shock.id
