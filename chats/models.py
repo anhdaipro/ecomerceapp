@@ -74,7 +74,7 @@ class Message(models.Model):
             'accepted':self.order.accepted,'amount':self.order.amount,
             'image':self.order.items.all().last().get_image(),
             'url':self.order.items.all().last().item.get_absolute_url(),
-            'total_quantity':self.order.total_quantity,
+            'total_quantity':self.order.count_item_cart(),
             'being_delivered':self.order.being_delivered})
            
 class Messagemedia(models.Model):
