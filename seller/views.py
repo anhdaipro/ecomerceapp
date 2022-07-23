@@ -1526,8 +1526,8 @@ class Dashboardpromotion(APIView):
             orders=orders.exclude(items__deal_shock=None)
         if choice=='combo':
             orders=orders.exclude(items__promotion_combo=None)
-            count_promotion_order=orders.objects.aggregate(count_promotion_order=Sum(F('items')//F('items__promotion_combo__quantity_to_reduced')))
-            count_promotion_last=order_lasts.objects.aggregate(count_promotion_last=Sum(F('items')//F('items__promotion_combo__quantity_to_reduced')))
+            count_promotion_order=orders.aggregate(count_promotion_order=Sum(F('items')//F('items__promotion_combo__quantity_to_reduced')))
+            count_promotion_last=order_lasts.aggregate(count_promotion_last=Sum(F('items')//F('items__promotion_combo__quantity_to_reduced')))
             data.update(count_promotion_order)
             data.update(count_promotion_last)
         if choice=='flash_sale':
@@ -1538,11 +1538,11 @@ class Dashboardpromotion(APIView):
         list_total_amount=orders.values('day').annotate(sum=Sum('amount')).values('day','sum')
         total_quantity=orders.aggregate(sum=Sum('items__quantity'))
         number_buyer=orders.order_by('user').distinct('user').count()
-        total_amount=orders.aggregate(sum=Sum('ammount'))
+        total_amount=orders.aggregate(sum=Sum('amount'))
         total_order=orders.aggregate(count=Count('id'))
         total_quantity_last=orders_last.aggregate(sum=Sum('items__quantity'))
         number_buyer_last=orders_last.order_by('user').distinct('user').count()
-        total_amount_last=orders_last.aggregate(sum=Sum('ammount'))
+        total_amount_last=orders_last.aggregate(sum=Sum('amount'))
         total_order_last=orders_last.aggregate(count=Count('id'))
         dataseller={**list_total_order,**list_total_amount,**number_buyer,**data,
         **total_amount,**total_order_last,**total_quantity_last,**number_buyer_last,
