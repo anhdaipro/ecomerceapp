@@ -780,7 +780,7 @@ class AddToCardBatchAPIView(APIView):
             else:
                 cartitem.quantity=int(quantity_product)
             cartitem.save()
-            data.update({'o':'o'})
+            
         else:
             cartitem=CartItem.objects.create(
                 product=variation_choice,
@@ -791,7 +791,6 @@ class AddToCardBatchAPIView(APIView):
                 deal_shock_id=deal_id,
                 quantity=int(quantity_product)
             )
-            data.update({'ow':'ow'})
         list_byproduct_cart_delete=[product['byproduct_id'] for product in byproducts if product.get('byproduct_id') and product['check']==False]
         list_product_cart=[product for product in byproducts if  (product.get('byproduct_id')==None and product['check']) or (product.get('byproduct_id') and product['check'])]
         byproduct_update=[]
@@ -811,7 +810,7 @@ class AddToCardBatchAPIView(APIView):
         Byproduct.objects.filter(id__in=list_byproduct_cart_delete).delete()
         Byproduct.objects.bulk_update(byproduct_update,['quantity'],batch_size=1000)
         Byproduct.objects.bulk_create(byproduct_create)
-        return Response(data)
+        return Response({'id':cartitem.id})
 
 class AddToCartAPIView(APIView):
     def get(self,request):
