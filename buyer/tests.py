@@ -373,22 +373,22 @@ class VariationSerializer(serializers.ModelSerializer):
         return ItemSerializer(obj.item).data
 
 class CartviewSerializer(serializers.ModelSerializer):
-    item_name = serializers.SerializerMethodField()
-    item_url=serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    url=serializers.SerializerMethodField()
     item_image=serializers.SerializerMethodField()
     price=serializers.SerializerMethodField()
     promotion=serializers.SerializerMethodField()
     shock_deal_type=serializers.SerializerMethodField()
     class Meta:
         model=CartItem
-        fields=('id','item_id','item_name','item_image','item_url',
+        fields=('id','item_id','name','image','url',
                 'price','shock_deal_type','promotion',)
     
     def get_item_image(self,obj):
         return obj.get_image()
-    def get_item_name(self,obj):
+    def get_name(self,obj):
         return obj.item.name
-    def get_item_url(self,obj):
+    def get_url(self,obj):
         return obj.item.get_absolute_url()
     def get_price(self,obj):
         return obj.product.price-obj.product.total_discount()
@@ -499,14 +499,14 @@ class ReviewSerializer(serializers.ModelSerializer):
     color_value = serializers.SerializerMethodField()
     size_value = serializers.SerializerMethodField()
     item_image = serializers.SerializerMethodField()
-    item_name = serializers.SerializerMethodField()
-    item_url = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
     list_file=serializers.SerializerMethodField()
     rating_bab_category=serializers.SerializerMethodField()
     class Meta:
         model=ReView
-        fields=('id','review_text','created','item_name','color_value','size_value',
-                'info_more','anonymous_review','list_file','item_url','item_image',
+        fields=('id','review_text','created','name','color_value','size_value',
+                'info_more','anonymous_review','list_file','url','image',
                 'rating_bab_category','review_rating','edited',)
     def get_list_file(self,obj):
         return MediareviewSerializer(obj.media_review.all(),many=True).data  
@@ -518,23 +518,23 @@ class ReviewSerializer(serializers.ModelSerializer):
         return obj.cartitem.product.get_size()
     def get_item_image(self,obj):
         return obj.cartitem.get_image()
-    def get_item_name(self,obj):
+    def get_name(self,obj):
         return obj.cartitem.item.name
-    def get_item_url(self,obj):
+    def get_url(self,obj):
         return obj.cartitem.item.get_absolute_url()
 
 class ByproductSerializer(serializers.ModelSerializer):
     color_value = serializers.SerializerMethodField()
     size_value = serializers.SerializerMethodField()
     item_image = serializers.SerializerMethodField()
-    item_name = serializers.SerializerMethodField()
-    item_url = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
     total_price = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
     class Meta:
         model=Byproduct
-        fields=('id','color_value','size_value','price','item_image','item_id',
-        'item_name','quantity','item_url','total_price',)
+        fields=('id','color_value','size_value','price','image','item_id',
+        'name','quantity','url','total_price',)
     def get_color_value(self,obj):
         return obj.product.get_color()
     def get_size_value(self,obj):
@@ -543,9 +543,9 @@ class ByproductSerializer(serializers.ModelSerializer):
         return obj.item.get_image_cover()
     def get_price(self,obj):
         return obj.product.price
-    def get_item_name(self,obj):
+    def get_name(self,obj):
         return obj.item.name
-    def get_item_url(self,obj):
+    def get_url(self,obj):
         return obj.item.get_absolute_url()
     def get_total_price(self,obj):
         return obj.total_price()
@@ -554,8 +554,8 @@ class ByproductcartSerializer(serializers.ModelSerializer):
     color_value = serializers.SerializerMethodField()
     size_value = serializers.SerializerMethodField()
     item_image = serializers.SerializerMethodField()
-    item_name = serializers.SerializerMethodField()
-    item_url = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
     total_price = serializers.SerializerMethodField()
     price = serializers.SerializerMethodField()
     percent_discount_deal=serializers.SerializerMethodField()
@@ -565,8 +565,8 @@ class ByproductcartSerializer(serializers.ModelSerializer):
     inventory=serializers.SerializerMethodField()
     class Meta:
         model=Byproduct
-        fields=('id','product_id','color_value','size_value','price','item_image','item_id',
-        'item_name','quantity','item_url','total_price','colors','inventory',
+        fields=('id','product_id','color_value','size_value','price','image','item_id',
+        'name','quantity','url','total_price','colors','inventory',
         'percent_discount_deal','sizes','count_variation',)
     def get_color_value(self,obj):
         return obj.product.get_color()
@@ -576,9 +576,9 @@ class ByproductcartSerializer(serializers.ModelSerializer):
         return obj.item.get_image_cover()
     def get_price(self,obj):
         return obj.product.price
-    def get_item_name(self,obj):
+    def get_name(self,obj):
         return obj.item.name
-    def get_item_url(self,obj):
+    def get_url(self,obj):
         return obj.item.get_absolute_url()
     def get_total_price(self,obj):
         return obj.total_price()
@@ -594,8 +594,8 @@ class ByproductcartSerializer(serializers.ModelSerializer):
         return obj.product.inventory
 
 class CartitemcartSerializer(serializers.ModelSerializer):
-    item_name = serializers.SerializerMethodField()
-    item_url=serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    url=serializers.SerializerMethodField()
     color_value=serializers.SerializerMethodField()
     size_value=serializers.SerializerMethodField()
     item_image=serializers.SerializerMethodField()
@@ -611,8 +611,8 @@ class CartitemcartSerializer(serializers.ModelSerializer):
     shock_deal_type=serializers.SerializerMethodField()
     class Meta:
         model = CartItem
-        fields = ('id','item_id','item_name','item_url','product_id',
-        'color_value','size_value','quantity','discount_price','item_image',
+        fields = ('id','item_id','name','url','product_id',
+        'color_value','size_value','quantity','discount_price','image',
         'price','total_price','byproduct','colors','sizes','count_variation',
         'promotion','shop_id','check','inventory','shock_deal_type',
         )
@@ -624,9 +624,9 @@ class CartitemcartSerializer(serializers.ModelSerializer):
         return obj.get_image()
     def get_price(self,obj):
         return obj.product.price
-    def get_item_name(self,obj):
+    def get_name(self,obj):
         return obj.item.name
-    def get_item_url(self,obj):
+    def get_url(self,obj):
         return obj.item.get_absolute_url()
     def get_total_price(self,obj):
         return obj.total_discount_cartitem()
@@ -650,8 +650,8 @@ class CartitemcartSerializer(serializers.ModelSerializer):
 class 
 
 class CartItemSerializer(serializers.ModelSerializer):
-    item_name = serializers.SerializerMethodField()
-    item_url=serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    url=serializers.SerializerMethodField()
     color_value=serializers.SerializerMethodField()
     size_value=serializers.SerializerMethodField()
     item_image=serializers.SerializerMethodField()
@@ -661,8 +661,8 @@ class CartItemSerializer(serializers.ModelSerializer):
     byproduct=serializers.SerializerMethodField()
     class Meta:
         model = CartItem
-        fields = ('id','item_id','item_name','item_url','product_id',
-        'color_value','size_value','quantity','discount_price','item_image',
+        fields = ('id','item_id','name','url','product_id',
+        'color_value','size_value','quantity','discount_price','image',
         'price','total_price','byproduct',
         )
     def get_color_value(self,obj):
@@ -673,9 +673,9 @@ class CartItemSerializer(serializers.ModelSerializer):
         return obj.get_image()
     def get_price(self,obj):
         return obj.product.price
-    def get_item_name(self,obj):
+    def get_name(self,obj):
         return obj.item.name
-    def get_item_url(self,obj):
+    def get_url(self,obj):
         return obj.item.get_absolute_url()
     def get_total_price(self,obj):
         return obj.total_discount_cartitem()

@@ -1285,8 +1285,8 @@ class DealShockAPIView(APIView):
         byproducts=[]
         variation_choice={
             'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
-            'item_id':variation.item_id,'item_name':variation.item.name,'check':True,'main':True,
-            'price':variation.price,'discount_price':variation.total_discount(),'item_url':variation.item.get_absolute_url(),
+            'item_id':variation.item_id,'name':variation.item.name,'check':True,'main':True,
+            'price':variation.price,'discount_price':variation.total_discount(),'url':variation.item.get_absolute_url(),
             'sizes':variation.item.get_size(),'inventory':variation.inventory,
             'image':variation.get_image(),'quantity':1,'count_variation':variation.item.count_variation(),
             'colors':variation.item.get_color()}

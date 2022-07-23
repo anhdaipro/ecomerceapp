@@ -680,25 +680,25 @@ class AddressSerializer(serializers.ModelSerializer):
 class CartpurchaseSerializer(serializers.ModelSerializer):
     class Meta:
         model=CartItem
-        fields=('item_url','item_id','size_value','color_value','image',)
+        fields=('url','item_id','size_value','color_value','image',)
 
 class CartviewSerializer(serializers.ModelSerializer):
-    item_name = serializers.SerializerMethodField()
-    item_url=serializers.SerializerMethodField()
-    item_image=serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    url=serializers.SerializerMethodField()
+    image=serializers.SerializerMethodField()
     price=serializers.SerializerMethodField()
     promotion=serializers.SerializerMethodField()
     shock_deal_type=serializers.SerializerMethodField()
     class Meta:
         model=CartItem
-        fields=('id','item_id','item_name','item_image','item_url',
+        fields=('id','item_id','name','image','url',
                 'price','shock_deal_type','promotion',)
     
-    def get_item_image(self,obj):
+    def get_image(self,obj):
         return obj.get_image()
-    def get_item_name(self,obj):
+    def get_name(self,obj):
         return obj.item.name
-    def get_item_url(self,obj):
+    def get_url(self,obj):
         return obj.item.get_absolute_url()
     def get_price(self,obj):
         return obj.product.total_discount()
@@ -785,19 +785,19 @@ class MediareviewSerializer(serializers.ModelSerializer):
         return obj.get_media_preview()
     def get_show(self,obj):
         return False
-field_review=['id','review_text','created','item_name','color_value',
-        'size_value','info_more','review_rating','item_image']
+field_review=['id','review_text','created','name','color_value',
+        'size_value','info_more','review_rating','image']
 class ReviewSerializer(serializers.ModelSerializer):
     color_value = serializers.SerializerMethodField()
     size_value = serializers.SerializerMethodField()
-    item_image = serializers.SerializerMethodField()
-    item_name = serializers.SerializerMethodField()
-    item_url = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
     list_file=serializers.SerializerMethodField()
     rating_bab_category=serializers.SerializerMethodField()
     class Meta:
         model=ReView
-        fields=field_review+['anonymous_review','list_file','item_url','rating_bab_category',
+        fields=field_review+['anonymous_review','list_file','url','rating_bab_category',
         'edited']
     def get_list_file(self,obj):
         return MediareviewSerializer(obj.media_review.all(),many=True).data  
@@ -807,11 +807,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         return [obj.rating_product,obj.rating_seller_service,obj.rating_shipping_service]
     def get_size_value(self,obj):
         return obj.cartitem.product.get_size()
-    def get_item_image(self,obj):
+    def get_image(self,obj):
         return obj.cartitem.get_image()
-    def get_item_name(self,obj):
+    def get_name(self,obj):
         return obj.cartitem.item.name
-    def get_item_url(self,obj):
+    def get_url(self,obj):
         return obj.cartitem.item.get_absolute_url()
 class ReviewshopSerializer(ReviewSerializer):
     user = serializers.SerializerMethodField()
@@ -907,7 +907,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_total_price(self,obj):
         return obj.discount_main()
     def get_discount_price(self,obj):
-        return obj.product.get_discount()
+        return obj.product.total_discount()
     def get_byproducts(self,obj):
         list_byproduct=[]
         if obj.item.shock_deal():

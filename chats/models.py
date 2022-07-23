@@ -72,8 +72,8 @@ class Message(models.Model):
         if self.message_type=='5':
             return({'id':self.order.id,'received':self.order.received,'canceled':self.order.canceled,
             'accepted':self.order.accepted,'amount':self.order.amount,
-            'item_image':self.order.items.all().last().get_image(),
-            'item_url':self.order.items.all().last().item.get_absolute_url(),
+            'image':self.order.items.all().last().get_image(),
+            'url':self.order.items.all().last().item.get_absolute_url(),
             'total_quantity':self.order.total_quantity,
             'being_delivered':self.order.being_delivered})
            
