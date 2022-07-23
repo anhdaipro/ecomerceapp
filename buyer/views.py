@@ -774,6 +774,9 @@ class AddToCardBatchAPIView(APIView):
         data={}
         if cartitem.exists():
             cartitem=cartitem.last()
+            if cartitem.deal_shock_id:
+                if cartitem.deal_shock_id!=deal_id:
+                    Byproduct.objects.filter(cartitem=cartitem).delete()
             cartitem.deal_shock_id=deal_id
             if action=='add':
                 cartitem.quantity+=int(quantity_product)
