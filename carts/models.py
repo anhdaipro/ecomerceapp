@@ -65,8 +65,8 @@ class CartItem(models.Model):
     def discount_promotion(self):
         discount_promotion=0
         discount_price=self.product.price
-        if self.item.get_program_current() and self.product.get_discount():
-            discount_price=self.product.get_discount()
+        if self.item.get_program_current() and self.product.get_discount_program():
+            discount_price=self.product.get_discount_program()
         if self.item.get_combo_current():
             promotion_combo=Promotion_combo.objects.get(id=self.item.get_combo_current())
             quantity_in=self.quantity//promotion_combo.quantity_to_reduced
@@ -91,8 +91,8 @@ class CartItem(models.Model):
 
     def discount_main(self):
         discount=0
-        if self.product.discount_product():
-            discount=self.price_main()-self.quantity*self.product.discount_product()
+        if self.product.get_discount_product():
+            discount=self.price_main()-self.quantity*self.product.get_discount_product()
         return discount
     
     def total_price_cartitem(self):
@@ -125,8 +125,8 @@ class Byproduct(models.Model):
         return self.quantity*self.product.price
     def discount_by(self):
         discount=0  
-        if self.item.get_program_current() and self.product.get_discount():
-            discount=self.price_by()- self.quantity*self.product.get_discount()
+        if self.item.get_program_current() and self.product.get_discount_program():
+            discount=self.price_by()- self.quantity*self.product.get_discount_program()
         return discount
     def total_price(self):
         return self.price_by()-self.discount_deal_by()-self.discount_by()

@@ -393,7 +393,7 @@ class Variation(models.Model):
             variations=Variationflashsale.objects.filter(enable=True,variation=self,flash_sale_id=self.item.get_flash_sale_current())
             if variations.exists() and variations.first().promotion_stock>0:
                 return variations.first().user_item_limit
-    def get_discount(self):
+    def get_discount_program(self):
         if self.item.get_program_current():
             variations=Variation_discount.objects.filter(enable=True,variation=self,shop_program_id=self.item.get_program_current())
             if variations.exists() and variations.first().promotion_stock>0:
@@ -423,7 +423,7 @@ class Variation(models.Model):
         if self.get_discount_deal():
             discount=self.get_discount_deal()
         return discount
-        
+
     class Meta:
         ordering=['color']
     def number_order(self):

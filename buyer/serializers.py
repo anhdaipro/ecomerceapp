@@ -237,7 +237,7 @@ class VariationcartSerializer(serializers.ModelSerializer):
     def get_user_item_limit(self,obj):
         return obj.get_limit_deal()
     def get_discount_price(self,obj):
-        return obj.total_discount()
+        return obj.discount_product()
 class ItempageSerializer(ItemSerializer):
     num_like=serializers.SerializerMethodField()
     review_rating=serializers.SerializerMethodField()
@@ -907,7 +907,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_total_price(self,obj):
         return obj.discount_main()
     def get_discount_price(self,obj):
-        return obj.product.discount_product()
+        return obj.product.get_discount_product()
     def get_byproducts(self,obj):
         list_byproduct=[]
         if obj.item.shock_deal():
