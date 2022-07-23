@@ -151,7 +151,7 @@ class Item(models.Model):
     def get_variation_choice(self):
         variation=Variation.objects.filter(item=self).first()
         return {'product_id':variation.id,'inventory':variation.inventory,
-        'discount_price':variation.get_discount(),'price':variation.price,
+        'discount_price':variation.get_discount_product(),'price':variation.price,
         'color_value':variation.get_color(),'size_value':variation.get_size()}
     def get_list_color(self):
         color=Color.objects.filter(variation__item=self)
@@ -406,8 +406,8 @@ class Variation(models.Model):
     def get_discount_product(self):
         if self.get_discount_flash_sale():
             return self.get_discount_flash_sale()
-        if self.get_discount():
-            return self.get_discount()
+        if self.get_discount_program():
+            return self.get_discount_program()
     def get_discount_deal(self):
         if self.item.get_deal_shock_current():
             variations=Variationdeal.objects.filter(enable=True,variation=self,deal_shock_id=self.item.get_deal_shock_current())
@@ -416,10 +416,10 @@ class Variation(models.Model):
     
     def total_discount(self):
         discount=self.price
-        if self.get_discount() and self.get_discount_deal():
-            return discount-(self.price-self.get_discount())-(self.price-self.get_discount_deal())
-        if self.get_discount():
-            discount=self.get_discount()
+        if self.get_discount_program() and self.get_discount_deal():
+            return discount-(self.price-self.get_discount_program())-(self.price-self.get_discount_deal())
+        if self.get_discount_program():
+            discount=self.get_discount_program()
         if self.get_discount_deal():
             discount=self.get_discount_deal()
         return discount

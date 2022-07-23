@@ -123,11 +123,9 @@ class Variationdeal(models.Model):
     created=models.DateTimeField(auto_now=True)
     def get_discount(self):
         if self.variation.get_discount():
-            return self.variation.get_discount()
+            return self.variation.get_discount_deal()
         else:
             return self.variation.price
-    def get_total_discount(self):
-        return get_discount()-(self.variation.price-self.promotion_price)
         
 class Flash_sale(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)

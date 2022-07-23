@@ -1194,7 +1194,7 @@ class CheckoutAPIView(APIView):
                     products.save()
                     if products.get_discount_flash_sale():
                         Variationflashsale.objects.filter(flash_sale_id=products.item.get_flash_sale_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity,number_order=F('number_order')+item.quantity)
-                    if products.get_discount() and products.get_discount_flash_sale() is None:
+                    if products.get_discount_program() and products.get_discount_flash_sale() is None:
                         Variation_discount.objects.filter(shop_program_id=products.item.get_program_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity,number_order=F('number_order')+item.quantity)
                     if item.get_deal_shock_current():
                         for byproduct in item.byproduct_cart.all():
@@ -1259,7 +1259,7 @@ def payment_complete(request):
                 products.save()
                 if products.get_discount_flash_sale():
                     Variationflashsale.objects.filter(flash_sale_id=products.item.get_flash_sale_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity,number_order=F('number_order')+item.quantity)
-                if products.get_discount() and products.get_discount_flash_sale() is None:
+                if products.get_discount_program() and products.get_discount_flash_sale() is None:
                     Variation_discount.objects.filter(shop_program_id=products.item.get_program_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity,number_order=F('number_order')+item.quantity)
                 if item.get_deal_shock_current():
                     for byproduct in item.byproduct_cart.all():
@@ -1513,7 +1513,7 @@ class PurchaseAPIView(APIView):
                 products.save()
                 if products.get_discount_flash_sale():
                     Variationflashsale.objects.filter(flash_sale_id=products.item.get_flash_sale_current(),variation=products).update(promotion_stock=F('promotion_stock')+item.quantity,number_order=F('number_order')-item.quantity)
-                if products.get_discount() and not products.get_discount_flash_sale():
+                if products.get_discount_program() and not products.get_discount_flash_sale():
                     Variation_discount.objects.filter(shop_program_id=products.item.get_program_current(),variation=products).update(promotion_stock=F('promotion_stock')+item.quantity,number_order=F('number_order')-item.quantity)
                 if item.get_deal_shock_current():
                     for byproduct in item.byproduct_cart.all():
