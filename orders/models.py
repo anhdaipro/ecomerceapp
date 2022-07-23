@@ -69,7 +69,7 @@ class Order(models.Model):
     def discount(self):
         total_discount=0
         for order_item in self.items.all():
-            total_discount+=order_item.discount()
+            total_discount+=order_item.discount_product()
         return total_discount
     def discount_flash_sale(self):
         discount=0

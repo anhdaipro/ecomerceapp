@@ -403,15 +403,19 @@ class Variation(models.Model):
             variations=Variationflashsale.objects.filter(enable=True,variation=self,flash_sale_id=self.item.get_flash_sale_current())
             if variations.exists():
                 return variations.first().promotion_price
+    def get_discount_product(self):
+        if self.get_discount_flash_sale():
+            return self.get_discount_flash_sale()
+        if self.get_discount():
+            return self.get_discount()
     def get_discount_deal(self):
         if self.item.get_deal_shock_current():
             variations=Variationdeal.objects.filter(enable=True,variation=self,deal_shock_id=self.item.get_deal_shock_current())
             if variations.exists():
                 return variations.first().promotion_price
+    
     def total_discount(self):
         discount=self.price
-        if self.get_discount_flash_sale():
-            discount=self.get_discount_flash_sale()
         if self.get_discount() and self.get_discount_deal():
             return discount-(self.price-self.get_discount())-(self.price-self.get_discount_deal())
         if self.get_discount():
@@ -419,6 +423,7 @@ class Variation(models.Model):
         if self.get_discount_deal():
             discount=self.get_discount_deal()
         return discount
+        
     class Meta:
         ordering=['color']
     def number_order(self):
