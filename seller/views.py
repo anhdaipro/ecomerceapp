@@ -1476,15 +1476,13 @@ def create_shop(request):
 import calendar
 import pandas as pd
 
-def dashboard(shop,time,time_choice,choice):
+def dashboard(shop,time,time_choice,choice,year,month,day,hours,orders,order_last):
         current_date=datetime.datetime.now()
         start_date=datetime.datetime.now()-timedelta(days=1)
         yesterday=current_date-timedelta(days=1)
         week=current_date-timedelta(days=7)
         last_weeks=current_date-timedelta(days=14)
         month=current_date-timedelta(days=30)
-        orders=Order.objects.filter(shop=shop,accepted=True)
-        orders_last=orders
         
         if time=='currentday':
             orders=orders.filter(ordered_date__date__gte=current_date).annotate(day=TruncHour('ordered_date'))
@@ -1534,9 +1532,9 @@ def dashboard(shop,time,time_choice,choice):
         
 class DashboardVoucher(APIView):
     def get(self,request):
-        time=request.GET.get('time')
-        choice=request.GET.get('choice')
-        time_choice=request.GET.get('time_choice')
+        month=request.GET.get('month')
+        year=request.GET.get('year')
+        day=request.GET.get('date')
         shop=Shop.objects.get(user=request.user)
         dashboard(shop,time,time_choice,choice)
 class DashboardVoucher(APIView):
@@ -1578,7 +1576,9 @@ class Dashboardpromotion(APIView):
         orders=Order.objects.filter(shop=shop,accepted=True)
         orders_last=orders
         data={'ok':'ok'}
-        
+        orders=Order.objects.filter(shop=shop,accepted=True)
+        orders_last=orders
+        dashboard(shop,time,time_choice,choice,orders,orders_last)
         if choice=='voucher':
             count_use_voucher=orders.count()
             orders=orders.exclude(voucher=None)
