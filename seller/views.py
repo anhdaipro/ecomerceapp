@@ -1472,35 +1472,47 @@ def create_shop(request):
     else:
         address=Address.objects.filter(user=user,address_type='B')
         data={'address':address.values(),'info':{'username':user.username,'email':user.email,'name':user.shop.name,'phone_number':str(user.profile.phone)}}
-        return Response(data)
-                    
+        return Response(data)              
 import calendar
 import pandas as pd
-class Dashboardpromotion(APIView):
-    def get(self,request):
-        shop=Shop.objects.get(user=request.user)
+
+def dashboard(shop,time,time_choice,choice):
         current_date=datetime.datetime.now()
         start_date=datetime.datetime.now()-timedelta(days=1)
         yesterday=current_date-timedelta(days=1)
         week=current_date-timedelta(days=7)
         last_weeks=current_date-timedelta(days=14)
         month=current_date-timedelta(days=30)
-        time=request.GET.get('time')
-        choice=request.GET.get('choice')
-        time_choice=request.GET.get('time_choice')
         orders=Order.objects.filter(shop=shop,accepted=True)
         orders_last=orders
-        data={'ok':'ok'}
-        if time=='currentday' or time=='day' or time=='yesterday':
+        
+        if time=='currentday':
             orders=orders.filter(ordered_date__date__gte=current_date).annotate(day=TruncHour('ordered_date'))
             orders_last=orders_last.filter(ordered_date__date=(current_date - timedelta(days=1)))
-            if time=='yesterday':
-                orders=orders.filter(ordered_date__date=yesterday).annotate(day=TruncHour('ordered_date'))
-                orders_last=orders_last.filter(Q(ordered_date__date=(yesterday - timedelta(days=1))))
-            elif time=='day':
-                day=pd.to_datetime(time_choice)
-                order=orders.filter(ordered_date__date=day).annotate(day=TruncHour('ordered_date'))
-                orders_last=orders_last.filter(Q(ordered_date__date=(day - timedelta(days=1))))
+            if choice=='voucher':
+                vouchers_shop=Voucher.objects.filter(shop=shop)
+                vouchers=vouchers_shop.filter(valid_from__gte=current_date)
+                vouchers_last=vouchers_shop.filter(valid_from__gte=yesterday,valid_to_lte=current_date)
+                count_user=vouchers.aggregate(count=Count('user'))
+                count_user_last=vouchersr_last.aggregate(count=Count('user'))
+                data.update({'count_user':count_user,'count_voucher_last':count_voucher_last})
+        if time=='day':
+            day=pd.to_datetime(time_choice)
+            order=orders.filter(ordered_date__date=day).annotate(day=TruncHour('ordered_date'))
+            orders_last=orders_last.filter(Q(ordered_date__date=(day - timedelta(days=1))))
+            if choice=='voucher':
+                vouchers_shop=Voucher.objects.filter(shop=shop)
+                vouchers=vouchers_shop.filter(valid_from__gte=day)
+                vouchers_last=vouchers_shop.filter(valid_from__gte=yesterday,valid_to_lte=current_date)
+                count_user=vouchers.aggregate(count=Count('user'))
+                count_user_last=vouchersr_last.aggregate(count=Count('user'))
+                data.update({'count_user':count_user})
+        if time=='yesterday':
+            orders=orders.filter(ordered_date__date=yesterday).annotate(day=TruncHour('ordered_date'))
+            orders_last=orders_last.filter(Q(ordered_date__date=(yesterday - timedelta(days=1))))
+            datavoucher={}
+            
+
         if time=='week_before' or time=='week':
             orders=orders.filter(ordered_date__date__gte=week,ordered_date__date__lte=start_date).annotate(day=TruncDay('ordered_date'))
             orders_last=orders_last.filter(Q(ordered_date__date__lt=week)&Q(ordered_date__date__gte=(week - timedelta(days=7))))
@@ -1519,6 +1531,54 @@ class Dashboardpromotion(APIView):
             year=pd.to_datetime(time_choice)
             orders=orders.filter(ordered_date__year=year.year).annotate(day=TruncMonth('ordered_date'))
             orders_last=orders_last.filter(Q(ordered_date__year=(year.year - 1)))
+        
+class DashboardVoucher(APIView):
+    def get(self,request):
+        time=request.GET.get('time')
+        choice=request.GET.get('choice')
+        time_choice=request.GET.get('time_choice')
+        shop=Shop.objects.get(user=request.user)
+        dashboard(shop,time,time_choice,choice)
+class DashboardVoucher(APIView):
+    def get(self,request):
+        time=request.GET.get('time')
+        choice=request.GET.get('choice')
+        time_choice=request.GET.get('time_choice')
+        shop=Shop.objects.get(user=request.user)
+        dashboard(shop,time,time_choice,choice)
+        
+class DashboardVoucher(APIView):
+    def get(self,request):
+        time=request.GET.get('time')
+        choice=request.GET.get('choice')
+        time_choice=request.GET.get('time_choice')
+        shop=Shop.objects.get(user=request.user)
+        dashboard(shop,time,time_choice,choice)
+        
+class DashboardVoucher(APIView):
+    def get(self,request):
+        time=request.GET.get('time')
+        choice=request.GET.get('choice')
+        time_choice=request.GET.get('time_choice')
+        shop=Shop.objects.get(user=request.user)
+        dashboard(shop,time,time_choice,choice)
+        
+class Dashboardpromotion(APIView):
+    def get(self,request):
+        shop=Shop.objects.get(user=request.user)
+        current_date=datetime.datetime.now()
+        start_date=datetime.datetime.now()-timedelta(days=1)
+        yesterday=current_date-timedelta(days=1)
+        week=current_date-timedelta(days=7)
+        last_weeks=current_date-timedelta(days=14)
+        month=current_date-timedelta(days=30)
+        time=request.GET.get('time')
+        choice=request.GET.get('choice')
+        time_choice=request.GET.get('time_choice')
+        orders=Order.objects.filter(shop=shop,accepted=True)
+        orders_last=orders
+        data={'ok':'ok'}
+        
         if choice=='voucher':
             count_use_voucher=orders.count()
             orders=orders.exclude(voucher=None)

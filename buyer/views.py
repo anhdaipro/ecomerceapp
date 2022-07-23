@@ -774,9 +774,6 @@ class AddToCardBatchAPIView(APIView):
         data={}
         if cartitem.exists():
             cartitem=cartitem.last()
-            if cartitem.deal_shock_id:
-                if cartitem.deal_shock_id!=deal_id:
-                    Byproduct.objects.filter(cartitem=cartitem).delete()
             cartitem.deal_shock_id=deal_id
             if action=='add':
                 cartitem.quantity+=int(quantity_product)
@@ -1322,7 +1319,10 @@ class DealShockAPIView(APIView):
             cartitem=cartitem.last()
             variation_choice.update({'quantity':cartitem.quantity})
             cartitem_id=cartitem.id
-            byproducts=ByproductcartSerializer(cartitem.byproduct_cart.all(),many=True).data
+            if cartitem.deal_shock_id and cartitem.deal_shock_id!=deal_id:
+                Byproduct.objects.filter(cartitem=cartitem).delete()
+            else:
+                byproducts=ByproductcartSerializer(cartitem.byproduct_cart.all(),many=True).data
         data={
             'cartitem_id':cartitem_id,'deal_id':deal_id,
             'byproducts':byproducts,'variation_choice':variation_choice
