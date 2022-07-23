@@ -121,18 +121,19 @@ class Byproduct(models.Model):
     quantity=models.IntegerField()
     updated_at = models.DateField(auto_now=True)
     def discount_deal_by(self):
+        discount=0
         if self.product.get_discount_deal():
-            return self.quantity * self.product.get_discount_deal()
+            discount= self.price_by()-self.quantity * self.product.get_discount_deal()
+        return discount
     def price_by(self):
         return self.quantity*self.product.price
-    def discount_by(self):  
+    def discount_by(self):
+        discount=0  
         if self.item.get_program_current() and self.product.get_discount():
-            return self.quantity*self.product.get_discount()
+            discount=self.price_by()- self.quantity*self.product.get_discount()
+        return discount
     def total_price(self):
-        if self.discount_deal_by() and self.discount_by():
-            return self.price_by()-(self.price_by()-self.discount_by())-(self.price_by()-self.discount_deal_by())
-        if self.discount_deal_by():
-            return self.discount_deal_by()
+        return self.price_by()-self.discount_deal_by()-self.discount_by()
 
     def get_image(self):
         image=self.item.get_image_cover()
