@@ -824,7 +824,7 @@ class AddToCartAPIView(APIView):
             product=Variation.objects.get(item_id=item_id)
         data={
             'price':product.price,'program':product.get_discount_program(),
-            'deal':get_discount_deal(),
+            'deal':product.get_discount_deal(),
             'discount_price':product.total_discount(),
             'inventory':product.inventory,'id':product.id
             }
