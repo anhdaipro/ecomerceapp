@@ -58,7 +58,7 @@ ItemproductSerializer,)
 def datapromotion(shop,week,choice,orders,orders_last):
     data={}
     orders=orders.filter(ordered_date__date__gte=week)
-    orders_last=orders_last.filter(Q(ordered_date__date__gte=(week - timedelta(days=7))))
+    orders_last=orders_last.filter(Q(ordered_date__date__lt=week)&Q(ordered_date__date__gte=(week - timedelta(days=7))))
     if choice=='voucher':
         orders=orders.exclude(voucher=None)
         orders_last=orders_last.exclude(voucher=None)
