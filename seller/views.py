@@ -1529,6 +1529,17 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
             orders=orders.filter(items__deal_shock__isnull=False).distinct()
             cartitems=cartitems.exclude(deal_shock=None)
             cartitems_last=cartitems_last.exclude(deal_shock=None)
+            amount_main=cartitems.aggregate(sum=Sum('amount_main_products'))
+            amount_main_last=cartitems_last.aggregate(sum=Sum('amount_main_products'))
+            amount_byproducts=cartitems.aggregate(sum=Sum('amount_byproducts'))
+            amount_byproducts_last=cartitems_last.aggregate(sum=Sum('amount_byproducts'))
+            quantity_byproducts=cartitems.byproduct_cartitem.all().aggregate(sum=Sum('quantity'))
+            quantity_byproducts_last=cartitems_last.byproduct_cartitem.all().aggregate(sum=Sum('quantity'))
+            data.update({'amount_main':amount_main,'amount_byproducts':amount_byproducts,
+                'amount_main_last':amount_main_last,
+                'amount_byproducts_last':amount_byproducts_last,
+                'quantity_byproducts':quantity_byproducts,
+                'quantity_byproducts_last':quantity_byproducts_last})
         if choice=='combo':
             orders=orders.filter(items__promotion_combo__isnull=False).distinct()
             cartitems=cartitems.exclude(promotion_combo=None)
