@@ -99,14 +99,13 @@ def datapromotion(shop,week,choice,orders,orders_last):
             orders_last=orders_last.filter(items__program__isnull=False)
             cartitems=cartitems.exclude(program=None)
             cartitems_last=cartitems_last.exclude(program=None)
-        cartitems=cartitems.objects.filter(order_cartitem__in=orders)
-        cartitems_last=cartitems
+        cartitems=cartitems.filter(order_cartitem__in=orders)
+        cartitems_last=cartitems_last.filter(order_cartitem__in=orders_last)
         total_quantity=cartitems.aggregate(sum=Coalesce(Sum('quantity'),0))
         total_quantity_last=cartitems_last.aggregate(sum=Coalesce(Sum('quantity'),0))
         data.update({'total_quantity':total_quantity['sum'],
         'total_quantity_last':total_quantity_last['sum'],})
-    cartitems=cartitems.filter(order_cartitem__in=orders)
-    cartitems_last=cartitems_last.filter(order_cartitem__in=orders_last)
+   
     number_buyer=orders.order_by('user').distinct('user').count()
     total_amount=orders.aggregate(sum=Coalesce(Sum('amount'),0.0))
     total_order=orders.aggregate(count=Count('id'))
