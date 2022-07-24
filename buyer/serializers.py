@@ -854,7 +854,7 @@ class ByproductSerializer(serializers.ModelSerializer):
     def get_url(self,obj):
         return obj.item.get_absolute_url()
     def get_total_price(self,obj):
-        return obj.total_price()
+        return obj.total_discount_cartitem()
 
 class ByproductcartSerializer(ByproductSerializer):
     discount_price=serializers.SerializerMethodField()

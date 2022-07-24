@@ -80,7 +80,7 @@ class CartItem(models.Model):
         return discount_promotion
    
     def discount_product(self):
-        total_discount=self.discount_main()
+        total_discount=self.price_main()-self.discount_main()
         if self.get_deal_shock_current():
             for byproduct in self.byproduct_cart.all():
                 if byproduct.discount_by():
@@ -92,7 +92,7 @@ class CartItem(models.Model):
     def discount_main(self):
         discount=0
         if self.product.get_discount_product():
-            discount=self.price_main()-self.quantity*self.product.get_discount_product()
+            discount=self.quantity*self.product.get_discount_product()
         return discount
     
     def total_price_cartitem(self):

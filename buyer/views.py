@@ -885,7 +885,7 @@ class CartItemAPIView(APIView):
         list_cart_item=CartItem.objects.filter(user=request.user,ordered=False).select_related('shop').prefetch_related('item__media_upload').prefetch_related('item__shop_program').prefetch_related('item__main_product').prefetch_related('item__promotion_combo').select_related('product').select_related('product__size').select_related('product__color').prefetch_related('byproduct_cart')
         serializer = CartitemcartSerializer(list_cart_item,many=True, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
-    def post(self, request,count_cartitem=0,price=0,total=0,discount_product=0,discount_deal=0,discount_voucher_shop=0,discount_promotion=0,count=0, *args, **kwargs):
+    def post(self, request,count_cartitem=0,total_price=0,total=0,discount_product=0,discount_deal=0,discount_voucher_shop=0,discount_promotion=0,count=0, *args, **kwargs):
         user=request.user
         byproduct_id_delete=request.data.get('byproduct_id_delete')
         byproduct_id=request.data.get('byproduct_id')
@@ -946,12 +946,12 @@ class CartItemAPIView(APIView):
                 byproduct=Byproduct.objects.get(id=byproduct_id)
                 byproduct.quantity=int(quantity)
                 byproduct.save()
-                price=byproduct.total_price()
+                total_price=byproduct.total_price()
             elif cartitem_id:
                 cartitem=CartItem.objects.get(id=cartitem_id)
                 cartitem.quantity=int(quantity)
                 cartitem.save()
-                price=cartitem.total_discount_cartitem()
+                total_price=cartitem.discount_main()
             else:
                 CartItem.objects.get(id=cartitem_id_delete).delete()
                 Byproduct.objects.filter(cartitem=None).delete()
@@ -967,7 +967,7 @@ class CartItemAPIView(APIView):
                 discount_promotion+=cartitem.discount_promotion()
         data={
             'discount_voucher_shop':discount_voucher_shop,'list_shop_order':list_shop_order,
-            'price':price,'count':count,'total':total,'discount_deal':discount_deal,
+            'total_price':total_price,'count':count,'total':total,'discount_deal':discount_deal,
             'discount_product':discount_product,'count_cartitem':count_cartitem,
             'discount_promotion':discount_promotion
             }
