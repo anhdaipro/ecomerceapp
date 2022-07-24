@@ -1619,7 +1619,7 @@ class Dashboardpromotion(APIView):
         orders=Order.objects.filter(shop=shop,accepted=True)
         orders_last=orders
         dashboard(shop,time,time_choice,choice,orders,orders_last)
-        return Response(dashboard)
+        return Response(dashboard(shop,time,time_choice,choice,orders,orders_last))
 
 
 @api_view(['GET', 'POST'])

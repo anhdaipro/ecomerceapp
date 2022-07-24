@@ -411,7 +411,7 @@ class Variation(models.Model):
     def get_discount_product(self):
         if self.get_discount_flash_sale():
             return self.get_discount_flash_sale()
-        if self.get_discount_program():
+        else:
             return self.get_discount_program()
     def get_discount_deal(self):
         if self.item.get_deal_shock_current():
