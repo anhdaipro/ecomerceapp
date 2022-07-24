@@ -1488,7 +1488,7 @@ import pandas as pd
 
 def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month):
         data={}
-        caritems=CartItem.objects.filter(order_cartitem__in=orders)
+        cartitems=CartItem.objects.filter(order_cartitem__in=orders)
         cartitems_last=cartitems
         times = [i for i in range(24)]
         if time=='currentday':
@@ -1614,11 +1614,9 @@ class DashboardVoucher(APIView):
         vouchers=Voucheruser.objects.filter(vochher__shop=shop)
         vouchers_user=vouchers
         vouchers_last_user=vouchers
-        time=[]
         if time=='currentday':
             vouchers_user=vouchers_user.filter(created__date__gte=current_date)
-            vouchers_last_user=vouchers_last_user.filter(created__date=(current_date - timedelta(days=1)))
-            
+            vouchers_last_user=vouchers_last_user.filter(created__date=(current_date - timedelta(days=1))) 
         if time=='day':
             day=pd.to_datetime(time_choice)
             order=orders.filter(created__date=day)
@@ -1641,7 +1639,8 @@ class DashboardVoucher(APIView):
             vouchers_user=vouchers_user.filter(created__date__gte=month,created__date__lte=yesterday)
             vouchers_user_last=vouchers_user_last.filter(Q(created__date__lt=month)&Q(created__date__gte=(month - timedelta(days=30)))) 
         data={'count_voucher_received':vouchers_user.count(),'count_voucher_received_last':vouchers_user_last.count()}
-
+        datachart={**data,**dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month)}
+        return Response(datachart)
 class DashboardFlashsale(APIView):
     def get(self,request):
         time=request.GET.get('time')
