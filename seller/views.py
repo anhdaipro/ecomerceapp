@@ -378,19 +378,16 @@ def my_dashboard(request):
         month=current_date-timedelta(days=30)
         time=request.GET.get('time')
         time_choice=request.GET.get('time_choice')
-        cancel=request.GET.get('canceled')
-        receive = request.GET.get('received')
-        ordered=request.GET.get('ordered')
-        accept=request.GET.get('accepted')
+        typeorder=request.GET.get('typeorder')
         canceled=False
-        if cancel:
+        if typeorder=='canceled':
             canceled=True
         accepted=[False,True]
         ordered=True
-        if accept:
+        if typeorder=='accepted':
             accepted=[True]
         received=[False,True]
-        if receive:
+        if typeorder=='receive':
             received=[True]
         total_order=Order.objects.filter(shop=shop,ordered_date__date=current_date).annotate(day=TruncHour('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
         total_amount=Order.objects.filter(shop=shop,ordered_date__date=current_date).annotate(day=TruncHour('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
