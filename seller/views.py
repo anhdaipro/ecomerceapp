@@ -64,7 +64,7 @@ def datapromotion(shop,week,choice,orders,orders_last):
         vouchers=Voucheruser.objects.filter(voucher__shop=shop)
         orders=orders.exclude(voucher=None)
         orders_last=orders_last.exclude(voucher=None)
-        vouchers_user=vouchers.filter(created__date__gte=week,created__date__lte=yesterday)
+        vouchers_user=vouchers.filter(created__date__gte=week)
         vouchers_last_user=vouchers.filter(Q(created__date__lt=week)&Q(created__date__gte=(week - timedelta(days=7))))
         count_use_voucher=orders.count()
         count_use_voucher_last=orders_last.count()
