@@ -71,10 +71,7 @@ class Order(models.Model):
         for order_item in self.items.all():
             total_discount+=order_item.discount_product()
         return total_discount
-    def discount_flash_sale(self):
-        discount=0
-        for order_item in self.items.all():
-            discount+=order_item.discount_flash_sale()
+    
     def discount_promotion(self):
         discount_promotion=0
         for order_item in self.items.all():
@@ -85,7 +82,7 @@ class Order(models.Model):
         discount_deal=0
         for order_item in self.items.all():
             if order_item.discount_deal():
-                discount_deal+=order_item.discount_deal()
+                discount_deal+=order_item.save_deal()
         return discount_deal
     
     def total_price_order(self):

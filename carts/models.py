@@ -55,13 +55,22 @@ class CartItem(models.Model):
                 count+=1
         return count
 
-    def discount_deal(self):
-        discount_deal=0
+    def total_discount_deal(self):
+        total=0
         if self.get_deal_shock_current():
             for byproduct in self.byproduct_cart.all():
                 if byproduct.discount_deal_by():
-                    discount_deal+=byproduct.total_price()
-        return discount_deal
+                    total+=byproduct.total_price()
+        return total
+    def total_price_deal(self):
+        total=0
+        if self.get_deal_shock_current():
+            for byproduct in self.byproduct_cart.all():
+                if byproduct.discount_deal_by():
+                    total+=byproduct.price_by()
+        return total
+    def save_deal(self):
+        return self.total_price_deal()-self.total_discount_deal()
     def get_ref_code(self):
         return Order.objects.filter(items=self).first().ref_code
     def discount_promotion(self):
@@ -102,7 +111,7 @@ class CartItem(models.Model):
         return total
 
     def total_discount_cartitem(self):
-        return self.total_price_cartitem()-self.discount_deal()-self.discount_promotion()-self.discount_product()
+        return self.total_price_cartitem()-self.save_deal()-self.discount_promotion()-self.discount_product()
     def get_deal_shock_current(self):
         if self.deal_shock and self.deal_shock.valid_to>timezone.now() and self.deal_shock.valid_from<timezone.now():
             return self.deal_shock.id
@@ -123,7 +132,7 @@ class Byproduct(models.Model):
         return self.quantity*self.product.price
     def discount_by(self):
         discount=0  
-        if self.item.get_program_current() and self.product.get_discount_program():
+        if self.product.get_discount_program():
             discount=self.price_by()- self.quantity*self.product.get_discount_program()
         return discount
     def total_price(self):

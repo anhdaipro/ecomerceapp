@@ -179,10 +179,6 @@ class Item(models.Model):
         if self.get_program_current():
             variations=Variation_discount.objects.filter(enable=True,item=self,shop_program=self.get_program_current()).aggregate(avg=Avg('promotion_price'))
             return variations['avg']
-    def avg_discount_price_deal(self):
-        if self.get_deal_shock_current():
-            variations=Variationdeal.objects.filter(enable=True,item=self,deal_shock=self.get_deal_shock_current()).aggregate(avg=Avg('promotion_price'))
-            return variations['avg']
     def avg_discount_price_flash_sale(self):
         if self.get_flash_sale_current():
             variations=Variationflashsale.objects.filter(enable=True,item=self,flash_sale=self.get_flash_sale_current()).aggregate(avg=Avg('promotion_price'))
@@ -230,9 +226,9 @@ class Item(models.Model):
     def percent_discount_total(self):
         percent=0
         if self.get_flash_sale_current():
-            percent=self.percent_discount_deal()+self.percent_discount_flash_sale()
+            percent=self.percent_discount_flash_sale()
         else:
-            percent=self.percent_discount()+self.percent_discount_deal()
+            percent=self.percent_discount()
         return percent
     def max_price(self):
         variations = Variation.objects.filter(item=self).aggregate(max=Max('price'))
@@ -409,10 +405,14 @@ class Variation(models.Model):
             if variations.exists():
                 return variations.first().promotion_price
     def get_discount_product(self):
-        return self.get_discount_program()
+        if self.get_discount_flash_sale():
+            return self.get_discount_flash_sale()
+        else:
+            return self.get_discount_program()
     def get_discount_deal(self):
-        if self.item.get_deal_shock_current():
-            variations=Variationdeal.objects.filter(enable=True,variation=self,deal_shock_id=self.item.get_deal_shock_current())
+        deal_shock=Buy_with_shock_deal.objects.filter(byproducts=self.item,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now())
+        if deal_shock.exists():
+            variations=Variationdeal.objects.filter(enable=True,variation=self,deal_shock=deal_shock.first())
             if variations.exists():
                 return variations.first().promotion_price
     
