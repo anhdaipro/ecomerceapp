@@ -409,10 +409,7 @@ class Variation(models.Model):
             if variations.exists():
                 return variations.first().promotion_price
     def get_discount_product(self):
-        if self.get_discount_flash_sale():
-            return self.get_discount_flash_sale()
-        else:
-            return self.get_discount_program()
+        return self.get_discount_program()
     def get_discount_deal(self):
         if self.item.get_deal_shock_current():
             variations=Variationdeal.objects.filter(enable=True,variation=self,deal_shock_id=self.item.get_deal_shock_current())
