@@ -66,8 +66,9 @@ def datapromotion(shop,week,choice,orders,orders_last):
         count_use_voucher_last=orders_last.count()
         data.update({'count_use_voucher':count_use_voucher,'count_use_voucher_last':count_use_voucher_last})
     else:
-        cartitems=CartItem.objects.filter(order_cartitem__in=orders)
-        cartitems_last=cartitems
+        cartitem=Cartitem.objects.filter(shop=shop,ordered=True)
+        cartitems=cartitem
+        cartitems_last=cartitem
         if choice=='addon':
             orders=orders.filter(items__deal_shock__isnull=False).distinct()
             orders_last=orders_last.filter(items__deal_shock__isnull=False).distinct()
@@ -98,11 +99,14 @@ def datapromotion(shop,week,choice,orders,orders_last):
             orders_last=orders_last.filter(items__program__isnull=False)
             cartitems=cartitems.exclude(program=None)
             cartitems_last=cartitems_last.exclude(program=None)
+        cartitems=cartitems.objects.filter(order_cartitem__in=orders)
+        cartitems_last=cartitems
         total_quantity=cartitems.aggregate(sum=Coalesce(Sum('quantity'),0))
         total_quantity_last=cartitems_last.aggregate(sum=Coalesce(Sum('quantity'),0))
         data.update({'total_quantity':total_quantity['sum'],
         'total_quantity_last':total_quantity_last['sum'],})
-        
+    cartitems=cartitems.filter(order_cartitem__in=orders)
+    cartitems_last=cartitems_last.filter(order_cartitem__in=orders_last)
     number_buyer=orders.order_by('user').distinct('user').count()
     total_amount=orders.aggregate(sum=Coalesce(Sum('amount'),0.0))
     total_order=orders.aggregate(count=Count('id'))
@@ -254,6 +258,8 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
             orders_last=orders_last.filter(items__program__isnull=False)
             cartitems=cartitems.exclude(program=None)
             cartitems_last=cartitems_last.exclude(program=None)
+        cartitems=cartitems.filter(order_cartitem__in=orders)
+        cartitems_last=cartitems_last.filter(order_cartitem__in=orders_last)
         list_total_order=orders.values('day').annotate(count=Count('id')).values('day','count')
         list_total_amount=orders.values('day').annotate(sum=Coalesce(Sum('amount'),0.0)).values('day','sum')
         total_quantity=cartitems.aggregate(sum=Coalesce(Sum('quantity'),0))
