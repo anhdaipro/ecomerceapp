@@ -66,7 +66,7 @@ def datapromotion(shop,week,choice,orders,orders_last):
         count_use_voucher_last=orders_last.count()
         data.update({'count_use_voucher':count_use_voucher,'count_use_voucher_last':count_use_voucher_last})
     else:
-        cartitem=Cartitem.objects.filter(shop=shop,ordered=True)
+        cartitem=CartItem.objects.filter(shop=shop,ordered=True)
         cartitems=cartitem
         cartitems_last=cartitem
         if choice=='addon':
