@@ -64,7 +64,7 @@ def datapromotion(shop,week,choice,orders,orders_last):
         orders_last=orders_last.exclude(voucher=None)
         count_use_voucher=orders.count()
         count_use_voucher_last=orders_last.count()
-        data.update({'count_use_voucher':count_use_voucher['sum'],'count_use_voucher_last':count_use_voucher_last['sum']})
+        data.update({'count_use_voucher':count_use_voucher,'count_use_voucher_last':count_use_voucher_last})
     else:
         cartitems=CartItem.objects.filter(order_cartitem__in=orders)
         cartitems_last=cartitems
@@ -73,12 +73,12 @@ def datapromotion(shop,week,choice,orders,orders_last):
             orders_last=orders_last.filter(items__deal_shock__isnull=False).distinct()
             cartitems=cartitems.exclude(deal_shock=None)
             cartitems_last=cartitems_last.exclude(deal_shock=None)
-            amount_main=cartitems.aggregate(sum=Sum('amount_main_products'))
-            amount_main_last=cartitems_last.aggregate(sum=Sum('amount_main_products'))
-            amount_byproducts=cartitems.aggregate(sum=Sum('amount_byproducts'))
-            amount_byproducts_last=cartitems_last.aggregate(sum=Sum('amount_byproducts'))
-            quantity_byproducts=cartitems.byproduct_cartitem.all().aggregate(sum=Sum('quantity'))
-            quantity_byproducts_last=cartitems_last.byproduct_cartitem.all().aggregate(sum=Sum('quantity'))
+            amount_main=cartitems.aggregate(sum=Coalesce(Sum('amount_main_products'),0.0))
+            amount_main_last=cartitems_last.aggregate(sum=Coalesce(Sum('amount_main_products'),0.0))
+            amount_byproducts=cartitems.aggregate(sum=Coalesce(Sum('amount_byproducts'),0.0))
+            amount_byproducts_last=cartitems_last.aggregate(sum=Coalesce(Sum('amount_byproducts'),0.0))
+            quantity_byproducts=cartitems.byproduct_cartitem.all().aggregate(sum=Coalesce(Sum('quantity'),0.0))
+            quantity_byproducts_last=cartitems_last.byproduct_cartitem.all().aggregate(sum=Coalesce(Sum('quantity'),0.0))
             data.update({'amount_main':amount_main['sum'],
                 'amount_byproducts':amount_byproducts['sum'],
                 'amount_main_last':amount_main_last['sum'],
@@ -98,16 +98,16 @@ def datapromotion(shop,week,choice,orders,orders_last):
             orders_last=orders_last.filter(items__program__isnull=False)
             cartitems=cartitems.exclude(program=None)
             cartitems_last=cartitems_last.exclude(program=None)
-        total_quantity=cartitems.aggregate(sum=Sum('quantity'))
-        total_quantity_last=cartitems_last.aggregate(sum=Sum('quantity'))
+        total_quantity=cartitems.aggregate(sum=Coalesce(Sum('quantity'),0.0))
+        total_quantity_last=cartitems_last.aggregate(sum=Coalesce(Sum('quantity'),0.0))
         data.update({'total_quantity':total_quantity['sum'],
         'total_quantity_last':total_quantity_last['sum'],})
         
     number_buyer=orders.order_by('user').distinct('user').count()
-    total_amount=orders.aggregate(sum=Sum('amount'))
+    total_amount=orders.aggregate(sum=Coalesce(Sum('amount'),0.0))
     total_order=orders.aggregate(count=Count('id'))
     number_buyer_last=orders_last.order_by('user').distinct('user').count()
-    total_amount_last=orders_last.aggregate(sum=Sum('amount'))
+    total_amount_last=orders_last.aggregate(sum=Coalesce(Sum('amount'),0.0))
     total_order_last=orders_last.aggregate(count=Count('id'))
     return{**data,'number_buyer':number_buyer,
         'total_amount':total_amount['sum'],'total_order_last':total_order_last['count'],
@@ -213,8 +213,8 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
             orders_last=orders_last.exclude(voucher=None)
             count_use_voucher=orders.count()
             count_use_voucher_last=orders_last.count()
-            discount_voucher=orders.aggregate(sum=Sum('discount_voucher'))
-            discount_voucher_last=orders_last.aggregate(sum=Sum('discount_voucher'))
+            discount_voucher=orders.aggregate(sum=Coalesce(Sum('discount_voucher'),0.0))
+            discount_voucher_last=orders_last.aggregate(sum=Coalesce(Sum('discount_voucher'),0.0))
             data.update({'count_use_voucher':count_use_voucher,
             'count_use_voucher_last':count_use_voucher_last,
             'discount_voucher_last':discount_voucher_last['sum'],
@@ -224,12 +224,12 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
             orders_last=orders_last.filter(items__deal_shock__isnull=False).distinct()
             cartitems=cartitems.exclude(deal_shock=None)
             cartitems_last=cartitems_last.exclude(deal_shock=None)
-            amount_main=cartitems.aggregate(sum=Sum('amount_main_products'))
-            amount_main_last=cartitems_last.aggregate(sum=Sum('amount_main_products'))
-            amount_byproducts=cartitems.aggregate(sum=Sum('amount_byproducts'))
-            amount_byproducts_last=cartitems_last.aggregate(sum=Sum('amount_byproducts'))
-            quantity_byproducts=cartitems.byproduct_cartitem.all().aggregate(sum=Sum('quantity'))
-            quantity_byproducts_last=cartitems_last.byproduct_cartitem.all().aggregate(sum=Sum('quantity'))
+            amount_main=cartitems.aggregate(sum=Coalesce(Sum('amount_main_products'),0.0))
+            amount_main_last=cartitems_last.aggregate(sum=Coalesce(Sum('amount_main_products'),0.0))
+            amount_byproducts=cartitems.aggregate(sum=Coalesce(Sum('amount_byproducts'),0.0))
+            amount_byproducts_last=cartitems_last.aggregate(sum=Coalesce(Sum('amount_byproducts'),0.0))
+            quantity_byproducts=cartitems.byproduct_cartitem.all().aggregate(sum=Coalesce(Sum('quantity'),0.0))
+            quantity_byproducts_last=cartitems_last.byproduct_cartitem.all().aggregate(sum=Coalesce(Sum('quantity'),0.0))
             data.update({'amount_main':amount_main['sum'],'amount_byproducts':amount_byproducts['sum'],
                 'amount_main_last':amount_main_last['sum'],
                 'amount_byproducts_last':amount_byproducts_last['sum'],
@@ -240,8 +240,8 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
             orders_last=orders_last.filter(items__promotion_combo__isnull=False).distinct()
             cartitems=cartitems.exclude(promotion_combo=None)
             cartitems_last=cartitems_last.exclude(promotion_combo=None)
-            count_combo=cartitems.aggregate(count_promotion_order=Sum((F('quantity')/F('promotion_combo__quantity_to_reduced')),output_field=IntegerField()))
-            count_combo_last=cartitems_last.aggregate(count_promotion_order=Sum((F('quantity')/F('promotion_combo__quantity_to_reduced')),output_field=IntegerField()))
+            count_combo=cartitems.aggregate(count_promotion_order=Coalesce(Sum((F('quantity')/F('promotion_combo__quantity_to_reduced')),output_field=IntegerField()),0))
+            count_combo_last=cartitems_last.aggregate(count_promotion_order=Coalesce(Sum((F('quantity')/F('promotion_combo__quantity_to_reduced')),output_field=IntegerField()),0))
             data.update({'count_combo':count_combo['count_promotion_order'],
             'count_combo_last':count_combo_last['count_promotion_order']})
         if choice=='flashsale':
@@ -255,14 +255,14 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
             cartitems=cartitems.exclude(program=None)
             cartitems_last=cartitems_last.exclude(program=None)
         list_total_order=orders.values('day').annotate(count=Count('id')).values('day','count')
-        list_total_amount=orders.values('day').annotate(sum=Sum('amount')).values('day','sum')
-        total_quantity=cartitems.aggregate(sum=Sum('quantity'))
+        list_total_amount=orders.values('day').annotate(sum=Coalesce(Sum('amount'),0.0)).values('day','sum')
+        total_quantity=cartitems.aggregate(sum=Coalesce(Sum('quantity'),0.0))
         number_buyer=orders.order_by('user').distinct('user').count()
-        total_amount=orders.aggregate(sum=Sum('amount'))
+        total_amount=orders.aggregate(sum=Coalesce(Sum('amount'),0.0))
         total_order=orders.aggregate(count=Count('id'))
-        total_quantity_last=cartitems_last.aggregate(sum=Sum('quantity'))
+        total_quantity_last=cartitems_last.aggregate(sum=Coalesce(Sum('quantity'),0.0))
         number_buyer_last=orders_last.order_by('user').distinct('user').count()
-        total_amount_last=orders_last.aggregate(sum=Sum('amount'))
+        total_amount_last=orders_last.aggregate(sum=Coalesce(Sum('amount'),0.0))
         total_order_last=orders_last.aggregate(count=Count('id'))
         return {'number_buyer':number_buyer,**data,'times':times,
         'total_amount':total_amount['sum'],'total_order_last':total_order_last['count'],
