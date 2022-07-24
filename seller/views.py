@@ -1551,8 +1551,8 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
             orders=orders.filter(items__promotion_combo__isnull=False).distinct()
             cartitems=cartitems.exclude(promotion_combo=None)
             cartitems_last=cartitems_last.exclude(promotion_combo=None)
-            count_combo=cartitems.aggregate(count_promotion_order=Sum((F('quantity')/F('promotion_combo__quantity_to_reduced')),output_field=IntField()))
-            count_combo_last=cartitems_last.aggregate(count_promotion_order=Sum((F('quantity')/F('promotion_combo__quantity_to_reduced')),output_field=IntField()))
+            count_combo=cartitems.aggregate(count_promotion_order=Sum((F('quantity')/F('promotion_combo__quantity_to_reduced')),output_field=IntegerField()))
+            count_combo_last=cartitems_last.aggregate(count_promotion_order=Sum((F('quantity')/F('promotion_combo__quantity_to_reduced')),output_field=IntegerField()))
             data.update({'count_combo':count_combo,'count_combo_last':count_combo_last})
         if choice=='flash_sale':
             orders=orders.exclude(items__flash_sale_isnull=False)
