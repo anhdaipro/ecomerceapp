@@ -1486,7 +1486,7 @@ def create_shop(request):
 import calendar
 import pandas as pd
 
-def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,las_week,month):
+def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month):
         data={}
         caritems=CartItem.objects.filter(order_cartitem__in=orders)
         cartitems_last=cartitems
@@ -1577,33 +1577,40 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
         'total_amount_last':total_amount_last['sum'],'total_order':total_order['count'],
         'count':list(list_total_order),'sum':list(list_total_amount)}
         
-class DashboardVoucher(APIView):
+class DashboardProgram(APIView):
     def get(self,request):
-        month=request.GET.get('month')
-        year=request.GET.get('year')
-        day=request.GET.get('date')
-        shop=Shop.objects.get(user=request.user)
-        dashboard(shop,time,time_choice,choice)
-class DashboardVoucher(APIView):
-    def get(self,request):
+        current_date=datetime.datetime.now()
+        yesterday=current_date-timedelta(days=1)
+        week=current_date-timedelta(days=7)
+        month=current_date-timedelta(days=30)
         time=request.GET.get('time')
         choice=request.GET.get('choice')
         time_choice=request.GET.get('time_choice')
         shop=Shop.objects.get(user=request.user)
-        dashboard(shop,time,time_choice,choice)
+        dashboard(shop,time,time_choice,choice,current_date,yesterday,week,month)
+class DashboardDealshock(APIView):
+    def get(self,request):
+        current_date=datetime.datetime.now()
+        yesterday=current_date-timedelta(days=1)
+        week=current_date-timedelta(days=7)
+        month=current_date-timedelta(days=30)
+        time=request.GET.get('time')
+        choice=request.GET.get('choice')
+        time_choice=request.GET.get('time_choice')
+        shop=Shop.objects.get(user=request.user)
+        dashboard(shop,time,time_choice,choice,current_date,yesterday,week,month)
         
 class DashboardVoucher(APIView):
     def get(self,request):
         current_date=datetime.datetime.now()
         yesterday=current_date-timedelta(days=1)
         week=current_date-timedelta(days=7)
-        last_weeks=current_date-timedelta(days=14)
         month=current_date-timedelta(days=30)
         time=request.GET.get('time')
         choice=request.GET.get('choice')
         time_choice=request.GET.get('time_choice')
         shop=Shop.objects.get(user=request.user)
-        dashboard(shop,time,time_choice,choice,current_date,yesterday,week,las_week,month)
+        dashboard(shop,time,time_choice,choice,current_date,yesterday,week,month)
         vouchers=Voucheruser.objects.filter(vochher__shop=shop)
         vouchers_user=vouchers
         vouchers_last_user=vouchers
@@ -1635,7 +1642,7 @@ class DashboardVoucher(APIView):
             vouchers_user_last=vouchers_user_last.filter(Q(created__date__lt=month)&Q(created__date__gte=(month - timedelta(days=30)))) 
         data={'count_voucher_received':vouchers_user.count(),'count_voucher_received_last':vouchers_user_last.count()}
 
-class DashboardVoucher(APIView):
+class DashboardFlashsale(APIView):
     def get(self,request):
         time=request.GET.get('time')
         choice=request.GET.get('choice')
@@ -1649,15 +1656,14 @@ class Dashboardpromotion(APIView):
         current_date=datetime.datetime.now()
         yesterday=current_date-timedelta(days=1)
         week=current_date-timedelta(days=7)
-        last_weeks=current_date-timedelta(days=14)
         month=current_date-timedelta(days=30)
         time=request.GET.get('time')
         choice=request.GET.get('choice')
         time_choice=request.GET.get('time_choice')
         orders=Order.objects.filter(shop=shop,accepted=True)
         orders_last=orders
-        dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,las_week,month)
-        return Response(dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,las_week,month))
+        dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month)
+        return Response(dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month))
 
 
 @api_view(['GET', 'POST'])

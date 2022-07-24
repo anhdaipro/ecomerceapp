@@ -1183,7 +1183,7 @@ class CheckoutAPIView(APIView):
                     if item.item.get_combo_current():
                         item.promotion_combo_id=item.item.get_combo_current()
                     if item.item.get_program_current() and item.item.get_flash_sale_current() is None:
-                        item.program=item.item.get_program_curren()
+                        item.program=item.item.get_program_current()
                     if item.get_deal_shock_current() is None:
                         item.deal_shock=None
                     item.save()
@@ -1251,7 +1251,7 @@ def payment_complete(request):
                 if item.item.get_combo_current():
                     item.promotion_combo_id=item.item.get_combo_current()
                 if item.item.get_program_current() and item.item.get_flash_sale_current() is None:
-                    item.program=item.item.get_program_curren()
+                    item.program=item.item.get_program_current()
                 if item.get_deal_shock_current() is None:
                     item.deal_shock=None
                 item.save()   
