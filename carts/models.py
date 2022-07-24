@@ -29,6 +29,8 @@ class CartItem(models.Model):
     flash_sale=models.ForeignKey(to="discounts.Flash_sale",on_delete=models.SET_NULL, blank=True, null=True)
     program=models.ForeignKey(to="discounts.Shop_program",on_delete=models.SET_NULL, blank=True, null=True)
     quantity=models.SmallIntegerField()
+    amount_main_products=models.FloatField(null=True,default=0)
+    amount_byproducts=models.FloatField(null=True,default=0)
     updated_at = models.DateField(auto_now=True) 
     ordered=models.BooleanField(default=False)
     check=models.BooleanField(default=False)
@@ -58,7 +60,7 @@ class CartItem(models.Model):
         if self.get_deal_shock_current():
             for byproduct in self.byproduct_cart.all():
                 if byproduct.discount_deal_by():
-                    discount_deal+=byproduct.discount_deal_by()
+                    discount_deal+=byproduct.total_price()
         return discount_deal
     def get_ref_code(self):
         return Order.objects.filter(items=self).first().ref_code
@@ -80,12 +82,8 @@ class CartItem(models.Model):
         return discount_promotion
    
     def discount_product(self):
-        total_discount=self.price_main()-self.discount_main()
-        if self.get_deal_shock_current():
-            for byproduct in self.byproduct_cart.all():
-                if byproduct.discount_by():
-                    total_discount+=byproduct.discount_by()
-        return total_discount
+        return self.price_main()-self.discount_main()
+        
     def price_main(self):
         return self.quantity*self.product.price
 

@@ -1175,6 +1175,8 @@ class CheckoutAPIView(APIView):
                 items = order.items.all()
                 items.update(ordered=True) 
                 for item in items:
+                    item.amount_main_products=item.discount_main() 
+                    item.amount_byproducts=item.discount_deal()
                     if item.item.get_flash_sale_current():
                         item.flash_sale_id=item.item.get_flash_sale_current()
                     if item.item.get_combo_current():
@@ -1183,7 +1185,8 @@ class CheckoutAPIView(APIView):
                         item.program=item.item.get_program_curren()
                     if item.get_deal_shock_current() is None:
                         item.deal_shock=None
-                    item.save()   
+                    item.save()
+                    
                     products=Variation.objects.get(id=item.product_id)
                     products.inventory -= item.quantity
                     products.save()
@@ -1240,6 +1243,8 @@ def payment_complete(request):
             items = order.items.all()
             items.update(ordered=True) 
             for item in items:
+                item.amount_main_products=item.discount_main() 
+                item.amount_byproducts=item.discount_deal()
                 if item.item.get_flash_sale_current():
                     item.flash_sale_id=item.item.get_flash_sale_current()
                 if item.item.get_combo_current():
