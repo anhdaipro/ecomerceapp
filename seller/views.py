@@ -102,19 +102,18 @@ def datapromotion(shop,week,choice,orders,orders_last):
         total_quantity_last=cartitems_last.aggregate(sum=Sum('quantity'))
         data.update({'total_quantity':total_quantity['sum'],
         'total_quantity_last':total_quantity_last['sum'],})
-        return{**data,'number_buyer':number_buyer,
-        'total_amount':total_amount['sum'],'total_order_last':total_order_last['count'],
-        'number_buyer_last':number_buyer_last,
-        'total_amount_last':total_amount_last['sum'],
-        'total_order':total_order['count']}
-
+        
     number_buyer=orders.order_by('user').distinct('user').count()
     total_amount=orders.aggregate(sum=Sum('amount'))
     total_order=orders.aggregate(count=Count('id'))
     number_buyer_last=orders_last.order_by('user').distinct('user').count()
     total_amount_last=orders_last.aggregate(sum=Sum('amount'))
     total_order_last=orders_last.aggregate(count=Count('id'))
-
+    return{**data,'number_buyer':number_buyer,
+        'total_amount':total_amount['sum'],'total_order_last':total_order_last['count'],
+        'number_buyer_last':number_buyer_last,
+        'total_amount_last':total_amount_last['sum'],
+        'total_order':total_order['count']}
 class DataVoucherAPI(APIView):
     def get(self,request):
         current_date=datetime.datetime.now()
