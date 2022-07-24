@@ -1542,24 +1542,30 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
             amount_byproducts_last=cartitems_last.aggregate(sum=Sum('amount_byproducts'))
             quantity_byproducts=cartitems.byproduct_cartitem.all().aggregate(sum=Sum('quantity'))
             quantity_byproducts_last=cartitems_last.byproduct_cartitem.all().aggregate(sum=Sum('quantity'))
-            data.update({'amount_main':amount_main,'amount_byproducts':amount_byproducts,
-                'amount_main_last':amount_main_last,
-                'amount_byproducts_last':amount_byproducts_last,
-                'quantity_byproducts':quantity_byproducts,
-                'quantity_byproducts_last':quantity_byproducts_last})
+            data.update({'amount_main':amount_main['sum'],'amount_byproducts':amount_byproducts['sum'],
+                'amount_main_last':amount_main_last['sum'],
+                'amount_byproducts_last':amount_byproducts_last['sum'],
+                'quantity_byproducts':quantity_byproducts['sum'],
+                'quantity_byproducts_last':quantity_byproducts_last['sum']})
         if choice=='combo':
             orders=orders.filter(items__promotion_combo__isnull=False).distinct()
+            orders_last=orders_last.filter(items__promotion_combo__isnull=False).distinct()
             cartitems=cartitems.exclude(promotion_combo=None)
             cartitems_last=cartitems_last.exclude(promotion_combo=None)
             count_combo=cartitems.aggregate(count_promotion_order=Sum((F('quantity')/F('promotion_combo__quantity_to_reduced')),output_field=IntegerField()))
             count_combo_last=cartitems_last.aggregate(count_promotion_order=Sum((F('quantity')/F('promotion_combo__quantity_to_reduced')),output_field=IntegerField()))
-            data.update({'count_combo':count_combo,'count_combo_last':count_combo_last})
+            data.update({'count_combo':count_combo['count_promotion_order'],
+            'count_combo_last':count_combo_last['count_promotion_order']})
         if choice=='flash_sale':
             orders=orders.exclude(items__flash_sale_isnull=False)
-            orders_last=orders_last.filter(items__program_isnull=False)
+            orders_last=orders_last.filter(items__flash_sale_isnull=False)
+            cartitems=cartitems.exclude(flash_sale=None)
+            cartitems_last=cartitems_last.exclude(flash_sale=None)
         if choice=='program':
             orders=orders.filter(items__program_isnull=False)
             orders_last=orders_last.filter(items__program_isnull=False)
+            cartitems=cartitems.exclude(program=None)
+            cartitems_last=cartitems_last.exclude(program=None)
         list_total_order=orders.values('day').annotate(count=Count('id')).values('day','count')
         list_total_amount=orders.values('day').annotate(sum=Sum('amount')).values('day','sum')
         total_quantity=cartitems.aggregate(sum=Sum('quantity'))
@@ -1587,7 +1593,9 @@ class DashboardProgram(APIView):
         choice=request.GET.get('choice')
         time_choice=request.GET.get('time_choice')
         shop=Shop.objects.get(user=request.user)
-        dashboard(shop,time,time_choice,choice,current_date,yesterday,week,month)
+        orders=Order.objects.filter(shop=shop,accepted=True)
+        orders_last=orders
+        dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month)
         return Response(dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month))
 class DashboardDealshock(APIView):
     def get(self,request):
@@ -1599,7 +1607,9 @@ class DashboardDealshock(APIView):
         choice='deal_shock'
         time_choice=request.GET.get('time_choice')
         shop=Shop.objects.get(user=request.user)
-        dashboard(shop,time,time_choice,choice,current_date,yesterday,week,month)
+        orders=Order.objects.filter(shop=shop,accepted=True)
+        orders_last=orders
+        dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month)
         return Response(dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month))
 class DashboardVoucher(APIView):
     def get(self,request):
@@ -1611,7 +1621,9 @@ class DashboardVoucher(APIView):
         choice='voucher'
         time_choice=request.GET.get('time_choice')
         shop=Shop.objects.get(user=request.user)
-        dashboard(shop,time,time_choice,choice,current_date,yesterday,week,month)
+        orders=Order.objects.filter(shop=shop,accepted=True)
+        orders_last=orders
+        dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month)
         vouchers=Voucheruser.objects.filter(vochher__shop=shop)
         vouchers_user=vouchers
         vouchers_last_user=vouchers
@@ -1652,7 +1664,9 @@ class DashboardFlashsale(APIView):
         time=request.GET.get('time')
         choice='flash_sale'
         time_choice=request.GET.get('time_choice')
-        dashboard(shop,time,time_choice,choice)
+        orders=Order.objects.filter(shop=shop,accepted=True)
+        orders_last=orders
+        dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month)
         return Response(dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month))
 class Dashboardpromotion(APIView):
     def get(self,request):
