@@ -97,11 +97,15 @@ class ListprogramAPI(ListAPIView):
         choice=request.GET.get('choice')
         user=request.user
         shop=Shop.objects.get(user=user)
+        shop_programs=Shop_program.objects.filter(shop=shop).prefetch_related('products__media_upload')
         if choice:
             if choice=='current':
-                shop_programs=shop.program.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
-
-        return Shop_program.objects.filter(shop=shop).prefetch_related('products__media_upload')
+                shop_programs=shop_programs.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
+            if choice=='upcoming':
+                shop_programs=shop_programs.filter(valid_from__gt=timezone.now())
+            if choice=='finished':
+                shop_programs=shop_programs.filter(valid_to__lt=timezone.now())
+        return shop_programs
 
 class ListflashsaleAPI(ListAPIView):
     permission_classes = (IsAuthenticated,)
@@ -1559,13 +1563,13 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last):
         number_buyer_last=orders_last.order_by('user').distinct('user').count()
         total_amount_last=orders_last.aggregate(sum=Sum('amount'))
         total_order_last=orders_last.aggregate(count=Count('id'))
-        dataseller={'number_buyer':number_buyer,
+        return {'number_buyer':number_buyer,
         'total_amount':total_amount['sum'],'total_order_last':total_order_last['count'],
         'total_quantity_last':total_quantity_last['sum'],
         'number_buyer_last':number_buyer_last,
         'total_amount_last':total_amount_last['sum'],'total_order':total_order['count'],
         'count':list(list_total_order),'sum':list(list_total_amount)}
-        return Response(dataseller)
+        
 class DashboardVoucher(APIView):
     def get(self,request):
         month=request.GET.get('month')
@@ -1615,7 +1619,7 @@ class Dashboardpromotion(APIView):
         orders=Order.objects.filter(shop=shop,accepted=True)
         orders_last=orders
         dashboard(shop,time,time_choice,choice,orders,orders_last)
-        
+        return Response(dashboard)
 
 
 @api_view(['GET', 'POST'])

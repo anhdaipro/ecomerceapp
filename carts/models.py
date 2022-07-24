@@ -80,7 +80,7 @@ class CartItem(models.Model):
         return discount_promotion
    
     def discount_product(self):
-        total_discount=0
+        total_discount=self.discount_main()
         if self.get_deal_shock_current():
             for byproduct in self.byproduct_cart.all():
                 if byproduct.discount_by():
@@ -90,9 +90,9 @@ class CartItem(models.Model):
         return self.quantity*self.product.price
 
     def discount_main(self):
-        discount=self.price_main()
+        discount=0
         if self.product.get_discount_product():
-            discount=self.quantity*self.product.get_discount_product()
+            discount=self.price_main()-self.quantity*self.product.get_discount_product()
         return discount
     
     def total_price_cartitem(self):
@@ -104,7 +104,7 @@ class CartItem(models.Model):
         return total
 
     def total_discount_cartitem(self):
-        return self.total_price_cartitem()-(self.price_main()-self.discount_main())-self.discount_deal()-self.discount_promotion()-self.discount_product()
+        return self.total_price_cartitem()-self.discount_deal()-self.discount_promotion()-self.discount_product()
     def get_deal_shock_current(self):
         if self.deal_shock and self.deal_shock.valid_to>timezone.now() and self.deal_shock.valid_from<timezone.now():
             return self.deal_shock.id

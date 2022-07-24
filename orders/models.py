@@ -66,7 +66,7 @@ class Order(models.Model):
                     discount_voucher=self.voucher.amount
         return discount_voucher
     
-    def discount(self):
+    def discount_product(self):
         total_discount=0
         for order_item in self.items.all():
             total_discount+=order_item.discount_product()
@@ -107,7 +107,7 @@ class Order(models.Model):
         return fee_shipping
 
     def total_final_order(self):
-        return self.total_price_order()-self.discount_deal()-self.discount()-self.discount_promotion()+self.fee_shipping()
+        return self.total_price_order()-self.discount_deal()-self.discount_product()-self.discount_promotion()+self.fee_shipping()
 
     def count_item_cart(self):
         count_cart=0
