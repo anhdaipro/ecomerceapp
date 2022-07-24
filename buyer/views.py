@@ -1177,7 +1177,7 @@ class CheckoutAPIView(APIView):
                 items.update(ordered=True) 
                 for item in items:
                     item.amount_main_products=item.discount_main() 
-                    item.amount_byproducts=item.discount_deal()
+                    item.amount_byproducts=item.total_discount_deal()
                     if item.item.get_flash_sale_current():
                         item.flash_sale_id=item.item.get_flash_sale_current()
                     if item.item.get_combo_current():
@@ -1245,7 +1245,7 @@ def payment_complete(request):
             items.update(ordered=True) 
             for item in items:
                 item.amount_main_products=item.discount_main() 
-                item.amount_byproducts=item.discount_deal()
+                item.amount_byproducts=item.total_discount_deal()
                 if item.item.get_flash_sale_current():
                     item.flash_sale_id=item.item.get_flash_sale_current()
                 if item.item.get_combo_current():
