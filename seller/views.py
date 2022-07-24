@@ -1588,6 +1588,7 @@ class DashboardProgram(APIView):
         time_choice=request.GET.get('time_choice')
         shop=Shop.objects.get(user=request.user)
         dashboard(shop,time,time_choice,choice,current_date,yesterday,week,month)
+        return Response(dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month))
 class DashboardDealshock(APIView):
     def get(self,request):
         current_date=datetime.datetime.now()
@@ -1595,11 +1596,11 @@ class DashboardDealshock(APIView):
         week=current_date-timedelta(days=7)
         month=current_date-timedelta(days=30)
         time=request.GET.get('time')
-        choice=request.GET.get('choice')
+        choice='deal_shock'
         time_choice=request.GET.get('time_choice')
         shop=Shop.objects.get(user=request.user)
         dashboard(shop,time,time_choice,choice,current_date,yesterday,week,month)
-        
+        return Response(dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month))
 class DashboardVoucher(APIView):
     def get(self,request):
         current_date=datetime.datetime.now()
@@ -1607,7 +1608,7 @@ class DashboardVoucher(APIView):
         week=current_date-timedelta(days=7)
         month=current_date-timedelta(days=30)
         time=request.GET.get('time')
-        choice=request.GET.get('choice')
+        choice='voucher'
         time_choice=request.GET.get('time_choice')
         shop=Shop.objects.get(user=request.user)
         dashboard(shop,time,time_choice,choice,current_date,yesterday,week,month)
@@ -1643,12 +1644,16 @@ class DashboardVoucher(APIView):
         return Response(datachart)
 class DashboardFlashsale(APIView):
     def get(self,request):
-        time=request.GET.get('time')
-        choice=request.GET.get('choice')
-        time_choice=request.GET.get('time_choice')
         shop=Shop.objects.get(user=request.user)
+        current_date=datetime.datetime.now()
+        yesterday=current_date-timedelta(days=1)
+        week=current_date-timedelta(days=7)
+        month=current_date-timedelta(days=30)
+        time=request.GET.get('time')
+        choice='flash_sale'
+        time_choice=request.GET.get('time_choice')
         dashboard(shop,time,time_choice,choice)
-        
+        return Response(dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month))
 class Dashboardpromotion(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
@@ -1657,7 +1662,7 @@ class Dashboardpromotion(APIView):
         week=current_date-timedelta(days=7)
         month=current_date-timedelta(days=30)
         time=request.GET.get('time')
-        choice=request.GET.get('choice')
+        choice='combo'
         time_choice=request.GET.get('time_choice')
         orders=Order.objects.filter(shop=shop,accepted=True)
         orders_last=orders
