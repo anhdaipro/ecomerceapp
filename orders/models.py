@@ -95,7 +95,7 @@ class Order(models.Model):
         return total
 
     def total_discount_order(self):
-        return self.total_price_order()-self.discount_deal()-self.discount()-discount_flash_sale()
+        return self.total_price_order()-self.discount_deal()-self.discount()-self.discount_flash_sale()
 
     def fee_shipping(self):
         fee_shipping=0

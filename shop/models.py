@@ -177,19 +177,20 @@ class Item(models.Model):
         return variations['avg']
     def avg_discount_price(self):
         if self.get_program_current():
-            variations=Variation_discount.objects.filter(item=self,shop_program=self.get_program_current()).aggregate(avg=Avg('promotion_price'))
+            variations=Variation_discount.objects.filter(enable=True,item=self,shop_program=self.get_program_current()).aggregate(avg=Avg('promotion_price'))
             return variations['avg']
     def avg_discount_price_deal(self):
         if self.get_deal_shock_current():
-            variations=Variationdeal.objects.filter(item=self,deal_shock=self.get_deal_shock_current()).aggregate(avg=Avg('promotion_price'))
+            variations=Variationdeal.objects.filter(enable=True,item=self,deal_shock=self.get_deal_shock_current()).aggregate(avg=Avg('promotion_price'))
             return variations['avg']
     def avg_discount_price_flash_sale(self):
         if self.get_flash_sale_current():
-            variations=Variationflashsale.objects.filter(item=self,flash_sale=self.get_flash_sale_current()).aggregate(avg=Avg('promotion_price'))
+            variations=Variationflashsale.objects.filter(enable=True,item=self,flash_sale=self.get_flash_sale_current()).aggregate(avg=Avg('promotion_price'))
             return variations['avg']
+    
     def get_promotion_stock(self):
         if self.get_flash_sale_current():
-            variations=Variationflashsale.objects.filter(item=self,flash_sale=self.get_flash_sale_current()).aggregate(sum=Sum('promotion_stock'))
+            variations=Variationflashsale.objects.filter(enable=True,item=self,flash_sale=self.get_flash_sale_current()).aggregate(sum=Sum('promotion_stock'))
             return variations['sum']
     def get_combo_current(self):
         promotion_combo=Promotion_combo.objects.filter(products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
@@ -207,17 +208,17 @@ class Item(models.Model):
     def percent_discount(self):
         percent=0
         if self.get_program_current():
-            percent= int((float(self.avg_price())-float(self.avg_discount_price()))*100/float(self.avg_price()))
+            percent= (float(self.avg_price())-float(self.avg_discount_price()))*100/float(self.avg_price())
         return percent
     def percent_discount_deal(self):
         percent=0
         if self.get_deal_shock_current():
-            percent= int((float(self.avg_price())-float(self.avg_discount_price_deal()))*100/float(self.avg_price()))
+            percent= (float(self.avg_price())-float(self.avg_discount_price_deal()))*100/float(self.avg_price())
         return percent
     def percent_discount_flash_sale(self):
         percent=0
         if self.get_flash_sale_current():
-            percent= int((float(self.avg_price())-float(self.avg_discount_price_flash_sale()))*100/float(self.avg_price()))
+            percent= (float(self.avg_price())-float(self.avg_discount_price_flash_sale()))*100/float(self.avg_price())
         return percent
     def total_inventory(self):
         variations = Variation.objects.filter(item=self).aggregate(sum=Sum('inventory'))
@@ -227,8 +228,12 @@ class Item(models.Model):
         return total_inventory
     
     def percent_discount_total(self):
-        return self.percent_discount()+self.percent_discount_deal()+self.percent_discount_flash_sale()
-
+        percent=0
+        if self.get_flash_sale_current():
+            percent=self.percent_discount_deal()+self.percent_discount_flash_sale()
+        else:
+            percent=self.percent_discount()+self.percent_discount_deal()
+        return percent
     def max_price(self):
         variations = Variation.objects.filter(item=self).aggregate(max=Max('price'))
         max_price=int(variations["max"])

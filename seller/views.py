@@ -1529,7 +1529,38 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last):
             year=pd.to_datetime(time_choice)
             orders=orders.filter(ordered_date__year=year.year).annotate(day=TruncMonth('ordered_date'))
             orders_last=orders_last.filter(Q(ordered_date__year=(year.year - 1)))
-        
+        if choice=='voucher':
+            count_use_voucher=orders.count()
+            orders=orders.exclude(voucher=None)
+        if choice=='deal_shock':
+            orders=orders.exclude(items__deal_shock=None)
+        if choice=='combo':
+            orders=orders.exclude(items__promotion_combo=None)
+            count_promotion_order=orders.aggregate(count_promotion_order=Sum(F('items')//F('items__promotion_combo__quantity_to_reduced')))
+            count_promotion_last=order_lasts.aggregate(count_promotion_last=Sum(F('items')//F('items__promotion_combo__quantity_to_reduced')))
+            data.update(count_promotion_order)
+            data.update(count_promotion_last)
+        if choice=='flash_sale':
+            orders=orders.exclude(items__flash_sale=None)
+        if choice=='program':
+            orders=orders.exclude(items__program=None)
+        list_total_order=orders.values('day').annotate(count=Count('id')).values('day','count')
+        list_total_amount=orders.values('day').annotate(sum=Sum('amount')).values('day','sum')
+        total_quantity=orders.aggregate(sum=Sum('items__quantity'))
+        number_buyer=orders.order_by('user').distinct('user').count()
+        total_amount=orders.aggregate(sum=Sum('amount'))
+        total_order=orders.aggregate(count=Count('id'))
+        total_quantity_last=orders_last.aggregate(sum=Sum('items__quantity'))
+        number_buyer_last=orders_last.order_by('user').distinct('user').count()
+        total_amount_last=orders_last.aggregate(sum=Sum('amount'))
+        total_order_last=orders_last.aggregate(count=Count('id'))
+        dataseller={'number_buyer':number_buyer,**data,
+        'total_amount':total_amount['sum'],'total_order_last':total_order_last['count'],
+        'total_quantity_last':total_quantity_last['sum'],
+        'number_buyer_last':number_buyer_last,
+        'total_amount_last':total_amount_last['sum'],'total_order':total_order['count'],
+        'count':list(list_total_order),'sum':list(list_total_amount)}
+        return Response(dataseller)
 class DashboardVoucher(APIView):
     def get(self,request):
         month=request.GET.get('month')
@@ -1579,38 +1610,7 @@ class Dashboardpromotion(APIView):
         orders=Order.objects.filter(shop=shop,accepted=True)
         orders_last=orders
         dashboard(shop,time,time_choice,choice,orders,orders_last)
-        if choice=='voucher':
-            count_use_voucher=orders.count()
-            orders=orders.exclude(voucher=None)
-        if choice=='deal_shock':
-            orders=orders.exclude(items__deal_shock=None)
-        if choice=='combo':
-            orders=orders.exclude(items__promotion_combo=None)
-            count_promotion_order=orders.aggregate(count_promotion_order=Sum(F('items')//F('items__promotion_combo__quantity_to_reduced')))
-            count_promotion_last=order_lasts.aggregate(count_promotion_last=Sum(F('items')//F('items__promotion_combo__quantity_to_reduced')))
-            data.update(count_promotion_order)
-            data.update(count_promotion_last)
-        if choice=='flash_sale':
-            orders=orders.exclude(items__flash_sale=None)
-        if choice=='program':
-            orders=orders.exclude(items__program=None)
-        list_total_order=orders.values('day').annotate(count=Count('id')).values('day','count')
-        list_total_amount=orders.values('day').annotate(sum=Sum('amount')).values('day','sum')
-        total_quantity=orders.aggregate(sum=Sum('items__quantity'))
-        number_buyer=orders.order_by('user').distinct('user').count()
-        total_amount=orders.aggregate(sum=Sum('amount'))
-        total_order=orders.aggregate(count=Count('id'))
-        total_quantity_last=orders_last.aggregate(sum=Sum('items__quantity'))
-        number_buyer_last=orders_last.order_by('user').distinct('user').count()
-        total_amount_last=orders_last.aggregate(sum=Sum('amount'))
-        total_order_last=orders_last.aggregate(count=Count('id'))
-        dataseller={'number_buyer':number_buyer,**data,
-        'total_amount':total_amount['sum'],'total_order_last':total_order_last['count'],
-        'total_quantity_last':total_quantity_last['sum'],
-        'number_buyer_last':number_buyer_last,
-        'total_amount_last':total_amount_last['sum'],'total_order':total_order['count'],
-        'count':list(list_total_order),'sum':list(list_total_amount)}
-        return Response(dataseller)
+        
 
 
 @api_view(['GET', 'POST'])
