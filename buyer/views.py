@@ -624,14 +624,10 @@ class Listitemhostsale(ListAPIView):
 @api_view(['GET', 'POST'])
 def save_voucher(request):
     if request.method=="POST":
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        if token:
-            user=request.user
-            voucher_id=request.POST.get('voucher_id')
-            voucher=Voucher.objects.get(id=voucher_id)
-            voucher.user.add(user)
-            data={'ok':'ok'}
-            return Response(data)
+        voucher_id=request.POST.get('voucher_id')
+        Voucheruser.objects.get_or_create(user=request.user,voucher_id=voucher_id)
+        data={'ok':'ok'}
+        return Response(data)
 
 @api_view(['GET', 'POST'])
 def update_image(request):

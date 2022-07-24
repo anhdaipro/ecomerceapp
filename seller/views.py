@@ -1,6 +1,7 @@
 from django.contrib.auth import login
 import itertools
 import re
+from django.db.models import F
 from django.core.paginator import Paginator
 from django.core.serializers import serialize
 from django.contrib.auth.decorators import login_required
@@ -17,7 +18,7 @@ from orders.models import *
 from discounts.models import *
 from chats.models import *
 from carts.models import *
-from django.db.models import FloatField
+from django.db.models import FloatField,IntegerField
 from django.db.models import Max, Min, Count, Avg,Sum,F,Value as V
 from django.contrib.auth import authenticate,login,logout
 from django.core import serializers
@@ -1485,81 +1486,67 @@ def create_shop(request):
 import calendar
 import pandas as pd
 
-def dashboard(shop,time,time_choice,choice,orders,orders_last):
-        current_date=datetime.datetime.now()
-        start_date=datetime.datetime.now()-timedelta(days=1)
-        yesterday=current_date-timedelta(days=1)
-        week=current_date-timedelta(days=7)
-        last_weeks=current_date-timedelta(days=14)
-        month=current_date-timedelta(days=30)
-        
+def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,las_week,month):
+        data={}
+        caritems=CartItem.objects.filter(order_cartitem__in=orders)
+        cartitems_last=cartitems
         if time=='currentday':
             orders=orders.filter(ordered_date__date__gte=current_date).annotate(day=TruncHour('ordered_date'))
             orders_last=orders_last.filter(ordered_date__date=(current_date - timedelta(days=1)))
-            if choice=='voucher':
-                vouchers_shop=Voucher.objects.filter(shop=shop)
-                vouchers=vouchers_shop.filter(valid_from__gte=current_date)
-                vouchers_last=vouchers_shop.filter(valid_from__gte=yesterday,valid_to_lte=current_date)
-                count_user=vouchers.aggregate(count=Count('user'))
-                count_user_last=vouchersr_last.aggregate(count=Count('user'))
-                data.update({'count_user':count_user,'count_voucher_last':count_voucher_last})
         if time=='day':
             day=pd.to_datetime(time_choice)
             order=orders.filter(ordered_date__date=day).annotate(day=TruncHour('ordered_date'))
             orders_last=orders_last.filter(Q(ordered_date__date=(day - timedelta(days=1))))
-            if choice=='voucher':
-                vouchers_shop=Voucher.objects.filter(shop=shop)
-                vouchers=vouchers_shop.filter(valid_from__gte=day)
-                vouchers_last=vouchers_shop.filter(valid_from__gte=yesterday,valid_to_lte=current_date)
-                count_user=vouchers.aggregate(count=Count('user'))
-                count_user_last=vouchersr_last.aggregate(count=Count('user'))
-                data.update({'count_user':count_user})
+
         if time=='yesterday':
             orders=orders.filter(ordered_date__date=yesterday).annotate(day=TruncHour('ordered_date'))
             orders_last=orders_last.filter(Q(ordered_date__date=(yesterday - timedelta(days=1))))
-            datavoucher={}
-            
-
-        if time=='week_before' or time=='week':
+        if time=='week_before':
             orders=orders.filter(ordered_date__date__gte=week,ordered_date__date__lte=start_date).annotate(day=TruncDay('ordered_date'))
             orders_last=orders_last.filter(Q(ordered_date__date__lt=week)&Q(ordered_date__date__gte=(week - timedelta(days=7))))
-            if time=='week':    
-                week=pd.to_datetime(time_choice)
-                orders=Order.objects.filter(ordered_date__week=week.isocalendar()[1],ordered_date__year=week.year).annotate(day=TruncDay('ordered_date'))
-                orders_last=orders_last.filter(Q(ordered_date__week=(week.isocalendar()[1] - 1)))
-        if time=='month' or time=='month_before':
+        if time=='week':  
+            week=pd.to_datetime(time_choice)
+            orders=Order.objects.filter(ordered_date__week=week.isocalendar()[1],ordered_date__year=week.year).annotate(day=TruncDay('ordered_date'))
+            orders_last=orders_last.filter(Q(ordered_date__week=(week.isocalendar()[1] - 1)))
+        if time=='month': 
+            month=pd.to_datetime(time_choice)
+            orders=orders.filter(ordered_date__month=month.month,ordered_date__year=month.year).annotate(day=TruncDay('ordered_date'))
+            orders_last=orders_last.filter(Q(ordered_date__month=(month.month - 1)))
+        if time=='month_before':
             orders=orders.filter(ordered_date__date__gte=month,ordered_date__date__lte=start_date).annotate(day=TruncDay('ordered_date'))
-            orders_last=list_order_last.filter(Q(ordered_date__date__lt=month)&Q(ordered_date__date__gte=(month - timedelta(days=30))))
-            if time=='month':
-                month=pd.to_datetime(time_choice)
-                orders=orders.filter(ordered_date__month=month.month,ordered_date__year=month.year).annotate(day=TruncDay('ordered_date'))
-                orders_last=orders_last.filter(Q(ordered_date__month=(month.month - 1)))
+            orders_last=list_order_last.filter(Q(ordered_date__date__lt=month)&Q(ordered_date__date__gte=(month - timedelta(days=30)))) 
         if time=='year':
             year=pd.to_datetime(time_choice)
             orders=orders.filter(ordered_date__year=year.year).annotate(day=TruncMonth('ordered_date'))
             orders_last=orders_last.filter(Q(ordered_date__year=(year.year - 1)))
+
         if choice=='voucher':
-            count_use_voucher=orders.count()
             orders=orders.exclude(voucher=None)
+            count_use_voucher=orders.count()
+            discount_voucher=orders.aggregate(sum=Sum('discount_voucher'))
+            data.update({'count_use_voucher':count_use_voucher,'discount_voucher':discount_voucher['sum']})
         if choice=='deal_shock':
-            orders=orders.exclude(items__deal_shock=None)
+            orders=orders.filter(items__deal_shock__isnull=False).distinct()
+            cartitems=cartitems.exclude(deal_shock=None)
+            cartitems_last=cartitems_last.exclude(deal_shock=None)
         if choice=='combo':
-            orders=orders.exclude(items__promotion_combo=None)
-            count_promotion_order=orders.aggregate(count_promotion_order=Sum(F('items')//F('items__promotion_combo__quantity_to_reduced')))
-            count_promotion_last=order_lasts.aggregate(count_promotion_last=Sum(F('items')//F('items__promotion_combo__quantity_to_reduced')))
-            data.update(count_promotion_order)
-            data.update(count_promotion_last)
+            orders=orders.filter(items__promotion_combo__isnull=False).distinct()
+            cartitems=cartitems.exclude(promotion_combo=None)
+            cartitems_last=cartitems_last.exclude(promotion_combo=None)
+            count_combo=cartitems.aggregate(count_promotion_order=Sum((F('quantity')/F('promotion_combo__quantity_to_reduced')),output_field=IntField()))
+            count_combo_last=cartitems_last.aggregate(count_promotion_order=Sum((F('quantity')/F('promotion_combo__quantity_to_reduced')),output_field=IntField()))
+            data.update({'count_combo':count_combo,'count_combo_last':count_combo_last})
         if choice=='flash_sale':
             orders=orders.exclude(items__flash_sale=None)
         if choice=='program':
-            orders=orders.exclude(items__program=None)
+            orders=orders.filter(items__program_isnull=None)
         list_total_order=orders.values('day').annotate(count=Count('id')).values('day','count')
         list_total_amount=orders.values('day').annotate(sum=Sum('amount')).values('day','sum')
-        total_quantity=orders.aggregate(sum=Sum('items__quantity'))
+        total_quantity=cartitems.aggregate(sum=Sum('quantity'))
         number_buyer=orders.order_by('user').distinct('user').count()
         total_amount=orders.aggregate(sum=Sum('amount'))
         total_order=orders.aggregate(count=Count('id'))
-        total_quantity_last=orders_last.aggregate(sum=Sum('items__quantity'))
+        total_quantity_last=cartitems_last.aggregate(sum=Sum('quantity'))
         number_buyer_last=orders_last.order_by('user').distinct('user').count()
         total_amount_last=orders_last.aggregate(sum=Sum('amount'))
         total_order_last=orders_last.aggregate(count=Count('id'))
@@ -1587,12 +1574,45 @@ class DashboardVoucher(APIView):
         
 class DashboardVoucher(APIView):
     def get(self,request):
+        current_date=datetime.datetime.now()
+        yesterday=current_date-timedelta(days=1)
+        week=current_date-timedelta(days=7)
+        last_weeks=current_date-timedelta(days=14)
+        month=current_date-timedelta(days=30)
         time=request.GET.get('time')
         choice=request.GET.get('choice')
         time_choice=request.GET.get('time_choice')
         shop=Shop.objects.get(user=request.user)
-        dashboard(shop,time,time_choice,choice)
-        
+        dashboard(shop,time,time_choice,choice,current_date,yesterday,week,las_week,month)
+        vouchers=Voucheruser.objects.filter(vochher__shop=shop)
+        vouchers_user=vouchers
+        vouchers_last_user=vouchers
+        if time=='currentday':
+            vouchers_user=vouchers_user.filter(created__date__gte=current_date)
+            vouchers_last_user=vouchers_last_user.filter(created__date=(current_date - timedelta(days=1)))
+        if time=='day':
+            day=pd.to_datetime(time_choice)
+            order=orders.filter(created__date=day)
+            vouchers_last_user=vouchers_last_user.filter(Q(created__date=(day - timedelta(days=1))))
+        if time=='yesterday':
+            vouchers_user=vouchers_user.filter(created__date=yesterday)
+            vouchers_last_user=vouchers_last_user.filter(Q(created__date=(yesterday - timedelta(days=1))))
+        if time=='week_before':
+            vouchers_user=vouchers_user.filter(created__date__gte=week,created__date__lte=start_date)
+            vouchers_last_user=vouchers_last_user.filter(Q(created__date__lt=week)&Q(created__date__gte=(week - timedelta(days=7))))
+        if time=='week':  
+            week=pd.to_datetime(time_choice)
+            orders=Order.objects.filter(created__week=week.isocalendar()[1],created__year=week.year)
+            vouchers_last_user=vouchers_last_user.filter(Q(created__week=(week.isocalendar()[1] - 1)))
+        if time=='month': 
+            month=pd.to_datetime(time_choice)
+            vouchers_user=vouchers_user.filter(created__month=month.month,created__year=month.year)
+            vouchers_last_user=vouchers_last_user.filter(Q(created__month=(month.month - 1)))
+        if time=='month_before':
+            vouchers_user=vouchers_user.filter(created__date__gte=month,created__date__lte=start_date)
+            vouchers_user_last=vouchers_user_last.filter(Q(created__date__lt=month)&Q(created__date__gte=(month - timedelta(days=30)))) 
+        data={'count_voucher_received':vouchers_user.count(),'count_voucher_received_last':vouchers_user_last.count()}
+
 class DashboardVoucher(APIView):
     def get(self,request):
         time=request.GET.get('time')
@@ -1613,9 +1633,6 @@ class Dashboardpromotion(APIView):
         time=request.GET.get('time')
         choice=request.GET.get('choice')
         time_choice=request.GET.get('time_choice')
-        orders=Order.objects.filter(shop=shop,accepted=True)
-        orders_last=orders
-        
         orders=Order.objects.filter(shop=shop,accepted=True)
         orders_last=orders
         dashboard(shop,time,time_choice,choice,orders,orders_last)

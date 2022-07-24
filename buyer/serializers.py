@@ -479,10 +479,9 @@ class VoucherdetailSerializer(VoucherinfoSerializer):
         fields=VoucherinfoSerializer.Meta.fields+['exists']
     def get_exists(self,obj):
         request=self.context.get("request")
-        if request.user in obj.user.all():
+        voucher=Voucher.objects.filter(obj=obj,user=request.user)
+        if voucher.exists():
             return True
-
-
 class VouchersellerSerializer(VoucherinfoSerializer): 
     products=serializers.SerializerMethodField()
     class Meta(VoucherinfoSerializer.Meta):
@@ -854,7 +853,7 @@ class ByproductSerializer(serializers.ModelSerializer):
     def get_url(self,obj):
         return obj.item.get_absolute_url()
     def get_total_price(self,obj):
-        return obj.total_discount_cartitem()
+        return obj.total_price()
 
 class ByproductcartSerializer(ByproductSerializer):
     discount_price=serializers.SerializerMethodField()

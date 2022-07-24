@@ -31,7 +31,6 @@ setting_display_choice=(
 class Voucher(models.Model):
     code_type=models.CharField(max_length=10,choices=code_type_choice)
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
-    user=models.ManyToManyField(User,blank=True)
     name_of_the_discount_program=models.CharField(max_length=100)
     code = models.CharField(max_length=5)
     active=models.BooleanField(default=False)
@@ -48,7 +47,10 @@ class Voucher(models.Model):
     setting_display=models.CharField(max_length=20,choices=setting_display_choice)
     created=models.DateTimeField(auto_now=True)
     
-
+class Voucheruser(models.Model):
+    voucher=models.ForeignKey(to=Voucher,on_delete=models.CASCADE)
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    created=models.DateTimeField(auto_now=True)
 class Shop_program(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
     name_program=models.CharField(max_length=100)
