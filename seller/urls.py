@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 from .views import (DashboardBundleAPI,DashboardVoucherAPI,DashboardAddonAPI
 ,DashboardFlashsaleAPI,
-DashboardDiscount,DataBundleAPI
+DashboardDiscount,DataBundleAPI,
 DataVoucherAPI,
 DataDiscountAPI,
 DataFlashsaleAPI,

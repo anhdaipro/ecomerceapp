@@ -19,7 +19,6 @@ Newflashsale,
 DetailFlashsale,
 )
 urlpatterns = [
-    
     path("infoseller", views.infoseller),
     path("product/", views.product),
     path("shop/rating",ShopratingAPI.as_view()),
