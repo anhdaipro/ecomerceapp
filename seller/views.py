@@ -61,7 +61,7 @@ def datapromotion(shop,week,choice,orders,orders_last):
     orders_last=orders_last.filter(Q(ordered_date__date__lt=week)&Q(ordered_date__date__gte=(week - timedelta(days=7))))
     
     if choice=='voucher':
-        vouchers=Voucheruser.objects.filter(vochher__shop=shop)
+        vouchers=Voucheruser.objects.filter(voucher__shop=shop)
         orders=orders.exclude(voucher=None)
         orders_last=orders_last.exclude(voucher=None)
         vouchers_user=vouchers.filter(created__date__gte=week,created__date__lte=yesterday)
@@ -86,8 +86,8 @@ def datapromotion(shop,week,choice,orders,orders_last):
             amount_main_last=cartitems_last.aggregate(sum=Coalesce(Sum('amount_main_products'),0.0))
             amount_byproducts=cartitems.aggregate(sum=Coalesce(Sum('amount_byproducts'),0.0))
             amount_byproducts_last=cartitems_last.aggregate(sum=Coalesce(Sum('amount_byproducts'),0.0))
-            quantity_byproducts=cartitems.byproduct_cartitem.all().aggregate(sum=Coalesce(Sum('quantity'),0))
-            quantity_byproducts_last=cartitems_last.byproduct_cartitem.all().aggregate(sum=Coalesce(Sum('quantity'),0))
+            quantity_byproducts=cartitems.aggregate(sum=Coalesce(Sum('byproduct_cart__quantity'),0))
+            quantity_byproducts_last=cartitems_last.aggregate(sum=Coalesce(Sum('byproduct_cart__quantity'),0))
             data.update({'amount_main':amount_main['sum'],
                 'amount_byproducts':amount_byproducts['sum'],
                 'amount_main_last':amount_main_last['sum'],
@@ -239,8 +239,8 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
             amount_main_last=cartitems_last.aggregate(sum=Coalesce(Sum('amount_main_products'),0.0))
             amount_byproducts=cartitems.aggregate(sum=Coalesce(Sum('amount_byproducts'),0.0))
             amount_byproducts_last=cartitems_last.aggregate(sum=Coalesce(Sum('amount_byproducts'),0.0))
-            quantity_byproducts=cartitems.byproduct_cartitem.all().aggregate(sum=Coalesce(Sum('quantity'),0))
-            quantity_byproducts_last=cartitems_last.byproduct_cartitem.all().aggregate(sum=Coalesce(Sum('quantity'),0))
+            quantity_byproducts=cartitems.aggregate(sum=Coalesce(Sum('byproduct_cart__quantity'),0))
+            quantity_byproducts_last=cartitems_last.aggregate(sum=Coalesce(Sum('byproduct_cart__quantity'),0))
             data.update({'amount_main':amount_main['sum'],'amount_byproducts':amount_byproducts['sum'],
                 'amount_main_last':amount_main_last['sum'],
                 'amount_byproducts_last':amount_byproducts_last['sum'],
@@ -327,7 +327,7 @@ class DashboardVoucherAPI(APIView):
         orders=Order.objects.filter(shop=shop,accepted=True)
         orders_last=orders
         dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month)
-        vouchers=Voucheruser.objects.filter(vochher__shop=shop)
+        vouchers=Voucheruser.objects.filter(voucher__shop=shop)
         vouchers_user=vouchers
         vouchers_last_user=vouchers
         if time=='currentday':
