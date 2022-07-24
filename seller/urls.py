@@ -16,6 +16,6 @@ urlpatterns = [
     path('data/bundle',DataBundleAPI.as_view()),
     path('data/voucher',DataVoucherAPI.as_view()),
     path('data/discount',DataDiscountAPI.as_view()),
-    path('data/flash_sale',DataFlashsaleAPI.as_view()),
+    path('data/flash',DataFlashsaleAPI.as_view()),
     path('data/addon',DataAddonAPI.as_view()),
 ]
