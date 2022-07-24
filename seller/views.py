@@ -59,12 +59,20 @@ def datapromotion(shop,week,choice,orders,orders_last):
     data={}
     orders=orders.filter(ordered_date__date__gte=week)
     orders_last=orders_last.filter(Q(ordered_date__date__lt=week)&Q(ordered_date__date__gte=(week - timedelta(days=7))))
+    
     if choice=='voucher':
+        vouchers=Voucheruser.objects.filter(vochher__shop=shop)
         orders=orders.exclude(voucher=None)
         orders_last=orders_last.exclude(voucher=None)
+        vouchers_user=vouchers.filter(created__date__gte=week,created__date__lte=yesterday)
+        vouchers_last_user=vouchers.filter(Q(created__date__lt=week)&Q(created__date__gte=(week - timedelta(days=7))))
         count_use_voucher=orders.count()
         count_use_voucher_last=orders_last.count()
-        data.update({'count_use_voucher':count_use_voucher,'count_use_voucher_last':count_use_voucher_last})
+        count_voucher_received=vouchers_user.count()
+        count_voucher_received_last=vouchers_user_last.count()
+        usage_rate=count_use_voucher/count_voucher_received
+        usage_rate_last=count_use_voucher_last/count_voucher_received_last
+        data.update({'usage_rate':usage_rate,'usage_rate_last':usage_rate_last})
     else:
         cartitem=CartItem.objects.filter(shop=shop,ordered=True)
         cartitems=cartitem
