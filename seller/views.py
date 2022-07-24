@@ -1490,6 +1490,7 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
         data={}
         caritems=CartItem.objects.filter(order_cartitem__in=orders)
         cartitems_last=cartitems
+        times = [i for i in range(24)]
         if time=='currentday':
             orders=orders.filter(ordered_date__date__gte=current_date).annotate(day=TruncHour('ordered_date'))
             orders_last=orders_last.filter(ordered_date__date=(current_date - timedelta(days=1)))
@@ -1497,25 +1498,31 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
             day=pd.to_datetime(time_choice)
             order=orders.filter(ordered_date__date=day).annotate(day=TruncHour('ordered_date'))
             orders_last=orders_last.filter(Q(ordered_date__date=(day - timedelta(days=1))))
-
         if time=='yesterday':
             orders=orders.filter(ordered_date__date=yesterday).annotate(day=TruncHour('ordered_date'))
             orders_last=orders_last.filter(Q(ordered_date__date=(yesterday - timedelta(days=1))))
         if time=='week_before':
+            times=[int((yesterday - datetime.timedelta(days=i)).date().strftime('%d')) for i in range(7)]
             orders=orders.filter(ordered_date__date__gte=week,ordered_date__date__lte=yesterday).annotate(day=TruncDay('ordered_date'))
             orders_last=orders_last.filter(Q(ordered_date__date__lt=week)&Q(ordered_date__date__gte=(week - timedelta(days=7))))
-        if time=='week':  
+        if time=='week': 
             week=pd.to_datetime(time_choice)
+            day_first_week=week - datetime.timedelta(days=week.isoweekday() % 7)
+            day_weeks=[int((day_first_week + datetime.timedelta(days=i)).date().strftime('%d')) for i in range(7)]
             orders=Order.objects.filter(ordered_date__week=week.isocalendar()[1],ordered_date__year=week.year).annotate(day=TruncDay('ordered_date'))
             orders_last=orders_last.filter(Q(ordered_date__week=(week.isocalendar()[1] - 1)))
         if time=='month': 
             month=pd.to_datetime(time_choice)
+            day_last_month = pd.Period(month,freq='M').end_time.date() 
+            times=[int((day_last_month-datetime.timedelta(days=i)).strftime('%d')) for i in range(int(day_last_month.strftime('%d')))]
             orders=orders.filter(ordered_date__month=month.month,ordered_date__year=month.year).annotate(day=TruncDay('ordered_date'))
             orders_last=orders_last.filter(Q(ordered_date__month=(month.month - 1)))
         if time=='month_before':
+            times=[int((yesterday-datetime.timedelta(days=i)).date().strftime('%d')) for i in range(30)]
             orders=orders.filter(ordered_date__date__gte=month,ordered_date__date__lte=yesterday).annotate(day=TruncDay('ordered_date'))
             orders_last=list_order_last.filter(Q(ordered_date__date__lt=month)&Q(ordered_date__date__gte=(month - timedelta(days=30)))) 
         if time=='year':
+            times=[i for i in range(1,13)]
             year=pd.to_datetime(time_choice)
             orders=orders.filter(ordered_date__year=year.year).annotate(day=TruncMonth('ordered_date'))
             orders_last=orders_last.filter(Q(ordered_date__year=(year.year - 1)))
@@ -1548,9 +1555,11 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
             count_combo_last=cartitems_last.aggregate(count_promotion_order=Sum((F('quantity')/F('promotion_combo__quantity_to_reduced')),output_field=IntField()))
             data.update({'count_combo':count_combo,'count_combo_last':count_combo_last})
         if choice=='flash_sale':
-            orders=orders.exclude(items__flash_sale=None)
+            orders=orders.exclude(items__flash_sale_isnull=False)
+            orders_last=orders_last.filter(items__program_isnull=False)
         if choice=='program':
-            orders=orders.filter(items__program_isnull=None)
+            orders=orders.filter(items__program_isnull=False)
+            orders_last=orders_last.filter(items__program_isnull=False)
         list_total_order=orders.values('day').annotate(count=Count('id')).values('day','count')
         list_total_amount=orders.values('day').annotate(sum=Sum('amount')).values('day','sum')
         total_quantity=cartitems.aggregate(sum=Sum('quantity'))
@@ -1561,7 +1570,7 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
         number_buyer_last=orders_last.order_by('user').distinct('user').count()
         total_amount_last=orders_last.aggregate(sum=Sum('amount'))
         total_order_last=orders_last.aggregate(count=Count('id'))
-        return {'number_buyer':number_buyer,**data,
+        return {'number_buyer':number_buyer,**data,'times':times,
         'total_amount':total_amount['sum'],'total_order_last':total_order_last['count'],
         'total_quantity_last':total_quantity_last['sum'],
         'number_buyer_last':number_buyer_last,
@@ -1598,9 +1607,11 @@ class DashboardVoucher(APIView):
         vouchers=Voucheruser.objects.filter(vochher__shop=shop)
         vouchers_user=vouchers
         vouchers_last_user=vouchers
+        time=[]
         if time=='currentday':
             vouchers_user=vouchers_user.filter(created__date__gte=current_date)
             vouchers_last_user=vouchers_last_user.filter(created__date=(current_date - timedelta(days=1)))
+            
         if time=='day':
             day=pd.to_datetime(time_choice)
             order=orders.filter(created__date=day)
