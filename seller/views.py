@@ -70,6 +70,7 @@ def datapromotion(shop,week,choice,orders,orders_last):
         cartitems_last=cartitems
         if choice=='addon':
             orders=orders.filter(items__deal_shock__isnull=False).distinct()
+            orders_last=orders_last.filter(items__deal_shock__isnull=False).distinct()
             cartitems=cartitems.exclude(deal_shock=None)
             cartitems_last=cartitems_last.exclude(deal_shock=None)
             amount_main=cartitems.aggregate(sum=Sum('amount_main_products'))
@@ -88,13 +89,13 @@ def datapromotion(shop,week,choice,orders,orders_last):
             cartitems=cartitems.exclude(promotion_combo=None)
             cartitems_last=cartitems_last.exclude(promotion_combo=None)
         if choice=='flashsale':
-            orders=orders.exclude(items__flash_sale_isnull=False)
-            orders_last=orders_last.filter(items__flash_sale_isnull=False)
+            orders=orders.exclude(items__flash_sale__isnull=False)
+            orders_last=orders_last.filter(items__flash_sale__isnull=False)
             cartitems=cartitems.exclude(flash_sale=None)
             cartitems_last=cartitems_last.exclude(flash_sale=None)
         if choice=='discount':
-            orders=orders.filter(items__program_isnull=False)
-            orders_last=orders_last.filter(items__program_isnull=False)
+            orders=orders.filter(items__program__isnull=False)
+            orders_last=orders_last.filter(items__program__isnull=False)
             cartitems=cartitems.exclude(program=None)
             cartitems_last=cartitems_last.exclude(program=None)
         total_quantity=cartitems.aggregate(sum=Sum('quantity'))
@@ -210,11 +211,18 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
 
         if choice=='voucher':
             orders=orders.exclude(voucher=None)
+            orders_last=orders_last.exclude(voucher=None)
             count_use_voucher=orders.count()
+            count_use_voucher_last=orders_last.count()
             discount_voucher=orders.aggregate(sum=Sum('discount_voucher'))
-            data.update({'count_use_voucher':count_use_voucher,'discount_voucher':discount_voucher['sum']})
+            discount_voucher_last=orders_last.aggregate(sum=Sum('discount_voucher'))
+            data.update({'count_use_voucher':count_use_voucher,
+            'count_use_voucher_last':count_use_voucher_last,
+            'discount_voucher_last':discount_voucher_last['sum'],
+            'discount_voucher':discount_voucher['sum']})
         if choice=='addon':
             orders=orders.filter(items__deal_shock__isnull=False).distinct()
+            orders_last=orders_last.filter(items__deal_shock__isnull=False).distinct()
             cartitems=cartitems.exclude(deal_shock=None)
             cartitems_last=cartitems_last.exclude(deal_shock=None)
             amount_main=cartitems.aggregate(sum=Sum('amount_main_products'))
@@ -238,13 +246,13 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
             data.update({'count_combo':count_combo['count_promotion_order'],
             'count_combo_last':count_combo_last['count_promotion_order']})
         if choice=='flashsale':
-            orders=orders.exclude(items__flash_sale_isnull=False)
-            orders_last=orders_last.filter(items__flash_sale_isnull=False)
+            orders=orders.exclude(items__flash_sale__isnull=False)
+            orders_last=orders_last.filter(items__flash_sale__isnull=False)
             cartitems=cartitems.exclude(flash_sale=None)
             cartitems_last=cartitems_last.exclude(flash_sale=None)
         if choice=='discount':
-            orders=orders.filter(items__program_isnull=False)
-            orders_last=orders_last.filter(items__program_isnull=False)
+            orders=orders.filter(items__program__isnull=False)
+            orders_last=orders_last.filter(items__program__isnull=False)
             cartitems=cartitems.exclude(program=None)
             cartitems_last=cartitems_last.exclude(program=None)
         list_total_order=orders.values('day').annotate(count=Count('id')).values('day','count')
