@@ -823,7 +823,8 @@ class AddToCartAPIView(APIView):
         elif item_id and not size_id and not color_id:
             product=Variation.objects.get(item_id=item_id)
         data={
-            'price':product.price,
+            'price':product.price,'program':product.get_discount_program(),
+            'deal':get_discount_deal(),
             'discount_price':product.total_discount(),
             'inventory':product.inventory,'id':product.id
             }
