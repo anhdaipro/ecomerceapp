@@ -93,9 +93,12 @@ class Order(models.Model):
         for order_item in self.items.all():
             total+=order_item.total_price_cartitem()
         return total
-
+    
     def total_discount_order(self):
-        return self.total_price_order()-self.discount_deal()-self.discount()-self.discount_flash_sale()
+        total=0
+        for order_item in self.items.all():
+            total+=order_item.total_discount_cartitem()
+        return total
 
     def fee_shipping(self):
         fee_shipping=0

@@ -94,8 +94,13 @@ class ListprogramAPI(ListAPIView):
     serializer_class = ShopProgramSerializer
     def get_queryset(self):
         request = self.request
+        choice=request.GET.get('choice')
         user=request.user
         shop=Shop.objects.get(user=user)
+        if choice:
+            if choice=='current':
+                shop_programs=shop.program.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
+
         return Shop_program.objects.filter(shop=shop).prefetch_related('products__media_upload')
 
 class ListflashsaleAPI(ListAPIView):
@@ -1554,7 +1559,7 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last):
         number_buyer_last=orders_last.order_by('user').distinct('user').count()
         total_amount_last=orders_last.aggregate(sum=Sum('amount'))
         total_order_last=orders_last.aggregate(count=Count('id'))
-        dataseller={'number_buyer':number_buyer,**data,
+        dataseller={'number_buyer':number_buyer,
         'total_amount':total_amount['sum'],'total_order_last':total_order_last['count'],
         'total_quantity_last':total_quantity_last['sum'],
         'number_buyer_last':number_buyer_last,
@@ -1606,7 +1611,7 @@ class Dashboardpromotion(APIView):
         time_choice=request.GET.get('time_choice')
         orders=Order.objects.filter(shop=shop,accepted=True)
         orders_last=orders
-        data={'ok':'ok'}
+        
         orders=Order.objects.filter(shop=shop,accepted=True)
         orders_last=orders
         dashboard(shop,time,time_choice,choice,orders,orders_last)
