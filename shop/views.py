@@ -89,7 +89,7 @@ class ListvoucherAPI(APIView):
         if from_item+5>=count:
             to_item=count
         vouchers=vouchers[from_item:to_item]
-        return Response({'vouchers':VoucherSerializer(vouchers,many=True).data,'count':count})
+        return Response({'data':VoucherSerializer(vouchers,many=True).data,'count':count})
 
 class ListcomboAPI(APIView):
     permission_classes = (IsAuthenticated,)
@@ -114,7 +114,7 @@ class ListcomboAPI(APIView):
         if from_item+5>=count:
             to_item=count
         promotions=promotions[from_item:to_item]
-        return Response({'promotions':ComboSerializer(promotions,many=True).data,'count':count})
+        return Response({'data':ComboSerializer(promotions,many=True).data,'count':count})
 
 class ListdealshockAPI(APIView):
     permission_classes = (IsAuthenticated,)
@@ -139,7 +139,7 @@ class ListdealshockAPI(APIView):
         if from_item+5>=count:
             to_item=count
         deal_shocks=deal_shocks[from_item:to_item]
-        return Response({'deal_shocks':BuywithsockdealSerializer(deal_shocks,many=True).data,'count':count})
+        return Response({'data':BuywithsockdealSerializer(deal_shocks,many=True).data,'count':count})
        
 
 class ListprogramAPI(APIView):
@@ -165,7 +165,7 @@ class ListprogramAPI(APIView):
         if from_item+5>=count:
             to_item=count
         programs=programs[from_item:to_item]
-        return Response({'programs':ShopProgramSerializer(programs,many=True).data,'count':count})
+        return Response({'data':ShopProgramSerializer(programs,many=True).data,'count':count})
 
 class ListflashsaleAPI(APIView):
     permission_classes = (IsAuthenticated,)
@@ -190,7 +190,7 @@ class ListflashsaleAPI(APIView):
         if from_item+5>=count:
             to_item=count
         flash_sales=flash_sales[from_item:to_item]
-        return Response({'flash_sales':FlashSaleSerializer(flash_sales,many=True).data,'count':count})
+        return Response({'data':FlashSaleSerializer(flash_sales,many=True).data,'count':count})
      
 
 class ShopprofileAPIView(APIView):
