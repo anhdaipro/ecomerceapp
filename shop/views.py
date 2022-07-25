@@ -64,59 +64,134 @@ ReviewshopSerializer,
 FlashSaleSellerSerializer,
 VariationsellerSerializer,
 ItemproductSerializer,)
-class ListvoucherAPI(ListAPIView):
+
+now=datetime.datetime.now()
+class ListvoucherAPI(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = VoucherSerializer
     def get_queryset(self):
         request = self.request
         user=request.user
         shop=Shop.objects.get(user=user)
-        return Voucher.objects.filter(shop=shop).prefetch_related('products').prefetch_related('order_voucher')
-
-class ListcomboAPI(ListAPIView):
-    permission_classes = (IsAuthenticated,)
-    serializer_class = ComboSerializer
-    def get_queryset(self):
-        request = self.request
-        user=request.user
-        shop=Shop.objects.get(user=user)
-        return Promotion_combo.objects.filter(shop=shop).prefetch_related('products__media_upload')
-
-class ListdealshockAPI(ListAPIView):
-    permission_classes = (IsAuthenticated,)
-    serializer_class = BuywithsockdealSerializer
-    def get_queryset(self):
-        request = self.request
-        user=request.user
-        shop=Shop.objects.get(user=user)
-        return Buy_with_shock_deal.objects.filter(shop=shop).prefetch_related('main_products__media_upload').prefetch_related('byproducts__media_upload')
-
-class ListprogramAPI(ListAPIView):
-    permission_classes = (IsAuthenticated,)
-    serializer_class = ShopProgramSerializer
-    def get_queryset(self):
-        request = self.request
-        choice=request.GET.get('choice')
-        user=request.user
-        shop=Shop.objects.get(user=user)
-        shop_programs=Shop_program.objects.filter(shop=shop).prefetch_related('products__media_upload')
+        shop=Shop.objects.get(user=request.user)
+        vouchers=Voucher.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=100))).prefetch_related('products').prefetch_related('order_voucher')
         if choice:
             if choice=='current':
-                shop_programs=shop_programs.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
-            if choice=='upcoming':
-                shop_programs=shop_programs.filter(valid_from__gt=timezone.now())
-            if choice=='finished':
-                shop_programs=shop_programs.filter(valid_to__lt=timezone.now())
-        return shop_programs
+                vouchers=vouchers.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
+            elif choice=='upcoming':
+                vouchers=vouchers.filter(valid_from__gt=timezone.now())
+            else:
+                vouchers=voucherss.filter(valid_to__lt=timezone.now())
+        count=vouchers.count()
+        from_item=0
+        if offset:
+            from_item=int(offset)
+        to_item=from_item+5
+        if from_item+5>=count:
+            to_item=count
+        vouchers=vouchers[from_item:to_item]
+        return Response({'vouchers':vouchers,'count':count})
 
-class ListflashsaleAPI(ListAPIView):
+class ListcomboAPI(APIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ComboSerializer
+    def get(self,request):
+        shop=Shop.objects.get(user=request.user)
+        promotions=Promotion_combo.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=100))).prefetch_related('products__media_upload')
+        if choice:
+            if choice=='current':
+                promotions=promotions.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
+            elif choice=='upcoming':
+                promotions=promotions.filter(valid_from__gt=timezone.now())
+            else:
+                promotions=promotionss.filter(valid_to__lt=timezone.now())
+        count=promotions.count()
+        from_item=0
+        if offset:
+            from_item=int(offset)
+        to_item=from_item+5
+        if from_item+5>=count:
+            to_item=count
+        promotions=promotions[from_item:to_item]
+        return Response({'promotions':promotions,'count':count})
+
+class ListdealshockAPI(APIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = BuywithsockdealSerializer
+    def get(self,request):
+        user=request.user
+        shop=Shop.objects.get(user=user)
+        deal_shocks=Buy_with_shock_deal.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=100))).prefetch_related('main_products__media_upload').prefetch_related('byproducts__media_upload')
+        choice=request.GET.get('choice')
+        offset=request.GET.get('offset')
+        if choice:
+            if choice=='current':
+                deal_shocks=deal_shocks.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
+            elif choice=='upcoming':
+                deal_shocks=deal_shocks.filter(valid_from__gt=timezone.now())
+            else:
+                deal_shocks=deal_shocks.filter(valid_to__lt=timezone.now())
+        count=deal_shocks.count()
+        from_item=0
+        if offset:
+            from_item=int(offset)
+        to_item=from_item+5
+        if from_item+5>=count:
+            to_item=count
+        deal_shocks=deal_shocks[from_item:to_item]
+        return Response({'deal_shocks':deal_shocks,'count':count})
+       
+
+class ListprogramAPI(APIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ShopProgramSerializer
+    def get(self,request):
+        choice=request.GET.get('choice')
+        offset=request.GET.get('offset')
+        shop=Shop.objects.get(user=request.user)
+        programs=Shop_program.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=100))).prefetch_related('products__media_upload').order_by('-id')
+        if choice:
+            if choice=='current':
+                programs=programs.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
+            elif choice=='upcoming':
+                programs=programs.filter(valid_from__gt=timezone.now())
+            else:
+                programs=programs.filter(valid_to__lt=timezone.now())
+        count=programs.count()
+        from_item=0
+        if offset:
+            from_item=int(offset)
+        to_item=from_item+5
+        if from_item+5>=count:
+            to_item=count
+        programs=programs[from_item:to_item]
+        return Response({'programs':programs,'count':count})
+
+class ListflashsaleAPI(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = FlashSaleSerializer
     def get_queryset(self):
-        request = self.request
-        user=request.user
-        shop=Shop.objects.get(user=user)
-        return Flash_sale.objects.filter(shop=shop).prefetch_related('products__media_upload')
+        choice=request.GET.get('choice')
+        offset=request.GET.get('offset')
+        shop=Shop.objects.get(user=request.user)
+        flash_sales=Flash_sale.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=100))).prefetch_related('products__media_upload').order_by('-id')
+        if choice:
+            if choice=='current':
+                flash_sales=flash_sales.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
+            elif choice=='upcoming':
+                flash_sales=flash_sales.filter(valid_from__gt=timezone.now())
+            else:
+                flash_sales=flash_sales.filter(valid_to__lt=timezone.now())
+        count=flash_sales.count()
+        from_item=0
+        if offset:
+            from_item=int(offset)
+        to_item=from_item+5
+        if from_item+5>=count:
+            to_item=count
+        flash_sales=flash_sales[from_item:to_item]
+        return Response({'flash_sales':flash_sales,'count':count})
+     
 
 class ShopprofileAPIView(APIView):
     def get(self,request):
@@ -165,7 +240,7 @@ def infoseller(request):
 def homeseller(request):
     user=request.user
     shop=Shop.objects.get(user=user)
-    current_date=datetime.datetime.now()
+    current_date=now
     count_order_waiting_comfirmed=Order.objects.filter(shop=shop,ordered=True,canceled=False,accepted=False,being_delivered=False,received=False,accepted_date__gt=timezone.now()).count()
     count_order_canceled=Order.objects.filter(shop=shop,ordered=True,canceled=True).count()
     count_order_processed=Order.objects.filter(shop=shop,ordered=True,canceled=False,accepted=True,received=False,being_delivered=False).count()
@@ -416,7 +491,7 @@ class Newvoucher(APIView):
         maximum_discount=request.data.get('maximum_discount')
         minimum_order_value=request.data.get('minimum_order_value')
         setting_display=request.data.get('setting_display')
-        vocher,created=Voucher.objects.get_or_create(
+        vocher=Voucher.objects.create(
             code_type=code_type,#Loại mã
             shop=shop,
             name_of_the_discount_program=name_of_the_discount_program,
@@ -519,8 +594,8 @@ class NewcomboAPI(APIView):
         valid_to=request.GET.get('valid_to')
         combo_id=request.GET.get('combo_id')
         valid_from=request.GET.get('valid_from')
-        shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
-        promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
+        shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
+        promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
         if combo_id:
             promotions= promotions.exclude(id=combo_id)
         items=Item.objects.filter(shop=shop).exclude(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions)).order_by('-id')
@@ -541,15 +616,15 @@ class NewcomboAPI(APIView):
         action=request.data.get('action')
         valid_to=request.data.get('valid_to')
         list_items=request.data.get('list_items')
-        shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
-        promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
+        shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
+        promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
         items=Item.objects.filter(shop=shop).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
         listitemdeal=[item.id for item in items]
         data={}
         sameitem=list(set(listitemdeal).intersection(list_items))
         if len(sameitem)==0:
             if action=='submit':
-                promotion_combo,created=Promotion_combo.objects.get_or_create(
+                promotion_combo=Promotion_combo.objects.create(
                 shop=shop,
                 promotion_combo_name=request.data.get('promotion_combo_name'),
                 valid_from=valid_from,
@@ -579,8 +654,8 @@ class DetailComboAPI(APIView):
         action=request.data.get('action')
         promotion_combo=Promotion_combo.objects.get(id=id)
         data={}
-        shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
-        promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=id)
+        shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
+        promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
         items=Item.objects.filter(shop_id=promotion_combo.shop_id).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
         listitemdeal=[item.id for item in items]
         sameitem=list(set(listitemdeal).intersection(list_items))
@@ -619,8 +694,8 @@ class NewDeal(APIView):
         if mainproducts:
             item_deal=deal_shock.byproducts.all()
             list_id=[item.id for item in item_deal]
-            shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=deal_id)
-            promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
+            shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=deal_id)
+            promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
             items=items.exclude(Q(id__in=list_id) |Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
         order=request.GET.get('order')
         price=request.GET.get('price')
@@ -635,7 +710,7 @@ class NewDeal(APIView):
         return Response(data)
     def post(self,request):
         shop=Shop.objects.get(user=request.user)
-        deal_shock,created=Buy_with_shock_deal.objects.get_or_create(
+        deal_shock=Buy_with_shock_deal.objects.create(
         shop=shop,
         shock_deal_type=request.data.get('shock_deal_type'),
         program_name_buy_with_shock_deal=request.data.get('program_name_buy_with_shock_deal'),
@@ -707,8 +782,8 @@ class DetailDeal(APIView):
             deal_shock.save()
             data.update({'suscess':True})
         else:
-            shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=id)
-            promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
+            shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
+            promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
             items=Item.objects.filter(shop_id=deal_shock.shop_id).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
             listitemdeal=[item.id for item in items]
             sameitem=list(set(listitemdeal).intersection(list_items))
@@ -727,7 +802,7 @@ class NewprogramAPI(APIView):
         program_id=request.GET.get('program_id')
         valid_to=request.GET.get('valid_to')
         valid_from=request.GET.get('valid_from')
-        shop_programs=Shop_program.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
+        shop_programs=Shop_program.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
         if program_id:
             shop_programs=shop_programs.exclude(id=program_id)
         items=Item.objects.filter(shop=shop).exclude(shop_program__in=shop_programs).order_by('-id')
@@ -756,14 +831,14 @@ class NewprogramAPI(APIView):
             list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
             data=ByproductSellerSerializer(list_products,many=True).data
         else:
-            shop_programs=Shop_program.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now()))
+            shop_programs=Shop_program.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
             items=Item.objects.filter(shop=shop,shop_program__in=shop_programs)
             listitemprogram=[item.id for item in items]
             sameitem=list(set(listitemprogram).intersection(list_items))
             if len(sameitem)==0:
                 data.update({'suscess':True})
                 if action=='submit':
-                    shop_program,created=Shop_program.objects.get_or_create(
+                    shop_program=Shop_program.objects.create(
                             name_program=name_program,
                             valid_from=valid_from,
                             valid_to=valid_to,
@@ -800,7 +875,7 @@ class Detailprogram(APIView):
             list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
             data=ByproductSellerSerializer(list_products,many=True).data
         else:
-            shop_programs=Shop_program.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=id)
+            shop_programs=Shop_program.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
             items=Item.objects.filter(shop_id=shop_program.shop_id,shop_program__in=shop_programs)
             itemprogram=[item.id for item in items]
             sameitem=list(set(listitemprogram).intersection(list_items))
@@ -860,7 +935,7 @@ class Newflashsale(APIView):
         item=request.GET.get('item')
         title=request.GET.get('title')
         q=request.GET.get('q')
-        flash_sales=Flash_sale.objects.filter((Q(valid_from=valid_from)&Q(valid_to=valid_to)) & Q(valid_to__gt=datetime.datetime.now()))
+        flash_sales=Flash_sale.objects.filter((Q(valid_from=valid_from)&Q(valid_to=valid_to)) & Q(valid_to__gt=now))
         if flash_sale_id:
             flash_sales=flash_sales.exclude(id=flash_sale_id)
         items=Item.objects.filter(shop=shop).exclude(flash_sale__in=flash_sales).order_by('-id')
@@ -879,14 +954,14 @@ class Newflashsale(APIView):
             list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
             data=ByproductSellerSerializer(list_products,many=True).data
         else:
-            flash_sales=Flash_sale.objects.filter(shop=shop).filter((Q(valid_from=valid_from)&Q(valid_to=valid_to))  & Q(valid_to__gt=datetime.datetime.now()))
+            flash_sales=Flash_sale.objects.filter(shop=shop).filter((Q(valid_from=valid_from)&Q(valid_to=valid_to))  & Q(valid_to__gt=now))
             if flash_sales.exists():
                 data.update({'error':True})
             else:
                 data.update({'suscess':True})
                 if action=='submit': 
                     discount_model_list=request.data.get('discount_model_list')
-                    flash_sale,created=Flash_sale.objects.get_or_create(
+                    flash_sale=Flash_sale.objects.create(
                             shop=shop,
                             valid_from=valid_from,
                             valid_to=valid_to
@@ -919,7 +994,7 @@ class DetailFlashsale(APIView):
             list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
             data=ByproductSellerSerializer(list_products,many=True).data
         else:
-            flash_sales=Flash_sale.objects.filter(shop_id=flash_sale.shop_id).filter((Q(valid_from=valid_from)&Q(valid_to=valid_to))  & Q(valid_to__gt=datetime.datetime.now())).exclude(id=id)
+            flash_sales=Flash_sale.objects.filter(shop_id=flash_sale.shop_id).filter((Q(valid_from=valid_from)&Q(valid_to=valid_to))  & Q(valid_to__gt=now)).exclude(id=id)
             if flash_sales.exists():
                 data.update({'error':True})
             else:
