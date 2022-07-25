@@ -170,7 +170,7 @@ class ListprogramAPI(APIView):
 class ListflashsaleAPI(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = FlashSaleSerializer
-    def get_queryset(self):
+    def get(self,request):
         choice=request.GET.get('choice')
         offset=request.GET.get('offset')
         shop=Shop.objects.get(user=request.user)
