@@ -467,7 +467,7 @@ class VoucherSerializer(VoucherinfoSerializer):
     number_used= serializers.SerializerMethodField()
     count_product=serializers.SerializerMethodField()
     class Meta(VoucherinfoSerializer.Meta):
-        fields=VoucherinfoSerializer.Meta.fields+['number_userd','count_product','name_of_the_discount_program']
+        fields=VoucherinfoSerializer.Meta.fields+['number_used','count_product','name_of_the_discount_program']
     def get_number_used(self,obj):
         return Order.objects.filter(voucher=obj,received=True).count()
     def get_count_product(self,obj):
