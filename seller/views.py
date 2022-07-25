@@ -54,7 +54,10 @@ ReviewshopSerializer,
 FlashSaleSellerSerializer,
 VariationsellerSerializer,
 ItemproductSerializer,)
-
+def safe_div(x,y):
+    if y == 0:
+        return x
+    return x / y
 def datapromotion(shop,week,choice,orders,orders_last):
     data={}
     orders=orders.filter(ordered_date__date__gte=week)
@@ -70,8 +73,8 @@ def datapromotion(shop,week,choice,orders,orders_last):
         count_use_voucher_last=orders_last.count()
         count_voucher_received=vouchers_user.count()
         count_voucher_received_last=vouchers_user_last.count()
-        usage_rate=count_use_voucher/count_voucher_received
-        usage_rate_last=count_use_voucher_last/count_voucher_received_last
+        usage_rate=safe_div(count_use_voucher,count_voucher_received)
+        usage_rate_last=safe_div(count_use_voucher_last,count_voucher_received_last)
         data.update({'usage_rate':usage_rate,'usage_rate_last':usage_rate_last})
     else:
         cartitem=CartItem.objects.filter(shop=shop,ordered=True)
