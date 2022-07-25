@@ -80,7 +80,7 @@ class ListvoucherAPI(APIView):
             elif choice=='upcoming':
                 vouchers=vouchers.filter(valid_from__gt=timezone.now())
             else:
-                vouchers=voucherss.filter(valid_to__lt=timezone.now())
+                vouchers=vouchers.filter(valid_to__lt=timezone.now())
         count=vouchers.count()
         from_item=0
         if offset:
@@ -105,7 +105,7 @@ class ListcomboAPI(APIView):
             elif choice=='upcoming':
                 promotions=promotions.filter(valid_from__gt=timezone.now())
             else:
-                promotions=promotionss.filter(valid_to__lt=timezone.now())
+                promotions=promotions.filter(valid_to__lt=timezone.now())
         count=promotions.count()
         from_item=0
         if offset:
