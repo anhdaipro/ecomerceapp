@@ -69,10 +69,9 @@ now=datetime.datetime.now()
 class ListvoucherAPI(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = VoucherSerializer
-    def get_queryset(self):
-        request = self.request
-        user=request.user
-        shop=Shop.objects.get(user=user)
+    def get(self,request):
+        choice=request.GET.get('choice')
+        offset=request.GET.get('offset')
         shop=Shop.objects.get(user=request.user)
         vouchers=Voucher.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=100))).prefetch_related('products').prefetch_related('order_voucher')
         if choice:
@@ -96,6 +95,8 @@ class ListcomboAPI(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ComboSerializer
     def get(self,request):
+        choice=request.GET.get('choice')
+        offset=request.GET.get('offset')
         shop=Shop.objects.get(user=request.user)
         promotions=Promotion_combo.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=100))).prefetch_related('products__media_upload')
         if choice:
@@ -119,8 +120,7 @@ class ListdealshockAPI(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = BuywithsockdealSerializer
     def get(self,request):
-        user=request.user
-        shop=Shop.objects.get(user=user)
+        shop=Shop.objects.get(user=request.user)
         deal_shocks=Buy_with_shock_deal.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=100))).prefetch_related('main_products__media_upload').prefetch_related('byproducts__media_upload')
         choice=request.GET.get('choice')
         offset=request.GET.get('offset')
