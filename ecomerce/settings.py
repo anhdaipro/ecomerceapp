@@ -166,8 +166,8 @@ DATABASES = {
     }
 }
 
-prod_db  =  dj_database_url.config(conn_max_age=500)
-DATABASES['default'].update(prod_db)
+db_from_env = dj_database_url.config()
+DATABASES['default'].update(db_from_env)
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dupep1afe',
     'API_KEY': '388461171177852',
