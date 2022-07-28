@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-ihk&62sy1(f+k*w-lx=qsla=j#w+cbhbw_!pxaqh%w#pl3!2)b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['anhdai.herokuapp.com','localhost']
+ALLOWED_HOSTS = ['anhdai.herokuapp.com','localhost','127.0.0.1']
 
 # Application definition
 CORS_ALLOWED_ORIGINS = [
@@ -106,7 +106,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'ecomerce.wsgi.application'
-
+ASGI_APPLICATION = 'ecomerce.routing.application'
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',
     'social_core.backends.facebook.FacebookAppOAuth2',
@@ -129,7 +129,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=8),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=4),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=2),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
@@ -300,5 +300,5 @@ EMAIL_HOST_PASSWORD = 'dmggkounbskbqrax'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
-
+django_heroku.settings(locals())
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

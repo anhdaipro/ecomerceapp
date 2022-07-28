@@ -5,9 +5,10 @@ DashboardFlashsaleAPI,DashboardDiscountAPI,DataBundleAPI,
 DataVoucherAPI,
 DataDiscountAPI,
 DataFlashsaleAPI,
+MyDashboard,
 DataAddonAPI)
 urlpatterns = [
-    path("dashboard", views.my_dashboard),
+    path("dashboard", MyDashboard.as_view()),
     path("dashboard/voucher", DashboardVoucherAPI.as_view()),
     path("dashboard/addon", DashboardAddonAPI.as_view()),
     path('dashboard/bundle',DashboardBundleAPI.as_view()),

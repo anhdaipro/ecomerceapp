@@ -98,7 +98,17 @@ class UserView(APIView):
         user=request.user
         serializer = UserprofileSerializer(user)
         return Response(serializer.data)
-
+class RefreshTokenuser(APIView):
+    permission_classes = (AllowAny,)
+    def post(self, request,id):
+        user=User.objects.get(id=id)
+        refresh = RefreshToken.for_user(user)
+        data = {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'access_expires': datetime.datetime.now()+settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
+        }
+        return Response(data)
 class UpdateOnline(APIView):
     permission_classes = (IsAuthenticated,)
     def post(self,request):

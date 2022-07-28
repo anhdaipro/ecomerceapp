@@ -42,8 +42,7 @@ class Order(models.Model):
     canceled=models.BooleanField(default=False)
     amount=models.FloatField(default=0)
     discount_voucher=models.FloatField(default=0,null=True)
-    class Meta:
-        ordering=['-id']
+    
     def __str__(self):
         return str(self.ref_code)
     def get_absolute_url(self):

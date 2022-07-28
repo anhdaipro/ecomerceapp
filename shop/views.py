@@ -72,8 +72,14 @@ class ListvoucherAPI(APIView):
     def get(self,request):
         choice=request.GET.get('choice')
         offset=request.GET.get('offset')
+        start_day=request.GET.get('start_day')
+        end_day=request.GET.get('end_day')
         shop=Shop.objects.get(user=request.user)
         vouchers=Voucher.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=100))).prefetch_related('products').prefetch_related('order_voucher')
+        if start_day:
+            vouchers=vocuhers.filter(valid_from__gte=start_day)
+        if end_day:
+            vouchers=vocuhers.filter(valid_to__lte=end_day)
         if choice:
             if choice=='current':
                 vouchers=vouchers.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
@@ -106,6 +112,12 @@ class ListcomboAPI(APIView):
                 promotions=promotions.filter(valid_from__gt=timezone.now())
             else:
                 promotions=promotions.filter(valid_to__lt=timezone.now())
+        start_day=request.GET.get('start_day')
+        end_day=request.GET.get('end_day')
+        if start_day:
+            promotions=promotions.filter(valid_from__gte=start_day)
+        if end_day:
+            promotions=promotions.filter(valid_to__lte=end_day)
         count=promotions.count()
         from_item=0
         if offset:
@@ -124,6 +136,12 @@ class ListdealshockAPI(APIView):
         deal_shocks=Buy_with_shock_deal.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=100))).prefetch_related('main_products__media_upload').prefetch_related('byproducts__media_upload')
         choice=request.GET.get('choice')
         offset=request.GET.get('offset')
+        start_day=request.GET.get('start_day')
+        end_day=request.GET.get('end_day')
+        if start_day:
+            deal_shocks=deal_shocks.filter(valid_from__gte=start_day)
+        if end_day:
+            deal_shocks=deal_shocks.filter(valid_to__lte=end_day)
         if choice:
             if choice=='current':
                 deal_shocks=deal_shocks.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
@@ -157,6 +175,12 @@ class ListprogramAPI(APIView):
                 programs=programs.filter(valid_from__gt=timezone.now())
             else:
                 programs=programs.filter(valid_to__lt=timezone.now())
+        start_day=request.GET.get('start_day')
+        end_day=request.GET.get('end_day')
+        if start_day:
+            programs=programs.filter(valid_from__gte=start_day)
+        if end_day:
+            programs=programs.filter(valid_to__lte=end_day)
         count=programs.count()
         from_item=0
         if offset:
@@ -182,6 +206,12 @@ class ListflashsaleAPI(APIView):
                 flash_sales=flash_sales.filter(valid_from__gt=timezone.now())
             else:
                 flash_sales=flash_sales.filter(valid_to__lt=timezone.now())
+        start_day=request.GET.get('start_day')
+        end_day=request.GET.get('end_day')
+        if start_day:
+            flash_sales=flash_sales.filter(valid_from__gte=start_day)
+        if end_day:
+            flash_sales=flash_sales.filter(valid_to__lte=end_day)
         count=flash_sales.count()
         from_item=0
         if offset:
