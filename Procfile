@@ -1,4 +1,4 @@
 
-web: gunicorn ecomerce.wsgi --log-file - --log-level debug
-python manage.py collectstatic --noinput
-manage.py migrate
+
+release: python manage.py migrate
+web: daphne ecomerce.asgi:application --port $PORT --bind 0.0.0.0 -v2
