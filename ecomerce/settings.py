@@ -161,14 +161,13 @@ DATABASES = {
         'NAME': 'd8k68jjvd35kmk',
         'USER': 'ndrxbdifcwcwhc',
         'PASSWORD': '78df2214305e5be4a73842a13187b208f7c9466c9b22412b40a2ce1d132bdbbe',
-       
         'HOST': 'ec2-3-218-171-44.compute-1.amazonaws.com',
         'PORT': '5432',
     }
 }
 
-db_from_env = dj_database_url.config()
-DATABASES['default'].update(db_from_env)
+prod_db  =  dj_database_url.config(conn_max_age=500)
+DATABASES['default'].update(prod_db)
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dupep1afe',
     'API_KEY': '388461171177852',
