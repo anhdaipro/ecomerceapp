@@ -1,2 +1,4 @@
 
-web: gunicorn ecomerce.wsgi --log-file -
+web: gunicorn ecomerce.wsgi --log-file - --log-level debug
+python manage.py collectstatic --noinput
+manage.py migrate
