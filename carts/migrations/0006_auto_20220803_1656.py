@@ -14,18 +14,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='Byproduct',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('quantity', models.IntegerField()),
-                ('updated_at', models.DateField(auto_now=True)),
-            ],
-        ),
-        migrations.RemoveField(
-            model_name='cartitem',
-            name='byproduct',
-        ),
         migrations.AddField(
             model_name='cartitem',
             name='amount_byproducts',
@@ -35,28 +23,5 @@ class Migration(migrations.Migration):
             model_name='cartitem',
             name='amount_main_products',
             field=models.FloatField(default=0, null=True),
-        ),
-        migrations.DeleteModel(
-            name='Byproductcart',
-        ),
-        migrations.AddField(
-            model_name='byproduct',
-            name='cartitem',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='byproduct_cart', to='carts.cartitem'),
-        ),
-        migrations.AddField(
-            model_name='byproduct',
-            name='item',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='byproduct_item', to='shop.item'),
-        ),
-        migrations.AddField(
-            model_name='byproduct',
-            name='product',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='byproduct_product', to='shop.variation'),
-        ),
-        migrations.AddField(
-            model_name='byproduct',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
         ),
     ]
