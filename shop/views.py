@@ -63,7 +63,14 @@ FlashSaleSerializer,
 ReviewshopSerializer,
 FlashSaleSellerSerializer,
 VariationsellerSerializer,
-ItemproductSerializer,)
+ItemproductSerializer,
+ShopAwardinfoSerializer,
+ShopAwardSerializer,
+ShopAwardDetailSerializer,
+FollowOfferdetailSerializer,
+FollowOfferInfoSerializer,
+FollowOfferSerializer,
+)
 
 now=datetime.datetime.now()
 class ListvoucherAPI(APIView):
@@ -75,7 +82,7 @@ class ListvoucherAPI(APIView):
         start_day=request.GET.get('start_day')
         end_day=request.GET.get('end_day')
         shop=Shop.objects.get(user=request.user)
-        vouchers=Voucher.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=100))).prefetch_related('products').prefetch_related('order_voucher')
+        vouchers=Voucher.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('products').prefetch_related('order_voucher')
         if start_day:
             vouchers=vocuhers.filter(valid_from__gte=start_day)
         if end_day:
@@ -104,7 +111,7 @@ class ListcomboAPI(APIView):
         choice=request.GET.get('choice')
         offset=request.GET.get('offset')
         shop=Shop.objects.get(user=request.user)
-        promotions=Promotion_combo.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=100))).prefetch_related('products__media_upload')
+        promotions=Promotion_combo.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('products__media_upload')
         if choice:
             if choice=='current':
                 promotions=promotions.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
@@ -133,7 +140,7 @@ class ListdealshockAPI(APIView):
     serializer_class = BuywithsockdealSerializer
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
-        deal_shocks=Buy_with_shock_deal.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=100))).prefetch_related('main_products__media_upload').prefetch_related('byproducts__media_upload')
+        deal_shocks=Buy_with_shock_deal.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('main_products__media_upload').prefetch_related('byproducts__media_upload')
         choice=request.GET.get('choice')
         offset=request.GET.get('offset')
         start_day=request.GET.get('start_day')
@@ -159,6 +166,65 @@ class ListdealshockAPI(APIView):
         deal_shocks=deal_shocks[from_item:to_item]
         return Response({'data':BuywithsockdealSerializer(deal_shocks,many=True).data,'count':count})
        
+class ListFollowOfferAPI(APIView):
+    permission_classes = (IsAuthenticated,)
+    def get(self,request):
+        choice=request.GET.get('choice')
+        offset=request.GET.get('offset')
+        shop=Shop.objects.get(user=request.user)
+        follow_offers=Follower_offer.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('follower_offder').order_by('-id')
+        if choice:
+            if choice=='current':
+                follow_offers=follow_offers.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
+            elif choice=='upcoming':
+                follow_offers=follow_offers.filter(valid_from__gt=timezone.now())
+            else:
+                follow_offers=follow_offers.filter(valid_to__lt=timezone.now())
+        start_day=request.GET.get('start_day')
+        end_day=request.GET.get('end_day')
+        if start_day:
+            follow_offers=follow_offers.filter(valid_from__gte=start_day)
+        if end_day:
+            follow_offers=follow_offers.filter(valid_to__lte=end_day)
+        count=follow_offers.count()
+        from_item=0
+        if offset:
+            from_item=int(offset)
+        to_item=from_item+5
+        if from_item+5>=count:
+            to_item=count
+        follow_offers=follow_offers[from_item:to_item]
+        return Response({'data':FollowOfferSerializer(follow_offers,many=True).data,'count':count})
+
+class ListShopAwardAPI(APIView):
+    permission_classes = (IsAuthenticated,)
+    def get(self,request):
+        choice=request.GET.get('choice')
+        offset=request.GET.get('offset')
+        shop=Shop.objects.get(user=request.user)
+        shop_awards=Shop_award.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('award_shop_award').order_by('-id')
+        if choice:
+            if choice=='current':
+                shop_awards=shop_awards.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
+            elif choice=='upcoming':
+                shop_awards=shop_awards.filter(valid_from__gt=timezone.now())
+            else:
+                shop_awards=shop_awards.filter(valid_to__lt=timezone.now())
+        start_day=request.GET.get('start_day')
+        end_day=request.GET.get('end_day')
+        if start_day:
+            shop_awards=shop_awards.filter(valid_from__gte=start_day)
+        if end_day:
+            shop_awards=shop_awards.filter(valid_to__lte=end_day)
+        count=shop_awards.count()
+        from_item=0
+        if offset:
+            from_item=int(offset)
+        to_item=from_item+5
+        if from_item+5>=count:
+            to_item=count
+        shop_awards=shop_awards[from_item:to_item]
+        return Response({'data':ShopAwardSerializer(shop_awards,many=True).data,'count':count})
 
 class ListprogramAPI(APIView):
     permission_classes = (IsAuthenticated,)
@@ -167,7 +233,7 @@ class ListprogramAPI(APIView):
         choice=request.GET.get('choice')
         offset=request.GET.get('offset')
         shop=Shop.objects.get(user=request.user)
-        programs=Shop_program.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=100))).prefetch_related('products__media_upload').order_by('-id')
+        programs=Shop_program.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('products__media_upload').order_by('-id')
         if choice:
             if choice=='current':
                 programs=programs.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
@@ -198,7 +264,7 @@ class ListflashsaleAPI(APIView):
         choice=request.GET.get('choice')
         offset=request.GET.get('offset')
         shop=Shop.objects.get(user=request.user)
-        flash_sales=Flash_sale.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=100))).prefetch_related('products__media_upload').order_by('-id')
+        flash_sales=Flash_sale.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('products__media_upload').order_by('-id')
         if choice:
             if choice=='current':
                 flash_sales=flash_sales.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
@@ -235,8 +301,8 @@ class ShopprofileAPIView(APIView):
         list_url=request.POST.getlist('url')
         avatar=request.FILES.get('avatar')
         image_cover=request.FILES.get('image_cover')
-        name=request.POST.get('name')
-        description=request.POST.get('description')
+        name=request.data.get('name')
+        description=request.data.get('description')
         shop=Shop.objects.get(user=request.user)
         profile=Profile.objects.get(user=request.user)
         shop.name=name
@@ -277,34 +343,9 @@ def homeseller(request):
     count_order_waiting_processed=Order.objects.filter(shop=shop,ordered=True,being_delivered=False,accepted=False,accepted_date__lt=timezone.now()).count()
     total_order_day=Order.objects.filter(shop=shop,ordered=True,ordered_date__date__gte=current_date).annotate(day=TruncHour('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
     total_amount_day=Order.objects.filter(shop=shop,ordered=True,ordered_date__date__gte=current_date).annotate(day=TruncHour('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
-    total_amount_days=[]
-    total_order_days=[]
-    hour_number=[]   
-    total_amount_days=[]
-    total_order_days=[]
-    hour_number=[]       
-    hour = [i for i in range(24)]
-    sum_hour=[0 for i in range(current_date.hour+1)]
-    count_hour=[0 for i in range(current_date.hour+1)]
-    for i in total_amount_day:
-        total_amount_days.append(i['sum'])
-        hour_number.append(i['day'].strftime("%d %I %p"))
-        for j in hour:
-            if i['day'].strftime("%I %p") ==datetime.time(j).strftime('%I %p'):
-                hour[j]=int(i['day'].strftime("%H"))
-                sum_hour[j]=round((i['sum']),1)
-        
-    for i in total_order_day:
-        total_order_days.append(i['count'])
-        hour_number.append(i['day'].strftime("%I %p"))
-        for j in hour:
-            if i['day'].strftime("%I %p") ==datetime.time(j).strftime('%I %p'):
-                hour[j]=int(i['day'].strftime("%H"))
-                count_hour[j]=int(i['count'])
-    current_date.strftime('%d')
-    hours=[datetime.time(i).strftime('%H:00') for i in hour] 
+
     data={
-    'hours':hours,'sum':sum_hour,'count':count_hour,'count_order_waiting_comfirmed':count_order_waiting_comfirmed,
+    'count_order_waiting_comfirmed':count_order_waiting_comfirmed,
     'count_order_canceled':count_order_canceled,'count_order_processed':count_order_processed,
     'count_order_waiting_processed':count_order_waiting_processed
     }
@@ -333,7 +374,7 @@ class Listordershop(APIView):
         return Response(data)
 
     def post(self,request):
-        id=request.POST.get('id')
+        id=request.data.get('id')
         order=Order.objects.get(id=id)
         order.accepted=True
         order.save()
@@ -350,8 +391,8 @@ class ShopratingAPI(APIView):
         data={'reviews':ReviewshopSerializer(page_obj,many=True).data,'page_count':paginator.num_pages}
         return Response(data) 
     def post(self,request):
-        text=request.POST.get('text')
-        id=request.POST.get('id')
+        text=request.data.get('text')
+        id=request.data.get('id')
         review=ReView.objects.get(id=id)
         reply=Reply.objects.create(text=text,review=review,user=request.user)
         data={'id':reply.id,'text':reply.text}
@@ -456,8 +497,8 @@ def delete_product(request):
         item_id=request.POST.getlist('item_id')
         Item.objects.filter(id__in=item_id).delete()
         product=Item.objects.filter(shop=shop)
-        page_no=request.POST.get('page_no')
-        per_page=request.POST.get('per_page')
+        page_no=request.data.get('page_no')
+        per_page=request.data.get('per_page')
         obj_paginator = Paginator(product, per_page)
         first_page = obj_paginator.get_page(page_no)
         variations=Variation.objects.filter(item__in=first_page).order_by('-color__value')
@@ -490,8 +531,7 @@ def filteritem(price,sort,order,name,q,sku,item,items):
     
 class Newvoucher(APIView):
     def get(self,request):
-        user=request.user
-        shop=Shop.objects.get(user=user)
+        shop=Shop.objects.get(user=request.user)
         items=Item.objects.filter(shop=shop).order_by('-id')
         order=request.GET.get('order')
         price=request.GET.get('price')
@@ -550,8 +590,7 @@ class DetailVoucher(APIView):
         data=Voucherseller(voucher).data
         return Response(data)
     def post(self,request,id):
-        user=request.user
-        shop=Shop.objects.get(user=user)
+        shop=Shop.objects.get(user=request.user)
         items=Item.objects.filter(shop=shop)
         list_items=request.data.get('list_items')
         vocher.code_type=request.data.get('code_type')
@@ -575,49 +614,153 @@ class DetailVoucher(APIView):
             vocher.products.add(*list_items)
         data={'ok':'ok' }
         return Response(data)
-          
-@api_view(['GET', 'POST'])
-def shop_award(request):
-    shop=Shop.objects.get(user=user)
-    if request.method=="POST":
-        shop_award,created=Shop_award.objects.get_or_create(
-            shop=shop,
-            game_name=request.POST.get("game_name"),
-            valid_from=request.POST.get("valid_from"),
-            valid_to=request.POST.get("valid_to"),
-            discount_type= request.POST.get("discount_type"),#loại giảm giá
-            amount = request.POST.get("amount"),
-            percent = request.POST.get("percent"),
-            minimum_order_value=request.POST.get("minimum_order_value"),
-            type_voucher="Offer",
-            code_number=request.POST.get("code_number")
-        )
-        data={'a':list_item_main,'page_range':obj_paginator.num_pages,'page_no':page_no }
+
+
+class NewShopAwardAPI(APIView):
+    def post(self,request):
+        shop=Shop.objects.get(user=request.user)
+        valid_from=request.data.get("valid_from")
+        valid_to=request.data.get("valid_to")
+        action=request.data.get("action")
+        shop_awards=Shop_award.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
+        data={}
+        if shop_awards.exists():
+            data.update({'error':True})
+        else:
+            data.update({'suscess':True})
+            if action=='submit':
+                list_award=request.data.get('list_award')
+                shop_award=Shop_award.objects.create(
+                    shop=shop,
+                    game_name=request.data.get("game_name"),
+                    valid_from=valid_from,
+                    valid_to=valid_to
+                )
+                Award.objects.bulk_create([Award(
+                minimum_order_value=award['minimum_order_value'],
+                maximum_discount=award['maximum_discount'] if award['maximum_discount']!='' else 0,
+                quantity=award['quantity'],
+                shop_award=shop_award,
+                amount=award['amount'] if award['amount']!='' else 0,
+                percent=award['percent'] if award['percent']!='' else 0,
+                discount_type=award['discount_type'],
+                type_award=award['type_award'],
+                type_voucher='Offer') for award in list_award])
+            
+        return Response(data)
+
+class DetailShopAwardAPI(APIView):
+    def post(self,request,id):
+        shop=Shop.objects.get(user=request.user)
+        shop_award=Shop_award.objects.get(id=id)
+        valid_from=request.data.get("valid_from")
+        valid_to=request.data.get("valid_to")
+        action=request.data.get("action")
+        shop_awards=Shop_award.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
+        data={}
+        if shop_awards.exists():
+            data.update({'error':True})
+        else:
+            data.update({'suscess':True})
+            if action=='submit':
+                list_award=request.data.get('list_award')
+                list_award_update=[award for award in list_award if award['id']]
+                list_awards=[]
+                for award in list_award_update:
+                    award_update=Award.objects.get(id=award['id'])
+                    if award_update.minimum_order_value!=award['minimum_order_value']:
+                        award_update.minimum_order_value=award['minimum_order_value']
+                    if award_update.maximum_discount!=award['maximum_discount']:
+                        award_update.maximum_discount=award['maximum_discount']
+                    if award_update.quantity!=quantity['quantity']:
+                        award_update.quantity=award['quantity']
+                    if award_update.amount!=quantity['amount']:
+                        award_update.amount=award['amount']
+                    if award_update.percent!=quantity['percent']:
+                        award_update.percent=award['percent']
+                    if award_update.discount_type!=quantity['discount_type']:
+                        award_update.discount_type=award['discount_type']
+                    list_awards.append(award_update)
+                
+                shop_award.game_name=request.data.get("game_name")
+                shop_award.valid_from=valid_from
+                shop_award.valid_to=valid_to
+                shop_award.save()
+                Award.objects.bulk_create([Award(
+                minimum_order_value=award['minimum_order_value'],
+                maximum_discount=award['maximum_discount'],
+                quantity=award['quantity'],
+                amount=award['amount'] if award['amount']!='' else 0,
+                percent=award['percent'] if award['percent']!='' else 0,
+                discount_type=award['discount_type'],
+                type_award=award['type_award'],
+                type_voucher='Offer') for award in list_award if award['id']==None])
+                Award.objects.bulk_update(award_update, ['minimum_order_value','maximum_discount',
+                    'quantity','amount','percent','discount_type'], batch_size=1000)
+        return Response(data)
+    def get(self,request,id):
+        shop_award=Shop_award.objects.get(id=id)
+        return Response(ShopAwardDetailSerializer(shop_award).data)
+
+class NewFollowOffer(APIView):
+    def post(self,request):
+        shop=Shop.objects.get(user=request.user)
+        valid_from=request.data.get("valid_from")
+        valid_to=request.data.get("valid_to")
+        action=request.data.get("action")
+        follower_offers=Follower_offer.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
+        data={}
+        if follower_offers.exists():
+            data.update({'error':True})
+        else:
+            data.update({'suscess':True})
+            if action=='submit':
+                offer_follow=Follower_offer.objects.create(
+                shop=shop,
+                offer_name=request.data.get('offer_name'),
+                valid_from=valid_from,
+                valid_to=valid_to,
+                discount_type=request.data.get('discount_type'),
+                amount = request.data.get('amount'),
+                percent = request.data.get('percent'),
+                maximum_usage=request.data.get('maximum_usage'),
+                type_offer="Voucher",
+                voucher_type=request.data.get('voucher_type'),
+                maximum_discount=request.data.get('maximum_discount'),
+                minimum_order_value=request.data.get('minimum_order_value'),
+            )
+        return Response(data)
+
+class DetailFollowOffer(APIView):
+    def get(self,request,id):
+        offer_follow=Follower_offer.objects.get(id=id)
+        return Response(FollowOfferDetailSerializer(offer_follow).data)
+    def post(self,request,id):
+        shop=Shop.objects.get(user=request.user)
+        offer_follow=Follower_offer.objects.get(id=id)
+        valid_from=request.data.get("valid_from")
+        valid_to=request.data.get("valid_to")
+        action=request.data.get("action")
+        follower_offers=Follower_offer.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
+        data={}
+        if follower_offers.exists():
+            data.update({'error':True})
+        else:
+            data.update({'suscess':True})
+            if action=='submit':
+                offer_follow.offer_name=request.data.get('offer_name')
+                offer_follow.valid_from=valid_from
+                offer_follow.valid_to=valid_to
+                offer_follow.discount_type=request.data.get('discount_type')
+                offer_follow.amount = request.data.get('amount')
+                offer_follow.percent = request.data.get('percent')
+                offer_follow.maximum_usage=request.data.get('maximum_usage')
+                offer_follow.maximum_discount=request.data.get('maximum_discount')
+                offer_follow.minimum_order_value=request.data.get('minimum_order_value')
+                offer_follow.save()
+
         return Response(data)
     
-@api_view(['GET', 'POST'])
-def follower_offer(request):
-    shop=Shop.objects.get(user=user)
-    if request.method=="POST":
-        offer_follow,created=Follower_offer.objects.get_or_create(
-            shop=shop,
-            name_offer=request.POST.get('offer_name'),
-            valid_from=request.POST.get('valid_from'),
-            valid_to=request.POST.get('valid_to'),
-            discount_type=request.POST.get('discount_type'),
-            amount = request.POST.get('amount'),
-            percent = request.POST.get('percent'),
-            maximum_usage=request.POST.get('maximum_usage'),
-            type_offer="Voucher",
-            voucher_type=request.POST.get('voucher_type'),
-            maximum_discount=request.POST.get('maximum_discount'),
-            minimum_order_value=request.POST.get('minimum_order_value'),
-            max_price=request.POST.get('max-discount-price'),
-        )
-
-        data={'a':'a' }
-        return Response(data)
-
 class NewcomboAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
@@ -1070,7 +1213,7 @@ def shipping(request):
     user=request.user
     shop=Shop.objects.get(user=user)
     if request.method=="POST":
-        id=request.POST.get('id')
+        id=request.data.get('id')
         shipping=Shipping.objects.get(id=id)
         if shipping in shop.shipping.all():
             shop.shipping.add(shipping)
@@ -1098,11 +1241,11 @@ def update_image(request):
     user=request.user
     shop=Shop.objects.get(user=user)
     if request.method=="POST":
-        id=request.POST.get('id')
-        delete=request.POST.get('delete')
+        id=request.data.get('id')
+        delete=request.data.get('delete')
         file=request.FILES.get('file')
         image_preview=request.FILES.get('file_preview')
-        duration=request.POST.get('duration')
+        duration=request.data.get('duration')
         if id and delete:
             UploadItem.objects.get(id=id).delete()
             data={'ob':'b'}
@@ -1134,22 +1277,22 @@ def add_item(request):
         user=request.user
         shop=Shop.objects.get(user=user)
         #item
-        category_id=request.POST.get('category_id')
+        category_id=request.data.get('category_id')
         from_quantity=request.POST.getlist('from_quantity')
         to_quantity=request.POST.getlist('to_quantity')
         price_range=request.POST.getlist('price_range')
        
-        name=request.POST.get('name')
-        description = request.POST.get('description')
+        name=request.data.get('name')
+        description = request.data.get('description')
         item = Item.objects.create(shop = shop,name = name,category_id=category_id,description=description)
         item.slug=re.sub('[,./\&]', "-",name) +  str(item.id)
         file_id=request.POST.getlist('file_id')
         file_id_remove=request.POST.getlist('file_id_remove')
-        item.brand= request.POST.get('brand')
-        item.weight=request.POST.get('weight')
-        item.height=request.POST.get('height')
-        item.length=request.POST.get('length')
-        item.width=request.POST.get('width')
+        item.brand= request.data.get('brand')
+        item.weight=request.data.get('weight')
+        item.height=request.data.get('height')
+        item.length=request.data.get('length')
+        item.width=request.data.get('width')
         item.save()
         BuyMoreDiscount.objects.bulk_create([
             BuyMoreDiscount(
@@ -1161,7 +1304,7 @@ def add_item(request):
             for i in range(len(from_quantity))
         ])
 
-        shipping_method=request.POST.get('method')
+        shipping_method=request.data.get('method')
         shipping=Shipping.objects.filter(method=shipping_method)
         list_upload=UploadItem.objects.filter(id__in=file_id)
         UploadItem.objects.filter(id__in=file_id_remove).delete()
@@ -1169,100 +1312,100 @@ def add_item(request):
         item.shipping_choice.add(*shipping)
         detail_item=Detail_Item.objects.create(item=item)
         # clotes,jeans,pants,
-        detail_item.brand_clothes=request.POST.get('brand_clothes')#skirt,dress
-        detail_item.material=request.POST.get('material_clothes')#skirt
-        detail_item.pants_length=request.POST.get('pants_length')#,dress
-        detail_item.style=request.POST.get('style')#skirt,dress
-        detail_item.sample=request.POST.get('sample')#skirt,dress
-        detail_item.origin=request.POST.get('origin')#skirt,dress
-        detail_item.pants_style=request.POST.get('pants_style')
+        detail_item.brand_clothes=request.data.get('brand_clothes')#skirt,dress
+        detail_item.material=request.data.get('material_clothes')#skirt
+        detail_item.pants_length=request.data.get('pants_length')#,dress
+        detail_item.style=request.data.get('style')#skirt,dress
+        detail_item.sample=request.data.get('sample')#skirt,dress
+        detail_item.origin=request.data.get('origin')#skirt,dress
+        detail_item.pants_style=request.data.get('pants_style')
         
-        detail_item.petite=request.POST.get('CHOICE_YES_NO')#skirt,dress
-        detail_item.season=request.POST.get('season')#skirt,dress
-        detail_item.waist_version=request.POST.get('waist_version')#skirt,dress
-        detail_item.very_big=request.POST.get('CHOICE_YES_NO')#skirt,dress
+        detail_item.petite=request.data.get('CHOICE_YES_NO')#skirt,dress
+        detail_item.season=request.data.get('season')#skirt,dress
+        detail_item.waist_version=request.data.get('waist_version')#skirt,dress
+        detail_item.very_big=request.data.get('CHOICE_YES_NO')#skirt,dress
         #skirt
-        detail_item.skirt_length=request.POST.get('skirt_length')#dress,
-        detail_item.occasion=request.POST.get('clothes_occasion')#dress
-        detail_item.dress_style=request.POST.get('dress_style')#dress
+        detail_item.skirt_length=request.data.get('skirt_length')#dress,
+        detail_item.occasion=request.data.get('clothes_occasion')#dress
+        detail_item.dress_style=request.data.get('dress_style')#dress
         #dress
-        detail_item.collar=request.POST.get('clothes_collar')
-        detail_item.sleeve_lenght=request.POST.get('sleeve_lenght')#T-shirt
+        detail_item.collar=request.data.get('clothes_collar')
+        detail_item.sleeve_lenght=request.data.get('sleeve_lenght')#T-shirt
         #Tanks & Camisoles
-        detail_item.cropped_top=request.POST.get('CHOICE_YES_NO')
-        detail_item.shirt_length=request.POST.get('shirt_length')
+        detail_item.cropped_top=request.data.get('CHOICE_YES_NO')
+        detail_item.shirt_length=request.data.get('shirt_length')
         #jean men
-        detail_item.tallfit=request.POST.get('CHOICE_YES_NO')
+        detail_item.tallfit=request.data.get('CHOICE_YES_NO')
         #woman
         #beaty
-        detail_item.brand_beaty=request.POST.get('brand_beaty')
-        detail_item.packing_type=request.POST.get('packing_tyle')
-        detail_item.formula=request.POST.get('formula')
-        detail_item.expiry=request.POST.get('expiry')
-        detail_item.body_care=request.POST.get('body_care')
-        detail_item.active_ingredients=request.POST.get('active_ingredients')
-        detail_item.type_of_nutrition=request.POST.get('type_of_nutrition')
-        detail_item.volume=request.POST.get('volume')
-        detail_item.weight=request.POST.get('weight')
+        detail_item.brand_beaty=request.data.get('brand_beaty')
+        detail_item.packing_type=request.data.get('packing_tyle')
+        detail_item.formula=request.data.get('formula')
+        detail_item.expiry=request.data.get('expiry')
+        detail_item.body_care=request.data.get('body_care')
+        detail_item.active_ingredients=request.data.get('active_ingredients')
+        detail_item.type_of_nutrition=request.data.get('type_of_nutrition')
+        detail_item.volume=request.data.get('volume')
+        detail_item.weight=request.data.get('weight')
         #mobile
-        detail_item.brand_mobile_gadgets=request.POST.get('brand_mobile_gadgets')
-        detail_item.sim=request.POST.get('type_of_sim')
-        detail_item.warranty_period=request.POST.get('warranty_period')
-        detail_item.ram=request.POST.get('ram')
-        detail_item.memory=request.POST.get('memory')
-        detail_item.status=request.POST.get('Status')
-        detail_item.warranty_type=request.POST.get('warranty_type')
-        detail_item.processor=request.POST.get('processor')
-        detail_item.screen=request.POST.get('screen')
-        detail_item.phone_features=request.POST.get('phone_features')
-        detail_item.operating_system=request.POST.get('operating_system')
-        detail_item.telephone_cables=request.POST.get('telephone_cables')
-        detail_item.main_camera=request.POST.get('main_camera')
-        detail_item.camera_selfie=request.POST.get('camera_selfie')
-        detail_item.number_of_sim_slots=request.POST.get('number_of_sim_slots'),
-        detail_item.mobile_phone=request.POST.get('mobile_phone')
-        detail_item.main_camera_number=request.POST.get('main_camera_number')
+        detail_item.brand_mobile_gadgets=request.data.get('brand_mobile_gadgets')
+        detail_item.sim=request.data.get('type_of_sim')
+        detail_item.warranty_period=request.data.get('warranty_period')
+        detail_item.ram=request.data.get('ram')
+        detail_item.memory=request.data.get('memory')
+        detail_item.status=request.data.get('Status')
+        detail_item.warranty_type=request.data.get('warranty_type')
+        detail_item.processor=request.data.get('processor')
+        detail_item.screen=request.data.get('screen')
+        detail_item.phone_features=request.data.get('phone_features')
+        detail_item.operating_system=request.data.get('operating_system')
+        detail_item.telephone_cables=request.data.get('telephone_cables')
+        detail_item.main_camera=request.data.get('main_camera')
+        detail_item.camera_selfie=request.data.get('camera_selfie')
+        detail_item.number_of_sim_slots=request.data.get('number_of_sim_slots'),
+        detail_item.mobile_phone=request.data.get('mobile_phone')
+        detail_item.main_camera_number=request.data.get('main_camera_number')
         #shoes mem
-        detail_item.shoe_brand=request.POST.get('shoe_brand')
-        detail_item.shoe_material=request.POST.get('shoe_material')
-        detail_item.shoe_buckle_type=request.POST.get('shoe_buckle_type')
-        detail_item.leather_outside=request.POST.get('leather_outside')
-        detail_item.marker_style=request.POST.get('marker_style')
-        detail_item.high_heel=request.POST.get('high_heel')
-        detail_item.shoe_occasion=request.POST.get('shoe_occasion')
-        detail_item.shoe_leather_type=request.POST.get('shoe_leather_type')
-        shoe_collar_height=request.POST.get('shoe_collar_height')
-        suitable_width=request.POST.get('CHOICE_YES_NO')
+        detail_item.shoe_brand=request.data.get('shoe_brand')
+        detail_item.shoe_material=request.data.get('shoe_material')
+        detail_item.shoe_buckle_type=request.data.get('shoe_buckle_type')
+        detail_item.leather_outside=request.data.get('leather_outside')
+        detail_item.marker_style=request.data.get('marker_style')
+        detail_item.high_heel=request.data.get('high_heel')
+        detail_item.shoe_occasion=request.data.get('shoe_occasion')
+        detail_item.shoe_leather_type=request.data.get('shoe_leather_type')
+        shoe_collar_height=request.data.get('shoe_collar_height')
+        suitable_width=request.data.get('CHOICE_YES_NO')
 
         #accessories
-        detail_item.occasion_accessories=request.POST.get('occasion_accessories')
-        detail_item.style_accessories=request.POST.get('style_accessories')
+        detail_item.occasion_accessories=request.data.get('occasion_accessories')
+        detail_item.style_accessories=request.data.get('style_accessories')
         #ring
-        detail_item.accessory_set=request.POST.get('accessory_set')#
+        detail_item.accessory_set=request.data.get('accessory_set')#
         
         #Household electrical appliances
-        detail_item.brand_electrical=request.POST.get('brand_electrical')
-        detail_item.receiver_type=request.POST.get('receiver_type')#
+        detail_item.brand_electrical=request.data.get('brand_electrical')
+        detail_item.receiver_type=request.data.get('receiver_type')#
 
         #Travel & Luggage
-        detail_item.brand_luggage=request.POST.get('brand_luggage')
-        detail_item.material_luggage=request.POST.get('material_luggage')
-        detail_item.waterproof=request.POST.get('CHOICE_YES_NO')
-        detail_item.feature_folding_bag=request.POST.get('feature_folding_bag')
+        detail_item.brand_luggage=request.data.get('brand_luggage')
+        detail_item.material_luggage=request.data.get('material_luggage')
+        detail_item.waterproof=request.data.get('CHOICE_YES_NO')
+        detail_item.feature_folding_bag=request.data.get('feature_folding_bag')
         #Computers & Laptops 
         #Desktop computer
-        detail_item.storage_type=request.POST.get('storage_type')
-        detail_item.optical_drive=request.POST.get('CHOICE_YES_NO')
-        detail_item.port_interface=request.POST.get('port_interface')
-        detail_item.processor_laptop=request.POST.get('processor_laptop')
-        detail_item.number_of_cores=request.POST.get('number_of_cores')
-        detail_item.dedicated_games=request.POST.get('CHOICE_YES_NO')
+        detail_item.storage_type=request.data.get('storage_type')
+        detail_item.optical_drive=request.data.get('CHOICE_YES_NO')
+        detail_item.port_interface=request.data.get('port_interface')
+        detail_item.processor_laptop=request.data.get('processor_laptop')
+        detail_item.number_of_cores=request.data.get('number_of_cores')
+        detail_item.dedicated_games=request.data.get('CHOICE_YES_NO')
         detail_item.save()
         #size
         size_value=request.POST.getlist('size_value')
         size=Size.objects.bulk_create([
             Size(
-                name=request.POST.get('size_name'),
+                name=request.data.get('size_name'),
                 value=size_value[i])
             for i in range(len(size_value))
         ]
@@ -1279,7 +1422,7 @@ def add_item(request):
                     none_color[j]=color_image[i]       
         color=Color.objects.bulk_create([
             Color(
-            name=request.POST.get('color_name'),
+            name=request.data.get('color_name'),
             value=color_value[i],
             image=none_color[i])
             for i in range(len(color_value)) 
@@ -1349,28 +1492,28 @@ def update_item(request,id):
             for i in range(len(from_quantity))
         ])
         
-        name=request.POST.get('name')
-        description = request.POST.get('description')
+        name=request.data.get('name')
+        description = request.data.get('description')
         item.slug=name + '.' + str(item.id)
         file_id=request.POST.getlist('file_id')
         file_id_remove=request.POST.getlist('file_id_remove')
-        item.brand= request.POST.get('brand')
-        item.weight=request.POST.get('weight')
-        item.height=request.POST.get('height')
-        item.length=request.POST.get('length')
-        item.width=request.POST.get('width')
+        item.brand= request.data.get('brand')
+        item.weight=request.data.get('weight')
+        item.height=request.data.get('height')
+        item.length=request.data.get('length')
+        item.width=request.data.get('width')
         from_quantity=request.POST.getlist('from_quantity')
         to_quantity=request.POST.getlist('to_quantity')
         price_range=request.POST.getlist('price_range')
         buy_more_id=request.POST.getlist('buy_more_id')
         # item 
         shipping_method=request.POST.getlist('method')
-        item.brand= request.POST.get('brand')
+        item.brand= request.data.get('brand')
         item.video=request.FILES.get('video')
-        item.weight=request.POST.get('weigth')
-        item.height=request.POST.get('height')
-        item.length=request.POST.get('length')
-        item.width=request.POST.get('width')
+        item.weight=request.data.get('weigth')
+        item.height=request.data.get('height')
+        item.length=request.data.get('length')
+        item.width=request.data.get('width')
         
         #buy more
         
@@ -1383,102 +1526,102 @@ def update_item(request,id):
         #detail item
         # clotes,jeans,pants,
         detail_item=Detail_Item.objects.get(item_id=item_id)
-        detail_item.brand_clothes=request.POST.get('brand_clothes')#skirt,dress
-        detail_item.material=request.POST.get('material_clothes')#skirt
-        detail_item.pants_length=request.POST.get('pants_length')#,dress
-        detail_item.style=request.POST.get('style')#skirt,dress
-        detail_item.sample=request.POST.get('sample')#skirt,dress
-        detail_item.origin=request.POST.get('origin')#skirt,dress
-        detail_item.pants_style=request.POST.get('pants_style')
+        detail_item.brand_clothes=request.data.get('brand_clothes')#skirt,dress
+        detail_item.material=request.data.get('material_clothes')#skirt
+        detail_item.pants_length=request.data.get('pants_length')#,dress
+        detail_item.style=request.data.get('style')#skirt,dress
+        detail_item.sample=request.data.get('sample')#skirt,dress
+        detail_item.origin=request.data.get('origin')#skirt,dress
+        detail_item.pants_style=request.data.get('pants_style')
         
-        detail_item.petite=request.POST.get('CHOICE_YES_NO')#skirt,dress
-        detail_item.season=request.POST.get('season')#skirt,dress
-        detail_item.waist_version=request.POST.get('waist_version')#skirt,dress
-        detail_item.very_big=request.POST.get('CHOICE_YES_NO')#skirt,dress
+        detail_item.petite=request.data.get('CHOICE_YES_NO')#skirt,dress
+        detail_item.season=request.data.get('season')#skirt,dress
+        detail_item.waist_version=request.data.get('waist_version')#skirt,dress
+        detail_item.very_big=request.data.get('CHOICE_YES_NO')#skirt,dress
         #skirt
-        detail_item.skirt_length=request.POST.get('skirt_length')#dress,
-        detail_item.occasion=request.POST.get('clothes_occasion')#dress
-        detail_item.dress_style=request.POST.get('dress_style')#dress
+        detail_item.skirt_length=request.data.get('skirt_length')#dress,
+        detail_item.occasion=request.data.get('clothes_occasion')#dress
+        detail_item.dress_style=request.data.get('dress_style')#dress
         #dress
-        detail_item.clothes_collar=request.POST.get('clothes_collar')
-        detail_item.sleeve_lenght=request.POST.get('sleeve_lenght')#T-shirt
+        detail_item.clothes_collar=request.data.get('clothes_collar')
+        detail_item.sleeve_lenght=request.data.get('sleeve_lenght')#T-shirt
         #Tanks & Camisoles
-        detail_item.cropped_top=request.POST.get('CHOICE_YES_NO')
-        detail_item.shirt_length=request.POST.get('shirt_length')
+        detail_item.cropped_top=request.data.get('CHOICE_YES_NO')
+        detail_item.shirt_length=request.data.get('shirt_length')
         #jean men
-        detail_item.tallfit=request.POST.get('CHOICE_YES_NO')
+        detail_item.tallfit=request.data.get('CHOICE_YES_NO')
         #woman
-        detail_item.pants_style=request.POST.get('pants_style_women')
+        detail_item.pants_style=request.data.get('pants_style_women')
         #beaty
-        detail_item.brand_beaty=request.POST.get('brand_beaty')
-        detail_item.packing_type=request.POST.get('packing_tyle')
-        detail_item.formula=request.POST.get('formula')
-        detail_item.expiry=request.POST.get('expiry')
-        detail_item.body_care=request.POST.get('body_care')
-        detail_item.active_ingredients=request.POST.get('active_ingredients')
-        detail_item.type_of_nutrition=request.POST.get('type_of_nutrition')
-        detail_item.volume=request.POST.get('volume')
-        detail_item.weight=request.POST.get('weight')
+        detail_item.brand_beaty=request.data.get('brand_beaty')
+        detail_item.packing_type=request.data.get('packing_tyle')
+        detail_item.formula=request.data.get('formula')
+        detail_item.expiry=request.data.get('expiry')
+        detail_item.body_care=request.data.get('body_care')
+        detail_item.active_ingredients=request.data.get('active_ingredients')
+        detail_item.type_of_nutrition=request.data.get('type_of_nutrition')
+        detail_item.volume=request.data.get('volume')
+        detail_item.weight=request.data.get('weight')
         #mobile
-        detail_item.brand_mobile_gadgets=request.POST.get('brand_mobile_gadgets')
-        detail_item.sim=request.POST.get('type_of_sim')
-        detail_item.warranty_period=request.POST.get('warranty_period')
-        detail_item.ram=request.POST.get('ram')
-        detail_item.memory=request.POST.get('memory')
-        detail_item.status=request.POST.get('Status')
-        detail_item.warranty_type=request.POST.get('warranty_type')
-        detail_item.processor=request.POST.get('processor')
-        detail_item.screen=request.POST.get('screen')
-        detail_item.phone_features=request.POST.get('phone_features')
-        detail_item.operating_system=request.POST.get('operating_system')
-        detail_item.telephone_cables=request.POST.get('telephone_cables')
-        detail_item.main_camera=request.POST.get('main_camera')
-        detail_item.camera_selfie=request.POST.get('camera_selfie')
-        detail_item.number_of_sim_slots=request.POST.get('number_of_sim_slots')
-        detail_item.mobile_phone=request.POST.get('mobile_phone')
-        detail_item.main_camera_number=request.POST.get('main_camera_number')
+        detail_item.brand_mobile_gadgets=request.data.get('brand_mobile_gadgets')
+        detail_item.sim=request.data.get('type_of_sim')
+        detail_item.warranty_period=request.data.get('warranty_period')
+        detail_item.ram=request.data.get('ram')
+        detail_item.memory=request.data.get('memory')
+        detail_item.status=request.data.get('Status')
+        detail_item.warranty_type=request.data.get('warranty_type')
+        detail_item.processor=request.data.get('processor')
+        detail_item.screen=request.data.get('screen')
+        detail_item.phone_features=request.data.get('phone_features')
+        detail_item.operating_system=request.data.get('operating_system')
+        detail_item.telephone_cables=request.data.get('telephone_cables')
+        detail_item.main_camera=request.data.get('main_camera')
+        detail_item.camera_selfie=request.data.get('camera_selfie')
+        detail_item.number_of_sim_slots=request.data.get('number_of_sim_slots')
+        detail_item.mobile_phone=request.data.get('mobile_phone')
+        detail_item.main_camera_number=request.data.get('main_camera_number')
         #shoes mem
-        detail_item.shoe_brand=request.POST.get('shoe_brand')
-        detail_item.shoe_material=request.POST.get('shoe_material')
-        detail_item.shoe_buckle_type=request.POST.get('shoe_buckle_type')
-        detail_item.leather_outside=request.POST.get('leather_outside')
-        detail_item.marker_style=request.POST.get('marker_style')
-        detail_item.high_heel=request.POST.get('high_heel')
-        detail_item.shoe_occasion=request.POST.get('shoe_occasion')
-        detail_item.shoe_leather_type=request.POST.get('shoe_leather_type')
-        detail_item.shoe_collar_height=request.POST.get('shoe_collar_height')
-        detail_item.suitable_width=request.POST.get('CHOICE_YES_NO')
+        detail_item.shoe_brand=request.data.get('shoe_brand')
+        detail_item.shoe_material=request.data.get('shoe_material')
+        detail_item.shoe_buckle_type=request.data.get('shoe_buckle_type')
+        detail_item.leather_outside=request.data.get('leather_outside')
+        detail_item.marker_style=request.data.get('marker_style')
+        detail_item.high_heel=request.data.get('high_heel')
+        detail_item.shoe_occasion=request.data.get('shoe_occasion')
+        detail_item.shoe_leather_type=request.data.get('shoe_leather_type')
+        detail_item.shoe_collar_height=request.data.get('shoe_collar_height')
+        detail_item.suitable_width=request.data.get('CHOICE_YES_NO')
 
         #accessories
-        detail_item.occasion_accessories=request.POST.get('occasion_accessories')
-        detail_item.style_accessories=request.POST.get('style_accessories')
+        detail_item.occasion_accessories=request.data.get('occasion_accessories')
+        detail_item.style_accessories=request.data.get('style_accessories')
         #ring
-        detail_item.accessory_set=request.POST.get('accessory_set')
+        detail_item.accessory_set=request.data.get('accessory_set')
         
         #Household electrical appliances
-        detail_item.brand_electrical=request.POST.get('brand_electrical')
-        detail_item.receiver_type=request.POST.get('receiver_type')
+        detail_item.brand_electrical=request.data.get('brand_electrical')
+        detail_item.receiver_type=request.data.get('receiver_type')
 
         #Travel & Luggage
-        detail_item.brand_luggage=request.POST.get('brand_luggage')
-        detail_item.material_luggage=request.POST.get('material_luggage')
-        detail_item.waterproof=request.POST.get('CHOICE_YES_NO')
-        detail_item.feature_folding_bag=request.POST.get('feature_folding_bag')
+        detail_item.brand_luggage=request.data.get('brand_luggage')
+        detail_item.material_luggage=request.data.get('material_luggage')
+        detail_item.waterproof=request.data.get('CHOICE_YES_NO')
+        detail_item.feature_folding_bag=request.data.get('feature_folding_bag')
         #Computers & Laptops 
         #Desktop computer
-        detail_item.storage_type=request.POST.get('storage_type')
-        detail_item.optical_drive=request.POST.get('CHOICE_YES_NO')
-        detail_item.port_interface=request.POST.get('port_interface')
-        detail_item.processor_laptop=request.POST.get('processor_laptop')
-        detail_item.number_of_cores=request.POST.get('number_of_cores')
-        detail_item.dedicated_games=request.POST.get('CHOICE_YES_NO')
+        detail_item.storage_type=request.data.get('storage_type')
+        detail_item.optical_drive=request.data.get('CHOICE_YES_NO')
+        detail_item.port_interface=request.data.get('port_interface')
+        detail_item.processor_laptop=request.data.get('processor_laptop')
+        detail_item.number_of_cores=request.data.get('number_of_cores')
+        detail_item.dedicated_games=request.data.get('CHOICE_YES_NO')
         detail_item.save()
         #size
         Variation.objects.filter(item=item).delete()
         size_value=request.POST.getlist('size_value')
         size=Size.objects.bulk_create([
             Size(
-                name=request.POST.get('size_name'),
+                name=request.data.get('size_name'),
                 value=size_value[i])
             for i in range(len(size_value))
         ])
@@ -1494,7 +1637,7 @@ def update_item(request,id):
 
         color=Color.objects.bulk_create([
             Color(
-            name=request.POST.get('color_name'),
+            name=request.data.get('color_name'),
             value=color_value[i],
             image=none_color[i])
             for i in range(len(color_value)) 
@@ -1578,9 +1721,9 @@ def create_shop(request):
         profile.user_type="S"
         profile.save()
         shop=Shop.objects.get(user=user)
-        name=request.POST.get('name')
+        name=request.data.get('name')
         shop.name =name
-        shop.city = request.POST.get('city')
+        shop.city = request.data.get('city')
         shop.slug=name.replace(' ','')
         shop.save()
         data={'ok':'ok'}

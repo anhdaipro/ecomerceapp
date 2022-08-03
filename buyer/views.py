@@ -17,7 +17,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
-
+from django.db.models.functions import Coalesce
 from rest_framework.generics import (
     ListAPIView, RetrieveAPIView,GenericAPIView,
 )
@@ -561,11 +561,12 @@ class ProductInfoAPI(APIView):
         like_item=True
         data={}
         item=Item.objects.get(id=id)
-        if user in item.liked.all():
-            item.liked.remove(user)
+        liker=Liker.objects.filter(item_id=id,user=request.user)
+        if liker.exists():
+            liker.delete()
             like_item=False
         else:
-            item.liked.add(user) 
+            Liker.objects.create(item_id=id,user=request.user)
         data.update({'num_like_item':item.num_like(),'like_item':like_item})  
         return Response(data)
 

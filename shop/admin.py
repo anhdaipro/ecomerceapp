@@ -11,7 +11,7 @@ class ItemAdmin(admin.ModelAdmin):
             i.slug=re.sub('[,./\ & ]', "-",i.name) + '.' + str(i.id)
             i.save()
 class VariationAdmin(admin.ModelAdmin):
-    list_display = ['id','color','size','price','percent_discount','percent_discount_deal_shock','inventory','percent_discount_flash_sale']
+    list_display = ['id','color','size','price','inventory']
 class CommentAdmin(admin.ModelAdmin):
     list_display=['user','comment','parent']
 class ShopviewAdmin(admin.ModelAdmin):

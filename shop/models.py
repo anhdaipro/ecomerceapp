@@ -36,7 +36,6 @@ class Shop(models.Model):
     create_at=models.DateTimeField(auto_now=True)
     shipping=models.ManyToManyField(to="shipping.Shipping",blank=True)
     shop_type=models.CharField(max_length=25,choices=shop_type,null=True)
-    followers = models.ManyToManyField(User, blank=True, related_name='followers')
     views=models.IntegerField(default=0)
     slug=models.SlugField(null=True)
     description_url=models.ManyToManyField(Image_home,blank=True)
@@ -99,8 +98,6 @@ class Item(models.Model):
     media_upload=models.ManyToManyField(UploadItem,blank=True)
     shipping_choice=models.ManyToManyField(to="shipping.Shipping",blank=True,related_name='shipping_choice')
     description=models.TextField(max_length=3000)
-    quantity_limit=models.IntegerField(null=True)#shop_program
-    quantity_limit_flash_sale=models.IntegerField(null=True)
     sku_product=models.CharField(max_length=20,null=True)
     status=models.CharField(max_length=20,choices=status_choice,default='1')
     pre_order=models.CharField(max_length=20,null=True)
@@ -113,7 +110,6 @@ class Item(models.Model):
     views=models.IntegerField(default=0)
     slug=models.CharField(max_length=150)
     created=models.DateTimeField(auto_now=True)
-    liked=models.ManyToManyField(User,blank=True)
     def __str__(self):
         return str(self.name)
     def save(self, *args, **kwargs):
@@ -171,7 +167,7 @@ class Item(models.Model):
         return list_size
     
     def num_like(self):
-        return self.liked.all().count()
+        return self.item_likers.all().count()
     def avg_price(self):
         variations=Variation.objects.filter(item=self).aggregate(avg=Avg('price'))
         return variations['avg']
@@ -315,7 +311,12 @@ class Item(models.Model):
     def get_image_cover(self):
         media_file=[media for media in self.media_upload.all() if media.media_type()=='image'][0].get_media()    
         return media_file
-    
+
+class Liker(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE,related_name='item_likers')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    create_at=models.DateTimeField(auto_now=True)
+
 class BuyMoreDiscount(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE,related_name='buymore_item')
     from_quantity=models.IntegerField()
@@ -368,14 +369,8 @@ class Variation(models.Model):
     size=models.ForeignKey(Size, on_delete=models.CASCADE,null=True,blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
     price=models.IntegerField()
-    number_of_promotional_products=models.IntegerField(default=0)#shop_program
-    percent_discount=models.IntegerField(default=0,null=True)#shop_program
     inventory=models.IntegerField()
     sku_classify=models.CharField(max_length=20,null=True)
-    limited_product_bundles=models.IntegerField(null=True)#Buy_with_shock_deal
-    percent_discount_deal_shock=models.IntegerField(null=True)#Buy_with_shock_deal
-    percent_discount_flash_sale=models.IntegerField(null=True)#flash_sale
-    quantity_flash_sale_products=models.IntegerField(null=True)#flash_sale
     view=models.IntegerField(default=0)
     def __str__(self):
         return str(self.item)

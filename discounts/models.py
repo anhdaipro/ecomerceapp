@@ -150,7 +150,6 @@ class Variationflashsale(models.Model):
 
 class Follower_offer(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
-    user=models.ManyToManyField(User,blank=True)
     offer_name=models.CharField(max_length=100)
     valid_from=models.DateTimeField()
     valid_to=models.DateTimeField()
@@ -159,9 +158,8 @@ class Follower_offer(models.Model):
     amount = models.FloatField(null=True,blank=True)
     percent = models.FloatField(null=True,blank=True)
     voucher_type=models.CharField(max_length=15,choices=voucher_type_choice)
-    maximum_discount=models.CharField(max_length=15,choices=maximum_discount_choice)
-    max_price=models.IntegerField(null=True)
-    minimum_order_value=models.IntegerField(null=True)
+    maximum_discount=models.FloatField(null=True)
+    minimum_order_value=models.FloatField(null=True,default=0)
     maximum_usage=models.IntegerField(null=True)
 
 class Shop_award(models.Model):
@@ -170,9 +168,26 @@ class Shop_award(models.Model):
     game_name=models.CharField(max_length=100)
     valid_from=models.DateTimeField()
     valid_to=models.DateTimeField()
+
+class Follower(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='follower')
+    shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
+    follow_offer=models.ForeignKey(Follower_offer,on_delete=models.CASCADE,related_name='follower_offder')
+    created=models.DateTimeField(auto_now=True)
+class Award(models.Model):
+    shop_award=models.ForeignKey(Shop_award,on_delete=models.CASCADE,related_name='award_shop_award')
+    minimum_order_value=models.FloatField()
     type_voucher=models.CharField(max_length=100,default='Offer')
-    discount_type=models.CharField(max_length=15,choices=type_offer_choice,null=True)
-    amount = models.FloatField(null=True,blank=True)
-    percent = models.FloatField(null=True,blank=True)
-    minimum_order_value=models.IntegerField(null=True)
-    code_number=models.IntegerField(default=1)
+    maximum_discount=models.FloatField(null=True)
+    quantity=models.IntegerField()
+    amount = models.FloatField(null=True,default=0)
+    percent = models.IntegerField(null=True,default=0)
+    discount_type=models.CharField(max_length=15,choices=type_offer_choice)
+    type_award=models.CharField(max_length=15)
+    type_voucher=models.CharField(max_length=15,default="Offer",null=True)
+
+class Gammer(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='gammer')
+    shop_award=models.ForeignKey(Shop_award,on_delete=models.CASCADE,related_name='shop_award')
+    award=models.ForeignKey(Award,on_delete=models.CASCADE,null=True)
+    created=models.DateTimeField(auto_now=True)

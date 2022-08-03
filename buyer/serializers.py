@@ -9,6 +9,11 @@ from itemdetail.models import *
 from django.contrib import auth
 from djoser.serializers import UserCreateSerializer
 from seller.serializers import *
+from django.db.models import FloatField,IntegerField
+from django.db.models import Max, Min, Count, Avg,Sum,F,Value as V
+from django.db.models import  Q
+from django.db.models.functions import Coalesce
+from django.db.models import Case, When
 import datetime
 from datetime import timedelta
 from django.contrib.auth.models import User
@@ -17,7 +22,6 @@ from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 class UserCreateSerializer(UserCreateSerializer):
     class Meta:
         model = User
@@ -117,6 +121,7 @@ class ImagehomeSerializer(serializers.ModelSerializer):
         fields=(
             'image',
             'url_field',
+            'id'
         )
     def get_image(self,obj):
         return obj.image.url
@@ -141,7 +146,7 @@ class CategorydetailSerializer(CategorySerializer):
         fields=CategorySerializer.Meta.fields+('image_home',)
     def get_image_home(self,obj):
         image_category=obj.image_category.all()
-        return [{'image':i.image.url,'url_field':i.url_field} for i in image_category]
+        return [{'id':i.id,'image':i.image.url,'url_field':i.url_field} for i in image_category]
 
 class IteminfoSerializer(serializers.ModelSerializer):
     image=serializers.SerializerMethodField()
@@ -488,6 +493,49 @@ class VouchersellerSerializer(VoucherinfoSerializer):
         fields=VoucherinfoSerializer.Meta.fields+['products','setting_display','name_of_the_discount_program']
     def get_products(self,obj):
         return ItemsellerSerializer(obj.products.all(),many=True).data
+
+class FollowOfferInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Follower_offer
+        fields=['id','valid_from','valid_to',
+        'amount','percent','minimum_order_value','maximum_discount']
+
+class FollowOfferSerializer(FollowOfferInfoSerializer): 
+    number_follower= serializers.SerializerMethodField()
+    class Meta(FollowOfferInfoSerializer.Meta):
+        fields=FollowOfferInfoSerializer.Meta.fields+['voucher_type','maximum_usage','offer_name','number_follower']
+    def get_number_follower(self,obj):
+        return Follower.objects.filter(follow_offer=obj).count()
+    
+
+class FollowOfferdetailSerializer(FollowOfferSerializer): 
+    exists=serializers.SerializerMethodField()
+    class Meta(FollowOfferSerializer.Meta):
+        fields=FollowOfferSerializer.Meta.fields+['discount_type','type_offer']
+
+class ShopAwardinfoSerializer(VoucherinfoSerializer):
+    class Meta:
+        model=Shop_award
+        fields=['id','valid_from','valid_to']
+class AwardSerializer(ShopAwardinfoSerializer):
+    class Meta:
+        model=Award
+        fields='__all__'
+class ShopAwardSerializer(ShopAwardinfoSerializer):
+    budget=serializers.SerializerMethodField()
+    class Meta(ShopAwardinfoSerializer.Meta):
+        fields=ShopAwardinfoSerializer.Meta.fields+['budget','game_name']
+    def get_budget(self,obj):
+        budgets=Award.objects.filter(shop_award=obj).aggregate(sum=Coalesce(Sum((F('quantity')*F('maximum_discount')),output_field=FloatField()),0.0))
+        return budgets['sum']
+class ShopAwardDetailSerializer(ShopAwardSerializer):
+    list_awards=serializers.SerializerMethodField()
+    class Meta(ShopAwardSerializer.Meta):
+        fields=ShopAwardSerializer.Meta.fields+['list_awards']
+    def get_list_awards(self,obj):
+        return AwardSerializer(obj.award_shop_award.all(),many=True).data
+
+
 class ShopPrograminfoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Shop_program
