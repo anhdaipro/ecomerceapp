@@ -328,7 +328,7 @@ class ItemdetailSerializer(ItemcomboSerializer):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         like=False
         if token:
-            if request.user in obj.liked.all():
+            if Liker.objects.filter(item=obj,user=request.user).exists():
                 like=True
         return like
     def get_user_id(self,obj):
@@ -692,7 +692,7 @@ class ShopdetailSerializer(ShopinfoSerializer):
         'num_followers','count_product','total_review','averge_review','follow','combo','deal')
     def get_count_followings(self,obj):
         request=self.context.get("request")
-        count_follow=Shop.objects.filter(followers=obj.user).count()
+        count_follow=Follower.objects.filter(user=obj.user).count
         return count_follow
     def get_follow(self,obj):
         request=self.context.get("request")

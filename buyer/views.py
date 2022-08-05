@@ -588,19 +588,19 @@ class ShopinfoAPI(APIView):
         return Response(data)
 
     def post(self, request, *args, **kwargs):
-        shop_name=request.POST.get('shop_name')
-        shop=Shop.objects.get(name=shop_name)
+        shop_id=request.data.get('shop_id')
+        shop=Shop.objects.get(id=shop_id)
         user=request.user
         follow=False
-        count_follow=Shop.objects.filter(followers=shop.user).count()
-        if user in shop.followers.all():
+        followers=Follower.objects.filter(user=request.user,shop=shop)
+        if followers.exists():
             follow=False
-            shop.followers.remove(user)
+            followers.delete()
         else:
             follow=True
-            shop.followers.add(user)
+            Follower.objects.create(user=request.user,shop=shop)
         data={'num_followers':shop.num_follow(),'follow':follow,'online':shop.user.profile.online,
-        'num_followers':shop.num_follow(),'count_followings': count_follow,
+        'num_followers':shop.num_follow(),
         'is_online':shop.user.profile.is_online,'count_product':shop.count_product(),
         'total_review':shop.total_review(),'averge_review':shop.averge_review()}
         return Response(data)
@@ -635,7 +635,7 @@ class Listitemhostsale(ListAPIView):
 @api_view(['GET', 'POST'])
 def save_voucher(request):
     if request.method=="POST":
-        voucher_id=request.POST.get('voucher_id')
+        voucher_id=request.data.get('voucher_id')
         Voucheruser.objects.get_or_create(user=request.user,voucher_id=voucher_id)
         data={'ok':'ok'}
         return Response(data)
@@ -1214,10 +1214,8 @@ class CheckoutAPIView(APIView):
                     'email_subject': 'Thanks order!'}
                 email = EmailMessage(
                 subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
-                email.send()
-                
+                email.send() 
             bulk_update(orders)
-
             data={'a':'a'}
             return Response(data)
 
