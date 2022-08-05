@@ -49,7 +49,7 @@ class Shop(models.Model):
     def get_absolute_url(self):
         return reverse("category", kwargs={"slug": self.slug})
     def num_follow(self):
-        return self.followers.all().count()
+        return Follower.objects.filter(shop=self).count()
     def count_product(self):
         return Item.objects.filter(shop=self).count()
     def total_review(self):
