@@ -81,6 +81,8 @@ class ListvoucherAPI(APIView):
         offset=request.GET.get('offset')
         start_day=request.GET.get('start_day')
         end_day=request.GET.get('end_day')
+        name=request.GET.get('name')
+        name=request.GET.get('name')
         shop=Shop.objects.get(user=request.user)
         vouchers=Voucher.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('products').prefetch_related('order_voucher')
         if start_day:
@@ -112,6 +114,15 @@ class ListcomboAPI(APIView):
         offset=request.GET.get('offset')
         shop=Shop.objects.get(user=request.user)
         promotions=Promotion_combo.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('products__media_upload')
+        option=request.GET.get('option')
+        keyword=request.GET.get('keyword')
+        if option:
+            if option=='2':
+                promotions=promotions.filter(products__name__istartswith=keyword)
+            elif option=='3':
+                promotions=promotions.filter(products__sku_product=keyword)
+            else:
+                promotions=promotions.filter(promotion_combo_name__istartswith=keyword)
         if choice:
             if choice=='current':
                 promotions=promotions.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
@@ -145,6 +156,15 @@ class ListdealshockAPI(APIView):
         offset=request.GET.get('offset')
         start_day=request.GET.get('start_day')
         end_day=request.GET.get('end_day')
+        option=request.GET.get('option')
+        keyword=request.GET.get('keyword')
+        if option:
+            if option=='2':
+                deal_shocks=deal_shocks.filter(main_products__name__istartswith=keyword)
+            elif option=='3':
+                deal_shocks=deal_shocks.filter(main_products__sku_product=keyword)
+            else:
+                deal_shocks=deal_shocks.filter(program_name_buy_with_shock_deal__istartswith=keyword)
         if start_day:
             deal_shocks=deal_shocks.filter(valid_from__gte=start_day)
         if end_day:
@@ -230,10 +250,19 @@ class ListprogramAPI(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ShopProgramSerializer
     def get(self,request):
+        shop=Shop.objects.get(user=request.user)
         choice=request.GET.get('choice')
         offset=request.GET.get('offset')
-        shop=Shop.objects.get(user=request.user)
         programs=Shop_program.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('products__media_upload').order_by('-id')
+        option=request.GET.get('option')
+        keyword=request.GET.get('keyword')
+        if option:
+            if option=='1':
+                programs=programs.filter(name_program__istartswith=keyword)
+            elif option=='2':
+                programs=programs.filter(products__name__istartswith=keyword)
+            else:
+                programs=programs.filter(products__sku_product=keyword)
         if choice:
             if choice=='current':
                 programs=programs.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
@@ -265,6 +294,7 @@ class ListflashsaleAPI(APIView):
         offset=request.GET.get('offset')
         shop=Shop.objects.get(user=request.user)
         flash_sales=Flash_sale.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('products__media_upload').order_by('-id')
+        
         if choice:
             if choice=='current':
                 flash_sales=flash_sales.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
@@ -287,8 +317,7 @@ class ListflashsaleAPI(APIView):
             to_item=count
         flash_sales=flash_sales[from_item:to_item]
         return Response({'data':FlashSaleSerializer(flash_sales,many=True).data,'count':count})
-     
-
+    
 class ShopprofileAPIView(APIView):
     def get(self,request):
         user=request.user
@@ -615,6 +644,15 @@ class DetailVoucher(APIView):
         data={'ok':'ok' }
         return Response(data)
 
+class GameAPI(APIView):
+    def post(self,id):
+        shop_award=Shop_award.objects.get(id=id)
+        award=request.data.get('award')
+        gammers=Gammer.objects.filter(user=request.user,created__gte=timezone.now())
+        if gammers.count()<4:
+            Gammer.objects.create(user=request.user,shop_award_id=id,award_id=award['id'])
+        data={'success':True}
+        return Response(data)
 
 class NewShopAwardAPI(APIView):
     def post(self,request):
@@ -1203,9 +1241,6 @@ class DetailFlashsale(APIView):
                         list_variation_updates.append(variation_flash_sale)
                     Variationflashsale.objects.bulk_create(listvariation)
                     Variationflashsale.objects.bulk_update(list_variation_updates, ['promotion_stock','promotion_price','user_item_limit','enable'], batch_size=1000)
-                
-            
-        
         return Response(data)
 
 @api_view(['GET', 'POST'])
