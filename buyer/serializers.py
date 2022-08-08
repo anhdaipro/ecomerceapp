@@ -967,7 +967,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_url(self,obj):
         return obj.item.get_absolute_url()
     def get_total_price(self,obj):
-        return obj.discount_main()
+        return obj.discount_product()
     def get_discount_price(self,obj):
         return obj.product.get_discount_product()
     def get_byproducts(self,obj):
