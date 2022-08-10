@@ -598,7 +598,11 @@ class ShopinfoAPI(APIView):
             followers.delete()
         else:
             follow=True
-            Follower.objects.create(user=request.user,shop=shop)
+            follower=Follower.objects.create(user=request.user,shop=shop)
+            offers=Follower_offer.objects.filter(shop=shop,valid_to__lt=timezone.now(),valid_from__gt=timezone.now())
+            if offers.exists():
+                follower.follow_offer=offers.first()
+            follower.save()
         data={'num_followers':shop.num_follow(),'follow':follow,'online':shop.user.profile.online,
         'num_followers':shop.num_follow(),
         'is_online':shop.user.profile.is_online,'count_product':shop.count_product(),
