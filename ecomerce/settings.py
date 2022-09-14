@@ -35,6 +35,7 @@ ALLOWED_HOSTS = ['anhdai.herokuapp.com','localhost','127.0.0.1']
 CORS_ALLOWED_ORIGINS = [
     'https://anhdai.vercel.app','http://localhost:3000'
 ]
+CORS_ORIGIN_ALLOW_ALL = True
 INSTALLED_APPS = [
     'jazzmin',
     'django.contrib.admin',
