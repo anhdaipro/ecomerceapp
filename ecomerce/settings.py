@@ -271,7 +271,7 @@ SOCIAL_AUTH_INSTAGRAM_EXTRA_DATA = [
     ('user', 'user'),
 ]
 SOCIAL_AUTH_USER_FIELDS=['email','first_name','username','password']
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '487987454497-pgoqpfq7s8tp7icr8c3c7pqm7mvmulbp.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = 'AIzaSyDzymZGtFFDHvkUMJ2L9WnLbAv6Gyzzi5c'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'ev9_gghaFDWSRrvXNE8hGYea'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
    'https://www.googleapis.com/auth/userinfo.email',
