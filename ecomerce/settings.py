@@ -36,6 +36,9 @@ CORS_ALLOWED_ORIGINS = [
     'https://anhdai.vercel.app','http://localhost:3000'
 ]
 CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = (
+    'http:///bb-svu.anonymous.mobileapp.exp.direct:80',
+)
 INSTALLED_APPS = [
     'jazzmin',
     'django.contrib.admin',
