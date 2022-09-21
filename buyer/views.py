@@ -212,11 +212,11 @@ class VerifySMSView(APIView):
 class LoginView(APIView):
     permission_classes = (AllowAny,)
     def post(self, request,):
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        email = request.POST.get('email')
-        token=request.POST.get('token')
-        user_id=request.POST.get('user_id')
+        username = request.data.get('username')
+        password = request.data.get('password')
+        email = request.data.get('email')
+        token=request.data.get('token')
+        user_id=request.data.get('user_id')
         if token:
             token = AccessToken.objects.get(token=token)
             user = token.user
