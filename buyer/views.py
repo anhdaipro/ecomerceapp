@@ -847,9 +847,9 @@ class AddToCartAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         user=request.user
-        id=request.POST.get('id')
-        item_id=request.POST.get('item_id')
-        quantity=request.POST.get('quantity')
+        id=request.data.get('id')
+        item_id=request.data.get('item_id')
+        quantity=request.data.get('quantity')
         item=Item.objects.get(id=item_id)
         if id:
             product=Variation.objects.get(id=id)
