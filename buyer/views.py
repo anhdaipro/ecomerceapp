@@ -700,37 +700,37 @@ class UpdateCartAPIView(APIView):
         return Response(data)
     def post(self, request,price=0,total=0,count_cartitem=0,total_discount=0,discount_deal=0,discount_voucher_shop=0,discount_promotion=0,count=0,*args, **kwargs):  
         user=request.user
-        item_id=request.POST.get('item_id')
-        cartitem_id=request.POST.get('cartitem_id')
-        color_id=request.POST.get('color_id')
-        size_id=request.POST.get('size_id')
-        byproduct_id=request.POST.get('byproduct_id')
-        product=Variation.objects.all()
+        item_id=request.data.get('item_id')
+        cartitem_id=request.data.get('cartitem_id')
+        color_id=request.data.get('color_id')
+        size_id=request.data.get('size_id')
+        byproduct_id=request.data.get('byproduct_id')
+        quantity=request.data.get('quantity')
         data={}
         if item_id and size_id and color_id:
-            color=Color.objects.get(id=color_id)
-            size=Size.objects.get(id=size_id)
-            product=Variation.objects.get(item=item_id,color=color,size=size)
-        if item_id and color_id and not size_id:
-            color=Color.objects.get(id=color_id)
-            product=Variation.objects.get(item=item_id,color=color)
-        if item_id and not color_id and size_id:
-            size=Size.objects.get(id=size_id)
-            product=Variation.objects.get(item=item_id,size=size)
-        if item_id and not color_id:
+            product=Variation.objects.get(item=item_id,color_id=color_id,size_id=size_id)
+        if item_id and color_id and size_id==None:
+            product=Variation.objects.get(item=item_id,color_id=color_id)
+        if item_id and color_id==None and size_id:
+            product=Variation.objects.get(item=item_id,size_id=size_id)
+        if item_id and color_id==None:
             product=Variation.objects.get(item=item_id)
-        if cartitem_id:
+        try:
             cart_item=CartItem.objects.get(id=cartitem_id)
             cart_item.product=product
+            if quantity:
+                cart_item.quantity=quantity
             cart_item.save()
             data.update({'item':{
             'price':cart_item.product.price,
             'color_value':cart_item.product.get_color(),'size_value':cart_item.product.get_size(),
             'total_price':cart_item.total_discount_cartitem(),'inventory':cart_item.product.inventory,
             }})
-        if byproduct_id:
+        except Exception:
             byproduct=Byproduct.objects.get(id=byproduct_id)
             byproduct.product=product
+            if quantity:
+                cart_item.quantity=quantity
             byproduct.save()
             data.update({'item':{
             'price':byproduct.product.price,
@@ -746,7 +746,6 @@ class UpdateCartAPIView(APIView):
                 count+=cartitem.count_item_cart()
                 total+=cartitem.total_price_cartitem()
                 total_discount+=cartitem.total_discount_cartitem()
-                
                 discount_deal+=cartitem.save_deal()
                 discount_promotion+=cartitem.discount_promotion()  
         data.update({'orders':{
