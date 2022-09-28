@@ -989,14 +989,13 @@ class ListorderAPIView(APIView):
     def get(self,request):
         user=request.user
         order_check = Order.objects.filter(user=user, ordered=False).select_related('shop').select_related('voucher').prefetch_related('items__byproduct_cart').prefetch_related('items__item__main_product').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__shop_program').prefetch_related('items__product').exclude(items=None)
-        data={
-        'orders':[{'discount_voucher_shop':order.get_discount_voucher(),'total':order.total_price_order(),
+        data=[{'discount_voucher_shop':order.get_discount_voucher(),'total':order.total_price_order(),
             'discount_deal':order.discount_deal(),'count':order.count_item_cart(),
             'count_cartitem':order.count_cartitem(),'shop_id':order.shop_id,
             'discount_promotion':order.discount_promotion(),'discount_product':order.discount_product(),
             'voucher':order.get_voucher()} 
             for order in order_check]
-        }
+        
         return Response(data,status=status.HTTP_200_OK)
 
 @api_view(['GET', 'POST'])
