@@ -983,11 +983,19 @@ class CartitemcartSerializer(CartItemSerializer):
     inventory=serializers.SerializerMethodField()
     promotion=serializers.SerializerMethodField()
     shock_deal=serializers.SerializerMethodField()
+    total_inventory=serializers.SerializerMethodField()
+    max_price=serializers.SerializerMethodField()
+    min_price=serializers.SerializerMethodField()
+    percent_discount=serializers.SerializerMethodField()
+    
     class Meta(CartItemSerializer.Meta):
         fields = CartItemSerializer.Meta.fields + ('deal_shock_id','colors','sizes','count_variation',
-        'promotion','shop_id','check','inventory','shock_deal',)
+        'max_price','min_price','percent_discount',
+        'promotion','shop_id','check','inventory','shock_deal','total_inventory')
     def get_colors(self,obj):
         return obj.item.get_color()
+    def get_total_inventory(self,obj):
+        return obj.item.total_inventory()
     def get_sizes(self,obj):
         return obj.item.get_size()
     def get_count_variation(self,obj):
@@ -1003,7 +1011,12 @@ class CartitemcartSerializer(CartItemSerializer):
         if obj.get_deal_shock_current():
             list_byproduct=ByproductcartSerializer(obj.byproduct_cart.all(), many=True).data
         return list_byproduct
-
+    def get_max_price(self,obj):
+        return obj.item.max_price()
+    def get_min_price(self,obj):
+        return obj.item.min_price()
+    def get_percent_discount(self,obj):
+        return obj.item.percent_discount_total()
 class OrdersellerSerializer(OrderSerializer):
     user=serializers.SerializerMethodField()
     class Meta(OrderSerializer.Meta):
