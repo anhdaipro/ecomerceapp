@@ -924,8 +924,13 @@ class ByproductcartSerializer(ByproductSerializer):
     colors=serializers.SerializerMethodField()
     count_variation=serializers.SerializerMethodField()
     inventory=serializers.SerializerMethodField()
+    total_inventory=serializers.SerializerMethodField()
+    max_price=serializers.SerializerMethodField()
+    min_price=serializers.SerializerMethodField()
+    percent_discount=serializers.SerializerMethodField()
     class Meta(ByproductSerializer.Meta):
-        fields=ByproductSerializer.Meta.fields + ('colors','inventory','product_id',
+        fields=ByproductSerializer.Meta.fields + ('colors','inventory','product_id','max_price',
+        'min_price','percent_discount','total_inventory',
         'discount_price','sizes','count_variation',)
     def get_colors(self,obj):
         return obj.item.get_color()
@@ -937,7 +942,14 @@ class ByproductcartSerializer(ByproductSerializer):
         return obj.item.count_variation()
     def get_inventory(self,obj):
         return obj.product.inventory
-
+    def get_total_inventory(self,obj):
+        return obj.item.total_inventory()
+    def get_max_price(self,obj):
+        return obj.item.max_price()
+    def get_min_price(self,obj):
+        return obj.item.min_price()
+    def get_percent_discount(self,obj):
+        return obj.item.percent_discount_total()
 class CartItemSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     url=serializers.SerializerMethodField()
