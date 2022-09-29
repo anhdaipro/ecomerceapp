@@ -991,6 +991,8 @@ class CartItemSerializer(serializers.ModelSerializer):
 class CartitemcartSerializer(CartItemSerializer):
     sizes=serializers.SerializerMethodField()
     colors=serializers.SerializerMethodField()
+    size_id=serializers.SerializerMethodField()
+    color_id=serializers.SerializerMethodField()
     count_variation=serializers.SerializerMethodField()
     inventory=serializers.SerializerMethodField()
     promotion=serializers.SerializerMethodField()
@@ -1002,7 +1004,7 @@ class CartitemcartSerializer(CartItemSerializer):
     
     class Meta(CartItemSerializer.Meta):
         fields = CartItemSerializer.Meta.fields + ('deal_shock_id','colors','sizes','count_variation',
-        'max_price','min_price','percent_discount',
+        'max_price','min_price','percent_discount','size_id','color_id',
         'promotion','shop_id','check','inventory','shock_deal','total_inventory')
     def get_colors(self,obj):
         return obj.item.get_color()
@@ -1010,6 +1012,10 @@ class CartitemcartSerializer(CartItemSerializer):
         return obj.item.total_inventory()
     def get_sizes(self,obj):
         return obj.item.get_size()
+    def get_size_id(self,obj):
+        return obj.item.get_size_id()
+    def get_color_id(self,obj):
+        return obj.item.get_color_id()
     def get_count_variation(self,obj):
         return obj.item.count_variation()
     def get_inventory(self,obj):

@@ -219,6 +219,7 @@ class Item(models.Model):
             total_inventory=int(variations["sum"])
         return total_inventory
     
+
     def percent_discount_total(self):
         percent=0
         if self.get_flash_sale_current():
@@ -434,6 +435,12 @@ class Variation(models.Model):
         if self.size:
             size=self.size.value
         return size
+    def get_color_id(self):
+        if self.color:
+            return self.color.id
+    def get_size_id(self):
+        if self.size:
+            return self.size.id
     def get_color(self):
         color=''
         if self.color:
