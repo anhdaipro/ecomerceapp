@@ -1013,9 +1013,9 @@ class CartitemcartSerializer(CartItemSerializer):
     def get_sizes(self,obj):
         return obj.item.get_size()
     def get_size_id(self,obj):
-        return obj.item.get_size_id()
+        return obj.product.get_size_id()
     def get_color_id(self,obj):
-        return obj.item.get_color_id()
+        return obj.product.get_color_id()
     def get_count_variation(self,obj):
         return obj.item.count_variation()
     def get_inventory(self,obj):

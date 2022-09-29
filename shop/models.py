@@ -437,10 +437,10 @@ class Variation(models.Model):
         return size
     def get_color_id(self):
         if self.color:
-            return self.color.id
+            return self.color_id
     def get_size_id(self):
         if self.size:
-            return self.size.id
+            return self.size_id
     def get_color(self):
         color=''
         if self.color:
