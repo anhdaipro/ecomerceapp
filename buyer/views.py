@@ -54,7 +54,7 @@ ProductdealSerializer,ItemcomboSerializer,CombodetailseSerializer,ItempageSerial
 ItemdetailsSerializer,ShopdetailSerializer,OrderpurchaseSerializer,
 CategorydetailSerializer,VariationcartSerializer,ItemflasaleSerializer,
 ByproductdealSerializer,ByproductcartSerializer,ComboItemSerializer,
-DealByproductSerializer,FlashSaleinfoSerializer,
+DealByproductSerializer,FlashSaleinfoSerializer,ReviewitemSerializer,
 )
 from rest_framework_simplejwt.tokens import AccessToken,OutstandingToken
 from oauth2_provider.models import AccessToken, Application
@@ -549,7 +549,7 @@ class ProductInfoAPI(APIView):
             paginator = Paginator(reviews, 10)  # Show 25 contacts per page.
             page_number = request.GET.get('page')
             page_obj = paginator.get_page(page_number)
-            data={'reviews':ReviewSerializer(page_obj,many=True,context={"request": request}).data,
+            data={'reviews':ReviewitemSerializer(page_obj,many=True,context={"request": request}).data,
             'page_count':paginator.num_pages,
             'rating':[review.review_rating for review in list_review],'has_comment':count_comment,
             'has_media':count_media
