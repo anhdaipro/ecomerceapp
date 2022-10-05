@@ -834,13 +834,15 @@ class MediareviewSerializer(serializers.ModelSerializer):
     file = serializers.SerializerMethodField()
     media_preview = serializers.SerializerMethodField()
     show=serializers.SerializerMethodField()
+    
     class Meta:
         model=Media_review
-        fields=('id','duration','filetype','media_preview','file','show',)
+        fields=('id','duration','filetype','media_preview','file','show')
     def get_filetype(self,obj):
         return obj.filetype()
     def get_file(self,obj):
         return obj.file.url
+    
     def get_media_preview(self,obj):
         return obj.get_media_preview()
     def get_show(self,obj):
@@ -856,9 +858,10 @@ class ReviewSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
     list_file=serializers.SerializerMethodField()
     rating_bab_category=serializers.SerializerMethodField()
+    user=serializers.SerializerMethodField()
     class Meta:
         model=ReView
-        fields=field_review+['anonymous_review','list_file','url','rating_bab_category',
+        fields=field_review+['anonymous_review','list_file','url','rating_bab_category','user',
         'edited']
     def get_list_file(self,obj):
         return MediareviewSerializer(obj.media_review.all(),many=True).data  
@@ -874,7 +877,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         return obj.cartitem.item.name
     def get_url(self,obj):
         return obj.cartitem.item.get_absolute_url()
-
+    def get_user(self,obj):
+        return obj.user.username
 class ReviewshopSerializer(ReviewSerializer):
     user = serializers.SerializerMethodField()
     reply = serializers.SerializerMethodField()
