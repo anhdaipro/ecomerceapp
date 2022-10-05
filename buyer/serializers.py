@@ -881,10 +881,15 @@ class ReviewSerializer(serializers.ModelSerializer):
     
 class ReviewitemSerializer(ReviewSerializer):
     user = serializers.SerializerMethodField()
+    shop=serializers.SerializerMethodField()
     class Meta(ReviewSerializer.Meta):
-        fields=ReviewSerializer.Meta.fields+['user']
+        fields=ReviewSerializer.Meta.fields+['user','shop']
     def get_user(self,obj):
         return UserorderSerializer(obj.user).data
+    def get_shop(self,obj):
+        if obj.user.shop:
+            return obj.user.shop.get_absolute_url()
+
 class ReviewshopSerializer(ReviewSerializer):
     user = serializers.SerializerMethodField()
     reply = serializers.SerializerMethodField()
