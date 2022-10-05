@@ -814,14 +814,16 @@ class CombodetailseSerializer(ComboinfoSerializer):
 
 class OrderpurchaseSerializer(OrderSerializer):
     shop_url=serializers.SerializerMethodField()
+    review=serializers.SerializerMethodField()
     class Meta(OrderSerializer.Meta):
         fields=OrderSerializer.Meta.fields+(
-        'received','canceled','accepted',
+        'received','canceled','accepted','review',
         'being_delivered','ordered_date','received_date',
         'canceled_date','accepted_date','shop_url',)
     def get_shop_url(self,obj):
         return obj.shop.get_absolute_url()
-
+    def get_review(self,obj):
+        return ReView.objects.filter(cartitem__order_cartitem=obj).count()
 class OrderdetailSerializer(OrderpurchaseSerializer):
     address=serializers.SerializerMethodField()
     class Meta(OrderpurchaseSerializer.Meta):
