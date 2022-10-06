@@ -324,8 +324,8 @@ class ItemdetailSerializer(ItemcomboSerializer):
     def get_number_order(self,obj):
         return obj.number_order()
     def get_token(self,obj):
-        request=self.context.get("request")
-        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+       
+        token = self.context.get("token")
         return token
     def get_like(self,obj): 
         request=self.context.get("request")
