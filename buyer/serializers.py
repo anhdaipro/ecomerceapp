@@ -897,8 +897,9 @@ class ReviewitemSerializer(ReviewSerializer):
         liked=False
         request=self.context.get("request")
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-        if token and request.user in obj.like.all():
-            liked=True
+        if token:
+            if request.user in obj.like.all():
+                liked=True
         return liked
 class ReviewshopSerializer(ReviewSerializer):
     user = serializers.SerializerMethodField()
