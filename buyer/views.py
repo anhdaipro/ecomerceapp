@@ -446,7 +446,7 @@ class ImageHomeAPIView(ListAPIView):
 
 class ItemdetailAPI(APIView):
     def get(self,request):
-        token = request.META['HTTP_AUTHORIZATION']
+        token = request.headers['HTTP_AUTHORIZATION']
         item_id=request.GET.get('itemId')
         item=Item.objects.get(id=item_id)
         item.views += 1
