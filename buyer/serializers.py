@@ -883,13 +883,16 @@ class ReviewitemSerializer(ReviewSerializer):
     user = serializers.SerializerMethodField()
     shop=serializers.SerializerMethodField()
     liked=serializers.SerializerMethodField()
+    num_liked=serializers.SerializerMethodField()
     class Meta(ReviewSerializer.Meta):
-        fields=ReviewSerializer.Meta.fields+['user','shop','liked']
+        fields=ReviewSerializer.Meta.fields+['user','shop','liked','num_liked']
     def get_user(self,obj):
         return UserorderSerializer(obj.user).data
     def get_shop(self,obj):
         if obj.user.shop:
             return obj.user.shop.get_absolute_url()
+    def get_num_liked(self,obj):
+        return obj.num_like()
     def get_liked(self,obj):
         liked=False
         request=self.context.get("request")

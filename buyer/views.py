@@ -1142,13 +1142,13 @@ class ActionReviewAPI(APIView):
                 Report.objects.create(user=user,reson=reason,review=review)
             data.update({'report':True})
         else:
-            like_review=True
+            liked=True
             if user in review.like.all():
-                like_review=False
+                liked=False
                 review.like.remove(user)  
             else:
                 review.like.add(user)  
-            data.update({'like_review':like_review,'num_like_review':review.num_like()}) 
+            data.update({'liked':liked,'num_liked':review.num_like()}) 
         return Response(data) 
 
 class CheckoutAPIView(APIView):
