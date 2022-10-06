@@ -558,16 +558,16 @@ class ProductInfoAPI(APIView):
 
     def post(self, request,id, *args, **kwargs):
         user=request.user
-        like_item=True
+        like=True
         data={}
         item=Item.objects.get(id=id)
         liker=Liker.objects.filter(item_id=id,user=request.user)
         if liker.exists():
             liker.delete()
-            like_item=False
+            like=False
         else:
             Liker.objects.create(item_id=id,user=request.user)
-        data.update({'num_like_item':item.num_like(),'like_item':like_item})  
+        data.update({'num_like':item.num_like(),'like':like})  
         return Response(data)
 
 class ShopinfoAPI(APIView):
