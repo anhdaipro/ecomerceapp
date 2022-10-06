@@ -446,12 +446,12 @@ class ImageHomeAPIView(ListAPIView):
 
 class ItemdetailAPI(APIView):
     def get(self,request):
-        token = request.headers.get('Authorization')
+        token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         item_id=request.GET.get('itemId')
         item=Item.objects.get(id=item_id)
         item.views += 1
         item.save()
-        serializer =ItemdetailSerializer(item,context={"request": request,'token':token})
+        serializer =ItemdetailSerializer(item,context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK) 
         if token:
             if ItemViews.objects.filter(item=item,user=request.user).filter(create_at__gte=datetime.datetime.now().replace(hour=0,minute=0,second=0)).count()==0:
