@@ -440,7 +440,7 @@ def product(request):
     inventory=request.GET.get('inventory')
     sort=request.GET.get('sort')
     if request.method=="POST":
-        item_id=request.POST.getlist('item_id')
+        item_id=request.data.get('items')
         Item.objects.filter(id__in=item_id).delete()
         data={
             'count_product':items.count()
@@ -491,7 +491,7 @@ def get_product(request):
     per_page=request.GET.get('pagesize')
     item_id=request.GET.get('item_id')
     if request.method=="POST":
-        item_id=request.POST.getlist('item_id')
+        item_id=request.data.get('items')
         Item.objects.filter(id__in=item_id).delete()
         data={
             'count_product':list_product.count()
@@ -523,7 +523,7 @@ def delete_product(request):
     user=request.user
     shop=Shop.objects.get(user=user)
     if request.method=="POST":
-        item_id=request.POST.getlist('item_id')
+        item_id=request.data.get('items')
         Item.objects.filter(id__in=item_id).delete()
         product=Item.objects.filter(shop=shop)
         page_no=request.data.get('page_no')
