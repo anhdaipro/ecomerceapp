@@ -71,7 +71,7 @@ class Order(models.Model):
     def discount_product(self):
         total_discount=0
         for order_item in self.items.all():
-            total_discount+=order_item.discount_product()
+            total_discount+=order_item.discount_main()
         return total_discount
     
     def discount_promotion(self):
