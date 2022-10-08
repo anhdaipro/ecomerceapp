@@ -1161,9 +1161,9 @@ class CheckoutAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         user=request.user
-        id=request.POST.get('id')
+        id=request.data.get('id')
         address=Address.objects.get(id=id)
-        payment_option=request.POST.get('payment_choice')
+        payment_option=request.data.get('payment_choice')
         total=0
         orders = Order.objects.filter(user=user, ordered=False).exclude(items=None)
         if payment_option == 'Paypal':
@@ -1229,11 +1229,16 @@ class OrderinfoAPIView(APIView):
         serializer = OrderdetailSerializer(order,context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
         
-@api_view(['GET', 'POST'])
-def payment_complete(request): 
-    user=request.user
-    if request.method=="POST":
-        pay_id=request.POST.get('payID')
+class PaymentAPIView(APIView):
+    def get(self,request):
+        orders = Order.objects.filter(user=user, ordered=False)
+        amount=0
+        for order in orders:
+            amount+=order.total_final_order()
+        return Response({'amount':amount}) 
+    def post(self,request): 
+        user=request.user
+        pay_id=request.data.get('payID')
         payment=Payment.objects.filter(paid=False,user=user).last()
         payment.payment_number=pay_id
         payment.paid=True
@@ -1278,12 +1283,7 @@ def payment_complete(request):
         bulk_update(list_orders)
         Payment.objects.filter(paid=False,user=user).delete()
         return Response({'ok':'ok'})
-    else:
-        orders = Order.objects.filter(user=user, ordered=False)
-        amount=0
-        for order in orders:
-            amount+=order.total_final_order()
-        return Response({'amount':amount})  
+     
 
 class Byproductdeal(APIView):
     permission_classes = (IsAuthenticated,)
