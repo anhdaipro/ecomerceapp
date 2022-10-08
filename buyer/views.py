@@ -112,7 +112,7 @@ class RefreshTokenuser(APIView):
 class UpdateOnline(APIView):
     permission_classes = (IsAuthenticated,)
     def post(self,request):
-        online=request.POST.get('online')
+        online=request.data.get('online')
         if online=='false':
             Profile.objects.filter(user=request.user).update(online=False,is_online=timezone.now())
         return Response({'pk':'ki'})
@@ -128,9 +128,9 @@ class RegisterView(APIView):
 
 class Registeremail(APIView):
     def post(self,request):
-        username=request.POST.get('username')
-        email=request.POST.get('email')
-        verify=request.POST.get('verify')
+        username=request.data.get('username')
+        email=request.data.get('email')
+        verify=request.data.get('verify')
         check_user=User.objects.filter(Q(username=username) | Q(email=email))
         if check_user.exists():
             return Response({'error':True})
@@ -147,9 +147,9 @@ class Registeremail(APIView):
 class VerifyEmailView(APIView):
     permission_classes = (AllowAny,)
     def post(self, request):
-        otp = int(request.POST.get("otp"))
-        email=request.POST.get('email')
-        reset=request.POST.get('reset')
+        otp = int(request.data.get("otp"))
+        email=request.data.get('email')
+        reset=request.data.get('reset')
         verifyemail=Verifyemail.objects.filter(email=email).last()
         if verifyemail.otp==otp:    
             return Response({'verify':True})
@@ -159,9 +159,9 @@ class VerifyEmailView(APIView):
 class Sendotp(APIView):
     permission_classes = (AllowAny,)
     def post(self, request, *args, **kwargs):
-        phone=request.POST.get('phone')
-        login=request.POST.get('login')
-        reset=request.POST.get('reset')
+        phone=request.data.get('phone')
+        login=request.data.get('login')
+        reset=request.data.get('reset')
         usr_otp = random.randint(100000, 999999)
         otp=SMSVerification.objects.create(pin=usr_otp,phone=phone)
         if login: 
@@ -188,10 +188,10 @@ class Sendotp(APIView):
 class VerifySMSView(APIView):
     permission_classes = (AllowAny,)
     def post(self, request):
-        id=request.POST.get('id')
-        pin = int(request.POST.get("pin"))
-        phone=request.POST.get('phone')
-        reset=request.POST.get('reset')
+        id=request.data.get('id')
+        pin = int(request.data.get("pin"))
+        phone=request.data.get('phone')
+        reset=request.data.get('reset')
         otp=SMSVerification.objects.get(id=id)
         profile=Profile.objects.filter(phone=phone)
         if otp.pin==pin:
@@ -1017,17 +1017,17 @@ class AddressAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         user=request.user
-        city=request.POST.get('city')
-        district=request.POST.get('district')
-        town=request.POST.get('town')
-        phone_number=request.POST.get('phone_number')
-        name=request.POST.get('name')
-        address_choice=request.POST.get('address_choice')
-        address_detail=request.POST.get('address')
-        address_type=request.POST.get('address_type')
-        default=request.POST.get('default')
-        id=request.POST.get('id')
-        update=request.POST.get('update')
+        city=request.data.get('city')
+        district=request.data.get('district')
+        town=request.data.get('town')
+        phone_number=request.data.get('phone_number')
+        name=request.data.get('name')
+        address_choice=request.data.get('address_choice')
+        address_detail=request.data.get('address')
+        address_type=request.data.get('address_type')
+        default=request.data.get('default')
+        id=request.data.get('id')
+        update=request.data.get('update')
         default_address=False
         if default=='true':
             default_address=True
