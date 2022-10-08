@@ -106,7 +106,7 @@ class Order(models.Model):
         return fee_shipping
 
     def total_final_order(self):
-        return self.total_price_order()-self.discount_deal()-self.discount_product()-self.discount_promotion()+self.fee_shipping()
+        return self.total_price_order()-self.get_discount_voucher()-self.discount_deal()-self.discount_product()-self.discount_promotion()+self.fee_shipping()
 
     def count_item_cart(self):
         count_cart=0

@@ -782,9 +782,10 @@ class OrderSerializer(serializers.ModelSerializer):
     fee_shipping=serializers.SerializerMethodField()
     discount_promotion=serializers.SerializerMethodField()
     total_discount=serializers.SerializerMethodField()
+    discount_product=serializers.SerializerMethodField()
     class Meta:
         model=Order
-        fields=('cart_item','discount_voucher','total','total_final','shop','amount',
+        fields=('cart_item','discount_voucher','total','total_final','shop','amount','discount_product',
         'count','fee_shipping','id','discount_promotion','total_discount',)
     def get_shop(self,obj):
         return ShopSerializer(obj.shop).data
@@ -794,6 +795,8 @@ class OrderSerializer(serializers.ModelSerializer):
         return obj.get_discount_voucher()
     def get_total(self,obj):
         return obj.total_price_order()
+    def get_discount_product(self,obj):
+        return obj.discount_product()
     def get_total_final(self,obj):
         return obj.total_final_order()
     def get_count(self,obj):
