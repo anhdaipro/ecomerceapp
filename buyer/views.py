@@ -1025,15 +1025,14 @@ class AddressAPIView(APIView):
         address_choice=request.data.get('address_choice')
         address_detail=request.data.get('address')
         address_type=request.data.get('address_type')
-        default=request.data.get('default')
         id=request.data.get('id')
-        update=request.data.get('update')
+        action=request.data.get('action')
         default_address=False
-        if default=='true':
+        if action=='default':
             default_address=True
         if id:
             address=Address.objects.get(id=id)
-            if update:
+            if action=='update':
                 address.address_choice=address_choice
                 address.default=default_address
                 address.name=name
@@ -1044,7 +1043,7 @@ class AddressAPIView(APIView):
                 address.town=town
                 address.district=district
                 address.save()
-            elif default:
+            elif action=='default':
                 address.default=True
                 address.save()
                 Address.objects.exclude(id=address.id).update(default=False)
