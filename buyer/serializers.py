@@ -191,16 +191,17 @@ class ItemflasaleSerializer(ItemSerializer):
     class Meta(ItemSerializer.Meta):
         fields=ItemSerializer.Meta.fields+['number_order','discount_price','promotion_stock']
     def get_percent_discount(self,obj):
-        return obj.percent_discount_flash_sale()
-    def get_number_order(self,obj):
-        return obj.number_order_flash_sale()
-    def get_discount_price(self,obj):
         promotionId=self.context.get("promotionId")
-        return obj.avg_discount_price_flash_sale()
         variations=Variationflashsale.objects.filter(enable=True,item=obj,flash_sale=promotionId).aggregate(avg=Avg('promotion_price'))
         avg_discount=variations['avg']
         percent= (float(obj.avg_price())-float(avg_discount))*100/float(obj.avg_price())
         return percent
+    def get_number_order(self,obj):
+        return obj.number_order_flash_sale()
+    def get_discount_price(self,obj):
+        promotionId=self.context.get("promotionId")
+        variations=Variationflashsale.objects.filter(enable=True,item=obj,flash_sale=promotionId).aggregate(avg=Avg('promotion_price'))
+        return variations['avg']
     def get_promotion_stock(self,obj):
         return obj.get_promotion_stock()
 
