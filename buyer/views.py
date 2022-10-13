@@ -287,7 +287,7 @@ class FlashsaleAPI(APIView):
         if from_item+20>=count:
             to_item=count
         list_items=list_items[from_item:to_item]
-        data.update({'items_flash_sale':ItemflasaleSerializer(list_items,many=True).data})
+        data.update({'items_flash_sale':ItemflasaleSerializer(list_items,many=True,context={'promotionId':promotionId}).data})
         return Response(data)
 
 class CategoryListView(ListAPIView):
