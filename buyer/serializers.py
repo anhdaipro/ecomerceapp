@@ -194,7 +194,7 @@ class ItemflasaleSerializer(ItemSerializer):
         promotionId=self.context.get("promotionId")
         variations=Variationflashsale.objects.filter(enable=True,item=obj,flash_sale=promotionId).aggregate(avg=Avg('promotion_price'))
         avg_discount=variations['avg']
-        percent= (float(obj.avg_price())-float(avg_discount))*100/float(obj.avg_price())
+        percent= (float(obj.avg_price())-float(avg_discount))*100/float(obj.avg_price()) if variations['avg'] else 0
         return percent
     def get_number_order(self,obj):
         return obj.number_order_flash_sale()
