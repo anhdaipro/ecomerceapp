@@ -198,6 +198,7 @@ class ItemflasaleSerializer(ItemSerializer):
         return percent
     def get_number_order(self,obj):
         return obj.number_order_flash_sale()
+   
     def get_discount_price(self,obj):
         promotionId=self.context.get("promotionId")
         variations=Variationflashsale.objects.filter(enable=True,item=obj,flash_sale=promotionId).aggregate(avg=Avg('promotion_price'))
