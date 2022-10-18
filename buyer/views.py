@@ -1423,6 +1423,8 @@ class ProfileAPI(APIView):
             profile.phone=phone
         if bio:
             profile.bio=bio
+        if name:
+            profile.name=name
         if date_of_birth:
             profile.date_of_birth=date_of_birth
         profile.save()
