@@ -1407,15 +1407,21 @@ class ProfileAPI(APIView):
         user=request.user
         profile=Profile.objects.get(user=user)
         shop=Shop.objects.get(user=user)
-        user.username=username
-        user.email=email
+        if username:
+            user.username=username
+        if email:
+            user.email=email
         user.save()
-        shop.name=shop_name
-        profile.gender=gender
+        if shop_name:
+            shop.name=shop_name
+        if gender:
+            profile.gender=gender
         if avatar:
             profile.avatar=avatar
-        profile.phone=phone
-        profile.date_of_birth=date_of_birth
+        if phone:
+            profile.phone=phone
+        if date_of_birth:
+            profile.date_of_birth=date_of_birth
         profile.save()
         shop.save()
         return Response({'ol':'ooo'})
