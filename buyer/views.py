@@ -1389,7 +1389,7 @@ class ProfileAPI(APIView):
             shop_name=Shop.objects.filter(user=user).first().name
             count_product=Shop.objects.filter(user=user).first().count_product()
         data={
-            'username':user.username,'name':user.shop.name,'email':user.email,
+            'username':user.username,'name':user.profile.name,'email':user.email,
             'phone':str(user.profile.phone),'date_of_birth':user.profile.date_of_birth,
             'avatar':user.profile.avatar.url,'shop_name':shop_name,'bio':user.profile.bio,
             'gender':user.profile.gender,'user_id':user.id,'count_product':count_product,
