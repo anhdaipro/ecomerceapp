@@ -1391,7 +1391,7 @@ class ProfileAPI(APIView):
         data={
             'username':user.username,'name':user.shop.name,'email':user.email,
             'phone':str(user.profile.phone),'date_of_birth':user.profile.date_of_birth,
-            'image':user.profile.avatar.url,'shop_name':shop_name,
+            'avatar':user.profile.avatar.url,'shop_name':shop_name,
             'gender':user.profile.gender,'user_id':user.id,'count_product':count_product,
             }
         return Response(data)
