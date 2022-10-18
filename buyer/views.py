@@ -1391,7 +1391,7 @@ class ProfileAPI(APIView):
         data={
             'username':user.username,'name':user.shop.name,'email':user.email,
             'phone':str(user.profile.phone),'date_of_birth':user.profile.date_of_birth,
-            'avatar':user.profile.avatar.url,'shop_name':shop_name,
+            'avatar':user.profile.avatar.url,'shop_name':shop_name,'bio':user.profile.bio
             'gender':user.profile.gender,'user_id':user.id,'count_product':count_product,
             }
         return Response(data)
@@ -1403,6 +1403,7 @@ class ProfileAPI(APIView):
         name=request.POST.get('name')
         email=request.POST.get('email')
         phone=request.POST.get('phone')
+        bio=request.POST.get('bio')
         date_of_birth=request.POST.get('date_of_birth')
         user=request.user
         profile=Profile.objects.get(user=user)
@@ -1420,11 +1421,13 @@ class ProfileAPI(APIView):
             profile.avatar=avatar
         if phone:
             profile.phone=phone
+        if bio:
+            profile.bio=bio
         if date_of_birth:
             profile.date_of_birth=date_of_birth
         profile.save()
         shop.save()
-        return Response({'ol':'ooo'})
+        return Response({'success':True})
 
 def get_review(order):
     review= ReView.objects.filter(cartitem__order_cartitem=order)
