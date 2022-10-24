@@ -616,7 +616,7 @@ class Newvoucher(APIView):
 class DetailVoucher(APIView):
     def get(self,request,id):
         voucher=Voucher.objects.get(id=id)
-        data=Voucherseller(voucher).data
+        data=VouchersellerSerializer(voucher).data
         return Response(data)
     def post(self,request,id):
         shop=Shop.objects.get(user=request.user)
