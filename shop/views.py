@@ -433,7 +433,7 @@ class Listproduct(APIView):
         user=request.user
         shop=Shop.objects.get(user=user)
         items=Item.objects.filter(shop=shop)
-        offet=request.GET.get('offset')
+        offset=request.GET.get('offset')
         count=items.count()
         from_item=0
         if offset:
