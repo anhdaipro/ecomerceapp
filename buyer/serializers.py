@@ -165,21 +165,27 @@ class ByproductSellerSerializer(IteminfoSerializer):
     def get_variations(self,obj):
         return VariationSerializer(obj.variation_item.all(),many=True).data
 
-class ItemSerializer(IteminfoSerializer):
-    url=serializers.SerializerMethodField()
+class ItemappSerializer(IteminfoSerializer):
     max_price=serializers.SerializerMethodField()
+    num_like=serializers.SerializerMethodField()
     min_price=serializers.SerializerMethodField()
-    percent_discount=serializers.SerializerMethodField()
     class Meta(IteminfoSerializer.Meta):
         fields =IteminfoSerializer.Meta.fields+ [
-        'max_price','min_price','url','percent_discount']
-    
-    def get_url(self,obj):
-        return obj.get_absolute_url()
+        'max_price','min_price','num_like','views']
+    def get_num_like(self,obj):
+        return obj.num_like()
     def get_max_price(self,obj):
         return obj.max_price()
     def get_min_price(self,obj):
         return obj.min_price()
+class ItemSerializer(ItemappSerializer):
+    url=serializers.SerializerMethodField()
+    percent_discount=serializers.SerializerMethodField()
+    class Meta(IteminfoSerializer.Meta):
+        fields =ItemappSerializer.Meta.fields+ [
+        'url','percent_discount']
+    def get_url(self,obj):
+        return obj.get_absolute_url()
     def get_percent_discount(self,obj):
         return obj.percent_discount_total()
 
@@ -207,9 +213,11 @@ class ItemflasaleSerializer(ItemSerializer):
         return obj.get_promotion_stock()
 
 class ItemproductSerializer(IteminfoSerializer):
+    num_like=serializers.SerializerMethodField()
     class Meta(IteminfoSerializer.Meta):
-        fields=IteminfoSerializer.Meta.fields+['sku_product']
-
+        fields=IteminfoSerializer.Meta.fields+['sku_product','num_like','views']
+    def get_num_like(self,obj):
+        return obj.num_like()
 field_variation=['variation_id','inventory','color_value','size_value','price','item_id']
 class VariationSerializer(serializers.ModelSerializer):
     color_value=serializers.SerializerMethodField()

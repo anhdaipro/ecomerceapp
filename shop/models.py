@@ -95,7 +95,7 @@ class Item(models.Model):
     name = models.CharField(max_length=120)
     brand=models.TextField(max_length=200)
     shop=models.ForeignKey(Shop,on_delete=models.CASCADE)
-    media_upload=models.ManyToManyField(UploadItem,blank=True)
+    media_upload=models.ManyToManyField(UploadItem,blank=True,related_name='media_upload')
     shipping_choice=models.ManyToManyField(to="shipping.Shipping",blank=True,related_name='shipping_choice')
     description=models.TextField(max_length=3000)
     sku_product=models.CharField(max_length=20,null=True)
@@ -109,6 +109,8 @@ class Item(models.Model):
     is_active=models.BooleanField(default=False)
     views=models.IntegerField(default=0)
     slug=models.CharField(max_length=150)
+    violet=models.BooleanField(default=False)
+    hidden=models.BooleanField(default=False)
     created=models.DateTimeField(auto_now=True)
     def __str__(self):
         return str(self.name)

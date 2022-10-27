@@ -57,6 +57,7 @@ ByproductSellerSerializer,
 BuywithsockdealSerializer,
 BuywithsockdealSellerSerializer,
 ComboSerializer,
+ItemappSerializer,
 CombosellerSerializer,
 BuywithsockdealinfoSerializer,
 FlashSaleSerializer,
@@ -427,6 +428,22 @@ class ShopratingAPI(APIView):
         data={'id':reply.id,'text':reply.text}
         return Response(data)
 
+class Listproduct(APIView):
+    def get(self,request):
+        user=request.user
+        shop=Shop.objects.get(user=user)
+        items=Item.objects.filter(shop=shop)
+        offet=request.GET.get('offset')
+        count=items.count()
+        from_item=0
+        if offset:
+            from_item=int(offset)
+        to_item=from_item+10
+        if from_item+10>=count:
+            to_item=count
+        items=items[from_item:to_item]
+        return Response({'products':ItemappSerializer(items,many=True).data,'count':count})
+        
 @api_view(['GET', 'POST'])
 def product(request):
     user=request.user
@@ -1306,17 +1323,12 @@ def update_image(request):
             }
             return Response(data)
 
-@api_view(['GET', 'POST'])
-def add_item(request):
-    if request.method=='POST':
+class NewItem(APIView):
+    def post(self,request):
         user=request.user
         shop=Shop.objects.get(user=user)
         #item
         category_id=request.data.get('category_id')
-        from_quantity=request.POST.getlist('from_quantity')
-        to_quantity=request.POST.getlist('to_quantity')
-        price_range=request.POST.getlist('price_range')
-       
         name=request.data.get('name')
         description = request.data.get('description')
         item = Item.objects.create(shop = shop,name = name,category_id=category_id,description=description)
@@ -1329,16 +1341,16 @@ def add_item(request):
         item.length=request.data.get('length')
         item.width=request.data.get('width')
         item.save()
+        buymorediscounts=request.data.get('buymorediscounts',[])
         BuyMoreDiscount.objects.bulk_create([
             BuyMoreDiscount(
-               from_quantity=from_quantity[i],
-               to_quantity=to_quantity[i],
-               price=price_range[i],
+               from_quantity=item['from_quantity'],
+               to_quantity=item['to_quantity'],
+               price=item['price_range'],
                item=item
             )
-            for i in range(len(from_quantity))
+            for item in buymorediscounts
         ])
-
         shipping_method=request.data.get('method')
         shipping=Shipping.objects.filter(method=shipping_method)
         list_upload=UploadItem.objects.filter(id__in=file_id)
@@ -1498,8 +1510,9 @@ def add_item(request):
             for size,color,price,inventory,sku in variation_content
         ]
         Variation.objects.bulk_create(list_variation)
+        UploadItem.objects.filter(media_upload=None).delete()
         return Response({'product':'ok'})
-    else:
+    def get(self,request):
         list_category=Category.objects.all()
         data={
             'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
@@ -1507,216 +1520,223 @@ def add_item(request):
         } 
         return Response(data)
 
-@api_view(['GET', 'POST'])
-def update_item(request,id): 
-    user=request.user
-    shop=Shop.objects.get(user=user)
-    item=Item.objects.get(id=id,shop=shop)
-    if request.method=="POST":
+class Updateitem(APIView):
+    def post(request,id): 
+        user=request.user
+        shop=Shop.objects.get(user=user)
+        item=Item.objects.get(id=id,shop=shop)
+        action=request.data.get('action')
+        data={}
         #item
-        from_quantity=request.POST.getlist('from_quantity')
-        to_quantity=request.POST.getlist('to_quantity')
-        price_range=request.POST.getlist('price_range')
-        BuyMoreDiscount.objects.bulk_create([
-            BuyMoreDiscount(
-               from_quantity=from_quantity[i],
-               to_quantity=to_quantity[i],
-               price=price_range[i],
-               item_id=id
-            )
-            for i in range(len(from_quantity))
-        ])
+        if action=='hidden':
+            Item.objects.filter(id=id).update(hidden=True)
+            data.update({'success':True})
+        elif action=='delete':
+            Item.objects.filter(id=id).delete()
+            data.update({'success':True})
+        elif action=='violet':
+            data.update({'success':True})
+            Item.objects.filter(id=id).update(violet=True)
+        elif action=='update':
+            buymorediscounts=request.data.get('buymorediscounts',[])
+            BuyMoreDiscount.objects.bulk_create([
+                BuyMoreDiscount(
+                from_quantity=item['from_quantity'],
+                to_quantity=item['to_quantity'],
+                price=item['price_range'],
+                item_id=id
+                )
+                for item in buymorediscounts
+            ])
         
-        name=request.data.get('name')
-        description = request.data.get('description')
-        item.slug=name + '.' + str(item.id)
-        file_id=request.POST.getlist('file_id')
-        file_id_remove=request.POST.getlist('file_id_remove')
-        item.brand= request.data.get('brand')
-        item.weight=request.data.get('weight')
-        item.height=request.data.get('height')
-        item.length=request.data.get('length')
-        item.width=request.data.get('width')
-        from_quantity=request.POST.getlist('from_quantity')
-        to_quantity=request.POST.getlist('to_quantity')
-        price_range=request.POST.getlist('price_range')
-        buy_more_id=request.POST.getlist('buy_more_id')
-        # item 
-        shipping_method=request.POST.getlist('method')
-        item.brand= request.data.get('brand')
-        item.video=request.FILES.get('video')
-        item.weight=request.data.get('weigth')
-        item.height=request.data.get('height')
-        item.length=request.data.get('length')
-        item.width=request.data.get('width')
+            name=request.data.get('name')
+            description = request.data.get('description')
+            item.slug=name + '.' + str(item.id)
+            file_id=request.data.get('file_id',[])
+            file_id_remove=request.data.get('file_id_remove',[])
+            item.brand= request.data.get('brand')
+            item.weight=request.data.get('weight')
+            item.height=request.data.get('height')
+            item.length=request.data.get('length')
+            item.width=request.data.get('width')
+            buy_more_id=request.data.get('buy_more_id',[])
+            # item 
+            shipping_method=request.data.get('method',[])
+            item.brand= request.data.get('brand')
+            item.weight=request.data.get('weigth')
+            item.height=request.data.get('height')
+            item.length=request.data.get('length')
+            item.width=request.data.get('width')
         
-        #buy more
+            #buy more
         
-        shipping=Shipping.objects.filter(method=shipping_method)
-        list_upload=UploadItem.objects.filter(id__in=file_id)
-        UploadItem.objects.filter(id__in=file_id_remove).delete()
-        item.media_upload.add(*list_upload)
-        item.shipping_choice.add(*shipping)
-        item.save()
-        #detail item
-        # clotes,jeans,pants,
-        detail_item=Detail_Item.objects.get(item_id=item_id)
-        detail_item.brand_clothes=request.data.get('brand_clothes')#skirt,dress
-        detail_item.material=request.data.get('material_clothes')#skirt
-        detail_item.pants_length=request.data.get('pants_length')#,dress
-        detail_item.style=request.data.get('style')#skirt,dress
-        detail_item.sample=request.data.get('sample')#skirt,dress
-        detail_item.origin=request.data.get('origin')#skirt,dress
-        detail_item.pants_style=request.data.get('pants_style')
+            shipping=Shipping.objects.filter(method=shipping_method)
+            list_upload=UploadItem.objects.filter(id__in=file_id)
+            UploadItem.objects.filter(id__in=file_id_remove).delete()
+            item.media_upload.add(*list_upload)
+            item.shipping_choice.add(*shipping)
+            item.save()
+            #detail item
+            # clotes,jeans,pants,
+            detail_item=Detail_Item.objects.get(item_id=item_id)
+            detail_item.brand_clothes=request.data.get('brand_clothes')#skirt,dress
+            detail_item.material=request.data.get('material_clothes')#skirt
+            detail_item.pants_length=request.data.get('pants_length')#,dress
+            detail_item.style=request.data.get('style')#skirt,dress
+            detail_item.sample=request.data.get('sample')#skirt,dress
+            detail_item.origin=request.data.get('origin')#skirt,dress
+            detail_item.pants_style=request.data.get('pants_style')
         
-        detail_item.petite=request.data.get('CHOICE_YES_NO')#skirt,dress
-        detail_item.season=request.data.get('season')#skirt,dress
-        detail_item.waist_version=request.data.get('waist_version')#skirt,dress
-        detail_item.very_big=request.data.get('CHOICE_YES_NO')#skirt,dress
-        #skirt
-        detail_item.skirt_length=request.data.get('skirt_length')#dress,
-        detail_item.occasion=request.data.get('clothes_occasion')#dress
-        detail_item.dress_style=request.data.get('dress_style')#dress
-        #dress
-        detail_item.clothes_collar=request.data.get('clothes_collar')
-        detail_item.sleeve_lenght=request.data.get('sleeve_lenght')#T-shirt
-        #Tanks & Camisoles
-        detail_item.cropped_top=request.data.get('CHOICE_YES_NO')
-        detail_item.shirt_length=request.data.get('shirt_length')
-        #jean men
-        detail_item.tallfit=request.data.get('CHOICE_YES_NO')
-        #woman
-        detail_item.pants_style=request.data.get('pants_style_women')
-        #beaty
-        detail_item.brand_beaty=request.data.get('brand_beaty')
-        detail_item.packing_type=request.data.get('packing_tyle')
-        detail_item.formula=request.data.get('formula')
-        detail_item.expiry=request.data.get('expiry')
-        detail_item.body_care=request.data.get('body_care')
-        detail_item.active_ingredients=request.data.get('active_ingredients')
-        detail_item.type_of_nutrition=request.data.get('type_of_nutrition')
-        detail_item.volume=request.data.get('volume')
-        detail_item.weight=request.data.get('weight')
-        #mobile
-        detail_item.brand_mobile_gadgets=request.data.get('brand_mobile_gadgets')
-        detail_item.sim=request.data.get('type_of_sim')
-        detail_item.warranty_period=request.data.get('warranty_period')
-        detail_item.ram=request.data.get('ram')
-        detail_item.memory=request.data.get('memory')
-        detail_item.status=request.data.get('Status')
-        detail_item.warranty_type=request.data.get('warranty_type')
-        detail_item.processor=request.data.get('processor')
-        detail_item.screen=request.data.get('screen')
-        detail_item.phone_features=request.data.get('phone_features')
-        detail_item.operating_system=request.data.get('operating_system')
-        detail_item.telephone_cables=request.data.get('telephone_cables')
-        detail_item.main_camera=request.data.get('main_camera')
-        detail_item.camera_selfie=request.data.get('camera_selfie')
-        detail_item.number_of_sim_slots=request.data.get('number_of_sim_slots')
-        detail_item.mobile_phone=request.data.get('mobile_phone')
-        detail_item.main_camera_number=request.data.get('main_camera_number')
-        #shoes mem
-        detail_item.shoe_brand=request.data.get('shoe_brand')
-        detail_item.shoe_material=request.data.get('shoe_material')
-        detail_item.shoe_buckle_type=request.data.get('shoe_buckle_type')
-        detail_item.leather_outside=request.data.get('leather_outside')
-        detail_item.marker_style=request.data.get('marker_style')
-        detail_item.high_heel=request.data.get('high_heel')
-        detail_item.shoe_occasion=request.data.get('shoe_occasion')
-        detail_item.shoe_leather_type=request.data.get('shoe_leather_type')
-        detail_item.shoe_collar_height=request.data.get('shoe_collar_height')
-        detail_item.suitable_width=request.data.get('CHOICE_YES_NO')
+            detail_item.petite=request.data.get('CHOICE_YES_NO')#skirt,dress
+            detail_item.season=request.data.get('season')#skirt,dress
+            detail_item.waist_version=request.data.get('waist_version')#skirt,dress
+            detail_item.very_big=request.data.get('CHOICE_YES_NO')#skirt,dress
+            #skirt
+            detail_item.skirt_length=request.data.get('skirt_length')#dress,
+            detail_item.occasion=request.data.get('clothes_occasion')#dress
+            detail_item.dress_style=request.data.get('dress_style')#dress
+            #dress
+            detail_item.clothes_collar=request.data.get('clothes_collar')
+            detail_item.sleeve_lenght=request.data.get('sleeve_lenght')#T-shirt
+            #Tanks & Camisoles
+            detail_item.cropped_top=request.data.get('CHOICE_YES_NO')
+            detail_item.shirt_length=request.data.get('shirt_length')
+            #jean men
+            detail_item.tallfit=request.data.get('CHOICE_YES_NO')
+            #woman
+            detail_item.pants_style=request.data.get('pants_style_women')
+            #beaty
+            detail_item.brand_beaty=request.data.get('brand_beaty')
+            detail_item.packing_type=request.data.get('packing_tyle')
+            detail_item.formula=request.data.get('formula')
+            detail_item.expiry=request.data.get('expiry')
+            detail_item.body_care=request.data.get('body_care')
+            detail_item.active_ingredients=request.data.get('active_ingredients')
+            detail_item.type_of_nutrition=request.data.get('type_of_nutrition')
+            detail_item.volume=request.data.get('volume')
+            detail_item.weight=request.data.get('weight')
+            #mobile
+            detail_item.brand_mobile_gadgets=request.data.get('brand_mobile_gadgets')
+            detail_item.sim=request.data.get('type_of_sim')
+            detail_item.warranty_period=request.data.get('warranty_period')
+            detail_item.ram=request.data.get('ram')
+            detail_item.memory=request.data.get('memory')
+            detail_item.status=request.data.get('Status')
+            detail_item.warranty_type=request.data.get('warranty_type')
+            detail_item.processor=request.data.get('processor')
+            detail_item.screen=request.data.get('screen')
+            detail_item.phone_features=request.data.get('phone_features')
+            detail_item.operating_system=request.data.get('operating_system')
+            detail_item.telephone_cables=request.data.get('telephone_cables')
+            detail_item.main_camera=request.data.get('main_camera')
+            detail_item.camera_selfie=request.data.get('camera_selfie')
+            detail_item.number_of_sim_slots=request.data.get('number_of_sim_slots')
+            detail_item.mobile_phone=request.data.get('mobile_phone')
+            detail_item.main_camera_number=request.data.get('main_camera_number')
+            #shoes mem
+            detail_item.shoe_brand=request.data.get('shoe_brand')
+            detail_item.shoe_material=request.data.get('shoe_material')
+            detail_item.shoe_buckle_type=request.data.get('shoe_buckle_type')
+            detail_item.leather_outside=request.data.get('leather_outside')
+            detail_item.marker_style=request.data.get('marker_style')
+            detail_item.high_heel=request.data.get('high_heel')
+            detail_item.shoe_occasion=request.data.get('shoe_occasion')
+            detail_item.shoe_leather_type=request.data.get('shoe_leather_type')
+            detail_item.shoe_collar_height=request.data.get('shoe_collar_height')
+            detail_item.suitable_width=request.data.get('CHOICE_YES_NO')
 
-        #accessories
-        detail_item.occasion_accessories=request.data.get('occasion_accessories')
-        detail_item.style_accessories=request.data.get('style_accessories')
-        #ring
-        detail_item.accessory_set=request.data.get('accessory_set')
-        
-        #Household electrical appliances
-        detail_item.brand_electrical=request.data.get('brand_electrical')
-        detail_item.receiver_type=request.data.get('receiver_type')
+            #accessories
+            detail_item.occasion_accessories=request.data.get('occasion_accessories')
+            detail_item.style_accessories=request.data.get('style_accessories')
+            #ring
+            detail_item.accessory_set=request.data.get('accessory_set')
+            
+            #Household electrical appliances
+            detail_item.brand_electrical=request.data.get('brand_electrical')
+            detail_item.receiver_type=request.data.get('receiver_type')
 
-        #Travel & Luggage
-        detail_item.brand_luggage=request.data.get('brand_luggage')
-        detail_item.material_luggage=request.data.get('material_luggage')
-        detail_item.waterproof=request.data.get('CHOICE_YES_NO')
-        detail_item.feature_folding_bag=request.data.get('feature_folding_bag')
-        #Computers & Laptops 
-        #Desktop computer
-        detail_item.storage_type=request.data.get('storage_type')
-        detail_item.optical_drive=request.data.get('CHOICE_YES_NO')
-        detail_item.port_interface=request.data.get('port_interface')
-        detail_item.processor_laptop=request.data.get('processor_laptop')
-        detail_item.number_of_cores=request.data.get('number_of_cores')
-        detail_item.dedicated_games=request.data.get('CHOICE_YES_NO')
-        detail_item.save()
-        #size
-        Variation.objects.filter(item=item).delete()
-        size_value=request.POST.getlist('size_value')
-        size=Size.objects.bulk_create([
-            Size(
-                name=request.data.get('size_name'),
-                value=size_value[i])
-            for i in range(len(size_value))
-        ])
-        
-        #color
-        color_value=request.POST.getlist('color_value')
-        color_image=request.FILES.getlist('color_image')
-        none_color=[None for i in range(len(color_value))]
-        for j in range(len(none_color)):
-            for i in range(len(color_image)):
-                if i==j:
-                    none_color[j]=color_image[i]     
+            #Travel & Luggage
+            detail_item.brand_luggage=request.data.get('brand_luggage')
+            detail_item.material_luggage=request.data.get('material_luggage')
+            detail_item.waterproof=request.data.get('CHOICE_YES_NO')
+            detail_item.feature_folding_bag=request.data.get('feature_folding_bag')
+            #Computers & Laptops 
+            #Desktop computer
+            detail_item.storage_type=request.data.get('storage_type')
+            detail_item.optical_drive=request.data.get('CHOICE_YES_NO')
+            detail_item.port_interface=request.data.get('port_interface')
+            detail_item.processor_laptop=request.data.get('processor_laptop')
+            detail_item.number_of_cores=request.data.get('number_of_cores')
+            detail_item.dedicated_games=request.data.get('CHOICE_YES_NO')
+            detail_item.save()
+            #size
+            Variation.objects.filter(item=item).delete()
+            size_value=request.POST.getlist('size_value')
+            size=Size.objects.bulk_create([
+                Size(
+                    name=request.data.get('size_name'),
+                    value=size_value[i])
+                for i in range(len(size_value))
+            ])
+            
+            #color
+            color_value=request.POST.getlist('color_value')
+            color_image=request.FILES.getlist('color_image')
+            none_color=[None for i in range(len(color_value))]
+            for j in range(len(none_color)):
+                for i in range(len(color_image)):
+                    if i==j:
+                        none_color[j]=color_image[i]     
 
-        color=Color.objects.bulk_create([
-            Color(
-            name=request.data.get('color_name'),
-            value=color_value[i],
-            image=none_color[i])
-            for i in range(len(color_value)) 
-        ])
+            color=Color.objects.bulk_create([
+                Color(
+                name=request.data.get('color_name'),
+                value=color_value[i],
+                image=none_color[i])
+                for i in range(len(color_value)) 
+            ])
 
-        none=[None]
-        list_color=Color.objects.all().order_by('-id')[:len(color_value)]
-        list_size=Size.objects.all().order_by('-id')[:len(size_value)]
-        price=request.POST.getlist('price')
-        inventory=request.POST.getlist('inventory')
-        sku=request.POST.getlist('sku')
-        variant_list =list(itertools.product(list_size,list_color))
-        
-        if len(list_color)==0 and len(list_size) > 0:
-            variant_list=list(itertools.product(list_size,none))
-        elif len(list_size)==0 and len(list_color) >0:
-            variant_list=list(itertools.product(none,list_color))
-        elif len(list_size) == 0 and len(list_color)==0:
-            variant_list=list(itertools.product(none,none))
-        
-        # bulk_create() prohibited to prevent data loss due to unsaved related object 'color'. do chưa save từng thằng color
-        size_variation=[]
-        color_variation=[]
-        for i,j in variant_list:
-            size_variation.append(i),color_variation.append(j)
-        variation_content=list(zip(size_variation,color_variation,price,inventory,sku))
-        product_id_remove=request.POST.getlist('product_id_remove')
-        Variation.objects.filter(id__in=product_id_remove).delete()
-        list_variation = [
-            Variation(
-            item=item,
-            color=color,
-            size=size,
-            price=int(price),
-            inventory=int(inventory),
-            sku_classify=sku,
-            ) 
-            for size,color,price,inventory,sku in variation_content
-        ]
-        Variation.objects.bulk_create(list_variation)
-        Size.objects.filter(variation=None).delete()
-        Color.objects.filter(variation=None).delete()
-        return Response({'product':'ok'})
-    else:
+            none=[None]
+            list_color=Color.objects.all().order_by('-id')[:len(color_value)]
+            list_size=Size.objects.all().order_by('-id')[:len(size_value)]
+            price=request.POST.getlist('price')
+            inventory=request.POST.getlist('inventory')
+            sku=request.POST.getlist('sku')
+            variant_list =list(itertools.product(list_size,list_color))
+            
+            if len(list_color)==0 and len(list_size) > 0:
+                variant_list=list(itertools.product(list_size,none))
+            elif len(list_size)==0 and len(list_color) >0:
+                variant_list=list(itertools.product(none,list_color))
+            elif len(list_size) == 0 and len(list_color)==0:
+                variant_list=list(itertools.product(none,none))
+            
+            # bulk_create() prohibited to prevent data loss due to unsaved related object 'color'. do chưa save từng thằng color
+            size_variation=[]
+            color_variation=[]
+            for i,j in variant_list:
+                size_variation.append(i),color_variation.append(j)
+            variation_content=list(zip(size_variation,color_variation,price,inventory,sku))
+            product_id_remove=request.POST.getlist('product_id_remove')
+            Variation.objects.filter(id__in=product_id_remove).delete()
+            list_variation = [
+                Variation(
+                item=item,
+                color=color,
+                size=size,
+                price=int(price),
+                inventory=int(inventory),
+                sku_classify=sku,
+                ) 
+                for size,color,price,inventory,sku in variation_content
+            ]
+            Variation.objects.bulk_create(list_variation)
+            Size.objects.filter(variation=None).delete()
+            Color.objects.filter(variation=None).delete()
+            UploadItem.objects.filter(media_upload=None).delete()
+            data.update({'success':True})
+        return Response(data)
+    def get(request,id):
         list_color=Color.objects.filter(variation__item=item).distinct()
         detail_item=Detail_Item.objects.filter(item=item).values()
         buymore=BuyMoreDiscount.objects.filter(item_id=id)
