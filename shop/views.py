@@ -1351,8 +1351,8 @@ class NewItem(APIView):
         description = request.data.get('description')
         item = Item.objects.create(shop = shop,name = name,category_id=category_id,description=description)
         item.slug=re.sub('[,./\&]', "-",name) +  str(item.id)
-        file_id=request.POST.getlist('file_id')
-        file_id_remove=request.POST.getlist('file_id_remove')
+        files=request.data.get('files',[])
+       
         item.brand= request.data.get('brand')
         item.weight=request.data.get('weight')
         item.height=request.data.get('height')
@@ -1371,8 +1371,8 @@ class NewItem(APIView):
         ])
         shipping_method=request.data.get('method')
         shipping=Shipping.objects.filter(method=shipping_method)
-        list_upload=UploadItem.objects.filter(id__in=file_id)
-        UploadItem.objects.filter(id__in=file_id_remove).delete()
+        list_upload=UploadItem.objects.filter(id__in=files)
+        
         item.media_upload.add(*list_upload)
         item.shipping_choice.add(*shipping)
         detail_item=Detail_Item.objects.create(item=item)
@@ -1466,11 +1466,36 @@ class NewItem(APIView):
         detail_item.number_of_cores=request.data.get('number_of_cores')
         detail_item.dedicated_games=request.data.get('CHOICE_YES_NO')
         detail_item.save()
-        #size
+       
+        variations=request.data.get('variations')
+        list_variation = [
+            Variation(
+            item=item,
+            color=variation['color_id'],
+            size=variation['size_id'],
+            price=variation['price'],
+            inventory=variation['inventory'],
+            sku_classify=variation['sku'],
+            ) 
+            for variation in variations
+        ]
+        Variation.objects.bulk_create(list_variation)
+        UploadItem.objects.filter(media_upload=None).delete()
+        return Response({'success':True})
+    def get(self,request):
+        list_category=Category.objects.all()
+        data={
+            'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
+            'parent':category.getparent()} for category in list_category]
+        } 
+        return Response(data)
+
+class Createvariation(APIView):
+    def post(self,request):
         size_value=request.POST.getlist('size_value')
-        size=Size.objects.bulk_create([
+        sizes=Size.objects.bulk_create([
             Size(
-                name=request.data.get('size_name'),
+                name=request.POST.get('size_name'),
                 value=size_value[i])
             for i in range(len(size_value))
         ]
@@ -1485,58 +1510,15 @@ class NewItem(APIView):
             for i in range(len(color_image)):
                 if i==j:
                     none_color[j]=color_image[i]       
-        color=Color.objects.bulk_create([
+        colors=Color.objects.bulk_create([
             Color(
-            name=request.data.get('color_name'),
+            name=request.POST.get('color_name'),
             value=color_value[i],
             image=none_color[i])
             for i in range(len(color_value)) 
         ])
+        return Response({'colors':[{'id':color.id,'value':color.value} for color in colors],'sizes':[{'id':size.id,'value':size.value} for size in sizes]})
 
-        none=[None]
-
-        list_color=Color.objects.all().order_by('-id')[:len(color_value)]
-        list_size=Size.objects.all().order_by('-id')[:len(size_value)]
-        price=request.POST.getlist('price')
-        inventory=request.POST.getlist('inventory')
-        sku=request.POST.getlist('sku')
-        variant_list =list(itertools.product(list_size,list_color))
-        
-        if len(list_color)==0 and len(list_size) > 0:
-            variant_list=list(itertools.product(list_size,none))
-        elif len(list_size)==0 and len(list_color) >0:
-            variant_list=list(itertools.product(none,list_color))
-        elif len(list_size) == 0 and len(list_color)==0:
-            variant_list=list(itertools.product(none,none))
-        
-        # bulk_create() prohibited to prevent data loss due to unsaved related object 'color'. do chưa save từng thằng color
-        size_variation=[]
-        color_variation=[]
-        for i,j in variant_list:
-            size_variation.append(i),color_variation.append(j)
-        variation_content=list(zip(size_variation,color_variation,price,inventory,sku))
-        
-        list_variation = [
-            Variation(
-            item=item,
-            color=color,
-            size=size,
-            price=int(price),
-            inventory=int(inventory),
-            sku_classify=sku,
-            ) 
-            for size,color,price,inventory,sku in variation_content
-        ]
-        Variation.objects.bulk_create(list_variation)
-        UploadItem.objects.filter(media_upload=None).delete()
-        return Response({'product':'ok'})
-    def get(self,request):
-        list_category=Category.objects.all()
-        data={
-            'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
-            'parent':category.getparent()} for category in list_category]
-        } 
-        return Response(data)
 
 class Updateitem(APIView):
     def post(request,id): 
@@ -1557,6 +1539,8 @@ class Updateitem(APIView):
             Item.objects.filter(id=id).update(violet=True)
         elif action=='update':
             buymorediscounts=request.data.get('buymorediscounts',[])
+            buymore_remain=request.data.get('buymorediscounts_remain',[])
+            BuyMoreDiscount.objects.filter(item_id=id).exclude(id__in=buymore_remain).delete()
             BuyMoreDiscount.objects.bulk_create([
                 BuyMoreDiscount(
                 from_quantity=item['from_quantity'],
@@ -1564,14 +1548,22 @@ class Updateitem(APIView):
                 price=item['price_range'],
                 item_id=id
                 )
-                for item in buymorediscounts
+                for item in buymorediscounts if item['id']==None
             ])
-        
+            list_buymore_update=[]
+            for item in buymorediscounts:
+                if item['id']:
+                    buymorediscount=BuyMoreDiscount.objects.get(id=item['id'])
+                    buymorediscount.from_quantity=item['from_quantity']
+                    buymorediscount.to_quantity=item['to_quantity']
+                    buymorediscount.price=item['price_range']
+                    list_buymore_update.append(buymorediscount)
+            BuyMoreDiscount.objects.bulk_update(list_buymore_update)
             name=request.data.get('name')
             description = request.data.get('description')
             item.slug=name + '.' + str(item.id)
-            file_id=request.data.get('file_id',[])
-            file_id_remove=request.data.get('file_id_remove',[])
+            files=request.data.get('files',[])
+            UploadItem.objects.filter(Q(media_upload=None) | (Q(item_id=id) &~Q(id__in=file_id))).delete()
             item.brand= request.data.get('brand')
             item.weight=request.data.get('weight')
             item.height=request.data.get('height')
@@ -1587,10 +1579,10 @@ class Updateitem(APIView):
             item.width=request.data.get('width')
         
             #buy more
-        
+
             shipping=Shipping.objects.filter(method=shipping_method)
-            list_upload=UploadItem.objects.filter(id__in=file_id)
-            UploadItem.objects.filter(id__in=file_id_remove).delete()
+            list_upload=UploadItem.objects.filter(id__in=files)
+            
             item.media_upload.add(*list_upload)
             item.shipping_choice.add(*shipping)
             item.save()
@@ -1688,70 +1680,37 @@ class Updateitem(APIView):
             detail_item.dedicated_games=request.data.get('CHOICE_YES_NO')
             detail_item.save()
             #size
-            Variation.objects.filter(item=item).delete()
-            size_value=request.POST.getlist('size_value')
-            size=Size.objects.bulk_create([
-                Size(
-                    name=request.data.get('size_name'),
-                    value=size_value[i])
-                for i in range(len(size_value))
-            ])
-            
-            #color
-            color_value=request.POST.getlist('color_value')
-            color_image=request.FILES.getlist('color_image')
-            none_color=[None for i in range(len(color_value))]
-            for j in range(len(none_color)):
-                for i in range(len(color_image)):
-                    if i==j:
-                        none_color[j]=color_image[i]     
-
-            color=Color.objects.bulk_create([
-                Color(
-                name=request.data.get('color_name'),
-                value=color_value[i],
-                image=none_color[i])
-                for i in range(len(color_value)) 
-            ])
-
-            none=[None]
-            list_color=Color.objects.all().order_by('-id')[:len(color_value)]
-            list_size=Size.objects.all().order_by('-id')[:len(size_value)]
-            price=request.POST.getlist('price')
-            inventory=request.POST.getlist('inventory')
-            sku=request.POST.getlist('sku')
-            variant_list =list(itertools.product(list_size,list_color))
-            
-            if len(list_color)==0 and len(list_size) > 0:
-                variant_list=list(itertools.product(list_size,none))
-            elif len(list_size)==0 and len(list_color) >0:
-                variant_list=list(itertools.product(none,list_color))
-            elif len(list_size) == 0 and len(list_color)==0:
-                variant_list=list(itertools.product(none,none))
-            
-            # bulk_create() prohibited to prevent data loss due to unsaved related object 'color'. do chưa save từng thằng color
-            size_variation=[]
-            color_variation=[]
-            for i,j in variant_list:
-                size_variation.append(i),color_variation.append(j)
-            variation_content=list(zip(size_variation,color_variation,price,inventory,sku))
-            product_id_remove=request.POST.getlist('product_id_remove')
-            Variation.objects.filter(id__in=product_id_remove).delete()
+            list_update=[]
+            variations=request.data.get('variations',[])
+            variations_remain=request.data.get('variations_remain',[])
+            Variation.objects.filter(item_id=id).exclude(id__in=variations_remain).delete()
+            for item in variations:
+                if item['variation_id']:
+                    variation=Variation.objects.get(id=item['variation_id'])
+                    if item['price']!=variation.price:
+                        variation.price=item['price']
+                    if item['inventory']!=variation.inventory:
+                        variation.inventory=item['inventory']
+                    if item['sku']:
+                        variation.sku=item['sku']
+                    list_update.append(variation)
+            Variation.objects.bulk_update(list_update)
             list_variation = [
-                Variation(
-                item=item,
-                color=color,
-                size=size,
-                price=int(price),
-                inventory=int(inventory),
-                sku_classify=sku,
-                ) 
-                for size,color,price,inventory,sku in variation_content
+            Variation(
+            item=item,
+            color=variation['color_id'],
+            size=variation['size_id'],
+            price=variation['price'],
+            inventory=variation['inventory'],
+            sku_classify=variation['sku'],
+            ) 
+            for variation in variations if variation['variation_id']==None
             ]
             Variation.objects.bulk_create(list_variation)
             Size.objects.filter(variation=None).delete()
             Color.objects.filter(variation=None).delete()
-            UploadItem.objects.filter(media_upload=None).delete()
+            
+
             data.update({'success':True})
         return Response(data)
     def get(request,id):

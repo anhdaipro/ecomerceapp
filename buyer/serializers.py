@@ -211,7 +211,7 @@ class ItemproductSerializer(IteminfoSerializer):
     def get_num_like(self,obj):
         return obj.num_like()
 
-field_variation=['variation_id','inventory','color_value','size_value','price','item_id']
+field_variation=['variation_id','inventory','color_value','size_value','price','item_id','size_id','color_id']
 class VariationSerializer(serializers.ModelSerializer):
     color_value=serializers.SerializerMethodField()
     size_value=serializers.SerializerMethodField()
