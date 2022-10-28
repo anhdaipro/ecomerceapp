@@ -428,6 +428,24 @@ class ShopratingAPI(APIView):
         data={'id':reply.id,'text':reply.text}
         return Response(data)
 
+class Updatevariation(APIView):
+    def get(self,request):
+        item_id=request.GET.get('item_id')
+        listvariation=Variation.objects.filter(item_id=item_id)
+        data=VariationSerializer(listvariation,many=True).data
+        return Response(data)
+    def post(self,request):
+        variations=request.data.get('variations',[])
+        list_variation=[]
+        for item in variations:
+            variation=Variation.objects.get(id=item['variation_id'])
+            if variation.price!=item['price']:
+                variation.price=item['price']
+            if variation.inventory!=item['inventory']:
+                variation.inventory=item['inventory']
+            list_variation.append(variation)
+        Variation.objects.bulk_update(list_variaiton)
+        return Response({'success':True})
 class Listproduct(APIView):
     def get(self,request):
         user=request.user
