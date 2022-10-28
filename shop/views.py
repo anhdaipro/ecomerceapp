@@ -1475,7 +1475,7 @@ class NewItem(APIView):
             size=variation['size_id'],
             price=variation['price'],
             inventory=variation['inventory'],
-            sku_classify=variation['sku'],
+            sku_classify=variation['sku_classify'],
             ) 
             for variation in variations
         ]
@@ -1569,7 +1569,6 @@ class Updateitem(APIView):
             item.height=request.data.get('height')
             item.length=request.data.get('length')
             item.width=request.data.get('width')
-            buy_more_id=request.data.get('buy_more_id',[])
             # item 
             shipping_method=request.data.get('method',[])
             item.brand= request.data.get('brand')
@@ -1691,8 +1690,8 @@ class Updateitem(APIView):
                         variation.price=item['price']
                     if item['inventory']!=variation.inventory:
                         variation.inventory=item['inventory']
-                    if item['sku']:
-                        variation.sku=item['sku']
+                    if item['sku_classify']:
+                        variation.sku=item['sku_classify']
                     list_update.append(variation)
             Variation.objects.bulk_update(list_update)
             list_variation = [
@@ -1702,7 +1701,7 @@ class Updateitem(APIView):
             size=variation['size_id'],
             price=variation['price'],
             inventory=variation['inventory'],
-            sku_classify=variation['sku'],
+            sku_classify=variation['sku_classify'],
             ) 
             for variation in variations if variation['variation_id']==None
             ]
@@ -1717,13 +1716,11 @@ class Updateitem(APIView):
         list_color=Color.objects.filter(variation__item=item).distinct()
         detail_item=Detail_Item.objects.filter(item=item).values()
         buymore=BuyMoreDiscount.objects.filter(item_id=id)
-        variations=Variation.objects.filter(item=item,size=None)
-        list_variation=[{'value':color.value,'price':'','sku':'','inventory':'',
-        'list_variation':[{'value':variation.size.value,'price':variation.price,'id':variation.id,
-        'inventory':variation.inventory,'sku':variation.sku_classify} for variation in color.variation_set.all()]} for color in list_color]
-        if variations.exists():
-            list_variation=[{'id':variation.id,'value':variation.color.value,'price':variation.price,'sku':variation.sku_classify,'inventory':variation.inventory,
-            'list_variation':[]} for variation in variations]
+        variations=Variation.objects.filter(item=item)
+        
+        variations=[{'variation_id':variation.id,'color_value':variation.get_color(),'value':variation.get_size(),
+        'color_id':variation.color_id,'size_id':variation.size_id,'price':variation.price,'sku_classify':variation.sku_classify,'inventory':variation.inventory,
+        } for variation in variations]
         shipping_shop=shop.shipping.all()
         shipping_item=item.shipping_choice.all()
         list_category_choice=item.category.get_ancestors(include_self=True)
@@ -1741,8 +1738,8 @@ class Updateitem(APIView):
         'shipping_shop':shipping_shop.values(),
         'media_upload':[{'file':i.get_media(),'file_preview':i.file_preview(),
         'duration':i.duration,'filetype':i.media_type(),'id':i.id
-        } for i in item.media_upload.all()],'list_size':item.get_size(),'list_color':item.get_list_color(),
-        'item_detail':detail_item,'list_variation':list_variation}
+        } for i in item.media_upload.all()],'sizes':item.get_size(),'colors':item.get_list_color(),
+        'item_detail':detail_item,'variations':variations}
         return Response(data)
 
 @api_view(['GET', 'POST'])
