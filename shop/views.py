@@ -1369,8 +1369,8 @@ class NewItem(APIView):
             )
             for item in buymorediscounts
         ])
-        shipping_method=request.data.get('method')
-        shipping=Shipping.objects.filter(method=shipping_method)
+        shipping_method=request.data.get('method',[])
+        shipping=Shipping.objects.filter(method__in=shipping_method)
         list_upload=UploadItem.objects.filter(id__in=files)
         
         item.media_upload.add(*list_upload)
@@ -1580,7 +1580,7 @@ class Updateitem(APIView):
         
             #buy more
 
-            shipping=Shipping.objects.filter(method=shipping_method)
+            shipping=Shipping.objects.filter(method__in=shipping_method)
             list_upload=UploadItem.objects.filter(id__in=files)
             
             item.media_upload.add(*list_upload)
