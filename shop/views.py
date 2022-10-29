@@ -435,7 +435,7 @@ class Updatevariation(APIView):
         data=VariationSerializer(listvariation,many=True).data
         return Response(data)
     def post(self,request):
-        variations=request.data.get('variations',[])
+        variations=request.data.get('variations')
         list_variation=[]
         for item in variations:
             variation=Variation.objects.get(id=item['variation_id'])
