@@ -444,7 +444,7 @@ class Updatevariation(APIView):
             if variation.inventory!=item['inventory']:
                 variation.inventory=item['inventory']
             list_variation.append(variation)
-        Variation.objects.bulk_update(list_variation)
+        Variation.objects.bulk_update(list_variation,['price','inventory'])
         return Response({'success':True})
 class Listproduct(APIView):
     def get(self,request):
