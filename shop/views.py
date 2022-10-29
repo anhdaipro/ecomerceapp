@@ -1471,8 +1471,8 @@ class NewItem(APIView):
         list_variation = [
             Variation(
             item=item,
-            color=variation['color_id'],
-            size=variation['size_id'],
+            color_id=variation['color_id'],
+            size_id=variation['size_id'],
             price=variation['price'],
             inventory=variation['inventory'],
             sku_classify=variation['sku_classify'],
@@ -1697,8 +1697,8 @@ class Updateitem(APIView):
             list_variation = [
             Variation(
             item=item,
-            color=variation['color_id'],
-            size=variation['size_id'],
+            color_id=variation['color_id'],
+            size_id=variation['size_id'],
             price=variation['price'],
             inventory=variation['inventory'],
             sku_classify=variation['sku_classify'],
