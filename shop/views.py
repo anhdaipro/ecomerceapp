@@ -1490,7 +1490,7 @@ class NewItem(APIView):
         } 
         return Response(data)
 
-class Createvariation(APIView):
+class Createclassify(APIView):
     def post(self,request):
         size_value=request.POST.getlist('size_value')
         sizes=Size.objects.bulk_create([
@@ -1518,6 +1518,35 @@ class Createvariation(APIView):
             for i in range(len(color_value)) 
         ])
         return Response({'colors':[{'id':color.id,'value':color.value} for color in colors],'sizes':[{'id':size.id,'value':size.value} for size in sizes]})
+
+class UpdateclassifyAPI(APIView):
+    def post(self,reuquest):
+        sizes=request.POST.get('sizes')
+        Size.objects.bulk_update([
+            Size(
+                name=size['name'],
+                value=size['value'])
+            for size in sizes
+        ],['value','name'])
+
+        #color
+        color_value=request.POST.getlist('color_value')
+        color_image=request.FILES.getlist('color_image')
+        color_id=request.POST.getlist('color_id')
+        none_color=[None for i in range(len(color_value))]
+        list_color=[]
+        for j in range(len(none_color)):
+            for i in range(len(color_image)):
+                if i==j:
+                    none_color[j]=color_image[i]     
+        for i in range(len(color_value)):
+            color=Color.objects.get(id=color_id[i])
+            color.value=color_value[i]
+            color.name=request.POST.get('color_name')
+            if color_image[i]:
+                color.image=color_image[i]
+            list_color.append(color)
+        Color.objects.bulk_update(list_color,['image','name','value'])
 
 
 class Updateitem(APIView):
