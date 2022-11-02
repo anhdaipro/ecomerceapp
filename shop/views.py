@@ -1528,7 +1528,7 @@ class UpdateclassifyAPI(APIView):
         sizes=request.POST.get('sizes')
         Size.objects.bulk_update([
             Size(
-                name=size['name'],
+                name=request.POST.get('size_name'),
                 value=size['value'])
             for size in sizes
         ],['value','name'])
@@ -1581,17 +1581,17 @@ class Updateitem(APIView):
                 price=item['price_range'],
                 item_id=id
                 )
-                for item in buymorediscounts if item['id']==None
+                for item in buymorediscounts if type(item['id'])!=int
             ])
             list_buymore_update=[]
             for item in buymorediscounts:
-                if item['id']:
+                if type(item['id'])==int:
                     buymorediscount=BuyMoreDiscount.objects.get(id=item['id'])
                     buymorediscount.from_quantity=item['from_quantity']
                     buymorediscount.to_quantity=item['to_quantity']
                     buymorediscount.price=item['price_range']
                     list_buymore_update.append(buymorediscount)
-            BuyMoreDiscount.objects.bulk_update(list_buymore_update)
+            BuyMoreDiscount.objects.bulk_update(list_buymore_update,['from_quantity','to_quantity','price'])
             name=request.data.get('name')
             description = request.data.get('description')
             item.slug=name + '.' + str(item.id)
