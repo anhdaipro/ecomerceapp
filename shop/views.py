@@ -1303,7 +1303,7 @@ def get_shipping(request):
     user=request.user
     shop=Shop.objects.get(user=user)
     shipping_shop=shop.shipping.all()
-    data={'shipping_shop':[{'id':i.id,'method':i.method,'unit':i.shipping_unit} for i in shipping_shop]}
+    data={'shipping_shop': shipping_shop.values()}
     return Response(data)
 
 @api_view(['GET', 'POST'])
