@@ -1496,41 +1496,70 @@ class NewItem(APIView):
 
 class Createclassify(APIView):
     def post(self,request):
-        size_value=request.POST.getlist('size_value')
+        sizes=request.POST.get('sizes')
+        size_name=request.POST.get('size_name')
+        sizes_create=[obj for obj in sizes if type(obj['id'])!=int]
+        sizes_update=[obj for obj in sizes if type(obj['id'])==int]
+        list_size_update=[]
+        for item in sizes_update:
+            size=Size.objects.get(id=item['id'])
+            size.name=size_name
+            size.value=item['value']
+            list_size_update.append(size)
+        Size.objects.bulk_update(list_size_update,['value','name'])
+
         sizes=Size.objects.bulk_create([
             Size(
-                name=request.POST.get('size_name'),
-                value=size_value[i])
-            for i in range(len(size_value))
-        ]
-        )
-
+                name=size_name,
+                value=size['value'])
+            for size in sizes_create
+        ])
         #color
-        color_value=request.POST.getlist('color_value')
-        color_image=request.FILES.getlist('color_image')
-        none_color=[None for i in range(len(color_value))]
-        
-        for j in range(len(none_color)):
-            for i in range(len(color_image)):
+        value_update=request.POST.getlist('value_update')
+        image_update=request.FILES.getlist('image_update')
+        value=request.POST.getlist('value')
+        image=request.FILES.getlist('image')
+        color_id=request.POST.getlist('color_id')
+        color_name=request.POST.get('color_name'),
+        colors_create=[None for i in range(len(value))]
+        colors_update=[None for i in range(len(value_update))]
+        for j in range(len(colors_update)):
+            for i in range(len(image_update)):
                 if i==j:
-                    none_color[j]=color_image[i]       
+                    colors_update[j]=image_update[i] 
+        for j in range(len(colors_create)):
+            for i in range(len(image)):
+                if i==j:
+                    colors_create[j]=image[i]    
+
         colors=Color.objects.bulk_create([
             Color(
-            name=request.POST.get('color_name'),
-            value=color_value[i],
-            image=none_color[i])
-            for i in range(len(color_value)) 
+            name=color_name,
+            value=value[i],
+            image=colors_create[i])
+            for i in range(len(value)) 
         ])
+        list_color_update=[]
+        for i in range(len(value_update)):
+            color=Color.objects.get(id=color_id[i])
+            if colors_update[i]:
+                color.image=colors_update[i]
+            color.name=color_name
+            color.value=value_update[i]
+            list_color_update.append(color)
+        Color.bulk_update(list_colors_update,['name','value','image'])
         return Response({'colors':[{'id':color.id,'value':color.value} for color in colors],'sizes':[{'id':size.id,'value':size.value} for size in sizes]})
 
 class UpdateclassifyAPI(APIView):
     def post(self,reuquest):
         sizes=request.POST.get('sizes')
+        sizes_create=[obj for obj in sizes if type(obj['id'])!=int]
+        sizes_update=[obj for obj in sizes if type(obj['id'])==int]
         Size.objects.bulk_update([
             Size(
                 name=request.POST.get('size_name'),
                 value=size['value'])
-            for size in sizes
+            for size in sizes_update
         ],['value','name'])
 
         #color
@@ -1720,7 +1749,7 @@ class Updateitem(APIView):
             variations_remain=request.data.get('variations_remain',[])
             Variation.objects.filter(item_id=id).exclude(id__in=variations_remain).delete()
             for item in variations:
-                if item['variation_id']:
+                if type(item['variation_id'])==int:
                     variation=Variation.objects.get(id=item['variation_id'])
                     if item['price']!=variation.price:
                         variation.price=item['price']
@@ -1739,7 +1768,7 @@ class Updateitem(APIView):
             inventory=variation['inventory'],
             sku_classify=variation['sku_classify'],
             ) 
-            for variation in variations if variation['variation_id']==None
+            for variation in variations if type(variation['variation_id'])!=int
             ]
             Variation.objects.bulk_create(list_variation)
             Size.objects.filter(variation=None).delete()
