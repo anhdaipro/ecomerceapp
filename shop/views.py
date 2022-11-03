@@ -1606,7 +1606,7 @@ class Updateitem(APIView):
         method=[{'method':i.method} for i in shipping_item]
         data={
         'buymore':buymore.values(),
-        'item_info':{'name':item.name,'id':item.id, 'height':item.height,'length':item.length,'weight':item.weight,
+        'item_info':{'name':item.name,'id':item.id,'width':item.width,'height':item.height,'length':item.length,'weight':item.weight,
         'description':item.description,'status':item.status,'sku_product':item.sku_product},
         'list_category_choice':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
         'parent':category.getparent()} for category in list_category_choice],
