@@ -1797,7 +1797,7 @@ class Updateitem(APIView):
                     if item['sku_classify']:
                         variation.sku=item['sku_classify']
                     list_update.append(variation)
-            Variation.objects.bulk_update(list_update)
+            Variation.objects.bulk_update(list_update,['inventory','price','sku_classify'])
             list_variation = [
             Variation(
             item=item,
