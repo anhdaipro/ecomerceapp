@@ -1783,7 +1783,7 @@ class Updateitem(APIView):
         buymore=BuyMoreDiscount.objects.filter(item_id=id)
         variations=Variation.objects.filter(item=item)
         
-        variations=[{'variation_id':variation.id,'color_value':variation.get_color(),'value':variation.get_size(),
+        variations=[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
         'color_id':variation.color_id,'size_id':variation.size_id,'price':variation.price,'sku_classify':variation.sku_classify,'inventory':variation.inventory,
         } for variation in variations]
         shipping_shop=shop.shipping.all()
@@ -1803,7 +1803,7 @@ class Updateitem(APIView):
         'shipping_shop':shipping_shop.values(),
         'media_upload':[{'file':i.get_media(),'file_preview':i.file_preview(),
         'duration':i.duration,'filetype':i.media_type(),'id':i.id
-        } for i in item.media_upload.all()],'sizes':item.get_size(),'colors':item.get_list_color(),
+        } for i in item.media_upload.all()],'sizes':item.get_list_size(),'colors':item.get_list_color(),
         'item_detail':detail_item,'variations':variations}
         return Response(data)
 
