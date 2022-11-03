@@ -997,28 +997,31 @@ class DetailDeal(APIView):
         elif action=='addbyproduct':
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(byproducts)])
             list_byproducts=Item.objects.filter(id__in=byproducts).order_by(preserved)
-            list_variation_deal=[]
-            variations=Variation.objects.filter(item_id__in=byproducts)
-            for variation in variations:
-                if Variationdeal.objects.filter(deal_shock_id=id,item=variation.item,variation=variation).exists():
-                    pass
-                else:
-                    list_variation_deal.append(Variationdeal(promotion_price=0,user_item_limit=0,deal_shock_id=id,item=variation.item,variation=variation))
-            Variationdeal.objects.bulk_create(list_variation_deal)
             data=ByproductSellerSerializer(list_byproducts,many=True).data
         elif action=='savebyproduct':
             list_variation_deal=[]
             deal_shock.byproducts.set([])
             deal_shock.byproducts.add(*byproducts)
+            Variationdeal.objects.bulk_create([
+                Variationdeal(
+                    promotion_price=variation['promotion_price'],
+                    user_item_limit=variation['user_item_limit'],
+                    deal_shock_id=id,
+                    item_id=variation['item_id'],
+                    enable=variation['enable'],
+                    variation_id=variation['variation_id'])
+                    for variation in discount_model_list if variation['id']==None
+            ])
             for variation in discount_model_list:
-                variationdeal=Variationdeal.objects.get(item_id=variation['item_id'],variation_id=variation['variation_id'],deal_shock_id=id)
-                if variationdeal.promotion_price!=variation['promotion_price']:
-                    variationdeal.promotion_price=variation['promotion_price']
-                if variationdeal.user_item_limit!=variation['user_item_limit']:
-                    variationdeal.user_item_limit=variation['user_item_limit']
-                if variationdeal.enable!=variation['enable']:
-                    variationdeal.enable=variation['enable']
-                list_variation_deal.append(variationdeal)
+                if variation['id']:
+                    variationdeal=Variationdeal.objects.get(id=variation['id'])
+                    if variationdeal.promotion_price!=variation['promotion_price']:
+                        variationdeal.promotion_price=variation['promotion_price']
+                    if variationdeal.user_item_limit!=variation['user_item_limit']:
+                        variationdeal.user_item_limit=variation['user_item_limit']
+                    if variationdeal.enable!=variation['enable']:
+                        variationdeal.enable=variation['enable']
+                    list_variation_deal.append(variationdeal)
             Variationdeal.objects.bulk_update(list_variation_deal, ['enable','promotion_price','user_item_limit'], batch_size=1000)
             data.update({'suscess':True})
         elif action=='submit':
