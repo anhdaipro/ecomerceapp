@@ -158,7 +158,7 @@ class Item(models.Model):
     def get_list_size(self):
         sizes=Size.objects.filter(variation__item=self)
         list_size=[{'id':size.id,'value':size.value,'name':size.name} for size in sizes]
-    
+        return list_size
     def get_color_deal(self):
         color=Color.objects.filter(variation__item=self,variation__percent_discount_deal_shock__gt=0)
         list_color=[{'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in color.distinct()]
