@@ -354,8 +354,7 @@ class Color(models.Model):
     image=models.ImageField(upload_to='color/',blank=True,null=True)
     def __str__(self):
         return str(self.value)
-    class Meta:
-        ordering=['value']
+    
     def get_file(self):
         if self.image and hasattr(self.image,'url'):
             return self.image.url
@@ -365,8 +364,7 @@ class Size(models.Model):
     value=models.CharField(max_length=20)
     def __str__(self):
         return str(self.value)
-    class Meta:
-        ordering=['value']
+    
 
 class Variation(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE,related_name='variation_item')
