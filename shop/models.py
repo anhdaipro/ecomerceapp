@@ -152,11 +152,11 @@ class Item(models.Model):
         'discount_price':variation.get_discount_product(),'price':variation.price,
         'color_value':variation.get_color(),'size_value':variation.get_size()}
     def get_list_color(self):
-        color=Color.objects.filter(variation__item=self)
+        color=Color.objects.filter(variation__item=self).distinct()
         list_color=[{'file':i.get_file(),'file_preview':None,'filetype':'image','id':i.id,'name':i.name,'value':i.value} for i in color.distinct()]
         return list_color
     def get_list_size(self):
-        sizes=Size.objects.filter(variation__item=self)
+        sizes=Size.objects.filter(variation__item=self).distinct()
         list_size=[{'id':size.id,'value':size.value,'name':size.name} for size in sizes]
         return list_size
     def get_color_deal(self):
