@@ -1814,7 +1814,7 @@ class Updateitem(APIView):
             Color.objects.filter(variation=None).delete()
             
 
-            data.update({'success':True})
+            data=list_update
         return Response(data)
     
 
