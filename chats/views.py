@@ -12,7 +12,7 @@ from rest_framework.generics import (
     ListAPIView, RetrieveAPIView, CreateAPIView,
     UpdateAPIView, DestroyAPIView,GenericAPIView,
 )
-from .serializers import ThreadinfoSerializer,MessageSerializer,ThreaddetailSerializer
+from .serializers import ThreadinfoSerializer,MessageSerializer,ThreaddetailSerializer,MediathreadSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
