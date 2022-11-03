@@ -1356,12 +1356,15 @@ class NewItem(APIView):
         item.brand= request.data.get('brand')
         
         item.weight=request.data.get('weight')
+        height=request.data.get('height')
+        length=request.data.get('length')
+        width=request.data.get('width')
         if height:
-            item.height=request.data.get('height')
+            item.height=height
         if length:
-            item.length=request.data.get('length')
+            item.length=length
         if width:
-            item.width=request.data.get('width')
+            item.width=width
         item.save()
         buymorediscounts=request.data.get('buymorediscounts',[])
         BuyMoreDiscount.objects.bulk_create([
@@ -1629,12 +1632,15 @@ class Updateitem(APIView):
             UploadItem.objects.filter(Q(media_upload=None) | (Q(item_id=id) &~Q(id__in=file_id))).delete()
             item.brand= request.data.get('brand')
             item.weight=request.data.get('weight')
+            height=request.data.get('height')
+            length=request.data.get('length')
+            width=request.data.get('width')
             if height:
-                item.height=request.data.get('height')
+                item.height=height
             if length:
-                item.length=request.data.get('length')
+                item.length=length
             if width:
-                item.width=request.data.get('width')
+                item.width=width
             # item 
             shipping_method=request.data.get('method',[])
             item.brand= request.data.get('brand')
