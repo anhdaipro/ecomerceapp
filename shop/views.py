@@ -1691,7 +1691,7 @@ class Updateitem(APIView):
             item.save()
             #detail item
             # clotes,jeans,pants,
-            detail_item=Detail_Item.objects.get(item_id=item_id)
+            detail_item=Detail_Item.objects.get(item_id=id)
             detail_item.brand_clothes=request.data.get('brand_clothes')#skirt,dress
             detail_item.material=request.data.get('material_clothes')#skirt
             detail_item.pants_length=request.data.get('pants_length')#,dress
