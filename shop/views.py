@@ -1661,7 +1661,7 @@ class Updateitem(APIView):
             description = request.data.get('description')
             item.slug=name + '.' + str(item.id)
             files=request.data.get('files',[])
-            UploadItem.objects.filter(Q(media_upload=None) | (Q(item_id=id) &~Q(id__in=files))).delete()
+            UploadItem.objects.filter(Q(media_upload=None) | (Q(media_upload=item) &~Q(id__in=files))).delete()
             item.brand= request.data.get('brand')
             item.weight=request.data.get('weight')
             height=request.data.get('height')
