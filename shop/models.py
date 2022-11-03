@@ -155,7 +155,9 @@ class Item(models.Model):
         color=Color.objects.filter(variation__item=self)
         list_color=[{'file':i.get_file(),'file_preview':None,'filetype':'image','id':i.id,'name':i.name,'value':i.value} for i in color.distinct()]
         return list_color
-    
+    def get_list_size(self):
+        sizes=Size.objects.filter(variation__item=self)
+        list_size=[{'id':size.id,'value':size.value,'name':size.name} for size in sizes]
     
     def get_color_deal(self):
         color=Color.objects.filter(variation__item=self,variation__percent_discount_deal_shock__gt=0)
