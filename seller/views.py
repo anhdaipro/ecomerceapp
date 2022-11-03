@@ -38,6 +38,7 @@ def safe_div(x,y):
     if y == 0:
         return x
     return x / y
+
 def datapromotion(shop,week,choice,orders,orders_last):
     data={}
     orders=orders.filter(ordered_date__date__gte=week)
@@ -154,6 +155,7 @@ class DataShopAwardAPI(APIView):
         choice='award'
         datapromotion(shop,week,choice,orders,orders_last)
         return Response(datapromotion(shop,week,choice,orders,orders_last))
+
 class DataVoucherAPI(APIView):
     def get(self,request):
         current_date=datetime.datetime.now()
@@ -164,6 +166,7 @@ class DataVoucherAPI(APIView):
         orders_last=orders
         datapromotion(shop,week,choice,orders,orders_last)
         return Response(datapromotion(shop,week,choice,orders,orders_last))
+
 class DataAddonAPI(APIView):
     def get(self,request):
         current_date=datetime.datetime.now()
@@ -174,6 +177,7 @@ class DataAddonAPI(APIView):
         choice='addon'
         datapromotion(shop,week,choice,orders,orders_last)
         return Response(datapromotion(shop,week,choice,orders,orders_last))
+
 class DataBundleAPI(APIView):
     def get(self,request):
         current_date=datetime.datetime.now()
@@ -184,6 +188,7 @@ class DataBundleAPI(APIView):
         choice='bundle'
         datapromotion(shop,week,choice,orders,orders_last)
         return Response(datapromotion(shop,week,choice,orders,orders_last))
+
 class DataFlashsaleAPI(APIView):
     def get(self,request):
         current_date=datetime.datetime.now()
@@ -194,6 +199,7 @@ class DataFlashsaleAPI(APIView):
         choice='flashsale'
         datapromotion(shop,week,choice,orders,orders_last)
         return Response(datapromotion(shop,week,choice,orders,orders_last))
+
 class DataDiscountAPI(APIView):
     def get(self,request):
         current_date=datetime.datetime.now()
@@ -360,6 +366,7 @@ class DashboardAddonAPI(APIView):
         orders_last=orders
         dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month)
         return Response(dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month))
+
 class DashboardVoucherAPI(APIView):
     def get(self,request):
         current_date=datetime.datetime.now()
@@ -405,6 +412,7 @@ class DashboardVoucherAPI(APIView):
         data={'count_voucher_received':vouchers_user.count(),'count_voucher_received_last':vouchers_user_last.count()}
         datachart={**data,**dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month)}
         return Response(datachart)
+
 class DashboardFlashsaleAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
@@ -419,6 +427,7 @@ class DashboardFlashsaleAPI(APIView):
         orders_last=orders
         dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month)
         return Response(dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yesterday,week,month))
+
 class DashboardBundleAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
