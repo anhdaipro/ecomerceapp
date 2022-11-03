@@ -1524,7 +1524,7 @@ class Createclassify(APIView):
         value=request.POST.getlist('value')
         image=request.FILES.getlist('image')
         color_id=request.POST.getlist('color_id')
-        color_name=request.POST.get('color_name'),
+        color_name=request.POST.get('color_name')
         colors_create=[None for i in range(len(value))]
         colors_update=[None for i in range(len(value_update))]
         for j in range(len(colors_update)):
