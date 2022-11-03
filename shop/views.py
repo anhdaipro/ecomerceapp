@@ -1587,7 +1587,39 @@ class UpdateclassifyAPI(APIView):
 
 
 class Updateitem(APIView):
-    def post(request,id): 
+    def get(self,request,id):
+        user=request.user
+        shop=Shop.objects.get(user=user)
+        item=Item.objects.get(id=id,shop=shop)
+        list_color=Color.objects.filter(variation__item=item).distinct()
+        detail_item=Detail_Item.objects.filter(item=item).values()
+        buymore=BuyMoreDiscount.objects.filter(item_id=id)
+        variations=Variation.objects.filter(item=item)
+        
+        variations=[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
+        'color_id':variation.color_id,'size_id':variation.size_id,'price':variation.price,'sku_classify':variation.sku_classify,'inventory':variation.inventory,
+        } for variation in variations]
+        shipping_shop=shop.shipping.all()
+        shipping_item=item.shipping_choice.all()
+        list_category_choice=item.category.get_ancestors(include_self=True)
+        list_category=Category.objects.all()
+        method=[{'method':i.method} for i in shipping_item]
+        data={
+        'buymore':buymore.values(),
+        'item_info':{'name':item.name,'id':item.id, 'height':item.height,'length':item.length,'weight':item.weight,
+        'description':item.description,'status':item.status,'sku_product':item.sku_product},
+        'list_category_choice':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
+        'parent':category.getparent()} for category in list_category_choice],
+        'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
+        'parent':category.getparent()} for category in list_category],
+        'list_shipping_item':list({item['method']:item for item in method}.values()),
+        'shipping_shop':shipping_shop.values(),
+        'media_upload':[{'file':i.get_media(),'file_preview':i.file_preview(),
+        'duration':i.duration,'filetype':i.media_type(),'id':i.id
+        } for i in item.media_upload.all()],'sizes':item.get_list_size(),'colors':item.get_list_color(),
+        'item_detail':detail_item,'variations':variations}
+        return Response(data)
+    def post(self,request,id): 
         user=request.user
         shop=Shop.objects.get(user=user)
         item=Item.objects.get(id=id,shop=shop)
@@ -1784,35 +1816,7 @@ class Updateitem(APIView):
 
             data.update({'success':True})
         return Response(data)
-    def get(request,id):
-        list_color=Color.objects.filter(variation__item=item).distinct()
-        detail_item=Detail_Item.objects.filter(item=item).values()
-        buymore=BuyMoreDiscount.objects.filter(item_id=id)
-        variations=Variation.objects.filter(item=item)
-        
-        variations=[{'variation_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
-        'color_id':variation.color_id,'size_id':variation.size_id,'price':variation.price,'sku_classify':variation.sku_classify,'inventory':variation.inventory,
-        } for variation in variations]
-        shipping_shop=shop.shipping.all()
-        shipping_item=item.shipping_choice.all()
-        list_category_choice=item.category.get_ancestors(include_self=True)
-        list_category=Category.objects.all()
-        method=[{'method':i.method} for i in shipping_item]
-        data={
-        'buymore':buymore.values(),
-        'item_info':{'name':item.name,'id':item.id, 'height':item.height,'length':item.length,'weight':item.weight,
-        'description':item.description,'status':item.status,'sku_product':item.sku_product},
-        'list_category_choice':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
-        'parent':category.getparent()} for category in list_category_choice],
-        'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
-        'parent':category.getparent()} for category in list_category],
-        'list_shipping_item':list({item['method']:item for item in method}.values()),
-        'shipping_shop':shipping_shop.values(),
-        'media_upload':[{'file':i.get_media(),'file_preview':i.file_preview(),
-        'duration':i.duration,'filetype':i.media_type(),'id':i.id
-        } for i in item.media_upload.all()],'sizes':item.get_list_size(),'colors':item.get_list_color(),
-        'item_detail':detail_item,'variations':variations}
-        return Response(data)
+    
 
 @api_view(['GET', 'POST'])
 def create_shop(request):
