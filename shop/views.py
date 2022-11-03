@@ -1548,7 +1548,7 @@ class Createclassify(APIView):
             color.name=color_name
             color.value=value_update[i]
             list_color_update.append(color)
-        Color.bulk_update(list_colors_update,['name','value','image'])
+        Color.objects.bulk_update(list_colors_update,['name','value','image'])
         return Response({'colors':[{'id':color.id,'value':color.value} for color in colors],'sizes':[{'id':size.id,'value':size.value} for size in sizes]})
 
 class UpdateclassifyAPI(APIView):
