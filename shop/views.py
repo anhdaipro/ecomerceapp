@@ -46,7 +46,7 @@ from rest_framework.generics import (
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
-
+import json
 from buyer.serializers import (OrdersellerSerializer,ItemSellerSerializer,
 VariationSerializer,
 VoucherSerializer,
@@ -1497,6 +1497,7 @@ class NewItem(APIView):
 class Createclassify(APIView):
     def post(self,request):
         sizes=request.POST.get('sizes')
+        sizes=json.loads(sizes)
         size_name=request.POST.get('size_name')
         sizes_create=[obj for obj in sizes if type(obj['id'])!=int]
         sizes_update=[obj for obj in sizes if type(obj['id'])==int]
