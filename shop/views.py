@@ -1679,7 +1679,7 @@ class Updateitem(APIView):
             # item 
             shipping_method=request.data.get('method',[])
             item.brand= request.data.get('brand')
-            item.weight=request.data.get('weigth')
+            
             item.height=request.data.get('height')
             item.length=request.data.get('length')
             item.width=request.data.get('width')
