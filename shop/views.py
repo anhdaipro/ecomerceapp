@@ -1613,8 +1613,6 @@ class Updateitem(APIView):
         'description':item.description,'status':item.status,'sku_product':item.sku_product},
         'list_category_choice':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
         'parent':category.getparent()} for category in list_category_choice],
-        'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
-        'parent':category.getparent()} for category in list_category],
         'list_shipping_item':list({item['method']:item for item in method}.values()),
         'shipping_shop':shipping_shop.values(),
         'media_upload':[{'file':i.get_media(),'file_preview':i.file_preview(),
