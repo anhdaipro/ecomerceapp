@@ -1660,7 +1660,7 @@ class Updateitem(APIView):
             BuyMoreDiscount.objects.bulk_update(list_buymore_update,['from_quantity','to_quantity','price'])
             name=request.data.get('name')
             description = request.data.get('description')
-            item.slug=name + '.' + str(item.id)
+            item.slug=re.sub('[,./\&]', "-",name) +  str(item.id)
             files=request.data.get('files',[])
             UploadItem.objects.filter(Q(media_upload=None) | (Q(media_upload=item) &~Q(id__in=files))).delete()
             item.brand= request.data.get('brand')
