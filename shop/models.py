@@ -78,13 +78,11 @@ class UploadItem(models.Model):
         if self.image_preview and hasattr(self.image_preview,'url'):
             return self.image_preview.url
     def media_type(self):
-        type_tuple = guess_type(self.file.url, strict=True)
-        if (type_tuple[0]).__contains__("image"):
-            return "image"
-        elif (type_tuple[0]).__contains__("video"):
+        
+        if self.image_preview:
             return "video"
         else:
-            return 'pdf'
+            return 'image'
 status_choice=(
     ('1','New'),
     ('2','Like New'),
