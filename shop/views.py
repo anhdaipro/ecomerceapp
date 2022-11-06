@@ -159,6 +159,7 @@ class ListdealshockAPI(APIView):
         end_day=request.GET.get('end_day')
         option=request.GET.get('option')
         keyword=request.GET.get('keyword')
+        deal_type=request.GET('deal_type')
         if option:
             if option=='2':
                 deal_shocks=deal_shocks.filter(main_products__name__istartswith=keyword)
@@ -170,6 +171,8 @@ class ListdealshockAPI(APIView):
             deal_shocks=deal_shocks.filter(valid_from__gte=start_day)
         if end_day:
             deal_shocks=deal_shocks.filter(valid_to__lte=end_day)
+        if deal_type:
+            deal_shocks=deal_shocks.filter(shock_deal_type=deal_type)
         if choice:
             if choice=='current':
                 deal_shocks=deal_shocks.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
@@ -933,10 +936,11 @@ class NewDeal(APIView):
         valid_to=request.GET.get('valid_to')
         valid_from=request.GET.get('valid_from')
         items=Item.objects.filter(shop=shop).order_by('-id')
-        deal_shock=Buy_with_shock_deal.objects.get(id=deal_id)
-        item_deal=deal_shock.main_products.all()
-        list_id=[item.id for item in item_deal]
-        items=items.exclude(id__in=list_id)
+        if deal_id:
+            deal_shock=Buy_with_shock_deal.objects.get(id=deal_id)
+            item_deal=deal_shock.main_products.all()
+            list_id=[item.id for item in item_deal]
+            items=items.exclude(id__in=list_id)
         if mainproducts:
             item_deal=deal_shock.byproducts.all()
             list_id=[item.id for item in item_deal]
