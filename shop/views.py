@@ -970,6 +970,24 @@ class NewDeal(APIView):
         minimum_price_to_receive_gift=request.data.get('minimum_price_to_receive_gift'),
         number_gift=request.data.get('number_gift'),
         )
+        gift=request.data.get('gift')
+        if gift:
+            deal_shock.active=True
+            deal_shock.save()
+            discount_model_list=request.data.get('discount_model_list',[])
+            list_variation_deal=[]
+            deal_shock.byproducts.set([])
+            deal_shock.byproducts.add(*byproducts)
+            Variationdeal.objects.bulk_create([
+                Variationdeal(
+                    promotion_price=variation['promotion_price'],
+                    user_item_limit=variation['user_item_limit'],
+                    deal_shock_id=id,
+                    item_id=variation['item_id'],
+                    enable=variation['enable'],
+                    variation_id=variation['variation_id'])
+                    for variation in discount_model_list
+                ])
         data={
             'id':deal_shock.id
             }
