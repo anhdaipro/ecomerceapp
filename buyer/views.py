@@ -361,6 +361,7 @@ class SearchitemshopAPI(APIView):
         page_obj = paginator.get_page(page)
         data={'list_item_page':ItempageSerializer(page_obj,many=True).data,'page_count':paginator.num_pages}
         return Response(data)
+
 class SearchitemAPIView(APIView):
     permission_classes = (AllowAny,)
     def get(self, request):
@@ -1279,6 +1280,12 @@ class PaymentAPIView(APIView):
                         product=Variation.objects.get(id=byproduct.product_id)
                         product.inventory -= byproduct.quantity
                         product.save()
+            email_body = f"Hello {user.username}, \n {order.shop.user.username} cảm ơn bạn đã đặt hàng"
+            data = {'email_body': email_body, 'to_email': user.email,
+                    'email_subject': 'Thanks order!'}
+            email = EmailMessage(
+            subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+            email.send() 
         bulk_update(list_orders)
         Payment.objects.filter(paid=False,user=user).delete()
         return Response({'ok':'ok'})
@@ -1307,6 +1314,7 @@ class Byproductdeal(APIView):
         byproducts=ByproductdealSerializer(listitem,many=True).data
         data={'byproducts':byproducts,'count':count}
         return Response(data)
+
 class DealShockAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request,deal_id,id):
@@ -1620,17 +1628,12 @@ class SetNewPasswordAPIView(generics.GenericAPIView):
         return Response({'success': True, 'message': 'Password reset success'}, status=status.HTTP_200_OK)
 
 class ChangePasswordView(generics.UpdateAPIView):
-    """
-    An endpoint for changing password.
-    """
     serializer_class = ChangePasswordSerializer
     model = User
     permission_classes = (IsAuthenticated,)
-
     def get_object(self, queryset=None):
         obj = self.request.user
         return obj
-
     def update(self, request, *args, **kwargs):
         self.object = self.get_object()
         serializer = self.get_serializer(data=request.data)

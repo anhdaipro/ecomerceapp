@@ -55,6 +55,7 @@ class Shop_program(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
     name_program=models.CharField(max_length=100)
     products=models.ManyToManyField(to='shop.Item',blank=True,related_name='shop_program')
+    variations=models.JSONField(null=True)
     valid_from=models.DateTimeField()
     valid_to=models.DateTimeField()
     active=models.BooleanField(default=False)
@@ -105,12 +106,14 @@ class Buy_with_shock_deal(models.Model):
     program_name_buy_with_shock_deal=models.CharField(max_length=100)
     main_products=models.ManyToManyField(to='shop.Item',related_name='main_product',blank=True)
     byproducts=models.ManyToManyField(to='shop.Item',related_name='byproduct',blank=True)
+    variations=models.JSONField(null=True)
     valid_from=models.DateTimeField()
     valid_to=models.DateTimeField()
     active=models.BooleanField(default=False)
     limited_product_bundles=models.IntegerField(null=True)
     minimum_price_to_receive_gift=models.IntegerField(default=0,null=True)
     number_gift=models.IntegerField(default=0,null=True)
+    
     created=models.DateTimeField(auto_now=True)
 
 
@@ -132,6 +135,7 @@ class Variationdeal(models.Model):
 class Flash_sale(models.Model):
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
     products=models.ManyToManyField(to='shop.Item',blank=True,related_name='flash_sale')
+    variations=models.JSONField(null=True)
     valid_from=models.DateTimeField()
     valid_to=models.DateTimeField()
     active=models.BooleanField(default=False)
