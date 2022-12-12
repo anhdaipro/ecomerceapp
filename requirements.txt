@@ -167,7 +167,7 @@ moviepy==1.0.3
 msgpack==1.0.3
 multidict==5.1.0
 mutagen==1.46.0
-mysqlclient==2.0.3
+
 networkx==2.6.2
 numpy==1.22.3
 oauth2client==4.1.3
