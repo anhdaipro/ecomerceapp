@@ -408,9 +408,9 @@ class Variation(models.Model):
     def get_discount_deal(self):
         deal_shock=Buy_with_shock_deal.objects.filter(byproducts=self.item,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now())
         if deal_shock.exists():
-            variations=Variationdeal.objects.filter(enable=True,variation=self,deal_shock=deal_shock.first())
-            if variations.exists():
-                return variations.first().promotion_price
+            variations=[variation for variation in deal_shock.first().variations if variation['enable']]
+            if len(variations)>0:
+                return variations[0]['promotion_price']
     
     def total_discount(self):
         discount=self.price
