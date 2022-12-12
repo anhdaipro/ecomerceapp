@@ -39,6 +39,7 @@ coreschema==0.0.4
 cryptography==3.4.7
 Currency==0.1.2
 cycler==0.10.0
+Cython==0.29.32
 daphne==3.0.2
 dateparser==1.0.0
 decorator==4.4.2
