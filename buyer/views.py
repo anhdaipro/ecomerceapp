@@ -86,6 +86,7 @@ client = Client(account_sid, auth_token)
 def create_ref_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=14))
 class UserView(APIView):
+    permission_classes = (AllowAny,)
     def get(self, request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         if not token:
@@ -127,6 +128,7 @@ class RegisterView(APIView):
         return Response(serializer.data)
 
 class Registeremail(APIView):
+    permission_classes = (AllowAny,)
     def post(self,request):
         username=request.data.get('username')
         email=request.data.get('email')
@@ -259,11 +261,13 @@ class HomeAPIView(APIView):
         data.update({'items_flash_sale':ItemflasaleSerializer(list_items,many=True,context={'promotionId':data.get('id')}).data})
         return Response(data)
 class ListFlashsaleAPI(APIView):
+    permission_classes = (AllowAny,)
     def get(self,request):
         flash_sales=Flash_sale.objects.filter(valid_to__gt=timezone.now()).order_by('valid_from').distinct('valid_from')[:5]
         list_flash_sale=FlashSaleinfoSerializer(flash_sales,many=True).data
         return Response(list_flash_sale)
 class FlashsaleAPI(APIView):
+    permission_classes = (AllowAny,)
     def get(self,request):
         promotionId=request.GET.get('promotionId')
         list_flash_sales=Flash_sale.objects.filter(valid_to__gt=timezone.now())
@@ -318,6 +322,7 @@ def get_count(category):
     return Item.objects.filter(category=category).count()
 
 class Topsearch(APIView):
+    permission_classes = (AllowAny,)
     def get(self,request):
         from_item=0
         to_item=5
@@ -336,6 +341,7 @@ class Topsearch(APIView):
         return Response(data)
 
 class SearchitemshopAPI(APIView):
+    permission_classes = (AllowAny,)
     def get(self,request):
         shop_id=request.GET.get('shop_id')
         minprice=request.GET.get('minPrice')
@@ -446,6 +452,7 @@ class ImageHomeAPIView(ListAPIView):
         return Image_home.objects.all()
 
 class ItemdetailAPI(APIView):
+    permission_classes = (AllowAny,)
     def get(self,request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         item_id=request.GET.get('itemId')
@@ -459,6 +466,7 @@ class ItemdetailAPI(APIView):
                 ItemViews.objects.create(item=item,user=request.user)
 
 class ShopdetailAPI(APIView):
+    permission_classes = (AllowAny,)
     def get(self,request):
         token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
         item_id=request.GET.get('itemId')
@@ -1445,6 +1453,7 @@ def get_review(order):
         return True
 
 class BuyagainAPI(APIView):
+    permission_classes = (IsAuthenticated,)
     def post(self,request):
         product_id=request.data.get('product_id')
         shop_id=request.data.get('shop_id')
