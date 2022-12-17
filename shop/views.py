@@ -1100,7 +1100,7 @@ class Createcategory(APIView):
         title=request.POST.getlist('title')
         image=request.FILES.getlist('image')
         categories=[Category(title=title[i],image=image[i],display=True) for i in range(len(image))]
-        Category.bulk_create(categories)
+        Category.objects.bulk_create(categories)
 class Detailprogram(APIView):
     def get(self,request,id):
         program=Shop_program.objects.get(id=id)
@@ -1122,10 +1122,6 @@ class Detailprogram(APIView):
         else:
             shop_programs=Shop_program.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
             items=Item.objects.filter(shop_id=shop_program.shop_id,shop_program__in=shop_programs)
-<<<<<<< HEAD
-            
-=======
->>>>>>> 141a8a2a80779ecea70fd70ad3748d408f80dec7
             listitemprogram=[item.id for item in items]
             sameitem=list(set(listitemprogram).intersection(list_items))
             if len(sameitem)==0:
