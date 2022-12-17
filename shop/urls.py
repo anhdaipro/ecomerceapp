@@ -28,11 +28,14 @@ DetailShopAwardAPI,
 NewFollowOffer,
 DetailFollowOffer,
 ListFollowOfferAPI,
+Createcategory,
 ListShopAwardAPI
 )
 urlpatterns = [
     path("infoseller", views.infoseller),
     path("product/", views.product),
+    path("addcategory", Createcategory.as_view()),
+    
     path("shop/rating",ShopratingAPI.as_view()),
     path("vouchers/list", ListvoucherAPI.as_view()),
     path("bundle/list", ListcomboAPI.as_view()),

@@ -22,6 +22,7 @@ from category.models import Category
 import datetime
 import re
 import subprocess
+from slugify import slugify
 from mimetypes import guess_type
 class IpModel(models.Model):
     ip=models.CharField(max_length=100)
@@ -44,6 +45,11 @@ class Shop(models.Model):
     city=models.CharField(max_length=200,null=True)
     def __str__(self):
         return str(self.user)
+    def save(self, *args, **kwargs):
+        #this line below give to the instance slug field a slug name
+        self.slug = slugify(self.name)
+        #this line below save every fields of the model instance
+        super(Shop, self).save(*args, **kwargs) 
     def get_image(self):
         if self.image_cover and hasattr(self.image_cover,'url'):
             return self.image_cover.url
@@ -107,18 +113,20 @@ class Item(models.Model):
     price_ship=models.FloatField(null=True,blank=True)
     is_active=models.BooleanField(default=False)
     views=models.IntegerField(default=0)
-    slug=models.CharField(max_length=150)
+    slug=models.SlugField(max_length=150,null=True)
     violet=models.BooleanField(default=False)
     hidden=models.BooleanField(default=False)
     created=models.DateTimeField(auto_now=True)
+    detail=models.JSONField(null=True)
     def __str__(self):
         return str(self.name)
-    def save(self, *args, **kwargs):
-        super(Item, self).save(*args, **kwargs)
-        self.slug = re.sub('[,./\ ]', "-",self.name) + '.' + str(self.id)
     def get_absolute_url(self):
         return reverse("category", kwargs={"slug": self.slug})
-    
+    def save(self, *args, **kwargs):
+        #this line below give to the instance slug field a slug name
+        self.slug = slugify(self.name)
+        #this line below save every fields of the model instance
+        super(Item, self).save(*args, **kwargs) 
     def count_review(self):
         return ReView.objects.filter(cartitem__product__item=self).count()
     def average_review(self):
@@ -137,7 +145,7 @@ class Item(models.Model):
         return list_size
     def get_deal_choice(self):
         if self.get_deal_shock_current():
-            return [variation for variation in self.get_deal_shock_current().variations if variation['enabled']][0]
+            return [variation for variation in self.get_deal_shock_current().variations if variation['enable']][0]
     def get_color(self):
         color=Color.objects.filter(variation__item=self,variation__inventory__gt=0)
         list_color=[{'image':i.get_file(),'id':i.id,'name':i.name,'value':i.value,'variation':[variation.id for variation in i.variation_set.filter(inventory__gt=0)]}for i in color.distinct()]
@@ -171,17 +179,17 @@ class Item(models.Model):
         return variations['avg']
     def avg_discount_price(self):
         if self.get_program_current():
-            variations=[variation['promotion_price'] for variation in self.get_program_current().variations if variation['enabled']]
+            variations=[variation['promotion_price'] for variation in self.get_program_current().variations if variation['enable']]
             discount=functools.reduce(lambda x, y: x+y,variations)
             return discount
     def avg_discount_price_flash_sale(self):
         if self.get_flash_sale_current():
-            variations=[variation['promotion_price'] for variation in self.get_flash_sale_current().variations if variation['enabled']]
+            variations=[variation['promotion_price'] for variation in self.get_flash_sale_current().variations if variation['enable']]
             discount=functools.reduce(lambda x, y: x+y,variations)
             return discount
     def get_promotion_stock(self):
         if self.get_flash_sale_current():
-            variations=[variation['promotion_stock'] for variation in self.get_flash_sale_current().variations if variation['enabled']]
+            variations=[variation['promotion_stock'] for variation in self.get_flash_sale_current().variations if variation['enable']]
             stocks=functools.reduce(lambda x, y: x+y,variations)
             return stocks
     def get_combo_current(self):
@@ -375,29 +383,29 @@ class Variation(models.Model):
         return str(self.item)
     def get_limit_deal(self):
         if self.item.get_deal_shock_current():
-            variations=[variation for variation in self.item.get_deal_shock_current().variations if variation['enabled'] and variation['variation_id']==self.id]
+            variations=[variation for variation in self.item.get_deal_shock_current().variations if variation['enable'] and variation['variation_id']==self.id]
             if len(variations)>0:
                 return variations[0]['user_item_limit']
     def get_variation_program(self):
         if self.item.get_program_current():
-            variations=[variation for variation in self.item.get_program_current().variations if variation['enabled'] and variation['variation_id']==self.id]
+            variations=[variation for variation in self.item.get_program_current().variations if variation['enable'] and variation['variation_id']==self.id]
             if len(variations)>0:
                 return variations[0]['user_item_limit']
     def get_limit_flash_sale(self):
         if self.item.get_flash_sale_current():
-            variations=[variation for variation in self.item.get_flash_sale_current().variations if variation['enabled'] and variation['promotion_stock'] >0 and variation['variation_id']==self.id]
+            variations=[variation for variation in self.item.get_flash_sale_current().variations if variation['enable'] and variation['promotion_stock'] >0 and variation['variation_id']==self.id]
             if len(variations)>0:
                 return variations[0]['user_item_limit']
     def get_discount_program(self):
         if self.item.get_program_current():
-            variations=[variation for variation in self.item.get_program_current().variations if variation['enabled'] and variation['promotion_stock'] >0 and variation['variation_id']==self.id]
+            variations=[variation for variation in self.item.get_program_current().variations if variation['enable'] and variation['promotion_stock'] >0 and variation['variation_id']==self.id]
             if len(variations)>0:
                 return variations[0]['promotion_price']
             
     def get_discount_flash_sale(self):
         if self.item.get_flash_sale_current():
             if self.item.get_flash_sale_current():
-                variations=[variation for variation in self.item.get_flash_sale_current().variations if variation['enabled'] and variation['promotion_stock'] >0 and variation['variation_id']==self.id]
+                variations=[variation for variation in self.item.get_flash_sale_current().variations if variation['enable'] and variation['promotion_stock'] >0 and variation['variation_id']==self.id]
                 if len(variations)>0:
                     return variations[0]['promotion_price']
     def get_discount_product(self):
@@ -408,9 +416,9 @@ class Variation(models.Model):
     def get_discount_deal(self):
         deal_shock=Buy_with_shock_deal.objects.filter(byproducts=self.item,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now())
         if deal_shock.exists():
-            variations=Variationdeal.objects.filter(enable=True,variation=self,deal_shock=deal_shock.first())
-            if variations.exists():
-                return variations.first().promotion_price
+            variations=[variation for variation in deal_shock.first().variations if variation['enable']]
+            if len(variations)>0:
+                return variations[0]['promotion_price']
     
     def total_discount(self):
         discount=self.price

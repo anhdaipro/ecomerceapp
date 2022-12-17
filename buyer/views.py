@@ -40,7 +40,6 @@ from chats.models import *
 from city.models import *
 from myweb.models import *
 from account.models import *
-from itemdetail.models import *
 from orderactions.models import *
 from rest_framework.decorators import api_view
 from bulk_update.helper import bulk_update
@@ -50,8 +49,8 @@ UserprofileSerializer,ShopinfoSerializer,ItemSerializer,ItemdetailSerializer,
 ItemSellerSerializer,ShoporderSerializer,ImagehomeSerializer,ComboSerializer,
 CategoryhomeSerializer,AddressSerializer,OrderSerializer,OrderdetailSerializer,
 ReviewSerializer,CartitemcartSerializer,CartviewSerializer,
-ProductdealSerializer,ItemcomboSerializer,CombodetailseSerializer,ItempageSerializer,
-ItemdetailsSerializer,ShopdetailSerializer,OrderpurchaseSerializer,
+ProductdealSerializer,ItemcomboSerializer,CombodetailseSerializer,ItempageSerializer
+,ShopdetailSerializer,OrderpurchaseSerializer,
 CategorydetailSerializer,VariationcartSerializer,ItemflasaleSerializer,
 ByproductdealSerializer,ByproductcartSerializer,ComboItemSerializer,
 DealByproductSerializer,FlashSaleinfoSerializer,ReviewitemSerializer
@@ -533,9 +532,8 @@ class ProductInfoAPI(APIView):
             list_hot_sales=Item.objects.filter(shop_id=item.shop_id,cart_item__order_cartitem__ordered=True).annotate(count=Count('cart_item__order_cartitem__id')).prefetch_related('shop_program').prefetch_related('promotion_combo').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count')
             data = ItemSerializer(list_hot_sales,many=True,context={"request": request}).data
         elif choice=='detail':
-            detail=Detail_Item.objects.filter(item=item)
-            if detail.exists():
-                data=ItemdetailsSerializer(detail.first()).data
+            detail_item=item.detail
+            data=detail_item
         elif choice=='review':
             list_review=ReView.objects.filter(cartitem__product__item=item)
             reviews=list_review
@@ -1187,8 +1185,13 @@ class CheckoutAPIView(APIView):
                 order.accepted_date=datetime.datetime.now()+timedelta(minutes=30)
                 order.payment_choice=payment_option
                 items = order.items.all()
-                items.update(ordered=True) 
-                for item in items:
+                id_remove=[item for item in items if item.quantity<item.product.inventory]
+                id_checkout=[item for item in items if item.quantity>=item.product.inventory]
+                items_checkout=items.filter(id__in=id_checkout).update(ordered=True)
+                order.items.remove(*id_remove)
+                for item in items_checkout:
+                    products=Variation.objects.get(id=item.product_id)
+                    products.inventory -= item.quantity
                     item.amount_main_products=item.discount_main() 
                     item.amount_byproducts=item.total_discount_deal()
                     if item.item.get_flash_sale_current():
@@ -1197,12 +1200,11 @@ class CheckoutAPIView(APIView):
                         item.promotion_combo_id=item.item.get_combo_current()
                     if item.item.get_program_current() and item.item.get_flash_sale_current() is None:
                         item.program_id=item.item.get_program_current()
-                    
                     item.save()
-                    products=Variation.objects.get(id=item.product_id)
-                    products.inventory -= item.quantity
                     products.save()
                     if products.get_discount_flash_sale():
+                        variations=products.item.get_flash_sale_current().variations
+                        variations_update=[variation for variation in variations]
                         Variationflashsale.objects.filter(flash_sale_id=products.item.get_flash_sale_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity,number_order=F('number_order')+item.quantity)
                     if products.get_discount_program() and products.get_discount_flash_sale() is None:
                         Variation_discount.objects.filter(shop_program_id=products.item.get_program_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity,number_order=F('number_order')+item.quantity)
@@ -1211,6 +1213,7 @@ class CheckoutAPIView(APIView):
                             product=Variation.objects.get(id=byproduct.product_id)
                             product.inventory -= byproduct.quantity
                             product.save()
+                    
                 email_body = f"Hello {user.username}, \n {order.shop.user.username} cảm ơn bạn đã đặt hàng"
                 data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Thanks order!'}
@@ -1256,8 +1259,14 @@ class PaymentAPIView(APIView):
             order.payment_choice="Paypal"
             order.payment_number=pay_id
             items = order.items.all()
-            items.update(ordered=True) 
-            for item in items:
+            id_remove=[item for item in items if item.quantity<item.product.inventory]
+            id_checkout=[item for item in items if item.quantity>=item.product.inventory]
+            items_checkout=items.filter(id__in=id_checkout).update(ordered=True)
+            order.items.remove(*id_remove)
+            for item in items_checkout:
+                products=item.product
+                
+                products.inventory -= item.quantity
                 item.amount_main_products=item.discount_main() 
                 item.amount_byproducts=item.total_discount_deal()
                 if item.item.get_flash_sale_current():
@@ -1266,10 +1275,7 @@ class PaymentAPIView(APIView):
                     item.promotion_combo_id=item.item.get_combo_current()
                 if item.item.get_program_current() and item.item.get_flash_sale_current() is None:
                     item.program_id=item.item.get_program_current()
-                
-                item.save()   
-                products=Variation.objects.get(id=item.product_id)
-                products.inventory -= item.quantity
+                item.save()
                 products.save()
                 if products.get_discount_flash_sale():
                     Variationflashsale.objects.filter(flash_sale_id=products.item.get_flash_sale_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity,number_order=F('number_order')+item.quantity)
@@ -1280,6 +1286,7 @@ class PaymentAPIView(APIView):
                         product=Variation.objects.get(id=byproduct.product_id)
                         product.inventory -= byproduct.quantity
                         product.save()
+                
             email_body = f"Hello {user.username}, \n {order.shop.user.username} cảm ơn bạn đã đặt hàng"
             data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Thanks order!'}

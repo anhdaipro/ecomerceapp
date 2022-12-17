@@ -18,7 +18,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator, RegexVa
 class Profile(models.Model):
     user = models.OneToOneField(User , on_delete=models.CASCADE,null=True)
     name=models.CharField(max_length=100,null=True )
-    auth_token = models.CharField(max_length=100 )
     bio=models.TextField(null=True)
     is_verified = models.BooleanField(default=False)
     username_edit=models.BooleanField(default=False)

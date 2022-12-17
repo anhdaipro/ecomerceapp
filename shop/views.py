@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 from django.core.serializers import serialize
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
-from itemdetail.models import *
+
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from account.models import *
@@ -1095,7 +1095,12 @@ class NewprogramAPI(APIView):
                 data.update({'error':True,'sameitem':sameitem})
             
         return Response(data)
-
+class Createcategory(APIView):
+    def post(self,request):
+        title=request.POST.getlist('title')
+        image=request.FILES.getlist('image')
+        categories=[Category(title=title[i],image=image[i],display=True) for i in range(len(image))]
+        Category.bulk_create(categories)
 class Detailprogram(APIView):
     def get(self,request,id):
         program=Shop_program.objects.get(id=id)
@@ -1117,7 +1122,8 @@ class Detailprogram(APIView):
         else:
             shop_programs=Shop_program.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
             items=Item.objects.filter(shop_id=shop_program.shop_id,shop_program__in=shop_programs)
-            itemprogram=[item.id for item in items]
+            
+            listitemprogram=[item.id for item in items]
             sameitem=list(set(listitemprogram).intersection(list_items))
             if len(sameitem)==0:
                 data.update({'suscess':True})
@@ -1296,6 +1302,8 @@ class NewItem(APIView):
         category_id=request.data.get('category_id')
         name=request.data.get('name')
         description = request.data.get('description')
+        info_detail=request.data.get('info_detail')
+        item.detail=info_detail
         item = Item.objects.create(shop = shop,name = name,category_id=category_id,description=description)
         item.slug=re.sub('[,./\&]', "-",name) +  str(item.id)
         files=request.data.get('files',[])
@@ -1329,98 +1337,8 @@ class NewItem(APIView):
         
         item.media_upload.add(*list_upload)
         item.shipping_choice.add(*shipping)
-        detail_item=Detail_Item.objects.create(item=item)
-        # clotes,jeans,pants,
-        detail_item.brand_clothes=request.data.get('brand_clothes')#skirt,dress
-        detail_item.material=request.data.get('material_clothes')#skirt
-        detail_item.pants_length=request.data.get('pants_length')#,dress
-        detail_item.style=request.data.get('style')#skirt,dress
-        detail_item.sample=request.data.get('sample')#skirt,dress
-        detail_item.origin=request.data.get('origin')#skirt,dress
-        detail_item.pants_style=request.data.get('pants_style')
         
-        detail_item.petite=request.data.get('CHOICE_YES_NO')#skirt,dress
-        detail_item.season=request.data.get('season')#skirt,dress
-        detail_item.waist_version=request.data.get('waist_version')#skirt,dress
-        detail_item.very_big=request.data.get('CHOICE_YES_NO')#skirt,dress
-        #skirt
-        detail_item.skirt_length=request.data.get('skirt_length')#dress,
-        detail_item.occasion=request.data.get('clothes_occasion')#dress
-        detail_item.dress_style=request.data.get('dress_style')#dress
-        #dress
-        detail_item.collar=request.data.get('clothes_collar')
-        detail_item.sleeve_lenght=request.data.get('sleeve_lenght')#T-shirt
-        #Tanks & Camisoles
-        detail_item.cropped_top=request.data.get('CHOICE_YES_NO')
-        detail_item.shirt_length=request.data.get('shirt_length')
-        #jean men
-        detail_item.tallfit=request.data.get('CHOICE_YES_NO')
-        #woman
-        #beaty
-        detail_item.brand_beaty=request.data.get('brand_beaty')
-        detail_item.packing_type=request.data.get('packing_tyle')
-        detail_item.formula=request.data.get('formula')
-        detail_item.expiry=request.data.get('expiry')
-        detail_item.body_care=request.data.get('body_care')
-        detail_item.active_ingredients=request.data.get('active_ingredients')
-        detail_item.type_of_nutrition=request.data.get('type_of_nutrition')
-        detail_item.volume=request.data.get('volume')
-        detail_item.weight=request.data.get('weight')
-        #mobile
-        detail_item.brand_mobile_gadgets=request.data.get('brand_mobile_gadgets')
-        detail_item.sim=request.data.get('type_of_sim')
-        detail_item.warranty_period=request.data.get('warranty_period')
-        detail_item.ram=request.data.get('ram')
-        detail_item.memory=request.data.get('memory')
-        detail_item.status=request.data.get('Status')
-        detail_item.warranty_type=request.data.get('warranty_type')
-        detail_item.processor=request.data.get('processor')
-        detail_item.screen=request.data.get('screen')
-        detail_item.phone_features=request.data.get('phone_features')
-        detail_item.operating_system=request.data.get('operating_system')
-        detail_item.telephone_cables=request.data.get('telephone_cables')
-        detail_item.main_camera=request.data.get('main_camera')
-        detail_item.camera_selfie=request.data.get('camera_selfie')
-        detail_item.number_of_sim_slots=request.data.get('number_of_sim_slots'),
-        detail_item.mobile_phone=request.data.get('mobile_phone')
-        detail_item.main_camera_number=request.data.get('main_camera_number')
-        #shoes mem
-        detail_item.shoe_brand=request.data.get('shoe_brand')
-        detail_item.shoe_material=request.data.get('shoe_material')
-        detail_item.shoe_buckle_type=request.data.get('shoe_buckle_type')
-        detail_item.leather_outside=request.data.get('leather_outside')
-        detail_item.marker_style=request.data.get('marker_style')
-        detail_item.high_heel=request.data.get('high_heel')
-        detail_item.shoe_occasion=request.data.get('shoe_occasion')
-        detail_item.shoe_leather_type=request.data.get('shoe_leather_type')
-        shoe_collar_height=request.data.get('shoe_collar_height')
-        suitable_width=request.data.get('CHOICE_YES_NO')
-
-        #accessories
-        detail_item.occasion_accessories=request.data.get('occasion_accessories')
-        detail_item.style_accessories=request.data.get('style_accessories')
-        #ring
-        detail_item.accessory_set=request.data.get('accessory_set')#
         
-        #Household electrical appliances
-        detail_item.brand_electrical=request.data.get('brand_electrical')
-        detail_item.receiver_type=request.data.get('receiver_type')#
-
-        #Travel & Luggage
-        detail_item.brand_luggage=request.data.get('brand_luggage')
-        detail_item.material_luggage=request.data.get('material_luggage')
-        detail_item.waterproof=request.data.get('CHOICE_YES_NO')
-        detail_item.feature_folding_bag=request.data.get('feature_folding_bag')
-        #Computers & Laptops 
-        #Desktop computer
-        detail_item.storage_type=request.data.get('storage_type')
-        detail_item.optical_drive=request.data.get('CHOICE_YES_NO')
-        detail_item.port_interface=request.data.get('port_interface')
-        detail_item.processor_laptop=request.data.get('processor_laptop')
-        detail_item.number_of_cores=request.data.get('number_of_cores')
-        detail_item.dedicated_games=request.data.get('CHOICE_YES_NO')
-        detail_item.save()
-       
         variations=request.data.get('variations')
         list_variation = [
             Variation(
@@ -1539,7 +1457,6 @@ class Updateitem(APIView):
         shop=Shop.objects.get(user=user)
         item=Item.objects.get(id=id,shop=shop)
         list_color=Color.objects.filter(variation__item=item).distinct()
-        detail_item=Detail_Item.objects.filter(item=item).values()
         buymore=BuyMoreDiscount.objects.filter(item_id=id)
         variations=Variation.objects.filter(item=item)
         
@@ -1554,7 +1471,7 @@ class Updateitem(APIView):
         data={
         'buymore':buymore.values(),
         'item_info':{'name':item.name,'id':item.id,'width':item.width,'height':item.height,'length':item.length,'weight':item.weight,
-        'description':item.description,'status':item.status,'sku_product':item.sku_product},
+        'description':item.description,'status':item.status,'sku_product':item.sku_product,'info_detail':item.detail},
         'list_category_choice':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
         'parent':category.getparent()} for category in list_category_choice],
         'list_shipping_item':list({item['method']:item for item in method}.values()),
@@ -1562,7 +1479,7 @@ class Updateitem(APIView):
         'media_upload':[{'file':i.get_media(),'file_preview':i.file_preview(),
         'duration':i.duration,'filetype':i.media_type(),'id':i.id
         } for i in item.media_upload.all()],'sizes':item.get_list_size(),'colors':item.get_list_color(),
-        'item_detail':detail_item,'variations':variations}
+        'item_detail':item.detail,'variations':variations}
         return Response(data)
     def post(self,request,id): 
         user=request.user
@@ -1604,7 +1521,8 @@ class Updateitem(APIView):
             BuyMoreDiscount.objects.bulk_update(list_buymore_update,['from_quantity','to_quantity','price'])
             name=request.data.get('name')
             description = request.data.get('description')
-            item.slug=re.sub('[,./\&]', "-",name) +  str(item.id)
+            info_detail=request.data.get('info_detail')
+            item.detail=info_detail
             files=request.data.get('files',[])
             UploadItem.objects.filter(Q(media_upload=None) | (Q(media_upload=item) &~Q(id__in=files))).delete()
             item.brand= request.data.get('brand')
@@ -1634,99 +1552,8 @@ class Updateitem(APIView):
             item.media_upload.add(*list_upload)
             item.shipping_choice.add(*shipping)
             item.save()
-            #detail item
-            # clotes,jeans,pants,
-            detail_item=Detail_Item.objects.get(item_id=id)
-            detail_item.brand_clothes=request.data.get('brand_clothes')#skirt,dress
-            detail_item.material=request.data.get('material_clothes')#skirt
-            detail_item.pants_length=request.data.get('pants_length')#,dress
-            detail_item.style=request.data.get('style')#skirt,dress
-            detail_item.sample=request.data.get('sample')#skirt,dress
-            detail_item.origin=request.data.get('origin')#skirt,dress
-            detail_item.pants_style=request.data.get('pants_style')
-        
-            detail_item.petite=request.data.get('CHOICE_YES_NO')#skirt,dress
-            detail_item.season=request.data.get('season')#skirt,dress
-            detail_item.waist_version=request.data.get('waist_version')#skirt,dress
-            detail_item.very_big=request.data.get('CHOICE_YES_NO')#skirt,dress
-            #skirt
-            detail_item.skirt_length=request.data.get('skirt_length')#dress,
-            detail_item.occasion=request.data.get('clothes_occasion')#dress
-            detail_item.dress_style=request.data.get('dress_style')#dress
-            #dress
-            detail_item.clothes_collar=request.data.get('clothes_collar')
-            detail_item.sleeve_lenght=request.data.get('sleeve_lenght')#T-shirt
-            #Tanks & Camisoles
-            detail_item.cropped_top=request.data.get('CHOICE_YES_NO')
-            detail_item.shirt_length=request.data.get('shirt_length')
-            #jean men
-            detail_item.tallfit=request.data.get('CHOICE_YES_NO')
-            #woman
-            detail_item.pants_style=request.data.get('pants_style_women')
-            #beaty
-            detail_item.brand_beaty=request.data.get('brand_beaty')
-            detail_item.packing_type=request.data.get('packing_tyle')
-            detail_item.formula=request.data.get('formula')
-            detail_item.expiry=request.data.get('expiry')
-            detail_item.body_care=request.data.get('body_care')
-            detail_item.active_ingredients=request.data.get('active_ingredients')
-            detail_item.type_of_nutrition=request.data.get('type_of_nutrition')
-            detail_item.volume=request.data.get('volume')
-            detail_item.weight=request.data.get('weight')
-            #mobile
-            detail_item.brand_mobile_gadgets=request.data.get('brand_mobile_gadgets')
-            detail_item.sim=request.data.get('type_of_sim')
-            detail_item.warranty_period=request.data.get('warranty_period')
-            detail_item.ram=request.data.get('ram')
-            detail_item.memory=request.data.get('memory')
-            detail_item.status=request.data.get('Status')
-            detail_item.warranty_type=request.data.get('warranty_type')
-            detail_item.processor=request.data.get('processor')
-            detail_item.screen=request.data.get('screen')
-            detail_item.phone_features=request.data.get('phone_features')
-            detail_item.operating_system=request.data.get('operating_system')
-            detail_item.telephone_cables=request.data.get('telephone_cables')
-            detail_item.main_camera=request.data.get('main_camera')
-            detail_item.camera_selfie=request.data.get('camera_selfie')
-            detail_item.number_of_sim_slots=request.data.get('number_of_sim_slots')
-            detail_item.mobile_phone=request.data.get('mobile_phone')
-            detail_item.main_camera_number=request.data.get('main_camera_number')
-            #shoes mem
-            detail_item.shoe_brand=request.data.get('shoe_brand')
-            detail_item.shoe_material=request.data.get('shoe_material')
-            detail_item.shoe_buckle_type=request.data.get('shoe_buckle_type')
-            detail_item.leather_outside=request.data.get('leather_outside')
-            detail_item.marker_style=request.data.get('marker_style')
-            detail_item.high_heel=request.data.get('high_heel')
-            detail_item.shoe_occasion=request.data.get('shoe_occasion')
-            detail_item.shoe_leather_type=request.data.get('shoe_leather_type')
-            detail_item.shoe_collar_height=request.data.get('shoe_collar_height')
-            detail_item.suitable_width=request.data.get('CHOICE_YES_NO')
-
-            #accessories
-            detail_item.occasion_accessories=request.data.get('occasion_accessories')
-            detail_item.style_accessories=request.data.get('style_accessories')
-            #ring
-            detail_item.accessory_set=request.data.get('accessory_set')
-            
-            #Household electrical appliances
-            detail_item.brand_electrical=request.data.get('brand_electrical')
-            detail_item.receiver_type=request.data.get('receiver_type')
-
-            #Travel & Luggage
-            detail_item.brand_luggage=request.data.get('brand_luggage')
-            detail_item.material_luggage=request.data.get('material_luggage')
-            detail_item.waterproof=request.data.get('CHOICE_YES_NO')
-            detail_item.feature_folding_bag=request.data.get('feature_folding_bag')
-            #Computers & Laptops 
-            #Desktop computer
-            detail_item.storage_type=request.data.get('storage_type')
-            detail_item.optical_drive=request.data.get('CHOICE_YES_NO')
-            detail_item.port_interface=request.data.get('port_interface')
-            detail_item.processor_laptop=request.data.get('processor_laptop')
-            detail_item.number_of_cores=request.data.get('number_of_cores')
-            detail_item.dedicated_games=request.data.get('CHOICE_YES_NO')
-            detail_item.save()
+           
+           
             #size
             list_update=[]
             variations=request.data.get('variations',[])

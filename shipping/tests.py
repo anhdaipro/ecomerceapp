@@ -30,7 +30,7 @@ const Login = ({ login, isAuthenticated }) => {
     const continueWithGoogle = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.get(`https://anhdai.herokuapp.com/auth/o/google-oauth2/?redirect_uri=http://localhost:3000/google`)
+            const res = await axios.get(`https://web-production-d411.up.railway.app/auth/o/google-oauth2/?redirect_uri=http://localhost:3000/google`)
 
             window.location.replace(res.data.authorization_url);
         } catch (err) {
@@ -40,7 +40,7 @@ const Login = ({ login, isAuthenticated }) => {
 
     const continueWithFacebook = async () => {
         try {
-            const res = await axios.get(`https://anhdai.herokuapp.com/auth/o/facebook/?redirect_uri=http://localhost:3000/facebook`)
+            const res = await axios.get(`https://web-production-d411.up.railway.app/auth/o/facebook/?redirect_uri=http://localhost:3000/facebook`)
 
             window.location.replace(res.data.authorization_url);
         } catch (err) {
@@ -55,7 +55,7 @@ const Login = ({ login, isAuthenticated }) => {
       }
       
     export function googleLogin(accessToken) {
-        axios.post(`https://anhdai.herokuapp.com//api-auth/convert-token`, {
+        axios.post(`https://web-production-d411.up.railway.app//api-auth/convert-token`, {
             token: accessToken,
             backend: "google-oauth2",
             grant_type: "convert_token",

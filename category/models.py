@@ -7,7 +7,7 @@ from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel 
 from django.db.models import Q
 from django.urls import reverse
-
+from slugify import slugify
 import re
 
 class Image_category(models.Model):
@@ -23,7 +23,11 @@ class Category(MPTTModel):
     choice=models.BooleanField(default=False)
     def __str__(self):
         return self.title
-    
+    def save(self, *args, **kwargs):
+        #this line below give to the instance slug field a slug name
+        self.slug = slugify(self.title)
+        #this line below save every fields of the model instance
+        super(Category, self).save(*args, **kwargs) 
     def update_result(self):
         Category.objects.all().update(slug=re.sub('[,./\ & ]', "-",self.title) + '-cat.' + str(self.id))
         # At this point obj.val is still 1, but the value in the database

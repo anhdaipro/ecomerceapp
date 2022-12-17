@@ -5,7 +5,6 @@ from category.models import *
 from myweb.models import *
 from account.models import *
 from chats.models import *
-from itemdetail.models import *
 from django.contrib import auth
 from djoser.serializers import UserCreateSerializer
 from seller.serializers import *
@@ -424,11 +423,6 @@ class ProductdealSerializer(serializers.ModelSerializer):
         fields=('products','id','shock_deal_type')
     def get_products(self,obj):   
         return ItemSerializer(obj.main_products.all(),many=True).data
-
-class ItemdetailsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Detail_Item
-        fields='__all__'
 
 # variation 
 
