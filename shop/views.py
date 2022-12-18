@@ -1098,11 +1098,11 @@ class NewprogramAPI(APIView):
 class Createcategory(APIView):
     def post(self,request):
         categories=request.data.get('categories')
-        parent=request.data.get('parent')
+        parent_id=request.data.get('parent_id')
         level=request.data.get('level')
         list_categories=[]
         for category in categories:
-            list_categories.append(Category(title=category['title'],level=level,parent_id=parent,choice=category['choice']))
+            list_categories.append(Category(title=category['title'],level=level,parent_id=parent_id,choice=category['choice']))
         Category.objects.bulk_create(list_categories)
         return Response({'success':True})
 class Detailprogram(APIView):
