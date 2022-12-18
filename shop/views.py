@@ -1361,7 +1361,7 @@ class NewItem(APIView):
         list_category=Category.objects.all()
         data={
             'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
-            'parent':category.parent()} for category in list_category]
+            'parent':category.parent} for category in list_category]
         } 
         return Response(data)
 
@@ -1476,7 +1476,7 @@ class Updateitem(APIView):
         'item_info':{'name':item.name,'id':item.id,'width':item.width,'height':item.height,'length':item.length,'weight':item.weight,
         'description':item.description,'status':item.status,'sku_product':item.sku_product,'info_detail':item.detail},
         'list_category_choice':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
-        'parent':category.getparent()} for category in list_category_choice],
+        'parent':category.parent} for category in list_category_choice],
         'list_shipping_item':list({item['method']:item for item in method}.values()),
         'shipping_shop':shipping_shop.values(),
         'media_upload':[{'file':i.get_media(),'file_preview':i.file_preview(),
