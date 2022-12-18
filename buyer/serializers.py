@@ -164,13 +164,14 @@ class ByproductSellerSerializer(IteminfoSerializer):
         return VariationSerializer(obj.variation_item.all(),many=True).data
 
 class ItemSerializer(IteminfoSerializer):
-    
+    url=serializers.SerializerMethodField()
     percent_discount=serializers.SerializerMethodField()
     max_price=serializers.SerializerMethodField()
     min_price=serializers.SerializerMethodField()
     class Meta(IteminfoSerializer.Meta):
-        fields =IteminfoSerializer.Meta.fields+ ['min_price','max_price','slug','percent_discount']
-    
+        fields =IteminfoSerializer.Meta.fields+ ['min_price','max_price','url','percent_discount']
+    def get_url(self,obj):
+        return obj.slug
     def get_percent_discount(self,obj):
         return obj.percent_discount_total()
     def get_max_price(self,obj):
