@@ -126,12 +126,11 @@ class ImagehomeSerializer(serializers.ModelSerializer):
         return obj.image.url
 
 class CategorySerializer(serializers.ModelSerializer):
-    url=serializers.SerializerMethodField()
+    
     class Meta:
         model=Category
-        fields=('title','url','id',)
-    def get_url(self,obj):
-        return obj.get_absolute_url()
+        fields=('title','slug','id',)
+    
 class CategoryhomeSerializer(CategorySerializer):
     image=serializers.SerializerMethodField()
     class Meta(CategorySerializer.Meta):
@@ -165,14 +164,13 @@ class ByproductSellerSerializer(IteminfoSerializer):
         return VariationSerializer(obj.variation_item.all(),many=True).data
 
 class ItemSerializer(IteminfoSerializer):
-    url=serializers.SerializerMethodField()
+    
     percent_discount=serializers.SerializerMethodField()
     max_price=serializers.SerializerMethodField()
     min_price=serializers.SerializerMethodField()
     class Meta(IteminfoSerializer.Meta):
-        fields =IteminfoSerializer.Meta.fields+ ['min_price','max_price','url','percent_discount']
-    def get_url(self,obj):
-        return obj.get_absolute_url()
+        fields =IteminfoSerializer.Meta.fields+ ['min_price','max_price','slug','percent_discount']
+    
     def get_percent_discount(self,obj):
         return obj.percent_discount_total()
     def get_max_price(self,obj):
@@ -607,7 +605,7 @@ class FlashSaleSellerSerializer(FlashSaleinfoSerializer):
 #discount      
 class ShopinfoSerializer(serializers.ModelSerializer): 
     avatar=serializers.SerializerMethodField()
-    url=serializers.SerializerMethodField()
+    
     online=serializers.SerializerMethodField()
     num_follow=serializers.SerializerMethodField()
     count_product=serializers.SerializerMethodField()
@@ -615,10 +613,9 @@ class ShopinfoSerializer(serializers.ModelSerializer):
     total_order=serializers.SerializerMethodField()
     class Meta:
         model=Shop
-        fields=('id','avatar','url','name','online','num_follow','is_online',
+        fields=('id','avatar','slug','name','online','num_follow','is_online',
         'count_product','total_order',)
-    def get_url(self,obj):
-        return obj.get_absolute_url()
+    
     def get_avatar(self,obj):
         return obj.user.profile.avatar.url
     def get_online(self,obj):
@@ -714,7 +711,7 @@ class CartviewSerializer(serializers.ModelSerializer):
     def get_name(self,obj):
         return obj.item.name
     def get_url(self,obj):
-        return obj.item.get_absolute_url()
+        return obj.item.slug
     def get_price(self,obj):
         return obj.product.total_discount()
     def get_promotion(self,obj):
@@ -779,7 +776,7 @@ class OrderpurchaseSerializer(OrderSerializer):
         'being_delivered','ordered_date','received_date',
         'canceled_date','accepted_date','shop_url',)
     def get_shop_url(self,obj):
-        return obj.shop.get_absolute_url()
+        return obj.shop.slug
     def get_review(self,obj):
         return ReView.objects.filter(cartitem__order_cartitem=obj).count()
 class OrderdetailSerializer(OrderpurchaseSerializer):
@@ -835,7 +832,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     def get_name(self,obj):
         return obj.cartitem.item.name
     def get_url(self,obj):
-        return obj.cartitem.item.get_absolute_url()
+        return obj.cartitem.item.slug
     
 class ReviewitemSerializer(ReviewSerializer):
     user = serializers.SerializerMethodField()
@@ -848,7 +845,7 @@ class ReviewitemSerializer(ReviewSerializer):
         return UserorderSerializer(obj.user).data
     def get_shop(self,obj):
         if obj.user.shop:
-            return obj.user.shop.get_absolute_url()
+            return obj.user.shop.slug
     def get_num_liked(self,obj):
         return obj.num_like()
     def get_liked(self,obj):
@@ -897,7 +894,7 @@ class ByproductSerializer(serializers.ModelSerializer):
     def get_name(self,obj):
         return obj.item.name
     def get_url(self,obj):
-        return obj.item.get_absolute_url()
+        return obj.item.slug
     def get_total_price(self,obj):
         return obj.total_price()
 
@@ -960,7 +957,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_name(self,obj):
         return obj.item.name
     def get_url(self,obj):
-        return obj.item.get_absolute_url()
+        return obj.item.slug
     def get_total_price(self,obj):
         return obj.discount_product()
     def get_discount_price(self,obj):
