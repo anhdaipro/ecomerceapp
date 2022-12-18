@@ -1099,7 +1099,12 @@ class Createcategory(APIView):
     def post(self,request):
         title=request.POST.getlist('title')
         image=request.FILES.getlist('image')
-        categories=[Category(title=title[i],image=image[i],display=True) for i in range(len(image))]
+        print(len(title))
+        categories=[]
+        for i in range(len(image)):
+            item=Category(title=title[i],image=image[i],display=True)
+            categories.append(item)
+        
         Category.objects.bulk_create(categories)
 class Detailprogram(APIView):
     def get(self,request,id):
