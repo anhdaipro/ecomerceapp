@@ -49,6 +49,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 import json
 from buyer.serializers import (OrdersellerSerializer,ItemSellerSerializer,
 VariationSerializer,
+CategorySellerSerializer,
 VoucherSerializer,
 VouchersellerSerializer,
 ShopProgramSerializer,
@@ -1360,8 +1361,7 @@ class NewItem(APIView):
     def get(self,request):
         list_category=Category.objects.all()
         data={
-            'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
-            'parent':category.parent} for category in list_category]
+            'list_category':CategorySellerSerializer(list_category,many=True).data
         } 
         return Response(data)
 
@@ -1469,14 +1469,12 @@ class Updateitem(APIView):
         shipping_shop=shop.shipping.all()
         shipping_item=item.shipping_choice.all()
         list_category_choice=item.category.get_ancestors(include_self=True)
-        list_category=Category.objects.all()
         method=[{'method':i.method} for i in shipping_item]
         data={
         'buymore':buymore.values(),
         'item_info':{'name':item.name,'id':item.id,'width':item.width,'height':item.height,'length':item.length,'weight':item.weight,
         'description':item.description,'status':item.status,'sku_product':item.sku_product,'info_detail':item.detail},
-        'list_category_choice':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
-        'parent':category.parent} for category in list_category_choice],
+        'list_category_choice':CategorySellerSerializer(list_category_choice,many=True).data,
         'list_shipping_item':list({item['method']:item for item in method}.values()),
         'shipping_shop':shipping_shop.values(),
         'media_upload':[{'file':i.get_media(),'file_preview':i.file_preview(),

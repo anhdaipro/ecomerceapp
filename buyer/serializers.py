@@ -126,11 +126,13 @@ class ImagehomeSerializer(serializers.ModelSerializer):
         return obj.image.url
 
 class CategorySerializer(serializers.ModelSerializer):
-    
     class Meta:
         model=Category
         fields=('title','slug','id',)
-    
+class CategorySellerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Category
+        fields=['title','level','parent','id','choice']
 class CategoryhomeSerializer(CategorySerializer):
     image=serializers.SerializerMethodField()
     class Meta(CategorySerializer.Meta):
