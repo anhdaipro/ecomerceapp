@@ -29,11 +29,12 @@ SECRET_KEY = 'django-insecure-g72sqisr2%u2v#sglo&#&0i44b%9_rixj#ob)79)xx&a(gru$1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
-
-# Application definition
-
+CORS_ALLOWED_ORIGINS = [
+    'https://anhdai.vercel.app','http://localhost:3000'
+]
+CORS_ORIGIN_ALLOW_ALL = True
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -41,6 +42,29 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'cloudinary_storage',
+    'cloudinary',
+    'social_django',
+    'oauth2_provider',
+    'drf_social_oauth2',
+    'rest_framework',
+    'shop',
+    'account',
+    'categories',
+    'carts',
+    'orders',
+    'seller',
+    'discounts',
+    'corsheaders',
+    'buyer',
+    'city',
+    'orderactions',
+    'chats',
+    'myweb',
+    'shipping',
+    'mptt',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
