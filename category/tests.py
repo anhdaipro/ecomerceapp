@@ -74,3 +74,13 @@ category5=[
     {"title":"Phụ kiện thêm","choice":false},
     {"title":"Bộ phụ kiện","choice":true},
 ]
+
+category5=[
+    {"title":"Thẻ sim","choice":true},
+    {"title":"Máy tính bảng","choice":true},
+    {"title":"Điện thoại","choice":true},
+    {"title":"Thiết bị đeo thông minh","choice":false},
+    {"title":"Phụ kiện","choice":false},
+    {"title":"Bộ đàm","choice":true},
+    
+]

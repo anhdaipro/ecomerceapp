@@ -30,10 +30,6 @@ class Category(models.Model):
         #this line below save every fields of the model instance
         super(Category, self).save(*args, **kwargs) 
     
-        # At this point obj.val is still 1, but the value in the database
-        # was updated to 2. The object's updated value needs to be reloaded
-        # from the database.
-   
     def get_absolute_url(self):
         return reverse("category", kwargs={"slug": self.slug})
     
