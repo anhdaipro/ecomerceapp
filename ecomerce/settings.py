@@ -157,11 +157,11 @@ SIMPLE_JWT = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ecomerce',
-        'USER': 'ecomerce_user',
-        'PASSWORD': 'pBDtYkSIXl9g1Z8uj39TzUxF0u0I0WBk',
-        'HOST': 'dpg-ceev2ch4reb3r0ov5h80-a.oregon-postgres.render.com',
-        'PORT': '5432',
+        'NAME': 'railway',
+        'USER': 'postgres',
+        'PASSWORD': '03UYan4piMfDN2TDXM6M',
+        'HOST': 'containers-us-west-119.railway.app',
+        'PORT': '5738',
     }
 }
 
