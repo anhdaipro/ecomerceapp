@@ -1,0 +1,15 @@
+const list_shop=obj1.data.list_shop.map(shop=>{
+    let order=obj2.data.orders.find(order=>order.shop_name==shop.shop_name)
+    let list_vouchers=obj1.data.order_item.filter(item=>item.shop_name==shop.shop_name).map(item=>{return item.list_voucher})
+    let vouchers_user=obj1.data.order_item.filter(item=>item.shop_name==shop.shop_name).map(item=>{return item.vouchers_user})
+    const list_voucher_unique=list_vouchers.reduce((arr,obj)=>{
+        if (arr.every((item,index)=>!item.id==obj.id)){
+            arr.push(obj,vouchers_user[list_vouchers.indexOf(obj)])
+        }
+        return arr
+    },[])
+    if(order!=undefined){
+        return({...shop,list_voucher_unique:list_voucher_unique,show_voucher:false,voucher:order.voucher,discount_voucher_shop:order.discount_voucher_shop,loading_voucher:true})
+    }
+    return({...shop,list_voucher_unique:list_voucher_unique})
+})
