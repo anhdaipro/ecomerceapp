@@ -1157,6 +1157,8 @@ class ActionReviewAPI(APIView):
             data.update({'liked':liked,'num_liked':review.num_like()}) 
         return Response(data) 
 
+  
+
 class CheckoutAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
@@ -1211,17 +1213,33 @@ class CheckoutAPIView(APIView):
                     item.save()
                     products.save()
                     if products.get_discount_flash_sale():
-                        variations=products.item.get_flash_sale_current().variations
-                        variations_update=[variation for variation in variations]
-                        Variationflashsale.objects.filter(flash_sale_id=products.item.get_flash_sale_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity,number_order=F('number_order')+item.quantity)
+                        flash_sale=products.item.get_flash_sale_current()
+                        variations=flash_sale.variations
+                        variations_update=[]
+                        for variation in variations:
+                            if variation['variation_id']==products.id:
+                                variation_update.append(variation)
+                            else:
+                                variation_update.append(variation.update({'promotion_stock':variation['promotion_stock']-item.quantity,'number_order':variation['number_order']+item.quantity}))
+                        flash_sale.variations=variations_update
+                        flash_sale.save()
+                        
                     if products.get_discount_program() and products.get_discount_flash_sale() is None:
-                        Variation_discount.objects.filter(shop_program_id=products.item.get_program_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity,number_order=F('number_order')+item.quantity)
+                        program=products.item.get_program_current()
+                        variations=program.variations
+                        variations_update=[]
+                        for variation in variations:
+                            if variation['variation_id']==products.id:
+                                variation_update.append(variation)
+                            else:
+                                variation_update.append(variation.update({'promotion_stock':variation['promotion_stock']-item.quantity,'number_order':variation['number_order']+item.quantity}))
+                        program.variations=variations_update
+                        program.save()
                     if item.get_deal_shock_current():
                         for byproduct in item.byproduct_cart.all():
                             product=Variation.objects.get(id=byproduct.product_id)
                             product.inventory -= byproduct.quantity
                             product.save()
-                    
                 email_body = f"Hello {user.username}, \n {order.shop.user.username} cảm ơn bạn đã đặt hàng"
                 data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Thanks order!'}
@@ -1273,7 +1291,6 @@ class PaymentAPIView(APIView):
             order.items.remove(*id_remove)
             for item in items_checkout:
                 products=item.product
-                
                 products.inventory -= item.quantity
                 item.amount_main_products=item.discount_main() 
                 item.amount_byproducts=item.total_discount_deal()
@@ -1286,9 +1303,29 @@ class PaymentAPIView(APIView):
                 item.save()
                 products.save()
                 if products.get_discount_flash_sale():
-                    Variationflashsale.objects.filter(flash_sale_id=products.item.get_flash_sale_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity,number_order=F('number_order')+item.quantity)
+                    flash_sale=products.item.get_flash_sale_current()
+                    variations=flash_sale.variations
+                    variations_update=[]
+                    for variation in variations:
+                        if variation['variation_id']==products.id:
+                            variation_update.append(variation)
+                        else:
+                            variation_update.append(variation.update({'promotion_stock':variation['promotion_stock']-item.quantity,'number_order':variation['number_order']+item.quantity}))
+                    flash_sale.variations=variations_update
+                    flash_sale.save()
+                        
                 if products.get_discount_program() and products.get_discount_flash_sale() is None:
-                    Variation_discount.objects.filter(shop_program_id=products.item.get_program_current(),variation=products).update(promotion_stock=F('promotion_stock')-item.quantity,number_order=F('number_order')+item.quantity)
+                    program=products.item.get_program_current()
+                    variations=program.variations
+                    variations_update=[]
+                    for variation in variations:
+                        if variation['variation_id']==products.id:
+                            variation_update.append(variation)
+                        else:
+                            variation_update.append(variation.update({'promotion_stock':variation['promotion_stock']-item.quantity,'number_order':variation['number_order']+item.quantity}))
+                    program.variations=variations_update
+                    program.save()
+                    
                 if item.get_deal_shock_current():
                     for byproduct in item.byproduct_cart.all():
                         product=Variation.objects.get(id=byproduct.product_id)
@@ -1558,9 +1595,30 @@ class PurchaseAPIView(APIView):
                 products.inventory += item.quantity
                 products.save()
                 if products.get_discount_flash_sale():
-                    Variationflashsale.objects.filter(flash_sale_id=products.item.get_flash_sale_current(),variation=products).update(promotion_stock=F('promotion_stock')+item.quantity,number_order=F('number_order')-item.quantity)
-                if products.get_discount_program() and not products.get_discount_flash_sale():
-                    Variation_discount.objects.filter(shop_program_id=products.item.get_program_current(),variation=products).update(promotion_stock=F('promotion_stock')+item.quantity,number_order=F('number_order')-item.quantity)
+                    flash_sale=products.item.get_flash_sale_current()
+                    variations=flash_sale.variations
+                    variations_update=[]
+                    for variation in variations:
+                        if variation['variation_id']==products.id:
+                            variation_update.append(variation)
+                        else:
+                            variation_update.append(variation.update({'promotion_stock':variation['promotion_stock']+item.quantity,'number_order':variation['number_order']-item.quantity}))
+                    flash_sale.variations=variations_update
+                    flash_sale.save()
+                        
+                if products.get_discount_program() and products.get_discount_flash_sale() is None:
+                    program=products.item.get_program_current()
+                    variations=program.variations
+                    variations_update=[]
+                    for variation in variations:
+                        if variation['variation_id']==products.id:
+                            variation_update.append(variation)
+                        else:
+                            variation_update.append(variation.update({'promotion_stock':variation['promotion_stock']+item.quantity,'number_order':variation['number_order']-item.quantity}))
+                    program.variations=variations_update
+                    program.save()
+                    
+                
                 if item.get_deal_shock_current():
                     for byproduct in item.byproduct_cart.all():
                         product=Variation.objects.get(id=byproduct.product_id)
