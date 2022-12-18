@@ -11,11 +11,6 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
-from datetime import timedelta
-import os
-import dj_database_url
-import django_heroku
-from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,13 +25,11 @@ SECRET_KEY = 'django-insecure-g72sqisr2%u2v#sglo&#&0i44b%9_rixj#ob)79)xx&a(gru$1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
+
 
 # Application definition
-CORS_ALLOWED_ORIGINS = [
-    'https://anhdai.vercel.app','http://localhost:3000'
-]
-CORS_ORIGIN_ALLOW_ALL = True
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -44,30 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',
-    'cloudinary_storage',
-    'cloudinary',
-    'social_django',
-    'oauth2_provider',
-    'drf_social_oauth2',
-    'rest_framework',
-    'shop',
-    'account',
-    'categories',
-    'carts',
-    'orders',
-    'seller',
-    'discounts',
-    'corsheaders',
-    'buyer',
-    'city',
-    'orderactions',
-    'chats',
-    'myweb',
-    'shipping',
-    
-    'mptt',
-    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -82,7 +51,9 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
 ]
 
+
 ROOT_URLCONF = 'ecommerce.urls'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -105,6 +76,10 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'ecommerce.wsgi.application'
+
+
+# Database
+# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',
