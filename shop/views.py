@@ -1307,11 +1307,11 @@ class NewItem(APIView):
         name=request.data.get('name')
         description = request.data.get('description')
         info_detail=request.data.get('info_detail')
-        item.detail=info_detail
+        
         item = Item.objects.create(shop = shop,name = name,category_id=category_id,description=description)
         item.slug=re.sub('[,./\&]', "-",name) +  str(item.id)
         files=request.data.get('files',[])
-       
+        item.detail=info_detail
         item.brand= request.data.get('brand')
         
         item.weight=request.data.get('weight')
