@@ -108,7 +108,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'ecomerce.wsgi.application'
-ASGI_APPLICATION = 'ecomerce.routing.application'
+ASGI_APPLICATION = 'ecomerce.asgi.application'
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',
     'social_core.backends.facebook.FacebookAppOAuth2',
