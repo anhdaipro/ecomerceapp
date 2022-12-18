@@ -39,8 +39,7 @@ class Category(models.Model):
     
     class Meta:
         verbose_name_plural = 'Categories'
-    class MPTTMeta:
-        order_insertion_by = ['level']
+    
     # to undrestand better the parrent and child i'm gonna separated by '/' from each other
     def __str__(self):
         return self.title

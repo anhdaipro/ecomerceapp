@@ -1097,15 +1097,14 @@ class NewprogramAPI(APIView):
         return Response(data)
 class Createcategory(APIView):
     def post(self,request):
-        title=request.POST.getlist('title')
-        image=request.FILES.getlist('image')
-        print(len(title))
-        categories=[]
-        for i in range(len(image)):
-            item=Category(title=title[i],image=image[i],display=True)
-            categories.append(item)
-        
-        Category.objects.bulk_create(categories)
+        categories=request.data.get('categories')
+        parent=request.data.get('parent')
+        level=request.data.get('level')
+        list_categories=[]
+        for category in categories:
+            list_categories.append(Category(title=category['title'],level=level,parent_id=parent,choice=category['choice']))
+        Category.objects.bulk_create(list_categories)
+        return Response({'success':True})
 class Detailprogram(APIView):
     def get(self,request,id):
         program=Shop_program.objects.get(id=id)
