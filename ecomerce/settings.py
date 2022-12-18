@@ -29,16 +29,13 @@ SECRET_KEY = 'django-insecure-ihk&62sy1(f+k*w-lx=qsla=j#w+cbhbw_!pxaqh%w#pl3!2)b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['anhdai.herokuapp.com','localhost','127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 CORS_ALLOWED_ORIGINS = [
     'https://anhdai.vercel.app','http://localhost:3000'
 ]
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_ORIGIN_WHITELIST = (
-    'http:///bb-svu.anonymous.mobileapp.exp.direct:80',
-)
 INSTALLED_APPS = [
     'jazzmin',
     'django.contrib.admin',
