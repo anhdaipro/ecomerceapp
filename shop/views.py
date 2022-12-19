@@ -1468,7 +1468,8 @@ class Updateitem(APIView):
         } for variation in variations]
         shipping_shop=shop.shipping.all()
         shipping_item=item.shipping_choice.all()
-        list_category_choice=item.category.get_ancestors(include_self=True)
+        list_id_choice=item.category.get_full_id()
+        list_category_choice=Category.objects.filter(id__in=list_id_choice)
         method=[{'method':i.method} for i in shipping_item]
         data={
         'buymore':buymore.values(),

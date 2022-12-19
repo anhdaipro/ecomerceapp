@@ -23,10 +23,7 @@ class Category(MPTTModel):
     image_category=models.ManyToManyField(Image_category,blank=True)
     slug = models.SlugField(max_length=100,null=True,blank=True)
     choice=models.BooleanField(default=False)
-    class Meta:
-        verbose_name_plural = 'Categories'
-    class MPTTMeta:
-        order_insertion_by = ['title']
+    
     # to undrestand better the parrent and child i'm gonna separated by '/' from each other
     def __str__(self):
         full_path = [self.title]
@@ -35,6 +32,13 @@ class Category(MPTTModel):
             full_path.append(c.title)
             c = c.parent
         return '/'.join(full_path[::-1])
+    def get_full_id(self):
+        list_id=[self.id]
+        c=self.parent
+        while c is not None:
+            list_id.append(c.id)
+            c=c.parent
+        return list_id
     def get_full_category(self):
         full_path = [self.title]
         c = self.parent
@@ -67,7 +71,11 @@ class Category(MPTTModel):
     def get_image(self):
         if self.image and hasattr(self.image,'url'):
             return self.image.url
-    
+    class Meta:
+        verbose_name_plural = 'Categories'
+    class MPTTMeta:
+        
+        order_insertion_by = ['title']
 
 '''class UrlHit(models.Model):
     url     = models.URLField()
