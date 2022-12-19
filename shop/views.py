@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 from django.core.serializers import serialize
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
-
+from slugify import slugify
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from account.models import *
@@ -1309,7 +1309,7 @@ class NewItem(APIView):
         info_detail=request.data.get('info_detail')
         
         item = Item.objects.create(shop = shop,name = name,category_id=category_id,description=description)
-        item.slug=re.sub('[,./\&]', "-",name) +  str(item.id)
+        item.slug=slugify(name) + '.' + str(item.id)
         files=request.data.get('files',[])
         item.detail=info_detail
         item.brand= request.data.get('brand')
@@ -1524,6 +1524,7 @@ class Updateitem(APIView):
             description = request.data.get('description')
             info_detail=request.data.get('info_detail')
             item.detail=info_detail
+            item.slug=slugify(name) + '.' + str(item.id)
             files=request.data.get('files',[])
             UploadItem.objects.filter(Q(media_upload=None) | (Q(media_upload=item) &~Q(id__in=files))).delete()
             item.brand= request.data.get('brand')

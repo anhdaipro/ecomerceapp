@@ -122,11 +122,7 @@ class Item(models.Model):
         return str(self.name)
     def get_absolute_url(self):
         return reverse("category", kwargs={"slug": self.slug})
-    def save(self, *args, **kwargs):
-        #this line below give to the instance slug field a slug name
-        self.slug = slugify(self.name+'.'+self.id)
-        #this line below save every fields of the model instance
-        super(Item, self).save(*args, **kwargs) 
+    
     def count_review(self):
         return ReView.objects.filter(cartitem__product__item=self).count()
     def average_review(self):
