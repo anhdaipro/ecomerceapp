@@ -23,6 +23,7 @@ class Category(MPTTModel):
     image_category=models.ManyToManyField(Image_category,blank=True)
     slug = models.SlugField(max_length=100,null=True,blank=True)
     choice=models.BooleanField(default=False)
+<<<<<<< HEAD
     def __str__(self):
         return self.title
     def save(self, *args, **kwargs):
@@ -45,6 +46,9 @@ class Category(MPTTModel):
         verbose_name_plural = 'Categories'
     class MPTTMeta:
         order_insertion_by = ['level']
+=======
+    
+>>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
     # to undrestand better the parrent and child i'm gonna separated by '/' from each other
     def __str__(self):
         full_path = [self.title]
@@ -53,6 +57,16 @@ class Category(MPTTModel):
             full_path.append(c.title)
             c = c.parent
         return '/'.join(full_path[::-1])
+<<<<<<< HEAD
+=======
+    def get_full_id(self):
+        list_id=[self.id]
+        c=self.parent
+        while c is not None:
+            list_id.append(c.id)
+            c=c.parent
+        return list_id
+>>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
     def get_full_category(self):
         full_path = [self.title]
         c = self.parent
@@ -64,11 +78,39 @@ class Category(MPTTModel):
         
         if self.parent!=None:
             return self.parent.id
+<<<<<<< HEAD
+=======
+    def save(self, *args, **kwargs):
+        #this line below give to the instance slug field a slug name
+        self.slug = slugify(self.title)
+        #this line below save every fields of the model instance
+        super(Category, self).save(*args, **kwargs) 
+    
+    
+    def get_model_fields(model):
+        fields = {}
+        options = model._meta
+        for field in sorted(options.concrete_fields + options.many_to_many):
+            fields[field.name] = field
+        return fields
+    def get_absolute_url(self):
+        return reverse("category", kwargs={"slug": self.slug})
+    
+    
+>>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
         
     def get_image(self):
         if self.image and hasattr(self.image,'url'):
             return self.image.url
+<<<<<<< HEAD
     
+=======
+    class Meta:
+        verbose_name_plural = 'Categories'
+    class MPTTMeta:
+        
+        order_insertion_by = ['title']
+>>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
 
 '''class UrlHit(models.Model):
     url     = models.URLField()
