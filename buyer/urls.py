@@ -47,7 +47,8 @@ from .views import (
     ListFlashsaleAPI,
     PaymentAPIView,
     CategoryinfoAPI,
-    SearchitemshopAPI
+    SearchitemshopAPI,
+    CityAPI
 )
 
 urlpatterns = [
@@ -110,6 +111,6 @@ urlpatterns = [
     path('payment', PaymentAPIView.as_view()),
     path('save_voucher',views.save_voucher),
     path('update_address',AddressAPIView.as_view()),
-    path('get_city',views.get_city),
+    path('get_city',CityAPI.as_view()),
     
 ]

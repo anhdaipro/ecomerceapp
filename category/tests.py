@@ -84,3 +84,31 @@ category5=[
     {"title":"Bộ đàm","choice":true},
     
 ]
+category5=[
+    {"title":"Áo hai dây và ba lỗ","choice":true},
+    {"title":"Áo ống","choice":true},
+    {"title":"Áo thun","choice":true},
+    {"title":"Áo sơ mi","choice":true},
+    {"title":"Áo polo","choice":true},
+    {"title":"Áo liền thân","choice":true},
+    
+]
+category5=[
+    {"title":"Áo ba lỗ","choice":true},
+    {"title":"Áo thun","choice":true},
+    {"title":"Áo sơ mi","choice":true},
+    {"title":"Áo polo","choice":true},
+   
+    
+]
+Quần legging
+
+Quần dài
+
+Khác
+
+
+
+
+
+

@@ -8,7 +8,7 @@ from account.models import *
 from shop.models import *
 from shipping.models import *
 from orderactions.models import *
-from category.models import *
+from categories.models import *
 from orders.models import *
 from discounts.models import *
 from chats.models import *

@@ -2,7 +2,7 @@
 from django.shortcuts import render,redirect
 from shop.models import *
 #from carts.models import *
-from category.models import *
+from categories.models import *
 from city.models import *
 from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponse, HttpResponseRedirect,JsonResponse

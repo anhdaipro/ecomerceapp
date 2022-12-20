@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.expressions import Col
-from category.models import Category
+from categories.models import Category
 from django.urls import reverse
 from django.utils import timezone
 from django.db.models import Max, Min, Count, Avg,Sum
@@ -18,7 +18,7 @@ from orderactions.models import *
 from myweb.models import *
 from carts.models import *
 from orders.models import *
-from category.models import Category
+from categories.models import Category
 import datetime
 import re
 import subprocess

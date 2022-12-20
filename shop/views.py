@@ -15,7 +15,7 @@ from account.models import *
 from shop.models import *
 from shipping.models import *
 from orderactions.models import *
-from category.models import *
+from categories.models import *
 from orders.models import *
 from discounts.models import *
 from chats.models import *
@@ -1361,7 +1361,7 @@ class NewItem(APIView):
         list_category=Category.objects.all()
         data={
             'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
-            'parent':category.getparent()} for category in list_category]
+            'parent':category.parent()} for category in list_category]
         } 
         return Response(data)
 

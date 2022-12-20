@@ -13,12 +13,13 @@ import re
 class Image_category(models.Model):
     image=models.ImageField(upload_to='category/')
     url_field=models.URLField(max_length=200)
-class Category(models.Model):
-    parent = models.ForeignKey('self',blank=True, null=True ,related_name='children', on_delete=models.CASCADE)
+
+
+class Category(MPTTModel):
+    parent = TreeForeignKey('self',blank=True, null=True ,related_name='children', on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
-    image=models.ImageField(blank=True,upload_to='category/')
+    image=models.ImageField(blank=True)
     display=models.BooleanField(default=False)
-    level=models.IntegerField(default=1)
     image_category=models.ManyToManyField(Image_category,blank=True)
     slug = models.SlugField(max_length=100,null=True,blank=True)
     choice=models.BooleanField(default=False)
@@ -30,25 +31,43 @@ class Category(models.Model):
         #this line below save every fields of the model instance
         super(Category, self).save(*args, **kwargs) 
     
-        # At this point obj.val is still 1, but the value in the database
-        # was updated to 2. The object's updated value needs to be reloaded
-        # from the database.
    
+    def get_model_fields(model):
+        fields = {}
+        options = model._meta
+        for field in sorted(options.concrete_fields + options.many_to_many):
+            fields[field.name] = field
+        return fields
     def get_absolute_url(self):
         return reverse("category", kwargs={"slug": self.slug})
     
     class Meta:
         verbose_name_plural = 'Categories'
-    
+    class MPTTMeta:
+        order_insertion_by = ['level']
     # to undrestand better the parrent and child i'm gonna separated by '/' from each other
     def __str__(self):
-        return self.title
-    
+        full_path = [self.title]
+        c = self.parent
+        while c is not None:
+            full_path.append(c.title)
+            c = c.parent
+        return '/'.join(full_path[::-1])
+    def get_full_category(self):
+        full_path = [self.title]
+        c = self.parent
+        while c is not None:
+            full_path.append(c.title)
+            c = c.parent
+        return '>'.join(full_path[::-1])
+    def getparent(self):
+        
+        if self.parent!=None:
+            return self.parent.id
         
     def get_image(self):
         if self.image and hasattr(self.image,'url'):
             return self.image.url
-   
     
 
 '''class UrlHit(models.Model):

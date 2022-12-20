@@ -32,7 +32,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from django.contrib.auth.decorators import login_required
 from django.db.models import Max, Min, Count, Avg,Sum
 from shop.models import *
-from category.models import *
+from categories.models import *
 from orders.models import *
 from carts.models import *
 from discounts.models import *
@@ -1005,11 +1005,19 @@ class ListorderAPIView(APIView):
         
         return Response(data,status=status.HTTP_200_OK)
 
-@api_view(['GET', 'POST'])
-def get_city(request):
-    list_city=City.objects.all()
-    return Response(list_city.values())
 
+class CityAPI(APIView):
+    def get(self,request):
+        list_city=City.objects.all()
+        return Response(list_city.values())
+    def post(self,request):
+        cities=request.data.get('cities')
+        
+        list_city=[]
+        for city in cities:
+            list_city.append(City(level=city['level'],maqh=city['matp'],name=city['name']))
+        City.objects.bulk_create(list_city)
+        return Response({'success':True})
 class AddressAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = AddressSerializer
