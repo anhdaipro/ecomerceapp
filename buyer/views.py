@@ -1214,7 +1214,7 @@ class CheckoutAPIView(APIView):
             for order in orders:
                 order.shipping_address = address
                 order.ordered=True
-                order.amount=order.total_discount_order()
+                order.amount=order.total_final_order()
                 order.ref_code = create_ref_code()
                 order.ordered_date=datetime.datetime.now()
                 if order.get_discount_voucher()>0:
