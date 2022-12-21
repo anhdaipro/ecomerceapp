@@ -1224,8 +1224,8 @@ class CheckoutAPIView(APIView):
                 order.accepted_date=datetime.datetime.now()+timedelta(minutes=30)
                 order.payment_choice=payment_option
                 items = order.items.all()
-                id_remove=[item for item in items if item.quantity>item.product.inventory]
-                id_checkout=[item for item in items if item.quantity<=item.product.inventory]
+                id_remove=[item.id for item in items if item.quantity>item.product.inventory]
+                id_checkout=[item.id for item in items if item.quantity<=item.product.inventory]
                 items_checkout=items.filter(id__in=id_checkout).update(ordered=True)
                 order.items.remove(*id_remove)
                 for item in items_checkout:
@@ -1314,8 +1314,8 @@ class PaymentAPIView(APIView):
             order.payment_choice="Paypal"
             order.payment_number=pay_id
             items = order.items.all()
-            id_remove=[item for item in items if item.quantity>item.product.inventory]
-            id_checkout=[item for item in items if item.quantity<=item.product.inventory]
+            id_remove=[item.id for item in items if item.quantity>item.product.inventory]
+            id_checkout=[item.id for item in items if item.quantity<=item.product.inventory]
             items_checkout=items.filter(id__in=id_checkout).update(ordered=True)
             order.items.remove(*id_remove)
             for item in items_checkout:
