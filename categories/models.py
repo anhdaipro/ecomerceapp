@@ -24,25 +24,10 @@ class Category(MPTTModel):
     slug = models.SlugField(max_length=100,null=True,blank=True)
     choice=models.BooleanField(default=False)
     
-    def save(self, *args, **kwargs):
-        #this line below give to the instance slug field a slug name
-        self.slug = slugify(self.title)
-        #this line below save every fields of the model instance
-        super(Category, self).save(*args, **kwargs) 
-    
-   
-    def get_model_fields(model):
-        fields = {}
-        options = model._meta
-        for field in sorted(options.concrete_fields + options.many_to_many):
-            fields[field.name] = field
-        return fields
-    
     class Meta:
         verbose_name_plural = 'Categories'
         ordering=['id']
     
-
     # to undrestand better the parrent and child i'm gonna separated by '/' from each other
     def __str__(self):
         full_path = [self.title]
@@ -68,7 +53,6 @@ class Category(MPTTModel):
             c = c.parent
         return '>'.join(full_path[::-1])
     def getparent(self):
-        
         if self.parent!=None:
             return self.parent.id
     def save(self, *args, **kwargs):
@@ -84,19 +68,14 @@ class Category(MPTTModel):
         for field in sorted(options.concrete_fields + options.many_to_many):
             fields[field.name] = field
         return fields
-    def get_absolute_url(self):
-        return reverse("category", kwargs={"slug": self.slug})
+   
     
         
     def get_image(self):
         if self.image and hasattr(self.image,'url'):
             return self.image.url
-    class Meta:
-        verbose_name_plural = 'Categories'
-    class MPTTMeta:
-        
-        order_insertion_by = ['title']
-
+    
+    
 
 '''class UrlHit(models.Model):
     url     = models.URLField()
