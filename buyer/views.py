@@ -1226,7 +1226,8 @@ class CheckoutAPIView(APIView):
                 items = order.items.all()
                 id_remove=[item.id for item in items if item.quantity>item.product.inventory]
                 id_checkout=[item.id for item in items if item.quantity<=item.product.inventory]
-                items_checkout=items.filter(id__in=id_checkout).update(ordered=True)
+                items_checkout=items.filter(id__in=id_checkout)
+                items_checkout.update(ordered=True)
                 order.items.remove(*id_remove)
                 for item in items_checkout:
                     products=Variation.objects.get(id=item.product_id)
@@ -1316,10 +1317,12 @@ class PaymentAPIView(APIView):
             items = order.items.all()
             id_remove=[item.id for item in items if item.quantity>item.product.inventory]
             id_checkout=[item.id for item in items if item.quantity<=item.product.inventory]
-            items_checkout=items.filter(id__in=id_checkout).update(ordered=True)
+            items_checkout=items.filter(id__in=id_checkout)
+            items_checkout.update(ordered=True)
             order.items.remove(*id_remove)
             for item in items_checkout:
                 products=item.product
+                
                 products.inventory -= item.quantity
                 item.amount_main_products=item.discount_main() 
                 item.amount_byproducts=item.total_discount_deal()
