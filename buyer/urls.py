@@ -47,17 +47,9 @@ from .views import (
     ListFlashsaleAPI,
     PaymentAPIView,
     CategoryinfoAPI,
-<<<<<<< HEAD
     SearchitemshopAPI,
     CityAPI
-=======
-<<<<<<< HEAD
-    SearchitemshopAPI,
-    CityAPI
-=======
-    SearchitemshopAPI
->>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
->>>>>>> 7e23a8330d57a210e482dd027877108442f9ac15
+  
 )
 
 urlpatterns = [
@@ -120,14 +112,12 @@ urlpatterns = [
     path('payment', PaymentAPIView.as_view()),
     path('save_voucher',views.save_voucher),
     path('update_address',AddressAPIView.as_view()),
-<<<<<<< HEAD
+
     path('get_city',CityAPI.as_view()),
-=======
-<<<<<<< HEAD
+
     path('get_city',CityAPI.as_view()),
-=======
+
     path('get_city',views.get_city),
->>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
->>>>>>> 7e23a8330d57a210e482dd027877108442f9ac15
+
     
 ]

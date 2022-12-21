@@ -438,11 +438,9 @@ class SearchitemAPIView(APIView):
             'unitdelivery':list(set(['Nhanh','Hỏa tốc'])),
             'brands':list(set([item.brand for item in list_items])),
             'status':list({item['value']:item for item in status}.values()),
-<<<<<<< HEAD
             'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.get_absolute_url()} for i in category_choice],
-=======
             'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.slug} for i in category_choice],
->>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
+
             'list_item_page':ItempageSerializer(page_obj,many=True).data
             ,'page_count':paginator.num_pages
         }
@@ -522,13 +520,11 @@ class CategoryinfoAPI(APIView):
         category_children=Category.objects.filter(parent=category)
         category_choice=category.get_descendants(include_self=False).filter(choice=True)
         data={
-<<<<<<< HEAD
             'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.get_absolute_url()} for i in category_choice if i.item_set.all().count()>0],
             'category_children':[{'id':i.id,'title':i.title,'url':i.get_absolute_url()} for i in category_children],
-=======
             'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.slug} for i in category_choice if i.item_set.all().count()>0],
             'category_children':[{'id':i.id,'title':i.title,'url':i.slug} for i in category_children],
->>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
+
         }
         return Response(data)
 
@@ -1023,11 +1019,7 @@ class ListorderAPIView(APIView):
         
         return Response(data,status=status.HTTP_200_OK)
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
 
->>>>>>> 7e23a8330d57a210e482dd027877108442f9ac15
 class CityAPI(APIView):
     def get(self,request):
         list_city=City.objects.all()
@@ -1037,22 +1029,16 @@ class CityAPI(APIView):
         
         list_city=[]
         for city in cities:
-<<<<<<< HEAD
             list_city.append(City(level=city['level'],matp=city.get('matp'),maqh=city.get('maqh'),name=city['name']))
         City.objects.bulk_create(list_city)
         return Response({'success':True})
-=======
-            list_city.append(City(level=city['level'],maqh=city['matp'],name=city['name']))
-        City.objects.bulk_create(list_city)
-        return Response({'success':True})
-=======
+
+
 @api_view(['GET', 'POST'])
 def get_city(request):
     list_city=City.objects.all()
     return Response(list_city.values())
->>>>>>> 7e23a8330d57a210e482dd027877108442f9ac15
 
->>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
 class AddressAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = AddressSerializer
@@ -1421,11 +1407,7 @@ class DealShockAPIView(APIView):
         variation_choice={
             'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'item_id':variation.item_id,'name':variation.item.name,'check':True,'main':True,
-<<<<<<< HEAD
             'price':variation.price,'discount_price':variation.total_discount(),'url':variation.item.get_absolute_url(),
-=======
-            'price':variation.price,'discount_price':variation.total_discount(),'url':variation.item.slug,
->>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
             'sizes':variation.item.get_size(),'inventory':variation.inventory,
             'image':variation.get_image(),'quantity':1,'count_variation':variation.item.count_variation(),
             'colors':variation.item.get_color()}
