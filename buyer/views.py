@@ -233,7 +233,7 @@ class LoginView(APIView):
             data = {
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
-                'access_expires': datetime.datetime.now()+settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
+                'access_expires': timezone.now()+settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
             }
             return Response(data)
         except Exception:
@@ -444,12 +444,21 @@ class SearchitemAPIView(APIView):
         }
         return Response(data)
         
-class ImageHomeAPIView(ListAPIView):
+class ImageHomeAPIView(APIView):
     permission_classes = (AllowAny,)
-    serializer_class = ImagehomeSerializer
-    def get_queryset(self):
-        return Image_home.objects.all()
-
+    
+    def get(self,request):
+        image_home= Image_home.objects.all()
+        return Response(ImagehomeSerializer(image_home,many=True).data)
+    def post(self,request):
+        list_items=[]
+        image=request.FILES.getlist('image')
+        url_field=request.POST.getlist('url_field')
+        for i in range(len(image)):
+            item=Image_home(image=image[i],url_field=url_field[i])
+            list_items.append(item)
+        Image_home.objects.bulk_create(list_items)
+        return Response({"success":True})
 class ItemdetailAPI(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
@@ -1005,10 +1014,18 @@ class ListorderAPIView(APIView):
         
         return Response(data,status=status.HTTP_200_OK)
 
-@api_view(['GET', 'POST'])
-def get_city(request):
-    list_city=City.objects.all()
-    return Response(list_city.values())
+class CityAPI(APIView):
+    def get(self,request):
+        list_city=City.objects.all()
+        return Response(list_city.values())
+    def post(self,request):
+        cities=request.data.get('cities')
+        
+        list_city=[]
+        for city in cities:
+            list_city.append(City(level=city['level'],matp=city.get('matp'),maqh=city.get('maqh'),name=city['name']))
+        City.objects.bulk_create(list_city)
+        return Response({'success':True})
 
 class AddressAPIView(APIView):
     permission_classes = (IsAuthenticated,)
