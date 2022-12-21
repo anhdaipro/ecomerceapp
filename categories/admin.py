@@ -9,7 +9,7 @@ from shop.models import *
 
 class CategoryAdmin2(DraggableMPTTAdmin):
     mptt_indent_field = "title"
-    list_display = ('tree_actions', 'indented_title','id',
+    list_display = ('tree_actions', 'indented_title','id','tree_id','lft','rght',
                     'related_products_count', 'related_products_cumulative_count')
     list_display_links = ('indented_title',)
     prepopulated_fields = {'slug': ('title',)}

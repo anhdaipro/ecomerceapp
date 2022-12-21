@@ -1103,14 +1103,13 @@ class Createcategory(APIView):
     def post(self,request):
         categories=request.data.get('categories')
         parent_id=request.data.get('parent_id')
-        level=request.data.get('level')
+        
         list_categories=[]
         for category in categories:
-            list_categories.append(Category(title=category['title'],level=level,parent_id=parent_id,choice=category['choice']))
-
-            list_categories.append(Category(title=category['title'],lft=1,rght=1,tree_id=2,level=level,parent_id=parent_id,choice=category['choice']))
+            list_categories.append(Category(title=category['title'],level=0,lft=0,rght=0,tree_id=0,parent_id=parent_id,choice=category['choice']))
 
         Category.objects.bulk_create(list_categories)
+        Category.objects.rebuild()
         return Response({'success':True})
 class Detailprogram(APIView):
     def get(self,request,id):
@@ -1314,20 +1313,13 @@ class NewItem(APIView):
         description = request.data.get('description')
         info_detail=request.data.get('info_detail')
 
-        item.detail=info_detail
         item = Item.objects.create(shop = shop,name = name,category_id=category_id,description=description)
-        item.slug=re.sub('[,./\&]', "-",name) +  str(item.id)
         files=request.data.get('files',[])
-       
-
-        
         item = Item.objects.create(shop = shop,name = name,category_id=category_id,description=description)
         item.slug=slugify(name) + '.' + str(item.id)
         files=request.data.get('files',[])
         item.detail=info_detail
-
         item.brand= request.data.get('brand')
-        
         item.weight=request.data.get('weight')
         height=request.data.get('height')
         length=request.data.get('length')
@@ -1355,8 +1347,6 @@ class NewItem(APIView):
         
         item.media_upload.add(*list_upload)
         item.shipping_choice.add(*shipping)
-        
-        
         variations=request.data.get('variations')
         list_variation = [
             Variation(
@@ -1375,9 +1365,6 @@ class NewItem(APIView):
     def get(self,request):
         list_category=Category.objects.all()
         data={
-
-            
-
             'list_category':CategorySellerSerializer(list_category,many=True).data
 
         } 
@@ -1553,10 +1540,7 @@ class Updateitem(APIView):
             description = request.data.get('description')
             info_detail=request.data.get('info_detail')
             item.detail=info_detail
-
-
             item.slug=slugify(name) + '.' + str(item.id)
-
             files=request.data.get('files',[])
             UploadItem.objects.filter(Q(media_upload=None) | (Q(media_upload=item) &~Q(id__in=files))).delete()
             item.brand= request.data.get('brand')
