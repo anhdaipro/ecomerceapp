@@ -1312,9 +1312,6 @@ class NewItem(APIView):
         name=request.data.get('name')
         description = request.data.get('description')
         info_detail=request.data.get('info_detail')
-
-        item = Item.objects.create(shop = shop,name = name,category_id=category_id,description=description)
-        files=request.data.get('files',[])
         item = Item.objects.create(shop = shop,name = name,category_id=category_id,description=description)
         item.slug=slugify(name) + '.' + str(item.id)
         files=request.data.get('files',[])
