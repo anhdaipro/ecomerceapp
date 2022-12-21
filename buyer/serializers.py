@@ -126,16 +126,12 @@ class ImagehomeSerializer(serializers.ModelSerializer):
         return obj.image.url
 
 class CategorySerializer(serializers.ModelSerializer):
-    url=serializers.SerializerMethodField()
-    class Meta:
-        model=Category
-        fields=('title','url','id',)
-    def get_url(self,obj):
-        return obj.get_absolute_url()
-
+    
     class Meta:
         model=Category
         fields=('title','slug','id',)
+    
+    
 class CategorySellerSerializer(serializers.ModelSerializer):
     class Meta:
         model=Category
@@ -628,7 +624,7 @@ class ShopinfoSerializer(serializers.ModelSerializer):
         fields=('id','avatar','url','name','online','num_follow','is_online',
         'count_product','total_order',)
     def get_url(self,obj):
-        return obj.get_absolute_url()
+        return obj.slug
 
         fields=('id','avatar','slug','name','online','num_follow','is_online',
         'count_product','total_order',)
