@@ -41,8 +41,7 @@ class Category(MPTTModel):
     class Meta:
         verbose_name_plural = 'Categories'
         ordering=['id']
-    class MPTTMeta:
-        order_insertion_by = ['title']
+    
 
     # to undrestand better the parrent and child i'm gonna separated by '/' from each other
     def __str__(self):
