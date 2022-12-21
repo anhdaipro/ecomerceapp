@@ -23,8 +23,7 @@ class Category(MPTTModel):
     image_category=models.ManyToManyField(Image_category,blank=True)
     slug = models.SlugField(max_length=100,null=True,blank=True)
     choice=models.BooleanField(default=False)
-    def __str__(self):
-        return self.title
+    
     def save(self, *args, **kwargs):
         #this line below give to the instance slug field a slug name
         self.slug = slugify(self.title)
@@ -38,13 +37,12 @@ class Category(MPTTModel):
         for field in sorted(options.concrete_fields + options.many_to_many):
             fields[field.name] = field
         return fields
-    def get_absolute_url(self):
-        return reverse("category", kwargs={"slug": self.slug})
     
     class Meta:
         verbose_name_plural = 'Categories'
+        ordering=['id']
     class MPTTMeta:
-        order_insertion_by = ['level']
+        order_insertion_by = ['title']
 
     # to undrestand better the parrent and child i'm gonna separated by '/' from each other
     def __str__(self):
