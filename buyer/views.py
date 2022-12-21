@@ -438,7 +438,7 @@ class SearchitemAPIView(APIView):
             'unitdelivery':list(set(['Nhanh','Hỏa tốc'])),
             'brands':list(set([item.brand for item in list_items])),
             'status':list({item['value']:item for item in status}.values()),
-            'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.get_absolute_url()} for i in category_choice],
+            'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.slug} for i in category_choice],
             'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.slug} for i in category_choice],
 
             'list_item_page':ItempageSerializer(page_obj,many=True).data
@@ -520,8 +520,8 @@ class CategoryinfoAPI(APIView):
         category_children=Category.objects.filter(parent=category)
         category_choice=category.get_descendants(include_self=False).filter(choice=True)
         data={
-            'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.get_absolute_url()} for i in category_choice if i.item_set.all().count()>0],
-            'category_children':[{'id':i.id,'title':i.title,'url':i.get_absolute_url()} for i in category_children],
+            'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.slug} for i in category_choice if i.item_set.all().count()>0],
+            'category_children':[{'id':i.id,'title':i.title,'url':i.slug} for i in category_children],
             'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.slug} for i in category_choice if i.item_set.all().count()>0],
             'category_children':[{'id':i.id,'title':i.title,'url':i.slug} for i in category_children],
 
@@ -1407,7 +1407,7 @@ class DealShockAPIView(APIView):
         variation_choice={
             'product_id':variation.id,'color_value':variation.get_color(),'size_value':variation.get_size(),
             'item_id':variation.item_id,'name':variation.item.name,'check':True,'main':True,
-            'price':variation.price,'discount_price':variation.total_discount(),'url':variation.item.get_absolute_url(),
+            'price':variation.price,'discount_price':variation.total_discount(),'url':variation.item.slug,
             'sizes':variation.item.get_size(),'inventory':variation.inventory,
             'image':variation.get_image(),'quantity':1,'count_variation':variation.item.count_variation(),
             'colors':variation.item.get_color()}
