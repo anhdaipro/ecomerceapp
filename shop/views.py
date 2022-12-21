@@ -8,7 +8,11 @@ from django.core.paginator import Paginator
 from django.core.serializers import serialize
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+<<<<<<< HEAD
+
+=======
 from slugify import slugify
+>>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from account.models import *
@@ -49,7 +53,10 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 import json
 from buyer.serializers import (OrdersellerSerializer,ItemSellerSerializer,
 VariationSerializer,
+<<<<<<< HEAD
+=======
 CategorySellerSerializer,
+>>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
 VoucherSerializer,
 VouchersellerSerializer,
 ShopProgramSerializer,
@@ -1103,7 +1110,11 @@ class Createcategory(APIView):
         level=request.data.get('level')
         list_categories=[]
         for category in categories:
+<<<<<<< HEAD
+            list_categories.append(Category(title=category['title'],level=level,parent_id=parent_id,choice=category['choice']))
+=======
             list_categories.append(Category(title=category['title'],lft=1,rght=1,tree_id=2,level=level,parent_id=parent_id,choice=category['choice']))
+>>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
         Category.objects.bulk_create(list_categories)
         return Response({'success':True})
 class Detailprogram(APIView):
@@ -1307,11 +1318,19 @@ class NewItem(APIView):
         name=request.data.get('name')
         description = request.data.get('description')
         info_detail=request.data.get('info_detail')
+<<<<<<< HEAD
+        item.detail=info_detail
+        item = Item.objects.create(shop = shop,name = name,category_id=category_id,description=description)
+        item.slug=re.sub('[,./\&]', "-",name) +  str(item.id)
+        files=request.data.get('files',[])
+       
+=======
         
         item = Item.objects.create(shop = shop,name = name,category_id=category_id,description=description)
         item.slug=slugify(name) + '.' + str(item.id)
         files=request.data.get('files',[])
         item.detail=info_detail
+>>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
         item.brand= request.data.get('brand')
         
         item.weight=request.data.get('weight')
@@ -1361,7 +1380,12 @@ class NewItem(APIView):
     def get(self,request):
         list_category=Category.objects.all()
         data={
+<<<<<<< HEAD
+            'list_category':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
+            'parent':category.parent()} for category in list_category]
+=======
             'list_category':CategorySellerSerializer(list_category,many=True).data
+>>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
         } 
         return Response(data)
 
@@ -1468,14 +1492,24 @@ class Updateitem(APIView):
         } for variation in variations]
         shipping_shop=shop.shipping.all()
         shipping_item=item.shipping_choice.all()
+<<<<<<< HEAD
+        list_category_choice=item.category.get_ancestors(include_self=True)
+        list_category=Category.objects.all()
+=======
         list_id_choice=item.category.get_full_id()
         list_category_choice=Category.objects.filter(id__in=list_id_choice)
+>>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
         method=[{'method':i.method} for i in shipping_item]
         data={
         'buymore':buymore.values(),
         'item_info':{'name':item.name,'id':item.id,'width':item.width,'height':item.height,'length':item.length,'weight':item.weight,
         'description':item.description,'status':item.status,'sku_product':item.sku_product,'info_detail':item.detail},
+<<<<<<< HEAD
+        'list_category_choice':[{'title':category.title,'id':category.id,'level':category.level,'choice':category.choice,
+        'parent':category.getparent()} for category in list_category_choice],
+=======
         'list_category_choice':CategorySellerSerializer(list_category_choice,many=True).data,
+>>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
         'list_shipping_item':list({item['method']:item for item in method}.values()),
         'shipping_shop':shipping_shop.values(),
         'media_upload':[{'file':i.get_media(),'file_preview':i.file_preview(),
@@ -1525,7 +1559,10 @@ class Updateitem(APIView):
             description = request.data.get('description')
             info_detail=request.data.get('info_detail')
             item.detail=info_detail
+<<<<<<< HEAD
+=======
             item.slug=slugify(name) + '.' + str(item.id)
+>>>>>>> 795370f62610d27ad2c35325b4e370b090e048f9
             files=request.data.get('files',[])
             UploadItem.objects.filter(Q(media_upload=None) | (Q(media_upload=item) &~Q(id__in=files))).delete()
             item.brand= request.data.get('brand')
