@@ -515,9 +515,11 @@ class CategoryinfoAPI(APIView):
     def get(self,request):
         category_id=request.GET.get('category_id')
         category=Category.objects.get(id=category_id)
-        category_children=Category.objects.filter(parent=category,level=1)
+        category_parent=category.get_root()
+        category_children=Category.objects.filter(parent=category_parent,level=1)
         data={
-            'category_children':[{'id':i.id,'title':i.title,'url':i.slug} for i in category_children],
+            'category_parent':CategorySerializer(category_parent).data,
+            'category_children':CategorySerializer(category_children,many=True).data,
         }
         return Response(data)
 
