@@ -63,7 +63,7 @@ class Message(models.Model):
     date_created = models.DateTimeField(auto_now=True)
     def message_product(self):
         if self.message_type=='4':
-            return ({'name':self.product.name,'id':self.product_id,'slug':self.product.get_absolute_url(),
+            return ({'name':self.product.name,'id':self.product_id,'slug':self.product.slug,
             'max_price':self.product.max_price(),'min_price':self.product.min_price(),
             'percent_discount':self.product.percent_discount(),
             'image':self.product.get_image_cover()})
@@ -73,7 +73,7 @@ class Message(models.Model):
             return({'id':self.order.id,'received':self.order.received,'canceled':self.order.canceled,
             'accepted':self.order.accepted,'amount':self.order.amount,
             'image':self.order.items.all().last().get_image(),
-            'url':self.order.items.all().last().item.get_absolute_url(),
+            'url':self.order.items.all().last().item.slug,
             'total_quantity':self.order.count_item_cart(),
             'being_delivered':self.order.being_delivered})
            

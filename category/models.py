@@ -22,8 +22,7 @@ class Category(models.Model):
     image_category=models.ManyToManyField(Image_category,blank=True)
     slug = models.SlugField(max_length=100,null=True,blank=True)
     choice=models.BooleanField(default=False)
-    def __str__(self):
-        return self.title
+    
     def save(self, *args, **kwargs):
         #this line below give to the instance slug field a slug name
         self.slug = slugify(self.title)
@@ -34,17 +33,11 @@ class Category(models.Model):
         # was updated to 2. The object's updated value needs to be reloaded
         # from the database.
    
-    def get_absolute_url(self):
-        return reverse("category", kwargs={"slug": self.slug})
-    
     class Meta:
         verbose_name_plural = 'Categories'
-    
+        ordering=['id']
     # to undrestand better the parrent and child i'm gonna separated by '/' from each other
-    def __str__(self):
-        return self.title
-    
-        
+   
     def get_image(self):
         if self.image and hasattr(self.image,'url'):
             return self.image.url

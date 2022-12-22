@@ -61,7 +61,8 @@ class Category(MPTTModel):
         #this line below save every fields of the model instance
         super(Category, self).save(*args, **kwargs) 
     
-    
+    class MPTTMeta:
+        order_insertion_by=['id']
     def get_model_fields(model):
         fields = {}
         options = model._meta

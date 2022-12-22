@@ -53,8 +53,7 @@ class Shop(models.Model):
     def get_image(self):
         if self.image_cover and hasattr(self.image_cover,'url'):
             return self.image_cover.url
-    def get_absolute_url(self):
-        return reverse("category", kwargs={"slug": self.slug})
+    
     def num_follow(self):
         return Follower.objects.filter(shop=self).count()
     def count_product(self):
@@ -120,8 +119,7 @@ class Item(models.Model):
     detail=models.JSONField(null=True)
     def __str__(self):
         return str(self.name)
-    def get_absolute_url(self):
-        return reverse("category", kwargs={"slug": self.slug})
+   
     def save(self, *args, **kwargs):
         #this line below give to the instance slug field a slug name
         self.slug = slugify(self.name)

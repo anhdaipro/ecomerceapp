@@ -23,7 +23,7 @@ class MemberSerializer(serializers.ModelSerializer):
     def get_username(self,obj):
         return obj.user.username
     def get_url(self,obj):
-        return obj.user.shop.get_absolute_url()
+        return obj.user.shop.slug
 
 class ThreadinfoSerializer(serializers.ModelSerializer):
     message_last=serializers.SerializerMethodField()
