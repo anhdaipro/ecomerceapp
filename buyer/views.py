@@ -406,8 +406,8 @@ class SearchitemAPIView(APIView):
         if category_id:
             category_parent=Category.objects.get(id=category_id)
             category_choice=category_parent.get_descendants(include_self=False).filter(choice=True)
-            list_items=list_items.filter(category__in=category_choice).distinct()
-            items=items.filter(category__in=category_choice).distinct()
+            list_items=list_items.filter(Q(category__in=category_choice)|Q(category=category_parent)).distinct()
+            items=items.filter(Q(category__in=category_choice)|Q(category=category_parent)).distinct()
         if brand:
             items=items.filter(brand=brand)
         if status:
