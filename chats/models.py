@@ -80,7 +80,7 @@ class Message(models.Model):
 class Messagemedia(models.Model):
     message= models.ForeignKey(Message, on_delete=models.CASCADE,related_name='message_media')
     upload_by=models.ForeignKey(User, on_delete=models.CASCADE)
-    file=models.FileField(upload_to="chat/")
+    file=models.FileField(upload_to="chat/",storage=RawMediaCloudinaryStorage())
     file_preview=models.FileField(null=True,upload_to="chat/")
     duration=models.FloatField(default=0)
     upload_date=models.DateTimeField(auto_now_add=True)
