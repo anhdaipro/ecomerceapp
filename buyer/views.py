@@ -393,7 +393,7 @@ class SearchitemAPIView(APIView):
             list_items = list_items.filter(Q(name__icontains=keyword)|Q(shop__name=keyword) | Q(brand__in=keyword)|Q(category__title=keyword)).order_by('name').distinct()
             items = Item.objects.filter(Q(name__icontains=keyword) | Q(
             brand__in=keyword)|Q(category__title=keyword)).prefetch_related('media_upload').prefetch_related('main_product').prefetch_related('promotion_combo').prefetch_related('shop_program').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem').distinct()
-            category_choice=Category.objects.filter(item__in=list_items).order_by('title').distinct()
+            category_choice=category_choice.filter(item__in=list_items).order_by('title').distinct()
             list_shop=Shop.objects.filter(item__in=list_items)
             SearchKey.objects.get_or_create(keyword=keyword)
             SearchKey.objects.filter(keyword=keyword).update(total_searches=F('total_searches') + 1)
@@ -439,8 +439,6 @@ class SearchitemAPIView(APIView):
             'brands':list(set([item.brand for item in list_items])),
             'status':list({item['value']:item for item in status}.values()),
             'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.slug} for i in category_choice],
-            'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.slug} for i in category_choice],
-
             'list_item_page':ItempageSerializer(page_obj,many=True).data
             ,'page_count':paginator.num_pages
         }
@@ -522,7 +520,6 @@ class CategoryinfoAPI(APIView):
         data={
             'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.slug} for i in category_choice if i.item_set.all().count()>0],
             'category_children':[{'id':i.id,'title':i.title,'url':i.slug} for i in category_children],
-            'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.slug} for i in category_choice if i.item_set.all().count()>0],
             'category_children':[{'id':i.id,'title':i.title,'url':i.slug} for i in category_children],
 
         }
