@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from django.conf.urls import include
+from rest_framework_simplejwt import views as jwt_views
 from .views import (
     ChangePasswordView,
     HomeAPIView,
@@ -62,7 +63,7 @@ urlpatterns = [
         views.SetNewPasswordAPIView.as_view(),
         name="password-reset-confirm",
     ),
-    path('refresh/token/<int:id>' ,RefreshTokenuser.as_view()),
+    path("refresh", jwt_views.TokenRefreshView.as_view()),
     path('register/email', Registeremail.as_view()),
     path('verify/email', VerifyEmailView.as_view()),
     path('register', RegisterView.as_view()),
