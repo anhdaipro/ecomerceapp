@@ -626,16 +626,12 @@ class ShopinfoSerializer(serializers.ModelSerializer):
     def get_url(self,obj):
         return obj.slug
 
-        fields=('id','avatar','slug','name','online','num_follow','is_online',
-        'count_product','total_order',)
-    
-
     def get_avatar(self,obj):
         return obj.user.profile.avatar.url
     def get_online(self,obj):
         return obj.user.profile.online
     def get_is_online(self,obj):
-        return obj.user.profile.online
+        return obj.user.profile.is_online
     def get_count_product(self,obj):
         return obj.count_product()
     def get_total_order(self,obj):
