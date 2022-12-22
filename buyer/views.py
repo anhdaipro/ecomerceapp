@@ -438,7 +438,7 @@ class SearchitemAPIView(APIView):
             'unitdelivery':list(set(['Nhanh','Hỏa tốc'])),
             'brands':list(set([item.brand for item in list_items])),
             'status':list({item['value']:item for item in status}.values()),
-            'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.slug} for i in category_choice],
+            'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.slug} for i in category_choice if i.item_set.all().count()>0],
             'list_item_page':ItempageSerializer(page_obj,many=True).data
             ,'page_count':paginator.num_pages
         }
@@ -516,11 +516,8 @@ class CategoryinfoAPI(APIView):
         category_id=request.GET.get('category_id')
         category=Category.objects.get(id=category_id)
         category_children=Category.objects.filter(parent=category,level=1)
-        category_choice=category.get_descendants(include_self=False).filter(choice=True)
         data={
-            'category_choice':[{'id':i.id,'title':i.title,'count_item':i.item_set.all().count(),'url':i.slug} for i in category_choice if i.item_set.all().count()>0],
             'category_children':[{'id':i.id,'title':i.title,'url':i.slug} for i in category_children],
-            
         }
         return Response(data)
 
