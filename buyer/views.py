@@ -114,7 +114,7 @@ class UpdateOnline(APIView):
     def post(self,request):
         online=request.data.get('online')
         Profile.objects.filter(user=request.user).update(online=False,is_online=timezone.now())
-        return Response({'success':True})
+        return Response({'time':timezone.now()})
 
 class RegisterView(APIView):
     permission_classes = (AllowAny,)
