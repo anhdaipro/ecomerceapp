@@ -147,7 +147,7 @@ class CategoryhomeSerializer(CategorySerializer):
 class CategorydetailSerializer(CategorySerializer):
     image_home= serializers.SerializerMethodField()
     class Meta(CategorySerializer.Meta):
-        fields=CategorySerializer.Meta.fields+('image_home',)
+        fields=CategorySerializer.Meta.fields+('image_home','level',)
     def get_image_home(self,obj):
         image_category=obj.image_category.all()
         return [{'id':i.id,'image':i.image.url,'url_field':i.url_field} for i in image_category]
