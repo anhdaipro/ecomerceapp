@@ -368,7 +368,7 @@ class ItemdetailSerializer(ItemcomboSerializer):
         return obj.shop.user_id
     def get_vouchers(self,obj):
         request=self.context.get("request")
-        vouchers=Voucher.objects.filter(products=obj,valid_to__gte=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        vouchers=Voucher.objects.filter(products=obj,valid_to__gte=timezone.now())
         return VoucherdetailSerializer(vouchers,many=True,context={"request": request}).data
     def get_review_rating(self,obj):
         return obj.average_review()

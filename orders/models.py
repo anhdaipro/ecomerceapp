@@ -8,7 +8,6 @@ from discounts.models import *
 from carts.models import *
 import datetime
 from django.utils import timezone
-import datetime
 from carts.models import *
 # Create your models here.
 
@@ -52,7 +51,7 @@ class Order(models.Model):
         return reverse("order", kwargs={"id": self.id})
     
     def get_voucher(self):
-        vouchers=Voucher.objects.filter(order_voucher=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        vouchers=Voucher.objects.filter(order_voucher=self,valid_to__gt=timezone.now())
         if vouchers.exists():
             return vouchers.first().id
         

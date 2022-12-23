@@ -187,7 +187,7 @@ class Item(models.Model):
             stocks=functools.reduce(lambda x, y: x+y,variations)
             return stocks
     def get_combo_current(self):
-        promotion_combo=Promotion_combo.objects.filter(products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        promotion_combo=Promotion_combo.objects.filter(products=self,valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
         if promotion_combo.exists():
             return promotion_combo.first().id
     def number_order_flash_sale(self):
@@ -255,19 +255,19 @@ class Item(models.Model):
         return number_order
     
     def get_voucher(self):
-        vouchers=Voucher.objects.filter(products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        vouchers=Voucher.objects.filter(products=self,valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
         if vouchers.exists():
             return list(vouchers.values())[0]
     
     def shock_deal_type(self):
-        if Buy_with_shock_deal.objects.filter(main_products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).exists():
-            return Buy_with_shock_deal.objects.filter(main_products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).last().shock_deal_type
+        if Buy_with_shock_deal.objects.filter(main_products=self,valid_from__lt=timezone.now(),valid_to__gt=timezone.now()).exists():
+            return Buy_with_shock_deal.objects.filter(main_products=self,valid_from__lt=timezone.now(),valid_to__gt=timezone.now()).last().shock_deal_type
     
     def shipping(self):
         return Shipping.objects.all().last()
 
     def get_promotion(self):
-        promotion_combo=Promotion_combo.objects.filter(products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        promotion_combo=Promotion_combo.objects.filter(products=self,valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
         if promotion_combo.exists():
             promotion_combo=promotion_combo.first()
             return {'id':promotion_combo.id,'combo_type':promotion_combo.combo_type,
@@ -277,19 +277,19 @@ class Item(models.Model):
             'price_special_sale':promotion_combo.price_special_sale}
     
     def get_program_current(self):
-        shop_program=Shop_program.objects.filter(products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        shop_program=Shop_program.objects.filter(products=self,valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
         if shop_program.exists():
             return shop_program.first()
     def get_flash_sale_current(self):
-        flash_sale=Flash_sale.objects.filter(products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        flash_sale=Flash_sale.objects.filter(products=self,valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
         if flash_sale.exists():
             return flash_sale.first()
     def get_deal_shock_current(self):
-        deal_shock=Buy_with_shock_deal.objects.filter(byproducts=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        deal_shock=Buy_with_shock_deal.objects.filter(byproducts=self,valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
         if deal_shock.exists():
             return deal_shock.first()
     def shock_deal(self):
-        deal_shock=Buy_with_shock_deal.objects.filter(main_products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        deal_shock=Buy_with_shock_deal.objects.filter(main_products=self,valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
         if deal_shock.exists():
             deal_shock=deal_shock.first()
             return {'id':deal_shock.id,
@@ -298,12 +298,12 @@ class Item(models.Model):
             'number_gift':deal_shock.number_gift,
             'shock_deal_type':deal_shock.shock_deal_type}
     def check_promotion(self):
-        promotion_combo=Promotion_combo.objects.filter(products=self,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10))
+        promotion_combo=Promotion_combo.objects.filter(products=self,valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
         if promotion_combo.exists():
             return True
 
     def get_flash_sale(self):
-        flash_sale=Flash_sale.objects.filter(products=self,valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=1)).order_by('valid_to')
+        flash_sale=Flash_sale.objects.filter(products=self,valid_to__gt=timezone.now()).order_by('valid_to')
         if flash_sale.exists():
             flash_sale=flash_sale.first()
             return {'id':flash_sale.id,'valid_to':flash_sale.valid_to,'valid_from':flash_sale.valid_from}
@@ -408,7 +408,7 @@ class Variation(models.Model):
         else:
             return self.get_discount_program()
     def get_discount_deal(self):
-        deal_shock=Buy_with_shock_deal.objects.filter(byproducts=self.item,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now())
+        deal_shock=Buy_with_shock_deal.objects.filter(byproducts=self.item,valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
         if deal_shock.exists():
             variations=[variation for variation in deal_shock.first().variations if variation['enable']]
             if len(variations)>0:
