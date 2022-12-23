@@ -630,12 +630,15 @@ class ShopinfoSerializer(serializers.ModelSerializer):
     is_online=serializers.SerializerMethodField()
     total_order=serializers.SerializerMethodField()
     total_review=serializers.SerializerMethodField()
+    date_joined=serializers.SerializerMethodField()
     class Meta:
         model=Shop
         fields=('id','avatar','url','name','online','num_follow','is_online',
-        'count_product','total_order','create_at','total_review')
+        'count_product','total_order','date_joined','total_review')
     def get_url(self,obj):
         return obj.slug
+    def get_date_joined:
+        return obj.user.date_joined
     def get_total_review(self,obj):
         return obj.total_review()
     def get_avatar(self,obj):
