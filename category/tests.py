@@ -26,7 +26,6 @@ category2=[
     {"title":"Com lê","choice":false},
     {"title":"Trang phục ngành nghề","choice":true},
     {"title":"Trang phục truyền thống","choice":false},
-    {"title":"Đồ liền thân","choice":false},
     {"title":"Áo khoác","choice":false},
     {"title":"Áo len","choice":true},
     {"title":"Hoodie và Áo nỉ","choice":false},
@@ -108,6 +107,17 @@ Quần dài
 Khác
 
 
+{"title":"Đèn dây tóc","choice":true},
+{"title":"Đèn ngủ","choice":true},
+{"title":"Đèn bàn","choice":true},
+{"title":"Đèn năng lượng mặt trời","choice":true},
+{"title":"Đèn rọi","choice":true},
+{"title":"Đèn trân, đèn âm trân & đèn panel","choice":true},
+{"title":"Đèn tường","choice":true},
+{"title":"Đèn treo","choice":true},
+{"title":"Đèn trùm","choice":true},
+{"title":"Đèn cảm biên","choice":true},
+{"title":"Đèn dài","choice":true},
 
 
 
