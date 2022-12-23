@@ -1357,7 +1357,6 @@ class NewItem(APIView):
             for variation in variations
         ]
         Variation.objects.bulk_create(list_variation)
-        UploadItem.objects.filter(media_upload=None).delete()
         return Response({'success':True})
     def get(self,request):
         list_category=Category.objects.all()
@@ -1539,7 +1538,7 @@ class Updateitem(APIView):
             item.detail=info_detail
             item.slug=slugify(name) + '.' + str(item.id)
             files=request.data.get('files',[])
-            UploadItem.objects.filter(Q(media_upload=None) | (Q(media_upload=item) &~Q(id__in=files))).delete()
+            UploadItem.objects.filter(Q(media_upload=item) &~Q(id__in=files)).delete()
             item.brand= request.data.get('brand')
             item.weight=request.data.get('weight')
             height=request.data.get('height')
@@ -1597,9 +1596,6 @@ class Updateitem(APIView):
             for variation in variations if type(variation['variation_id'])!=int
             ]
             Variation.objects.bulk_create(list_variation)
-            Size.objects.filter(variation=None).delete()
-            Color.objects.filter(variation=None).delete()
-            
 
             data.update({'succes':True})
         return Response(data)
