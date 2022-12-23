@@ -47,6 +47,7 @@ from .views import (
     ProfileAPI,
     ListFlashsaleAPI,
     PaymentAPIView,
+    ListTrendsearch,
     CategoryinfoAPI,
     SearchitemshopAPI,
     CityAPI
@@ -77,6 +78,8 @@ urlpatterns = [
     path('change/password/', ChangePasswordView.as_view()),
     path('products', HomeAPIView.as_view()),
     path('category/home',Category_home.as_view()),
+    path('trendsearch',ListTrendsearch.as_view()),
+    
     path('update/image', views.update_image),
     path('item/recently',Itemrecently.as_view()),
     path('item/bestseller', Listitemseller.as_view()),

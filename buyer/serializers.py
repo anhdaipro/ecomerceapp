@@ -126,24 +126,34 @@ class ImagehomeSerializer(serializers.ModelSerializer):
         return obj.image.url
 
 class CategorySerializer(serializers.ModelSerializer):
-    
     class Meta:
         model=Category
         fields=('title','slug','id',)
     
-    
+class CategorysearchSerializer(serializers.ModelSerializer):
+    image=serializers.SerializerMethodField()
+    number_order=serializers.SerializerMethodField()
+    class Meta:
+        model=Category
+        fields=['id','number_order','image','title']
+    def get_image(self,obj):
+        item=Item.objects.filter(category=obj)
+        return item.first().get_image_cover()
+    def get_number_order(self,obj):
+        now=timezone.now()
+        yearago=now-timedelta(days=180)
+        order=Order.objects.filter(ordered=True,ordered_date__gte=yearago,items__item__category=obj)
+        return order.count()
 class CategorySellerSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model=Category
         fields=['title','level','parent','id','choice']
 
 class CategoryhomeSerializer(CategorySerializer):
-    image=serializers.SerializerMethodField()
     class Meta(CategorySerializer.Meta):
         fields=CategorySerializer.Meta.fields+('image',)
-    def get_image(self,obj):
-        if obj.image:
-            return obj.image.url
+    
 class CategorydetailSerializer(CategorySerializer):
     image_home= serializers.SerializerMethodField()
     class Meta(CategorySerializer.Meta):

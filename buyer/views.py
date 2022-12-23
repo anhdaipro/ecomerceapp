@@ -50,7 +50,7 @@ ItemSellerSerializer,ShoporderSerializer,ImagehomeSerializer,ComboSerializer,
 CategoryhomeSerializer,AddressSerializer,OrderSerializer,OrderdetailSerializer,
 ReviewSerializer,CartitemcartSerializer,CartviewSerializer,
 ProductdealSerializer,ItemcomboSerializer,CombodetailseSerializer,ItempageSerializer
-,ShopdetailSerializer,OrderpurchaseSerializer,
+,ShopdetailSerializer,OrderpurchaseSerializer,CategorysearchSerializer,
 CategorydetailSerializer,VariationcartSerializer,ItemflasaleSerializer,
 ByproductdealSerializer,ByproductcartSerializer,ComboItemSerializer,
 DealByproductSerializer,FlashSaleinfoSerializer,ReviewitemSerializer
@@ -306,9 +306,10 @@ class Listitemseller(ListAPIView):
 
 class ListTrendsearch(ListAPIView):
     permission_classes = (AllowAny,)
-    serializer_class = ItemSellerSerializer
+    serializer_class = CategorysearchSerializer
     def get_queryset(self):
-        return Item.objects.filter(cart_item__order_cartitem__ordered=True).annotate(count_like= Count('liked')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_order= Count('cart_item__order_cartitem')).annotate(count_review= Count('cart_item__review_item')).prefetch_related('media_upload').prefetch_related('cart_item__order_cartitem').prefetch_related('variation_item__color').prefetch_related('variation_item__size').order_by('-count_like','-count_review','-count_order')
+        categories=Category.objects.filter(choice=True).exclude(item=None).annotate(count=Count('item__cart_item__order_cartitem')).order_by('-count')[:20]
+        return categories
 
 def search_matching(list_keys):
     q = Q()
@@ -322,10 +323,6 @@ def get_count(category):
 class Topsearch(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
-        from_item=0
-        to_item=5
-        from_item=request.GET.get('from_item')
-        to_item=request.GET.get('to_item')
         keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__gte=datetime.datetime.now()-datetime.timedelta(days=7)))
         list_keys=[i['keyword'] for i in keyword]
         items=search_matching(list_keys)
