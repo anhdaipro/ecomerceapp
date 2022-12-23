@@ -637,7 +637,7 @@ class ShopinfoSerializer(serializers.ModelSerializer):
         'count_product','total_order','date_joined','total_review')
     def get_url(self,obj):
         return obj.slug
-    def get_date_joined:
+    def get_date_joined(self,obj):
         return obj.user.date_joined
     def get_total_review(self,obj):
         return obj.total_review()
