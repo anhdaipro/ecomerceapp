@@ -629,13 +629,15 @@ class ShopinfoSerializer(serializers.ModelSerializer):
     count_product=serializers.SerializerMethodField()
     is_online=serializers.SerializerMethodField()
     total_order=serializers.SerializerMethodField()
+    total_review=serializers.SerializerMethodField()
     class Meta:
         model=Shop
         fields=('id','avatar','url','name','online','num_follow','is_online',
-        'count_product','total_order','create_at')
+        'count_product','total_order','create_at','total_review')
     def get_url(self,obj):
         return obj.slug
-
+    def get_total_review(self,obj):
+        return obj.total_review()
     def get_avatar(self,obj):
         return obj.user.profile.avatar.url
     def get_online(self,obj):
@@ -654,14 +656,13 @@ class ShopdetailSerializer(ShopinfoSerializer):
     num_followers=serializers.SerializerMethodField()
     count_product=serializers.SerializerMethodField()
     averge_review=serializers.SerializerMethodField()
-    total_review=serializers.SerializerMethodField()
     follow=serializers.SerializerMethodField()
     vouchers=serializers.SerializerMethodField()
     combo=serializers.SerializerMethodField()
     deal=serializers.SerializerMethodField()
     class Meta(ShopinfoSerializer.Meta):
         fields=ShopinfoSerializer.Meta.fields+('count_followings','vouchers',
-        'num_followers','count_product','total_review','averge_review','follow','combo','deal')
+        'num_followers','count_product','averge_review','follow','combo','deal')
     def get_count_followings(self,obj):
         request=self.context.get("request")
         count_follow=Follower.objects.filter(user=obj.user).count()
@@ -677,8 +678,6 @@ class ShopdetailSerializer(ShopinfoSerializer):
         return obj.num_follow()
     def get_count_product(self,obj):
         return obj.count_product()
-    def get_total_review(self,obj):
-        return obj.total_review()
     def get_averge_review(self,obj):
         return obj.averge_review()
     def get_vouchers(self,obj):
