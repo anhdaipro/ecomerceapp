@@ -632,7 +632,7 @@ class ShopinfoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Shop
         fields=('id','avatar','url','name','online','num_follow','is_online',
-        'count_product','total_order',)
+        'count_product','total_order','create_at')
     def get_url(self,obj):
         return obj.slug
 
@@ -660,7 +660,7 @@ class ShopdetailSerializer(ShopinfoSerializer):
     combo=serializers.SerializerMethodField()
     deal=serializers.SerializerMethodField()
     class Meta(ShopinfoSerializer.Meta):
-        fields=ShopinfoSerializer.Meta.fields+('create_at','count_followings','vouchers',
+        fields=ShopinfoSerializer.Meta.fields+('count_followings','vouchers',
         'num_followers','count_product','total_review','averge_review','follow','combo','deal')
     def get_count_followings(self,obj):
         request=self.context.get("request")
