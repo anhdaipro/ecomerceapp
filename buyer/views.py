@@ -662,7 +662,7 @@ def update_image(request):
     if request.method=="POST":
         files=request.FILES.getlist('file')
         category_id=request.POST.get('category_id')
-        list_image=Image_category.objects.bulk_create(
+        Image_category.objects.bulk_create(
             [Image_category(
                 image=file,
                 url_field='http://localhost:8000/kids-babies-fashion-cat'
