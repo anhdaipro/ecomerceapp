@@ -412,10 +412,19 @@ class Listordershop(APIView):
 
     def post(self,request):
         id=request.data.get('id')
+        status=request.data.get('status')
         order=Order.objects.get(id=id)
-        order.accepted=True
+        if status=='1':
+            order.accepted=True
+            order.accepted_date=timezone.now()
+        elif status=='2':
+            order.being_delivered=True
+            order.shipping_start_date=timezone.now()
+        elif status=='3':
+            order.received=True
+            order.received_date=timezone.now()
         order.save()
-        return Response(data)
+        return Response({'success':True})
 
 class ShopratingAPI(APIView):
     def get(self,request):
