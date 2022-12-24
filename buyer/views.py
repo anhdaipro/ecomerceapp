@@ -1272,7 +1272,7 @@ class CheckoutAPIView(APIView):
                 email.send() 
             bulk_update(orders)
             data={'success':True}
-            lis_id=[order.id for order in orders]
+            list_id=[order.id for order in orders]
             url=f"https://ecomerceapp-production.up.railway.app/api/v3/orders"
             update=requests.post(url,json={"orders":list_id},timeout=(3.05, 60))
 
