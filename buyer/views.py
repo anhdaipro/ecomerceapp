@@ -1262,7 +1262,7 @@ class CheckoutAPIView(APIView):
                             product=Variation.objects.get(id=byproduct.product_id)
                             product.inventory -= byproduct.quantity
                             product.save()
-                url='https://ecomerceapp-production.up.railway.app/api/v3/'+order.id
+                url=f"https://ecomerceapp-production.up.railway.app/api/v3/{order.id}"
                 requests.get(url, timeout=30)
                 email_body = f"Hello {user.username}, \n {order.shop.user.username} cảm ơn bạn đã đặt hàng"
                 data = {'email_body': email_body, 'to_email': user.email,
