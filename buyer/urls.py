@@ -50,6 +50,7 @@ from .views import (
     ListTrendsearch,
     CategoryinfoAPI,
     SearchitemshopAPI,
+    Updatecategory,
     CityAPI
   
 )
@@ -80,6 +81,8 @@ urlpatterns = [
     path('category/home',Category_home.as_view()),
     path('trendsearch',ListTrendsearch.as_view()),
     path('update/image', views.update_image),
+    path('update/category', Updatecategory.as_view()),
+    
     path('item/recently',Itemrecently.as_view()),
     path('item/bestseller', Listitemseller.as_view()),
     path('product/recommend', ListItemRecommendAPIView.as_view()),

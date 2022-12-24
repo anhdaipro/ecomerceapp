@@ -668,10 +668,16 @@ def update_image(request):
                 url_field='http://localhost:8000/kids-babies-fashion-cat'
             ) for file in files]
         )
-        category=Category.objects.get(id=category_id)
-        category.image_category.add(*list_image)
+        
         return Response({'success':True})
 
+class Updatecategory(APIView):
+    def post(self,request):
+        items=request.data.get('items')
+        category_id=request.data.get('category_id')
+        category=Category.objects.get(id=category_id)
+        category.image_category.add(*items)
+        return Response({'success':True})
 class Category_home(ListAPIView):
     permission_classes = (AllowAny,)
     def get(self,request):

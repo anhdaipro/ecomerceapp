@@ -6,6 +6,14 @@ import admin_thumbnails
 from mptt.admin import DraggableMPTTAdmin
 from .models import *
 from shop.models import *
+from django.utils.html import format_html
+class Image_categoryAdmin(admin.ModelAdmin):
+    def image_tag(self, obj):
+        return format_html('<img src="{}" style="background-position: 50%;background-size: contain;background-repeat: no-repeat;width: 200px;height: 100px;" />'.format(obj.image.url))
+    image_tag.short_description = 'Image'
+
+    list_display = ['id','image_tag',]
+
 
 class CategoryAdmin2(DraggableMPTTAdmin):
     mptt_indent_field = "title"
@@ -43,4 +51,4 @@ class CategoryAdmin2(DraggableMPTTAdmin):
         return instance.products_cumulative_count
     related_products_cumulative_count.short_description = 'Related products (in tree)'   
 admin.site.register(Category,CategoryAdmin2)
-admin.site.register(Image_category)
+admin.site.register(Image_category,Image_categoryAdmin)
