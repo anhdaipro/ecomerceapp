@@ -1562,11 +1562,15 @@ class PurchaseAPIView(APIView):
             if type_order=='2':
                 order_all=order_all.filter(accepted_date__lt=timezone.now(),canceled=False)
             if type_order=='3':
-                order_all=order_all.filter(being_delivered=True)
+                order_all=order_all.filter(accepted=True)
             if type_order=='4':
-                order_all=order_all.filter(received=True)
+                order_all=order_all.filter(being_delivered=True)
             if type_order=='5':
+                order_all=order_all.filter(received=True)
+            if type_order=='6':
                 order_all=order_all.filter(canceled=True)
+            if type_order=='7':
+                order_all=order_all.filter(refund_granted=True)
             count=order_all.count()
             if offset:
                 from_item=int(offset)
