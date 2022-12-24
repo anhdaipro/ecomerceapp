@@ -1625,7 +1625,7 @@ class PurchaseAPIView(APIView):
                 user=user
             )
             cart_items = order.items.all()
-            cart_items.update(ordered=False,vouvher=None,flash_sale=None,program=None,promotion_combo=None)
+            cart_items.update(ordered=False,flash_sale=None,program=None,promotion_combo=None)
             for item in cart_items:
                 item.save()
                 products=Variation.objects.get(id=item.product_id)
@@ -1662,7 +1662,7 @@ class PurchaseAPIView(APIView):
                         product.inventory+=byproduct.quantity
                         product.save()
             data={
-                'cancel':'cancel'
+                'success':True
             }
             return Response(data)
         else:
