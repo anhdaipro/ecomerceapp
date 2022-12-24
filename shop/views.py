@@ -389,6 +389,13 @@ def homeseller(request):
     }
     return Response(data)
 
+class Updateorder(APIView):
+    def get(self,request,id):
+        order=Order.objects.get(id=id)
+        order.accepted=True
+        order.accepted_date=timezone.now()
+        order.save()
+        return Response({'success':True})
 class Listordershop(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):

@@ -3,6 +3,7 @@
 from twilio.rest import Client
 from django.db.models import Q
 from django.conf import settings
+import requests
 from datetime import timedelta
 from django.db.models import F
 from django.core.mail import EmailMessage
@@ -1261,6 +1262,8 @@ class CheckoutAPIView(APIView):
                             product=Variation.objects.get(id=byproduct.product_id)
                             product.inventory -= byproduct.quantity
                             product.save()
+                url='https://ecomerceapp-production.up.railway.app/api/v3/'+order.id
+                requests.get(url, timeout=30)
                 email_body = f"Hello {user.username}, \n {order.shop.user.username} cảm ơn bạn đã đặt hàng"
                 data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Thanks order!'}
@@ -1271,6 +1274,8 @@ class CheckoutAPIView(APIView):
             data={'success':True}
             return Response(data)
 
+
+
 class OrderinfoAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request,id):
@@ -1278,7 +1283,12 @@ class OrderinfoAPIView(APIView):
         order=Order.objects.get(id=id)
         serializer = OrderdetailSerializer(order,context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
-        
+    def post(self,request,id):
+        order=Order.objects.get(id=id)
+        order.accepted=True
+        order.accepted_date=timezone.now()
+        order.save()
+        return Response({'success':True})
 class PaymentAPIView(APIView):
     def get(self,request):
         orders = Order.objects.filter(user=user, ordered=False)
@@ -1560,17 +1570,17 @@ class PurchaseAPIView(APIView):
         else:
             order_all = Order.objects.filter(ordered=True,user=user)
             if type_order=='2':
-                order_all=order_all.filter(accepted_date__lt=timezone.now(),canceled=False)
+                order_all=order_all.filter(accepted_date__lt=timezone.now(),canceled=False,received=False)
             if type_order=='3':
-                order_all=order_all.filter(accepted=True)
+                order_all=order_all.filter(accepted=True,received=False)
             if type_order=='4':
-                order_all=order_all.filter(being_delivered=True)
+                order_all=order_all.filter(being_delivered=True,received=False)
             if type_order=='5':
                 order_all=order_all.filter(received=True)
             if type_order=='6':
                 order_all=order_all.filter(canceled=True)
             if type_order=='7':
-                order_all=order_all.filter(refund_granted=True)
+                order_all=order_all.filter(received=True,refund_granted=True)
             count=order_all.count()
             if offset:
                 from_item=int(offset)
