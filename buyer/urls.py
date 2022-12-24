@@ -79,7 +79,6 @@ urlpatterns = [
     path('products', HomeAPIView.as_view()),
     path('category/home',Category_home.as_view()),
     path('trendsearch',ListTrendsearch.as_view()),
-    
     path('update/image', views.update_image),
     path('item/recently',Itemrecently.as_view()),
     path('item/bestseller', Listitemseller.as_view()),
@@ -116,12 +115,5 @@ urlpatterns = [
     path('payment', PaymentAPIView.as_view()),
     path('save_voucher',views.save_voucher),
     path('update_address',AddressAPIView.as_view()),
-
-    path('get_city',CityAPI.as_view()),
-
-    path('get_city',CityAPI.as_view()),
-
-    path('get_city',views.get_city),
-
-    
+    path('get_city',CityAPI.as_view()),  
 ]
