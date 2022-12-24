@@ -1558,12 +1558,7 @@ class PurchaseAPIView(APIView):
             serializer = ReviewSerializer(reviews,many=True,context={"request": request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            if offset:
-                from_item=int(offset)
-            to_item=from_item+limit
             order_all = Order.objects.filter(ordered=True,user=user)
-            count_order=order_all.count()
-            order_all = order_all[from_item:to_item]
             if type_order=='2':
                 order_all=order_all.filter(accepted_date__lt=timezone.now(),canceled=False)
             if type_order=='3':
@@ -1572,8 +1567,15 @@ class PurchaseAPIView(APIView):
                 order_all=order_all.filter(received=True)
             if type_order=='5':
                 order_all=order_all.filter(canceled=True)
+            count=order_all.count()
+            if offset:
+                from_item=int(offset)
+            to_item=from_item+limit
+            if from_item+limit>=count:
+                to_item=count
+            order_display = order_all[from_item:to_item]
             data={
-                'a':OrderpurchaseSerializer(order_all,many=True).data,'count_order':count_order,
+                'orders':OrderpurchaseSerializer(order_display,many=True).data,'count':count,
                 }
             return Response(data)
     def post(self,request,*args, **kwargs):
