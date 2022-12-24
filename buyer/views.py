@@ -107,7 +107,7 @@ class RefreshTokenuser(APIView):
         data = {
             'refresh': str(refresh),
             'access': str(refresh.access_token),
-            'access_expires': datetime.datetime.now()+settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
+            'access_expires': timezone.now()+settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
         }
         return Response(data)
 class UpdateOnline(APIView):
@@ -324,7 +324,7 @@ def get_count(category):
 class Topsearch(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
-        keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__gte=datetime.datetime.now()-datetime.timedelta(days=7)))
+        keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__gte=timezone.now()-timedelta(days=7)))
         list_keys=[i['keyword'] for i in keyword]
         items=search_matching(list_keys)
         list_title_item=[i['name'] for i in items]
@@ -533,11 +533,11 @@ class ProductInfoAPI(APIView):
         data={}
         if choice=='deal':
             data.update({'variation_choice':item.get_variation_choice()})
-            deal_shock=Buy_with_shock_deal.objects.filter(main_products=item,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).order_by('valid_to').first()
+            deal_shock=Buy_with_shock_deal.objects.filter(main_products=item,valid_from__lt=timezone.now(),valid_to__gt=timezone.now()).order_by('valid_to').first()
             deal =DealByproductSerializer(deal_shock,context={"request": request}).data
             data.update(deal)
         elif choice=='combo':
-            promotion_combo=Promotion_combo.objects.filter(products=item,valid_from__lt=datetime.datetime.now(),valid_to__gt=datetime.datetime.now()-datetime.timedelta(seconds=10)).first()
+            promotion_combo=Promotion_combo.objects.filter(products=item,valid_from__lt=timezone.now(),valid_to__gt=timezone.now()).first()
             data =ComboItemSerializer(promotion_combo,context={"request": request}).data
         elif choice=='shop':
             shop=item.shop
@@ -1208,12 +1208,12 @@ class CheckoutAPIView(APIView):
                 order.ordered=True
                 order.amount=order.total_final_order()
                 order.ref_code = create_ref_code()
-                order.ordered_date=datetime.datetime.now()
+                order.ordered_date=timezone.now()
                 if order.get_discount_voucher()>0:
                     order.discount_voucher=order.get_discount_voucher()
                 else:
                     order.voucher=None
-                order.accepted_date=datetime.datetime.now()+timedelta(minutes=30)
+                order.accepted_date=timezone.now()+timedelta(minutes=30)
                 order.payment_choice=payment_option
                 items = order.items.all()
                 id_remove=[item.id for item in items if item.quantity>item.product.inventory]
@@ -1272,10 +1272,6 @@ class CheckoutAPIView(APIView):
                 email.send() 
             bulk_update(orders)
             data={'success':True}
-            list_id=[order.id for order in orders]
-            url=f"https://ecomerceapp-production.up.railway.app/api/v3/orders"
-            update=requests.post(url,json={"orders":list_id},timeout=(3.05, 60))
-
             return Response(data)
             
 
@@ -1573,6 +1569,7 @@ class PurchaseAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             order_all = Order.objects.filter(ordered=True,user=user)
+            
             if type_order=='2':
                 order_all=order_all.filter(accepted_date__lt=timezone.now(),canceled=False,received=False)
             if type_order=='3':
