@@ -327,6 +327,7 @@ class ListflashsaleAPI(APIView):
         return Response({'data':FlashSaleSerializer(flash_sales,many=True).data,'count':count})
     
 class ShopprofileAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
     def get(self,request):
         user=request.user
         shop=Shop.objects.get(user=user)
@@ -389,6 +390,7 @@ def homeseller(request):
     return Response(data)
 
 class Listordershop(APIView):
+    permission_classes = (IsAuthenticated,)
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
         orders=Order.objects.filter(shop=shop,ordered=True).prefetch_related('items__item__media_upload').prefetch_related('items__item__promotion_combo').prefetch_related('items__item__byproduct').prefetch_related('items__item__shop_program').prefetch_related('items__product__color').prefetch_related('items__product__size').prefetch_related('items__byproduct_cart')
@@ -413,7 +415,9 @@ class Listordershop(APIView):
     def post(self,request):
         id=request.data.get('id')
         status=request.data.get('status')
-        order=Order.objects.get(id=id)
+        user=request.user
+        shop=Shop.objects.get(user=user)
+        order=Order.objects.get(id=id,shop=shop)
         if status=='1':
             order.accepted=True
             order.accepted_date=timezone.now()
