@@ -660,14 +660,17 @@ def save_voucher(request):
 @api_view(['GET', 'POST'])
 def update_image(request):
     if request.method=="POST":
-        file=request.FILES.getlist('file')
-        Image_category.objects.bulk_create(
+        files=request.FILES.getlist('file')
+        category_id=request.POST.get('category_id')
+        list_image=Image_category.objects.bulk_create(
             [Image_category(
-                image=i,
+                image=file,
                 url_field='http://localhost:8000/kids-babies-fashion-cat'
-            ) for i in file]
+            ) for file in files]
         )
-        return Response({'ok':'ok'})
+        category=Category.objects.get(id=category_id)
+        category.image_category.add(*list_image)
+        return Response({'success':True})
 
 class Category_home(ListAPIView):
     permission_classes = (AllowAny,)
@@ -1011,25 +1014,17 @@ class ListorderAPIView(APIView):
         
         return Response(data,status=status.HTTP_200_OK)
 
-
 class CityAPI(APIView):
     def get(self,request):
         list_city=City.objects.all()
         return Response(list_city.values())
     def post(self,request):
         cities=request.data.get('cities')
-        
         list_city=[]
         for city in cities:
             list_city.append(City(level=city['level'],matp=city.get('matp'),maqh=city.get('maqh'),name=city['name']))
         City.objects.bulk_create(list_city)
         return Response({'success':True})
-
-
-@api_view(['GET', 'POST'])
-def get_city(request):
-    list_city=City.objects.all()
-    return Response(list_city.values())
 
 class AddressAPIView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -1178,8 +1173,6 @@ class ActionReviewAPI(APIView):
             data.update({'liked':liked,'num_liked':review.num_like()}) 
         return Response(data) 
 
-  
-
 class CheckoutAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request):
@@ -1274,8 +1267,6 @@ class CheckoutAPIView(APIView):
             data={'success':True}
             return Response(data)
             
-
-
 class OrderinfoAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request,id):
@@ -1289,6 +1280,7 @@ class OrderinfoAPIView(APIView):
         order.accepted_date=timezone.now()
         order.save()
         return Response({'success':True})
+
 class PaymentAPIView(APIView):
     def get(self,request):
         orders = Order.objects.filter(user=user, ordered=False)
@@ -1375,7 +1367,6 @@ class PaymentAPIView(APIView):
         Payment.objects.filter(paid=False,user=user).delete()
         return Response({'success':True})
      
-
 class Byproductdeal(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self,request,id):
