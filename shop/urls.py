@@ -75,6 +75,6 @@ urlpatterns = [
     path("home/seller", views.homeseller),
     path("shop/profile",ShopprofileAPIView.as_view()),
     path("shop/order",Listordershop.as_view()),
-    path("order/<int:id>",Updateorder.as_view()),
+    path("orders",Updateorder.as_view()),
     
 ]

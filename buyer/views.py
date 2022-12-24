@@ -1262,8 +1262,8 @@ class CheckoutAPIView(APIView):
                             product=Variation.objects.get(id=byproduct.product_id)
                             product.inventory -= byproduct.quantity
                             product.save()
-                url=f"https://ecomerceapp-production.up.railway.app/api/v3/{order.id}"
-                requests.get(url, timeout=30)
+                
+                
                 email_body = f"Hello {user.username}, \n {order.shop.user.username} cảm ơn bạn đã đặt hàng"
                 data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Thanks order!'}
@@ -1272,7 +1272,11 @@ class CheckoutAPIView(APIView):
                 email.send() 
             bulk_update(orders)
             data={'success':True}
+
             return Response(data)
+            lis_id=[order.id for order in orders]
+            url=f"https://ecomerceapp-production.up.railway.app/api/v3/orders"
+            update=requests.post(url,json={"orders":list_id},timeout=30)
 
 
 
