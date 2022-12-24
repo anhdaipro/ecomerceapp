@@ -660,13 +660,13 @@ def save_voucher(request):
 @api_view(['GET', 'POST'])
 def update_image(request):
     if request.method=="POST":
-        files=request.FILES.getlist('file')
+        files=request.FILES.getlist('files')
         category_id=request.POST.get('category_id')
         Image_category.objects.bulk_create(
             [Image_category(
-                image=file,
-                url_field='http://localhost:8000/kids-babies-fashion-cat'
-            ) for file in files]
+                image=files[i],
+                url_field='/kids-babies-fashion-cat'
+            ) for i in range(len(files))]
         )
         
         return Response({'success':True})
