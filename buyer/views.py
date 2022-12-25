@@ -1189,25 +1189,34 @@ class CheckoutAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         user=request.user
-        id=request.data.get('id')
-        address=Address.objects.get(id=id)
+        address_id=request.data.get('address_id')
         payment_option=request.data.get('payment_choice')
+        orders=request.data.get('orders')
         total=0
-        orders = Order.objects.filter(user=user, ordered=False).exclude(items=None)
+        list_orders=[]
         if payment_option == 'Paypal':
+
+            for item in orders:
+                order=Order.objects.get(id=item['id'])
+                order.shipping_address_id = address_id
+                order.shipping_id=item['shipping']['id']
+                list_orders.append(order)
+            bulk_update(list_orders)
             payment=Payment.objects.create(user=user,payment_method="P",
             amount=total,paid=False
             )
-            payment.order.add(*orders)
+            payment.order.add(*list_orders)
             data={'a':'a'}
             return Response(data)
         else:
-            for order in orders:
-                order.shipping_address = address
+            for item in orders:
+                order=Order.objects.get(id=item['id'])
+                order.shipping_address_id = address_id
                 order.ordered=True
                 order.amount=order.total_final_order()
                 order.ref_code = create_ref_code()
                 order.ordered_date=timezone.now()
+                order.shipping_id=item['shipping']['id']
                 if order.get_discount_voucher()>0:
                     order.discount_voucher=order.get_discount_voucher()
                 else:
@@ -1262,14 +1271,14 @@ class CheckoutAPIView(APIView):
                             product.inventory -= byproduct.quantity
                             product.save()
                 
-                
+                list_orders.append(order)
                 email_body = f"Hello {user.username}, \n {order.shop.user.username} cảm ơn bạn đã đặt hàng"
                 data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Thanks order!'}
                 email = EmailMessage(
                 subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
                 email.send() 
-            bulk_update(orders)
+            bulk_update(list_orders)
             data={'success':True}
             return Response(data)
             

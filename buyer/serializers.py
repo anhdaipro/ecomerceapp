@@ -747,8 +747,18 @@ class ShopSerializer(serializers.ModelSerializer):
     class Meta:
         model=Shop
         fields=('id','name','user_id',)
+class ShippingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Shipping
+        fields=['id','method','shipping_unit']
+def search_matching(items):
+    q = Q()
+    for item in items:
+        q &= Q(id__in = item)
+    shippings=Shipping.objects.filter(q)
+    return list(shippings.values('id','method').distinct('method'))
 
-class OrderSerializer(serializers.ModelSerializer):
+class OrderInfoSerializer(serializers.ModelSerializer):
     shop=serializers.SerializerMethodField()
     total=serializers.SerializerMethodField()
     cart_item=serializers.SerializerMethodField()
@@ -759,12 +769,21 @@ class OrderSerializer(serializers.ModelSerializer):
     discount_promotion=serializers.SerializerMethodField()
     total_discount=serializers.SerializerMethodField()
     discount_product=serializers.SerializerMethodField()
+    shipping_item=serializers.SerializerMethodField()
     class Meta:
         model=Order
-        fields=('cart_item','discount_voucher','total','total_final','shop','amount','discount_product',
+        fields=('shipping_item','cart_item','discount_voucher','total','total_final','shop','amount','discount_product',
         'count','fee_shipping','id','discount_promotion','total_discount',)
     def get_shop(self,obj):
         return ShopSerializer(obj.shop).data
+    def get_shipping_item(self,obj):
+        items=obj.items.all()
+        shippings_item=[]
+        for item in items:
+            shippings=item.item.shipping_choice.all()
+            list_id_shipping=[shipping.id for shipping in shippings]
+            shippings_item.append(list_id_shipping)
+        return search_matching(shippings_item)
     def get_cart_item(self,obj):
         return CartItemSerializer(obj.items.all(),many=True).data
     def get_discount_voucher(self,obj):
@@ -784,6 +803,19 @@ class OrderSerializer(serializers.ModelSerializer):
     def get_total_discount(self,obj):
         return obj.total_discount_order()
 
+class OrderSerializer(OrderInfoSerializer):
+    shipping_item=serializers.SerializerMethodField()
+    class Meta(OrderInfoSerializer.Meta):
+        fields=OrderInfoSerializer.Meta.fields+('shipping_item',)
+    def get_shipping_item(self,obj):
+        items=obj.items.all()
+        shippings_item=[]
+        for item in items:
+            shippings=item.item.shipping_choice.all()
+            list_id_shipping=[shipping.id for shipping in shippings]
+            shippings_item.append(list_id_shipping)
+        return search_matching(shippings_item)
+    
 class CombodetailseSerializer(ComboinfoSerializer):
     products=serializers.SerializerMethodField()
     class Meta(ComboinfoSerializer.Meta):
@@ -791,28 +823,28 @@ class CombodetailseSerializer(ComboinfoSerializer):
     def get_products(self,obj):
         return ItemcomboSerializer(obj.products.all(),many=True).data
 
-class OrderpurchaseSerializer(OrderSerializer):
+class OrderpurchaseSerializer(OrderInfoSerializer):
     shop_url=serializers.SerializerMethodField()
     review=serializers.SerializerMethodField()
-    class Meta(OrderSerializer.Meta):
-        fields=OrderSerializer.Meta.fields+(
+    class Meta(OrderInfoSerializer.Meta):
+        fields=OrderInfoSerializer.Meta.fields+(
         'received','canceled','accepted','review',
         'being_delivered','ordered_date','received_date',
         'canceled_date','accepted_date','shop_url',)
     def get_shop_url(self,obj):
-
-      
-
         return obj.shop.slug
-
     def get_review(self,obj):
         return ReView.objects.filter(cartitem__order_cartitem=obj).count()
+        
 class OrderdetailSerializer(OrderpurchaseSerializer):
     address=serializers.SerializerMethodField()
+    shipping_method=serializers.SerializerMethodField()
     class Meta(OrderpurchaseSerializer.Meta):
-        fields=OrderpurchaseSerializer.Meta.fields+('address',)
+        fields=OrderpurchaseSerializer.Meta.fields+('address','shipping_method')
     def get_address(self,obj):
         return AddressSerializer(obj.shipping_address).data
+    def get_shipping_method(self,obj):
+        return obj.shipping.method
 
 class MediareviewSerializer(serializers.ModelSerializer):
     filetype = serializers.SerializerMethodField()
@@ -996,11 +1028,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_name(self,obj):
         return obj.item.name
     def get_url(self,obj):
-
-       
-
         return obj.item.slug
-
     def get_total_price(self,obj):
         return obj.discount_product()
     def get_discount_price(self,obj):
@@ -1058,12 +1086,15 @@ class CartitemcartSerializer(CartItemSerializer):
         return obj.item.min_price()
     def get_percent_discount(self,obj):
         return obj.item.percent_discount_total()
-class OrdersellerSerializer(OrderSerializer):
+class OrdersellerSerializer(OrderInfoSerializer):
     user=serializers.SerializerMethodField()
-    class Meta(OrderSerializer.Meta):
-        my_list = list(OrderSerializer.Meta.fields)
+    shipping=serializers.SerializerMethodField()
+    class Meta(OrderInfoSerializer.Meta):
+        my_list = list(OrderInfoSerializer.Meta.fields)
         my_list.remove('shop')
         my_tuple = tuple(my_list)
-        fields=my_tuple+('user',)
+        fields=my_tuple+('user','shipping')
     def get_user(self,obj):
         return UserorderSerializer(obj.user).data
+    def get_shipping(self,obj):
+        return ShippingSerializer(obj.shipping).data
