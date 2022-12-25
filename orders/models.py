@@ -101,7 +101,12 @@ class Order(models.Model):
     def fee_shipping(self):
         fee_shipping=0
         if self.shipping:
-            fee_shipping=16000
+            if self.shipping.method=="Tiết kiệm":
+                fee_shipping=16000
+            elif self.shipping.method=="Nhanh":
+                fee_shipping=19600
+            else: 
+                fee_shipping=32000
         return fee_shipping
 
     def total_final_order(self):
