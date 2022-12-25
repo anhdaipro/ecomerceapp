@@ -121,7 +121,7 @@ class ListcomboAPI(APIView):
         promotions=Promotion_combo.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('products__media_upload')
         option=request.GET.get('option')
         keyword=request.GET.get('keyword')
-        if option:
+        if option and keyword:
             if option=='2':
                 promotions=promotions.filter(products__name__istartswith=keyword)
             elif option=='3':
@@ -164,7 +164,7 @@ class ListdealshockAPI(APIView):
         option=request.GET.get('option')
         keyword=request.GET.get('keyword')
         deal_type=request.GET('deal_type')
-        if option:
+        if option and keyword:
             if option=='2':
                 deal_shocks=deal_shocks.filter(main_products__name__istartswith=keyword)
             elif option=='3':
@@ -264,7 +264,7 @@ class ListprogramAPI(APIView):
         programs=Shop_program.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('products__media_upload').order_by('-id')
         option=request.GET.get('option')
         keyword=request.GET.get('keyword')
-        if option:
+        if option and keyword:
             if option=='1':
                 programs=programs.filter(name_program__istartswith=keyword)
             elif option=='2':
