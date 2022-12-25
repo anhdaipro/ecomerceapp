@@ -440,10 +440,12 @@ class ShopratingAPI(APIView):
         shop=Shop.objects.get(user=request.user)
         list_review=ReView.objects.filter(cartitem__shop=shop).distinct()
         page=request.GET.get('page')
+        rating_review=request.GET.get('rating_review')
+        if rating_review:
+            list_review=list_review.filter(review_rating=review_rating)
         paginator = Paginator(list_review,5)
         page_obj = paginator.get_page(page)
-        count_review=list_review.count()
-        data={'reviews':ReviewshopSerializer(page_obj,many=True).data,'page_count':paginator.num_pages}
+        data={'averge_review':shop.averge_review(),'reviews':ReviewshopSerializer(page_obj,many=True).data,'page_count':paginator.num_pages}
         return Response(data) 
     def post(self,request):
         text=request.data.get('text')
