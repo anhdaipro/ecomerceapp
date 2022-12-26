@@ -990,7 +990,7 @@ class CartItemAPIView(APIView):
                 cartitem=CartItem.objects.get(id=cartitem_id)
                 cartitem.quantity=int(quantity)
                 cartitem.save()
-                total_price=cartitem.discount_main()
+                total_price=cartitem.total_discount_main()
             else:
                 CartItem.objects.get(id=cartitem_id_delete).delete()
                 Byproduct.objects.filter(cartitem=None).delete()
@@ -1238,7 +1238,7 @@ class CheckoutAPIView(APIView):
                 for item in items_checkout:
                     products=Variation.objects.get(id=item.product_id)
                     products.inventory -= item.quantity
-                    item.amount_main_products=item.discount_main() 
+                    item.amount_main_products=item.total_discount_main() 
                     item.amount_byproducts=item.total_discount_deal()
                     if item.item.get_flash_sale_current():
                         item.flash_sale_id=item.item.get_flash_sale_current()
@@ -1338,7 +1338,7 @@ class PaymentAPIView(APIView):
                 products=item.product
                 
                 products.inventory -= item.quantity
-                item.amount_main_products=item.discount_main() 
+                item.amount_main_products=item.total_discount_main() 
                 item.amount_byproducts=item.total_discount_deal()
                 if item.item.get_flash_sale_current():
                     item.flash_sale_id=item.item.get_flash_sale_current()
