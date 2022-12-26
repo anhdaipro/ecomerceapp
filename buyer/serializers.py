@@ -1086,11 +1086,11 @@ class CartitemcartSerializer(CartItemSerializer):
         return obj.item.min_price()
     def get_percent_discount(self,obj):
         return obj.item.percent_discount_total()
-class OrdersellerSerializer(OrderInfoSerializer):
+class OrdersellerSerializer(OrderpurchaseSerializer):
     user=serializers.SerializerMethodField()
     shipping=serializers.SerializerMethodField()
-    class Meta(OrderInfoSerializer.Meta):
-        my_list = list(OrderInfoSerializer.Meta.fields)
+    class Meta(OrderpurchaseSerializer.Meta):
+        my_list = list(OrderpurchaseSerializer.Meta.fields)
         my_list.remove('shop')
         my_tuple = tuple(my_list)
         fields=my_tuple+('user','shipping')
