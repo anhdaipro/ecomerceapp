@@ -34,7 +34,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 import pytz
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
-timezone = pytz.timezone('Asia/Ho_Chi_Minh')
+timezones = pytz.timezone('Asia/Ho_Chi_Minh')
 def safe_div(x,y):
     if y == 0:
         return x
@@ -137,7 +137,7 @@ def datapromotion(shop,week,choice,orders,orders_last):
 
 class DataFollowerAPI(APIView):
     def get(self,request):
-        current_date=datetime.datetime.now(tz=timezone)
+        current_date=datetime.datetime.now(tz=timezones)
         week=current_date-timedelta(days=7)
         shop=Shop.objects.get(user=request.user)
         orders=Order.objects.filter(shop=shop,accepted=True)
@@ -148,7 +148,7 @@ class DataFollowerAPI(APIView):
 
 class DataShopAwardAPI(APIView):
     def get(self,request):
-        current_date=datetime.datetime.now(tz=timezone)
+        current_date=datetime.datetime.now(tz=timezones)
         week=current_date-timedelta(days=7)
         shop=Shop.objects.get(user=request.user)
         orders=Order.objects.filter(shop=shop,accepted=True)
@@ -159,7 +159,7 @@ class DataShopAwardAPI(APIView):
 
 class DataVoucherAPI(APIView):
     def get(self,request):
-        current_date=datetime.datetime.now(tz=timezone)
+        current_date=datetime.datetime.now(tz=timezones)
         week=current_date-timedelta(days=7)
         shop=Shop.objects.get(user=request.user)
         orders=Order.objects.filter(shop=shop,accepted=True)
@@ -170,7 +170,7 @@ class DataVoucherAPI(APIView):
 
 class DataAddonAPI(APIView):
     def get(self,request):
-        current_date=datetime.datetime.now(tz=timezone)
+        current_date=datetime.datetime.now(tz=timezones)
         week=current_date-timedelta(days=7)
         shop=Shop.objects.get(user=request.user)
         orders=Order.objects.filter(shop=shop,accepted=True)
@@ -181,7 +181,7 @@ class DataAddonAPI(APIView):
 
 class DataBundleAPI(APIView):
     def get(self,request):
-        current_date=datetime.datetime.now(tz=timezone)
+        current_date=datetime.datetime.now(tz=timezones)
         week=current_date-timedelta(days=7)
         shop=Shop.objects.get(user=request.user)
         orders=Order.objects.filter(shop=shop,accepted=True)
@@ -192,7 +192,7 @@ class DataBundleAPI(APIView):
 
 class DataFlashsaleAPI(APIView):
     def get(self,request):
-        current_date=datetime.datetime.now(tz=timezone)
+        current_date=datetime.datetime.now(tz=timezones)
         week=current_date-timedelta(days=7)
         shop=Shop.objects.get(user=request.user)
         orders=Order.objects.filter(shop=shop,accepted=True)
@@ -203,7 +203,7 @@ class DataFlashsaleAPI(APIView):
 
 class DataDiscountAPI(APIView):
     def get(self,request):
-        current_date=datetime.datetime.now(tz=timezone)
+        current_date=datetime.datetime.now(tz=timezones)
         week=current_date-timedelta(days=7)
         shop=Shop.objects.get(user=request.user)
         orders=Order.objects.filter(shop=shop,accepted=True)
@@ -340,7 +340,7 @@ def dashboard(shop,time,time_choice,choice,orders,orders_last,current_date,yeste
         
 class DashboardDiscountAPI(APIView):
     def get(self,request):
-        current_date=datetime.datetime.now(tz=timezone)
+        current_date=datetime.datetime.now(tz=timezones)
         yesterday=current_date-timedelta(days=1)
         week=current_date-timedelta(days=7)
         month=current_date-timedelta(days=30)
@@ -355,7 +355,7 @@ class DashboardDiscountAPI(APIView):
 
 class DashboardAddonAPI(APIView):
     def get(self,request):
-        current_date=datetime.datetime.now(tz=timezone)
+        current_date=datetime.datetime.now(tz=timezones)
         yesterday=current_date-timedelta(days=1)
         week=current_date-timedelta(days=7)
         month=current_date-timedelta(days=30)
@@ -370,7 +370,7 @@ class DashboardAddonAPI(APIView):
 
 class DashboardVoucherAPI(APIView):
     def get(self,request):
-        current_date=datetime.datetime.now(tz=timezone)
+        current_date=datetime.datetime.now(tz=timezones)
         yesterday=current_date-timedelta(days=1)
         week=current_date-timedelta(days=7)
         month=current_date-timedelta(days=30)
@@ -417,7 +417,7 @@ class DashboardVoucherAPI(APIView):
 class DashboardFlashsaleAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
-        current_date=datetime.datetime.now(tz=timezone)
+        current_date=datetime.datetime.now(tz=timezones)
         yesterday=current_date-timedelta(days=1)
         week=current_date-timedelta(days=7)
         month=current_date-timedelta(days=30)
@@ -432,7 +432,7 @@ class DashboardFlashsaleAPI(APIView):
 class DashboardBundleAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
-        current_date=datetime.datetime.now(tz=timezone)
+        current_date=datetime.datetime.now(tz=timezones)
         yesterday=current_date-timedelta(days=1)
         week=current_date-timedelta(days=7)
         month=current_date-timedelta(days=30)
@@ -447,7 +447,7 @@ class DashboardBundleAPI(APIView):
 class DashboardAwardAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
-        current_date=datetime.datetime.now(tz=timezone)
+        current_date=datetime.datetime.now(tz=timezones)
         yesterday=current_date-timedelta(days=1)
         week=current_date-timedelta(days=7)
         month=current_date-timedelta(days=30)
@@ -511,7 +511,7 @@ class DashboardAwardAPI(APIView):
 class DashboardOfferAPI(APIView):
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
-        current_date=datetime.datetime.now(tz=timezone)
+        current_date=datetime.datetime.now(tz=timezones)
         yesterday=current_date-timedelta(days=1)
         week=current_date-timedelta(days=7)
         month=current_date-timedelta(days=30)
@@ -583,7 +583,7 @@ class MyDashboard(APIView):
     def get(self,request):
         user=request.user
         shop=Shop.objects.get(user=user)
-        current_date=datetime.datetime.now(tz=timezone)
+        current_date=datetime.datetime.now(tz=timezones)
         yesterday=current_date-timedelta(days=1)
         week=current_date-timedelta(days=7)
         month=current_date-timedelta(days=30)

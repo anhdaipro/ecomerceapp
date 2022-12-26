@@ -76,8 +76,9 @@ FollowOfferdetailSerializer,
 FollowOfferInfoSerializer,
 FollowOfferSerializer,
 )
-
-now=timezone.now()
+import pytz
+timezones = pytz.timezone('Asia/Ho_Chi_Minh')
+now=datetime.datetime.now(tz=timezones)
 class ListvoucherAPI(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = VoucherSerializer

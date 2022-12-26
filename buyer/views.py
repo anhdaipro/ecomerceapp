@@ -72,7 +72,7 @@ from paypalrestsdk import Sale
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
 import pytz
-timezone = pytz.timezone('Europe/Madrid')
+timezones = pytz.timezone('Asia/Ho_Chi_Minh')
 sensitive_post_parameters_m = method_decorator(
     sensitive_post_parameters("password1", "password2")
 )
@@ -214,7 +214,7 @@ class VerifySMSView(APIView):
 
 class LoginView(APIView):
     permission_classes = (AllowAny,)
-    def post(self, request,):
+    def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
         email = request.data.get('email')
@@ -227,7 +227,7 @@ class LoginView(APIView):
             user=User.objects.get(id=user_id)
         else:
             if email:
-                user = authenticate(request, email=username, password=password)
+                user = authenticate(request, email=email, password=password)
             else:
                 user = authenticate(request, username=username, password=password)
         try:
@@ -469,7 +469,7 @@ class ItemdetailAPI(APIView):
         serializer =ItemdetailSerializer(item,context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK) 
         if token:
-            if ItemViews.objects.filter(item=item,user=request.user).filter(create_at__gte=datetime.datetime.now(tz=timezone).replace(hour=0,minute=0,second=0)).count()==0:
+            if ItemViews.objects.filter(item=item,user=request.user).filter(create_at__gte=datetime.datetime.now(tz=timezones).replace(hour=0,minute=0,second=0)).count()==0:
                 ItemViews.objects.create(item=item,user=request.user)
 
 class ShopdetailAPI(APIView):
@@ -486,7 +486,7 @@ class ShopdetailAPI(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK) 
         if token:
             user=request.user
-            if ShopViews.objects.filter(shop=shop,user=user).filter(create_at__gte=datetime.datetime.now(tz=timezone).replace(hour=0,minute=0,second=0)).count()==0:
+            if ShopViews.objects.filter(shop=shop,user=user).filter(create_at__gte=datetime.datetime.now(tz=timezones).replace(hour=0,minute=0,second=0)).count()==0:
                 ShopViews.objects.create(shop=shop,user=user)
 
 class CategorydetailAPI(APIView):
@@ -505,7 +505,7 @@ class CategorydetailAPI(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK) 
             if token:
                 user=request.user
-                if ShopViews.objects.filter(shop=shop,user=user).filter(create_at__gte=datetime.datetime.now(tz=timezone).replace(hour=0,minute=0,second=0)).count()==0:
+                if ShopViews.objects.filter(shop=shop,user=user).filter(create_at__gte=datetime.datetime.now(tz=timezones).replace(hour=0,minute=0,second=0)).count()==0:
                     ShopViews.objects.create(shop=shop,user=user)
         
 
