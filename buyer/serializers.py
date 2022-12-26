@@ -1015,8 +1015,9 @@ class CartItemSerializer(serializers.ModelSerializer):
         model = CartItem
         fields = ('id','item_id','name','url','product_id',
         'color_value','size_value','quantity','discount_price','image',
-        'price','total_price','byproducts',
+        'price','byproducts','total_price'
         )
+    
     def get_color_value(self,obj):
         return obj.product.get_color()
     def get_size_value(self,obj):
@@ -1030,9 +1031,9 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_url(self,obj):
         return obj.item.slug
     def get_total_price(self,obj):
-        return obj.discount_product()
+        return obj.total_discount_main()
     def get_discount_price(self,obj):
-        return obj.product.get_discount_product()
+        return obj.product.price-obj.get_discount_product_main()
     def get_byproducts(self,obj):
         list_byproduct=[]
         if obj.get_deal_shock_current():

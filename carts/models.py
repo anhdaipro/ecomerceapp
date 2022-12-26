@@ -45,16 +45,52 @@ class CartItem(models.Model):
             if self.product.color.image:
                 image=self.product.color.image.url
         return image
+    
     def get_review(self):
         if self.review_item.all():
             return self.review_item.all().first()
+    
     def count_item_cart(self):
         count=1
         for byproduct in self.byproduct_cart.all():
             if byproduct.item.get_deal_shock_current():
                 count+=1
         return count
+    def price_product_main(self):
+        return self.product.price
+    def get_discount_program_product_main(self):
+        discount=0
+        if self.get_program_current():
+            program=Shop_program.objects.get(id=self.get_program_current())
+            variations=[variation for variation in program.variations if variation['enable'] and variation['promotion_stock'] >0 and variation['variation_id']==self.product_id]
+            if len(variations)>0:
+                discount=self.price_product_main()-int(variations[0]['promotion_price'])
+        return discount
+    def get_discount_flash_sale_product_main(self):
+        discount=0
+        if self.get_flash_sale_current():
+            flash_sale=Flash_sale.objects.get(id=self.get_flash_sale_current())
+            variations=[variation for variation in flash_sale.variations if variation['enable'] and variation['promotion_stock'] >0 and variation['variation_id']==self.product_id]
+            if len(variations)>0:
+                discount=self.price_product_main()- int(variations[0]['promotion_price'])
+        return discount
 
+    def get_deal_shock_current(self):
+        if  self.deal_shock and (self.ordered or ( self.deal_shock.valid_to>timezone.now() and self.deal_shock.valid_from<timezone.now())):
+            return self.deal_shock.id
+    
+    def get_program_current(self):
+        if self.program and (self.ordered or (self.deal_shock.valid_to>timezone.now() and self.program.valid_from<timezone.now())):
+            return self.program.id
+    
+    def get_promotion_combo_current(self):
+        if self.promotion_combo and (self.ordered or ( self.promotion_combo.valid_to>timezone.now() and self.promotion_combo.valid_from<timezone.now())):
+            return self.promotion_combo.id
+    
+    def get_flash_sale_current(self):
+        if self.flash_sale and (self.ordered or ( self.flash_sale.valid_to>timezone.now() and self.flash_sale.valid_from<timezone.now())):
+            return self.flash_sale.id
+    
     def total_discount_deal(self):
         total=0
         if self.get_deal_shock_current():
@@ -62,6 +98,7 @@ class CartItem(models.Model):
                 if byproduct.discount_deal_by():
                     total+=byproduct.total_price()
         return total
+
     def total_price_deal(self):
         total=0
         if self.get_deal_shock_current():
@@ -69,17 +106,18 @@ class CartItem(models.Model):
                 if byproduct.discount_deal_by():
                     total+=byproduct.price_by()
         return total
+
     def save_deal(self):
         return self.total_price_deal()-self.total_discount_deal()
+    
     def get_ref_code(self):
         return Order.objects.filter(items=self).first().ref_code
+    
     def discount_promotion(self):
         discount_promotion=0
-        discount_price=self.product.price
-        if self.item.get_program_current() and self.product.get_discount_program():
-            discount_price=self.product.get_discount_program()
-        if self.item.get_combo_current():
-            promotion_combo=Promotion_combo.objects.get(id=self.item.get_combo_current())
+        discount_price=self.price_product_main()-self.get_discount_product_main()
+        if self.get_promotion_combo_current():
+            promotion_combo=Promotion_combo.objects.get(id=self.get_promotion_combo_current())
             quantity_in=self.quantity//promotion_combo.quantity_to_reduced
             quantity_valid=quantity_in*promotion_combo.quantity_to_reduced
             if promotion_combo.combo_type=='1':
@@ -90,32 +128,32 @@ class CartItem(models.Model):
                 discount_promotion=self.quantity*discount_price-quantity_in*promotion_combo.price_special_sale
         return discount_promotion
    
-    def discount_product(self):
-        return self.price_main()-self.discount_main()
-        
-    def price_main(self):
+    def total_price_main(self):
         return self.quantity*self.product.price
-
-    def discount_main(self):
+    def get_discount_product_main(self):
         discount=0
-        if self.product.get_discount_product():
-            discount=self.quantity*self.product.get_discount_product()
+        if self.get_discount_flash_sale_product_main():
+            discount=self.get_discount_flash_sale_product_main()
+        else:
+            discount=self.get_discount_program_product_main()
         return discount
+    def save_main(self):
+        return self.quantity*self.get_discount_product_main()
+    def total_discount_main(self):
+        return self.total_price_main()-self.save_main()
     
     def total_price_cartitem(self):
         total=0
-        total+=self.price_main()
+        total=self.price_main()
         if self.deal_shock and self.deal_shock.valid_to>timezone.now() and self.deal_shock.valid_from<timezone.now():
             for byproduct in self.byproduct_cart.all():
                 total+=byproduct.price_by()
         return total
 
     def total_discount_cartitem(self):
-        return self.total_price_cartitem()-self.save_deal()-self.discount_promotion()-self.discount_product()
-    def get_deal_shock_current(self):
-        if self.deal_shock and self.deal_shock.valid_to>timezone.now() and self.deal_shock.valid_from<timezone.now():
-            return self.deal_shock.id
-
+        return self.total_price_cartitem()-self.save_deal()-self.discount_promotion()-self.save_main()
+    
+    
 class Byproduct(models.Model):
     cartitem=models.ForeignKey(CartItem, on_delete=models.CASCADE,related_name='byproduct_cart')
     user = models.ForeignKey(User,on_delete=models.CASCADE)
@@ -123,6 +161,7 @@ class Byproduct(models.Model):
     item = models.ForeignKey(to="shop.Item", on_delete=models.CASCADE,related_name='byproduct_item')
     quantity=models.IntegerField()
     updated_at = models.DateField(auto_now=True)
+    
     def discount_deal_by(self):
         discount=0
         if self.product.get_discount_deal():
