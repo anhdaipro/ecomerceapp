@@ -903,6 +903,10 @@ class AddToCartAPIView(APIView):
                 ordered=False,
                 quantity=int(quantity),
                 shop=item.shop,
+                deal_shock=item.get_deal_shock_current(),
+                promotion_combo=item.get_combo_current(),
+                flash_sale=item.get_flash_sale_current(),
+                program=item.get_program_current(),
                 )
             serializer = CartviewSerializer(cart_item,context={"request": request})
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -998,7 +1002,7 @@ class CartItemAPIView(APIView):
                 count+=cartitem.count_item_cart()
                 total+=cartitem.total_price_cartitem()
                 discount_deal+=cartitem.save_deal()
-                discount_product=cartitem.discount_product()
+                discount_product=cartitem.total_discount_cartitem()
                 discount_promotion+=cartitem.discount_promotion()
         data={
             'discount_voucher_shop':discount_voucher_shop,'list_shop_order':list_shop_order,
