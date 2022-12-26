@@ -77,7 +77,7 @@ FollowOfferInfoSerializer,
 FollowOfferSerializer,
 )
 
-now=datetime.datetime.now()
+now=timezone.now()
 class ListvoucherAPI(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = VoucherSerializer
