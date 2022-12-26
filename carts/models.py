@@ -143,8 +143,7 @@ class CartItem(models.Model):
         return self.total_price_main()-self.save_main()
     
     def total_price_cartitem(self):
-        total=0
-        total=self.price_main()
+        total=self.total_price_main()
         if self.deal_shock and self.deal_shock.valid_to>timezone.now() and self.deal_shock.valid_from<timezone.now():
             for byproduct in self.byproduct_cart.all():
                 total+=byproduct.price_by()
