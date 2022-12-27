@@ -2,7 +2,7 @@ from django.db import models
 from cloudinary_storage.storage import RawMediaCloudinaryStorage
 # Create your models here.
 from django.db import models
-import functools
+from functools import reduce
 from django.db.models import  Q
 from django.conf import settings
 from django.db import models
@@ -174,18 +174,18 @@ class Item(models.Model):
     def avg_discount_price(self):
         if self.get_program_current():
             variations=[variation['promotion_price'] for variation in self.get_program_current().variations if variation['enable']]
-            discount=functools.reduce(lambda x, y: x+y,variations)
+            discount=reduce(lambda x, y: x+y,variations)
             return discount/len(variations)
     def avg_discount_price_flash_sale(self):
         if self.get_flash_sale_current():
             variations=[variation['promotion_price'] for variation in self.get_flash_sale_current().variations if variation['enable']]
-            discount=functools.reduce(lambda x, y: x+y,variations)
+            discount=reduce(lambda x, y: x+y,variations)
             return discount/len(variations)
     def get_promotion_stock(self):
         if self.get_flash_sale_current():
             variations=[variation['promotion_stock'] for variation in self.get_flash_sale_current().variations if variation['enable']]
-            stocks=functools.reduce(lambda x, y: x+y,variations)
-            return stocks
+            stocks=reduce(lambda x, y: x+y,variations)
+            return stocks/len(variations)
     def get_combo_current(self):
         promotion_combo=Promotion_combo.objects.filter(products=self,valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
         if promotion_combo.exists():
@@ -202,7 +202,7 @@ class Item(models.Model):
     def percent_discount(self):
         percent=0
         if self.get_program_current():
-            percent= (float(self.avg_price())-float(self.avg_discount_price()))*100/float(self.avg_price())
+            percent=100-float(self.avg_discount_price())*100/float(self.avg_price())                  
         return percent
     def percent_discount_deal(self):
         percent=0
@@ -212,7 +212,7 @@ class Item(models.Model):
     def percent_discount_flash_sale(self):
         percent=0
         if self.get_flash_sale_current():
-            percent= (float(self.avg_price())-float(self.avg_discount_price_flash_sale()))*100/float(self.avg_price())
+            percent=100-float(self.avg_discount_price_flash_sale())*100/float(self.avg_price())
         return percent
     def total_inventory(self):
         variations = Variation.objects.filter(item=self).aggregate(sum=Sum('inventory'))
@@ -386,7 +386,7 @@ class Variation(models.Model):
                 return int(variations[0]['user_item_limit'])
     def get_limit_flash_sale(self):
         if self.item.get_flash_sale_current():
-            variations=[variation for variation in self.item.get_flash_sale_current().variations if variation['enable'] and variation['promotion_stock'] >0 and variation['variation_id']==self.id]
+            variations=[variation for variation in self.item.get_flash_sale_current().variations if variation['enable'] and variation['promotion_stock'] and variation['variation_id']==self.id]
             if len(variations)>0:
                 return int(variations[0]['user_item_limit'])
     def get_discount_program(self):
