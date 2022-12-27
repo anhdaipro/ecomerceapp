@@ -175,12 +175,12 @@ class Item(models.Model):
         if self.get_program_current():
             variations=[variation['promotion_price'] for variation in self.get_program_current().variations if variation['enable']]
             discount=functools.reduce(lambda x, y: x+y,variations)
-            return discount
+            return discount/len(variations)
     def avg_discount_price_flash_sale(self):
         if self.get_flash_sale_current():
             variations=[variation['promotion_price'] for variation in self.get_flash_sale_current().variations if variation['enable']]
             discount=functools.reduce(lambda x, y: x+y,variations)
-            return discount
+            return discount/len(variations)
     def get_promotion_stock(self):
         if self.get_flash_sale_current():
             variations=[variation['promotion_stock'] for variation in self.get_flash_sale_current().variations if variation['enable']]
@@ -221,7 +221,6 @@ class Item(models.Model):
             total_inventory=int(variations["sum"])
         return total_inventory
     
-
     def percent_discount_total(self):
         percent=0
         if self.get_flash_sale_current():
