@@ -700,28 +700,33 @@ class DetailVoucher(APIView):
         return Response(data)
     def post(self,request,id):
         shop=Shop.objects.get(user=request.user)
-        items=Item.objects.filter(shop=shop)
-        list_items=request.data.get('list_items')
-        vocher.code_type=request.data.get('code_type')
-        vocher.products.set([])
-        vocher.name_of_the_discount_program=request.data.get('name_of_the_discount_program')
-        vocher.code = request.data.get('code')
-        vocher.valid_from=request.data.get('valid_from')
-        vocher.valid_to=request.data.get('valid_to')
-        vocher.discount_type=request.data.get('discount_type')
-        vocher.amount = request.data.get('amount')
-        vocher.percent = request.data.get('percent')
-        vocher.maximum_usage=request.data.get('maximum_usage')
-        vocher.voucher_type=request.data.get('voucher_type')
-        vocher.maximum_discount=request.data.get('maximum_discount')
-        vocher.minimum_order_value=request.data.get('minimum_order_value')
-        vocher.setting_display=request.data.get('setting_display')
-        vocher.save()
-        if vocher.code_type=="All":
-            vocher.products.add(*items)
+        voucher=Voucher.objects.get(id=id)
+        action=request.data.get('action')
+        if action=='delete':
+            voucher.delete()
         else:
-            vocher.products.add(*list_items)
-        data={'ok':'ok' }
+            items=Item.objects.filter(shop=shop)
+            list_items=request.data.get('list_items')
+            voucher.code_type=request.data.get('code_type')
+            voucher.products.set([])
+            voucher.name_of_the_discount_program=request.data.get('name_of_the_discount_program')
+            voucher.code = request.data.get('code')
+            voucher.valid_from=request.data.get('valid_from')
+            voucher.valid_to=request.data.get('valid_to')
+            voucher.discount_type=request.data.get('discount_type')
+            voucher.amount = request.data.get('amount')
+            voucher.percent = request.data.get('percent')
+            voucher.maximum_usage=request.data.get('maximum_usage')
+            voucher.voucher_type=request.data.get('voucher_type')
+            voucher.maximum_discount=request.data.get('maximum_discount')
+            voucher.minimum_order_value=request.data.get('minimum_order_value')
+            voucher.setting_display=request.data.get('setting_display')
+            voucher.save()
+            if voucher.code_type=="All":
+                voucher.products.add(*items)
+            else:
+                voucher.products.add(*list_items)
+        data={'success':True }
         return Response(data)
 
 class GameAPI(APIView):
@@ -776,45 +781,49 @@ class DetailShopAwardAPI(APIView):
         action=request.data.get("action")
         shop_awards=Shop_award.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
         data={}
-        if shop_awards.exists():
-            data.update({'error':True})
-        else:
+        if action=='delete':
+            shop_award.delete()
             data.update({'suscess':True})
-            if action=='submit':
-                list_award=request.data.get('list_award')
-                list_award_update=[award for award in list_award if award['id']]
-                list_awards=[]
-                for award in list_award_update:
-                    award_update=Award.objects.get(id=award['id'])
-                    if award_update.minimum_order_value!=award['minimum_order_value']:
-                        award_update.minimum_order_value=award['minimum_order_value']
-                    if award_update.maximum_discount!=award['maximum_discount']:
-                        award_update.maximum_discount=award['maximum_discount']
-                    if award_update.quantity!=quantity['quantity']:
-                        award_update.quantity=award['quantity']
-                    if award_update.amount!=quantity['amount']:
-                        award_update.amount=award['amount']
-                    if award_update.percent!=quantity['percent']:
-                        award_update.percent=award['percent']
-                    if award_update.discount_type!=quantity['discount_type']:
-                        award_update.discount_type=award['discount_type']
-                    list_awards.append(award_update)
-                
-                shop_award.game_name=request.data.get("game_name")
-                shop_award.valid_from=valid_from
-                shop_award.valid_to=valid_to
-                shop_award.save()
-                Award.objects.bulk_create([Award(
-                minimum_order_value=award['minimum_order_value'],
-                maximum_discount=award['maximum_discount'],
-                quantity=award['quantity'],
-                amount=award['amount'] if award['amount']!='' else 0,
-                percent=award['percent'] if award['percent']!='' else 0,
-                discount_type=award['discount_type'],
-                type_award=award['type_award'],
-                type_voucher='Offer') for award in list_award if award['id']==None])
-                Award.objects.bulk_update(award_update, ['minimum_order_value','maximum_discount',
-                    'quantity','amount','percent','discount_type'], batch_size=1000)
+        else:
+            if shop_awards.exists():
+                data.update({'error':True})
+            else:
+                data.update({'suscess':True})
+                if action=='submit':
+                    list_award=request.data.get('list_award')
+                    list_award_update=[award for award in list_award if award['id']]
+                    list_awards=[]
+                    for award in list_award_update:
+                        award_update=Award.objects.get(id=award['id'])
+                        if award_update.minimum_order_value!=award['minimum_order_value']:
+                            award_update.minimum_order_value=award['minimum_order_value']
+                        if award_update.maximum_discount!=award['maximum_discount']:
+                            award_update.maximum_discount=award['maximum_discount']
+                        if award_update.quantity!=quantity['quantity']:
+                            award_update.quantity=award['quantity']
+                        if award_update.amount!=quantity['amount']:
+                            award_update.amount=award['amount']
+                        if award_update.percent!=quantity['percent']:
+                            award_update.percent=award['percent']
+                        if award_update.discount_type!=quantity['discount_type']:
+                            award_update.discount_type=award['discount_type']
+                        list_awards.append(award_update)
+                    
+                    shop_award.game_name=request.data.get("game_name")
+                    shop_award.valid_from=valid_from
+                    shop_award.valid_to=valid_to
+                    shop_award.save()
+                    Award.objects.bulk_create([Award(
+                    minimum_order_value=award['minimum_order_value'],
+                    maximum_discount=award['maximum_discount'],
+                    quantity=award['quantity'],
+                    amount=award['amount'] if award['amount']!='' else 0,
+                    percent=award['percent'] if award['percent']!='' else 0,
+                    discount_type=award['discount_type'],
+                    type_award=award['type_award'],
+                    type_voucher='Offer') for award in list_award if award['id']==None])
+                    Award.objects.bulk_update(award_update, ['minimum_order_value','maximum_discount',
+                        'quantity','amount','percent','discount_type'], batch_size=1000)
         return Response(data)
     def get(self,request,id):
         shop_award=Shop_award.objects.get(id=id)
@@ -861,21 +870,25 @@ class DetailFollowOffer(APIView):
         action=request.data.get("action")
         follower_offers=Follower_offer.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
         data={}
-        if follower_offers.exists():
-            data.update({'error':True})
-        else:
+        if action=='delete':
+            offer_follow.delete()
             data.update({'suscess':True})
-            if action=='submit':
-                offer_follow.offer_name=request.data.get('offer_name')
-                offer_follow.valid_from=valid_from
-                offer_follow.valid_to=valid_to
-                offer_follow.discount_type=request.data.get('discount_type')
-                offer_follow.amount = request.data.get('amount')
-                offer_follow.percent = request.data.get('percent')
-                offer_follow.maximum_usage=request.data.get('maximum_usage')
-                offer_follow.maximum_discount=request.data.get('maximum_discount')
-                offer_follow.minimum_order_value=request.data.get('minimum_order_value')
-                offer_follow.save()
+        else:
+            if follower_offers.exists():
+                data.update({'error':True})
+            else:
+                data.update({'suscess':True})
+                if action=='submit':
+                    offer_follow.offer_name=request.data.get('offer_name')
+                    offer_follow.valid_from=valid_from
+                    offer_follow.valid_to=valid_to
+                    offer_follow.discount_type=request.data.get('discount_type')
+                    offer_follow.amount = request.data.get('amount')
+                    offer_follow.percent = request.data.get('percent')
+                    offer_follow.maximum_usage=request.data.get('maximum_usage')
+                    offer_follow.maximum_discount=request.data.get('maximum_discount')
+                    offer_follow.minimum_order_value=request.data.get('minimum_order_value')
+                    offer_follow.save()
 
         return Response(data)
     
@@ -950,23 +963,27 @@ class DetailComboAPI(APIView):
         items=Item.objects.filter(shop_id=promotion_combo.shop_id).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
         listitemdeal=[item.id for item in items]
         sameitem=list(set(listitemdeal).intersection(list_items))
-        if len(sameitem)==0:
-            if action=='submit':
-                promotion_combo.products.set([])
-                promotion_combo.promotion_combo_name=request.data.get('promotion_combo_name')
-                promotion_combo.valid_from=valid_from
-                promotion_combo.valid_to=valid_to
-                promotion_combo.combo_type=request.data.get('combo_type')
-                promotion_combo.discount_percent=request.data.get('discount_percent')
-                promotion_combo.discount_price=request.data.get('discount_price')
-                promotion_combo.price_special_sale=request.data.get('price_special_sale')
-                promotion_combo.limit_order=request.data.get('limit_order')
-                promotion_combo.quantity_to_reduced=request.data.get('quantity_to_reduced')
-                promotion_combo.save()
-                promotion_combo.products.add(*list_items)
+        if action=='delete':
+            promotion_combo.delete()
             data.update({'suscess':True})
         else:
-            data.update({'error':True,'sameitem':sameitem})
+            if len(sameitem)==0:
+                if action=='submit':
+                    promotion_combo.products.set([])
+                    promotion_combo.promotion_combo_name=request.data.get('promotion_combo_name')
+                    promotion_combo.valid_from=valid_from
+                    promotion_combo.valid_to=valid_to
+                    promotion_combo.combo_type=request.data.get('combo_type')
+                    promotion_combo.discount_percent=request.data.get('discount_percent')
+                    promotion_combo.discount_price=request.data.get('discount_price')
+                    promotion_combo.price_special_sale=request.data.get('price_special_sale')
+                    promotion_combo.limit_order=request.data.get('limit_order')
+                    promotion_combo.quantity_to_reduced=request.data.get('quantity_to_reduced')
+                    promotion_combo.save()
+                    promotion_combo.products.add(*list_items)
+                data.update({'suscess':True})
+            else:
+                data.update({'error':True,'sameitem':sameitem})
         return Response(data)
     
 class NewDeal(APIView):
@@ -1035,51 +1052,55 @@ class DetailDeal(APIView):
     def post(self,request,id):
         deal_shock=Buy_with_shock_deal.objects.get(id=id)
         action=request.data.get('action')
-        list_items=request.data.get('list_items')
-        byproducts=request.data.get('byproducts')
-        discount_model_list=request.data.get('discount_model_list')
-        valid_from=request.data.get('valid_from')
-        valid_to=request.data.get('valid_to')
         data={}
-        if action=='change':
-            deal_shock.program_name_buy_with_shock_deal=request.data.get('program_name_buy_with_shock_deal')
-            deal_shock.valid_from=valid_from
-            deal_shock.valid_to=valid_to
-            deal_shock.limited_product_bundles=request.data.get('limited_product_bundles')
-            deal_shock.minimum_price_to_receive_gift=request.data.get('minimum_price_to_receive_gift')
-            deal_shock.number_gift=request.data.get('number_gift')
-            deal_shock.save()
-            data=BuywithsockdealinfoSerializer(deal_shock).data
-        elif action=='addbyproduct':
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(byproducts)])
-            list_byproducts=Item.objects.filter(id__in=byproducts).order_by(preserved)
-            data=ByproductSellerSerializer(list_byproducts,many=True).data
-        elif action=='savebyproduct':
-            list_variation_deal=[]
-            deal_shock.byproducts.set([])
-            deal_shock.variations=discount_model_list
-            deal_shock.byproducts.add(*byproducts)
-            
-            data.update({'suscess':True})
-        elif action=='submit':
-            list_variation_deal=[]
-            Variationdeal.objects.filter(deal_shock_id=id).exclude(item_id__in=byproducts).delete()
-            deal_shock.active=True
-            deal_shock.save()
+        if action=='delete':
+            deal_shock.delete()
             data.update({'suscess':True})
         else:
-            shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
-            promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
-            items=Item.objects.filter(shop_id=deal_shock.shop_id).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
-            listitemdeal=[item.id for item in items]
-            sameitem=list(set(listitemdeal).intersection(list_items))
-            if len(sameitem)==0:
-                if action=='savemain':
-                    deal_shock.main_products.set([])
-                    deal_shock.main_products.add(*list_items)
-                    data.update({'suscess':True})
+            list_items=request.data.get('list_items')
+            byproducts=request.data.get('byproducts')
+            discount_model_list=request.data.get('discount_model_list')
+            valid_from=request.data.get('valid_from')
+            valid_to=request.data.get('valid_to')
+            if action=='change':
+                deal_shock.program_name_buy_with_shock_deal=request.data.get('program_name_buy_with_shock_deal')
+                deal_shock.valid_from=valid_from
+                deal_shock.valid_to=valid_to
+                deal_shock.limited_product_bundles=request.data.get('limited_product_bundles')
+                deal_shock.minimum_price_to_receive_gift=request.data.get('minimum_price_to_receive_gift')
+                deal_shock.number_gift=request.data.get('number_gift')
+                deal_shock.save()
+                data=BuywithsockdealinfoSerializer(deal_shock).data
+            elif action=='addbyproduct':
+                preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(byproducts)])
+                list_byproducts=Item.objects.filter(id__in=byproducts).order_by(preserved)
+                data=ByproductSellerSerializer(list_byproducts,many=True).data
+            elif action=='savebyproduct':
+                list_variation_deal=[]
+                deal_shock.byproducts.set([])
+                deal_shock.variations=discount_model_list
+                deal_shock.byproducts.add(*byproducts)
+                
+                data.update({'suscess':True})
+            elif action=='submit':
+                list_variation_deal=[]
+                Variationdeal.objects.filter(deal_shock_id=id).exclude(item_id__in=byproducts).delete()
+                deal_shock.active=True
+                deal_shock.save()
+                data.update({'suscess':True})
             else:
-                data.update({'error':True,'sameitem':sameitem})
+                shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
+                promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
+                items=Item.objects.filter(shop_id=deal_shock.shop_id).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
+                listitemdeal=[item.id for item in items]
+                sameitem=list(set(listitemdeal).intersection(list_items))
+                if len(sameitem)==0:
+                    if action=='savemain':
+                        deal_shock.main_products.set([])
+                        deal_shock.main_products.add(*list_items)
+                        data.update({'suscess':True})
+                else:
+                    data.update({'error':True,'sameitem':sameitem})
         return Response(data)
 
 class NewprogramAPI(APIView):
@@ -1156,38 +1177,43 @@ class Detailprogram(APIView):
         return Response(data)
     def post(self,request,id): 
         shop_program=Shop_program.objects.get(id=id)
-        name_program=request.data.get('name_program')
-        valid_from=request.data.get('valid_from')
-        valid_to=request.data.get('valid_to')
-        list_items=request.data.get('list_items')
         action=request.data.get('action')
-        discount_model_list=request.data.get('discount_model_list')
         data={}
-        if action=='addproduct':
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
-            list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
-            data=ByproductSellerSerializer(list_products,many=True).data
+        if action=='delete':
+            shop_program.delete()
+            data.update({'suscess':True})
         else:
-            shop_programs=Shop_program.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
-            items=Item.objects.filter(shop_id=shop_program.shop_id,shop_program__in=shop_programs)
-            listitemprogram=[item.id for item in items]
-            sameitem=list(set(listitemprogram).intersection(list_items))
-            if len(sameitem)==0:
-                data.update({'suscess':True})
-                if action=='submit':
-                    item_programs=shop_program.products.all()
-                    item_remove=item_programs.exclude(id__in=list_items)
-                    shop_program.name_program=name_program
-                    shop_program.valid_from=valid_from
-                    shop_program.valid_to=valid_to
-                    shop_program.variations=discount_model_list
-                    shop_program.save()
-                    
-                    shop_program.products.set([])
-                    shop_program.products.add(*list_items)
-                      
+            name_program=request.data.get('name_program')
+            valid_from=request.data.get('valid_from')
+            valid_to=request.data.get('valid_to')
+            list_items=request.data.get('list_items')
+            discount_model_list=request.data.get('discount_model_list')
+            if action=='addproduct':
+                preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
+                list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
+                data=ByproductSellerSerializer(list_products,many=True).data
+            
             else:
-                data.update({'error':True,'sameitem':sameitem})
+                shop_programs=Shop_program.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
+                items=Item.objects.filter(shop_id=shop_program.shop_id,shop_program__in=shop_programs)
+                listitemprogram=[item.id for item in items]
+                sameitem=list(set(listitemprogram).intersection(list_items))
+                if len(sameitem)==0:
+                    data.update({'suscess':True})
+                    if action=='submit':
+                        item_programs=shop_program.products.all()
+                        item_remove=item_programs.exclude(id__in=list_items)
+                        shop_program.name_program=name_program
+                        shop_program.valid_from=valid_from
+                        shop_program.valid_to=valid_to
+                        shop_program.variations=discount_model_list
+                        shop_program.save()
+                        
+                        shop_program.products.set([])
+                        shop_program.products.add(*list_items)
+                        
+                else:
+                    data.update({'error':True,'sameitem':sameitem})
         
         return Response(data)
     
@@ -1254,27 +1280,31 @@ class DetailFlashsale(APIView):
         valid_to=request.data.get('valid_to')
         valid_from=request.data.get('valid_from')
         data={}
-        if action=='addproduct':
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
-            list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
-            data=ByproductSellerSerializer(list_products,many=True).data
+        if action=='delete':
+            flash_sale.delete()
+            data.update({'suscess':True})
         else:
-            flash_sales=Flash_sale.objects.filter(shop_id=flash_sale.shop_id).filter((Q(valid_from=valid_from)&Q(valid_to=valid_to))  & Q(valid_to__gt=now)).exclude(id=id)
-            if flash_sales.exists():
-                data.update({'error':True})
+            if action=='addproduct':
+                preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
+                list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
+                data=ByproductSellerSerializer(list_products,many=True).data
             else:
-                data.update({'suscess':True})
-                if action=='submit':
-                    discount_model_list=request.data.get('discount_model_list')
-                    item_flash_sale=flash_sale.products.all()
-                    item_remove=item_flash_sale.exclude(id__in=list_items)
-                    Variationflashsale.objects.filter(flash_sale_id=id).exclude(item_id__in=list_items).delete()
-                    flash_sale.valid_from=request.data.get('valid_from')
-                    flash_sale.valid_to=valid_to
-                    flash_sale.variations=discount_model_list
-                    flash_sale.save()
-                    flash_sale.products.set([])
-                    flash_sale.products.add(*list_items)
+                flash_sales=Flash_sale.objects.filter(shop_id=flash_sale.shop_id).filter((Q(valid_from=valid_from)&Q(valid_to=valid_to))  & Q(valid_to__gt=now)).exclude(id=id)
+                if flash_sales.exists():
+                    data.update({'error':True})
+                else:
+                    data.update({'suscess':True})
+                    if action=='submit':
+                        discount_model_list=request.data.get('discount_model_list')
+                        item_flash_sale=flash_sale.products.all()
+                        item_remove=item_flash_sale.exclude(id__in=list_items)
+                        Variationflashsale.objects.filter(flash_sale_id=id).exclude(item_id__in=list_items).delete()
+                        flash_sale.valid_from=request.data.get('valid_from')
+                        flash_sale.valid_to=valid_to
+                        flash_sale.variations=discount_model_list
+                        flash_sale.save()
+                        flash_sale.products.set([])
+                        flash_sale.products.add(*list_items)
                     
         return Response(data)
 
