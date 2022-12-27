@@ -227,7 +227,7 @@ class Item(models.Model):
             percent=self.percent_discount_flash_sale()
         else:
             percent=self.percent_discount()
-        return percent
+        return int(percent)
     def max_price(self):
         variations = Variation.objects.filter(item=self).aggregate(max=Max('price'))
         max_price=int(variations["max"])
