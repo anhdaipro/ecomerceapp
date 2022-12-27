@@ -141,7 +141,6 @@ class ActionThread(APIView):
                         for j in range(len(file_preview)):
                             if i==j:
                                 list_file_preview[i]=file_preview[j]
-                    count=Message.objects.last().id
                     messages=Message.objects.bulk_create([
                     Message(thread_id=id,
                         user=request.user,
