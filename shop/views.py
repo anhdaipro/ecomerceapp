@@ -404,9 +404,9 @@ class Listordershop(APIView):
         source=request.GET.get('source')
         if type_order:
             if type_order=='unpaid':
-                orders=orders.filter(accepted_date__lt=timezone.now(),accepted=False,received=False)
-                if source=='toship':
-                    orders=orders.filter(accepted=True,being_delivered=False,received=False,canceled=False)
+                orders=orders.filter(accepted=False,being_delivered=False,received=False,canceled=False)
+            if type_order=='toship':
+                orders=orders.filter(accepted=True,being_delivered=False,received=False,canceled=False)
             if type_order=='shipping':
                 orders=orders.filter(being_delivered=True,received=False,canceled=False) 
             if type_order=='completed':
