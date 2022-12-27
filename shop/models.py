@@ -391,14 +391,14 @@ class Variation(models.Model):
                 return int(variations[0]['user_item_limit'])
     def get_discount_program(self):
         if self.item.get_program_current():
-            variations=[variation for variation in self.item.get_program_current().variations if variation['enable'] and variation['promotion_stock'] >0 and variation['variation_id']==self.id]
+            variations=[variation for variation in self.item.get_program_current().variations if variation['enable'] and variation['promotion_stock'] and variation['variation_id']==self.id]
             if len(variations)>0:
                 return int(variations[0]['promotion_price'])
             
     def get_discount_flash_sale(self):
         if self.item.get_flash_sale_current():
             if self.item.get_flash_sale_current():
-                variations=[variation for variation in self.item.get_flash_sale_current().variations if variation['enable'] and variation['promotion_stock'] >0 and variation['variation_id']==self.id]
+                variations=[variation for variation in self.item.get_flash_sale_current().variations if variation['enable'] and variation['promotion_stock'] and variation['variation_id']==self.id]
                 if len(variations)>0:
                     return int(variations[0]['promotion_price'])
     def get_discount_product(self):
