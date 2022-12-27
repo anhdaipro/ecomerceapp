@@ -86,20 +86,19 @@ class ActionThread(APIView):
     def post(self,request,id,*args, **kwargs):
         action=request.POST.get('action')
         send_to=request.POST.get('send_to')
-        seen=request.POST.get('seen')
-        member=Member.objects.get(thread_id=id,user=request.user)
-        
+        send_by=request.POST.get('send_by')
+        sender=Member.objects.get(thread_id=id,user_id=send_by)
+        receiver=Member.objects.get(thread_id=id,user_id=send_to)
         listmessage=list()
         thread=Thread.objects.get(id=id)
         if action=='gim': 
-            if member.gim:
-                member.gim=False
+            if sender.gim:
+                sender.gim=False
             else:
-                member.gim=True
-            member.save()
+                sender.gim=True
+            sender.save()
         elif action=='create-message':
-            direact=Member.objects.get(thread_id=id,user_id=send_to)
-            if direact.block:
+            if receiver.block:
                 return Response({'error':"Bạn đã bị block"})
             else:
                 msg = request.data.get('message')
@@ -159,16 +158,19 @@ class ActionThread(APIView):
                     ]} for message in messages]
                 return Response(listmessage)
         elif action=='seen':
-            if member.is_seen:
-                member.is_seen=False
-                member.count_message_unseen=1
+            if sender.is_seen:
+                sender.is_seen=False
+                sender.count_message_unseen=1
             else:
-                member.is_seen=True
-                member.count_message_unseen=0
-            member.save()
+                sender.is_seen=True
+                sender.count_message_unseen=0
+            sender.save()
         elif action=='block':
-            member.block=True
-            member.save()
+            if receiver.block:
+                receiver.block=False
+            else:
+                receiver.block=True
+            receiver.save()
         elif action=='report':
             Reportuser.objects.get_or_create(thread_id=id,user=request.user,reported_id=send_to)
         else:
