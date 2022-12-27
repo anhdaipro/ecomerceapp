@@ -144,12 +144,11 @@ class ActionThread(APIView):
                     count=Message.objects.last().id
                     messages=Message.objects.bulk_create([
                     Message(thread_id=id,
-                        id=count+i+1,
                         user=request.user,
                         message_type='3'
                     ) for i in range(len(file))]) 
-                            
-                    Messagemedia.objects.bulk_create([Messagemedia(message_id=messages[i].id,upload_by=request.user,duration=float(duration[i]),file_preview=list_file_preview[i],file=file[i]) for i in range(len(file))])
+                    items=list([message.id for message in messages])        
+                    Messagemedia.objects.bulk_create([Messagemedia(message_id=items[i],upload_by=request.user,duration=float(duration[i]),file_preview=list_file_preview[i],file=file[i]) for i in range(len(file))])
                     listmessage=[{'id':message.id,'message_type':message.message_type,
                     'user_id':message.user_id,'date_created':message.date_created,
                     'list_file':[{'id':uploadfile.id,'file':uploadfile.file.url,
