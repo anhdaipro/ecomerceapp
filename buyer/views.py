@@ -1559,6 +1559,10 @@ class BuyagainAPI(APIView):
             user=request.user,
             item_id=product.item_id,
             shop_id=shop_id,
+            deal_shock=product.item.get_deal_shock_current(),
+            promotion_combo=product.item.get_combo_current(),
+            flash_sale=product.item.get_flash_sale_current(),
+            program=product.item.get_program_current(),
             quantity=1
         ) for product in productremain])
         return Response({'ok':'ok'})
