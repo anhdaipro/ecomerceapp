@@ -173,17 +173,17 @@ class Item(models.Model):
         return variations['avg']
     def avg_discount_price(self):
         if self.get_program_current():
-            variations=[variation['promotion_price'] for variation in self.get_program_current().variations if variation['enable'] and variation['item_id']==self.id]
+            variations=[variation['promotion_price'] for variation in self.get_program_current().variations if variation['enable'] and variation['promotion_stock'] and variation['item_id']==self.id]
             discount=reduce(lambda x, y: x+y,variations)
             return discount/len(variations)
     def avg_discount_price_flash_sale(self):
         if self.get_flash_sale_current():
-            variations=[variation['promotion_price'] for variation in self.get_flash_sale_current().variations if variation['enable'] and variation['item_id']==self.id]
+            variations=[variation['promotion_price'] for variation in self.get_flash_sale_current().variations if variation['enable'] and variation['promotion_stock'] and variation['item_id']==self.id]
             discount=reduce(lambda x, y: x+y,variations)
             return discount/len(variations)
     def get_promotion_stock(self):
         if self.get_flash_sale_current():
-            variations=[variation['promotion_stock'] for variation in self.get_flash_sale_current().variations if variation['enable'] and variation['item_id']==self.id]
+            variations=[variation['promotion_stock'] for variation in self.get_flash_sale_current().variations if variation['enable'] and variation['promotion_stock'] and variation['item_id']==self.id]
             stocks=reduce(lambda x, y: x+y,variations)
             return int(stocks/len(variations))
     def get_combo_current(self):

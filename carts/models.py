@@ -62,7 +62,7 @@ class CartItem(models.Model):
         discount=0
         if self.get_program_current():
             program=Shop_program.objects.get(id=self.get_program_current())
-            variations=[variation for variation in program.variations if variation['enable'] and variation['promotion_stock'] >0 and variation['variation_id']==self.product_id]
+            variations=[variation for variation in program.variations if variation['enable'] and variation['promotion_stock']  and variation['variation_id']==self.product_id]
             if len(variations)>0:
                 discount=self.price_product_main()-int(variations[0]['promotion_price'])
         return discount
@@ -70,7 +70,7 @@ class CartItem(models.Model):
         discount=0
         if self.get_flash_sale_current():
             flash_sale=Flash_sale.objects.get(id=self.get_flash_sale_current())
-            variations=[variation for variation in flash_sale.variations if variation['enable'] and variation['promotion_stock'] >0 and variation['variation_id']==self.product_id]
+            variations=[variation for variation in flash_sale.variations if variation['enable'] and variation['promotion_stock']  and variation['variation_id']==self.product_id]
             if len(variations)>0:
                 discount=self.price_product_main()- int(variations[0]['promotion_price'])
         return discount
