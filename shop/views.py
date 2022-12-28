@@ -967,7 +967,9 @@ class DetailComboAPI(APIView):
             promotion_combo.delete()
             data.update({'suscess':True})
         else:
-            if len(sameitem)==0:
+            if (promotion_combo.valid_from<now and promotion_combo.valid_to>now) or len(sameitem)>0:
+                data.update({'error':True,'sameitem':sameitem})
+            else:
                 if action=='submit':
                     promotion_combo.products.set([])
                     promotion_combo.promotion_combo_name=request.data.get('promotion_combo_name')
@@ -982,8 +984,7 @@ class DetailComboAPI(APIView):
                     promotion_combo.save()
                     promotion_combo.products.add(*list_items)
                 data.update({'suscess':True})
-            else:
-                data.update({'error':True,'sameitem':sameitem})
+            
         return Response(data)
     
 class NewDeal(APIView):
@@ -1052,6 +1053,7 @@ class DetailDeal(APIView):
     def post(self,request,id):
         deal_shock=Buy_with_shock_deal.objects.get(id=id)
         action=request.data.get('action')
+        now=timezone.now()
         data={}
         if action=='delete':
             deal_shock.delete()
@@ -1094,13 +1096,13 @@ class DetailDeal(APIView):
                 items=Item.objects.filter(shop_id=deal_shock.shop_id).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
                 listitemdeal=[item.id for item in items]
                 sameitem=list(set(listitemdeal).intersection(list_items))
-                if len(sameitem)==0:
+                if (deal_shock.valid_to>now and deal_shock.valid_from<now) or len(sameitem)>0:
+                    data.update({'error':True,'sameitem':sameitem})
+                else:
                     if action=='savemain':
                         deal_shock.main_products.set([])
                         deal_shock.main_products.add(*list_items)
                         data.update({'suscess':True})
-                else:
-                    data.update({'error':True,'sameitem':sameitem})
         return Response(data)
 
 class NewprogramAPI(APIView):
@@ -1198,7 +1200,9 @@ class Detailprogram(APIView):
                 items=Item.objects.filter(shop_id=shop_program.shop_id,shop_program__in=shop_programs)
                 listitemprogram=[item.id for item in items]
                 sameitem=list(set(listitemprogram).intersection(list_items))
-                if len(sameitem)==0:
+                if (shop_program.valid_from<now and shop_program.valid_to>now) or len(sameitem)>0:
+                    data.update({'error':True,'sameitem':sameitem})
+                else:
                     data.update({'suscess':True})
                     if action=='submit':
                         item_programs=shop_program.products.all()
@@ -1212,8 +1216,6 @@ class Detailprogram(APIView):
                         shop_program.products.set([])
                         shop_program.products.add(*list_items)
                         
-                else:
-                    data.update({'error':True,'sameitem':sameitem})
         
         return Response(data)
     
