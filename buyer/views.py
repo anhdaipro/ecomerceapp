@@ -998,12 +998,11 @@ class CartItemAPIView(APIView):
         for order in order_check:
             discount_voucher_shop+=order.get_discount_voucher()
             count_cartitem+=order.count_cartitem()
-            for cartitem in order.items.all():
-                count+=cartitem.count_item_cart()
-                total+=cartitem.total_price_cartitem()
-                discount_deal+=cartitem.save_deal()
-                discount_product=cartitem.total_discount_cartitem()
-                discount_promotion+=cartitem.discount_promotion()
+            discount_deal+=order.discount_deal()
+            discount_promotion+=order.discount_promotion()
+            discount_product+=order.discount_product()
+            total+=order.total_price_order()
+            count+=order.count_item_cart()
         data={
             'discount_voucher_shop':discount_voucher_shop,'list_shop_order':list_shop_order,
             'total_price':total_price,'count':count,'total':total,'discount_deal':discount_deal,
