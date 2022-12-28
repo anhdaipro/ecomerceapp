@@ -1253,9 +1253,9 @@ class CheckoutAPIView(APIView):
                         variations_update=[]
                         for variation in variations:
                             if variation['variation_id']==products.id:
-                                variation_update.append(variation)
+                                variations_update.append(variation)
                             else:
-                                variation_update.append(variation.update({'inventory':variation['inventory']-item.quantity,'promotion_stock':variation['promotion_stock']-item.quantity}))
+                                variations_update.append(variation.update({'inventory':variation['inventory']-item.quantity,'promotion_stock':variation['promotion_stock']-item.quantity}))
                         flash_sale.variations=variations_update
                         flash_sale.save()
                         
@@ -1265,9 +1265,9 @@ class CheckoutAPIView(APIView):
                         variations_update=[]
                         for variation in variations:
                             if variation['variation_id']==products.id:
-                                variation_update.append(variation)
+                                variations_update.append(variation)
                             else:
-                                variation_update.append(variation.update({'inventory':variation['inventory']-item.quantity,'promotion_stock':variation['promotion_stock']-item.quantity}))
+                                variations_update.append(variation.update({'inventory':variation['inventory']-item.quantity,'promotion_stock':variation['promotion_stock']-item.quantity}))
                         program.variations=variations_update
                         program.save()
                     if item.get_deal_shock_current():
@@ -1353,9 +1353,9 @@ class PaymentAPIView(APIView):
                     variations_update=[]
                     for variation in variations:
                         if variation['variation_id']==products.id:
-                            variation_update.append(variation)
+                            variations_update.append(variation)
                         else:
-                            variation_update.append(variation.update({'inventory':variation['inventory']-item.quantity,'promotion_stock':variation['promotion_stock']-item.quantity}))
+                            variations_update.append(variation.update({'inventory':variation['inventory']-item.quantity,'promotion_stock':variation['promotion_stock']-item.quantity}))
                     flash_sale.variations=variations_update
                     flash_sale.save()
                         
@@ -1365,9 +1365,9 @@ class PaymentAPIView(APIView):
                     variations_update=[]
                     for variation in variations:
                         if variation['variation_id']==products.id:
-                            variation_update.append(variation)
+                            variations_update.append(variation)
                         else:
-                            variation_update.append(variation.update({'inventory':variation['inventory']-item.quantity,'promotion_stock':variation['promotion_stock']-item.quantity}))
+                            variations_update.append(variation.update({'inventory':variation['inventory']-item.quantity,'promotion_stock':variation['promotion_stock']-item.quantity}))
                     program.variations=variations_update
                     program.save()
                     
@@ -1655,9 +1655,9 @@ class PurchaseAPIView(APIView):
                     variations_update=[]
                     for variation in variations:
                         if variation['variation_id']==products.id:
-                            variation_update.append(variation)
+                            variations_update.append(variation)
                         else:
-                            variation_update.append(variation.update({'inventory':variation['inventory']+item.quantity,'promotion_stock':variation['promotion_stock']+item.quantity}))
+                            variations_update.append(variation.update({'inventory':variation['inventory']+item.quantity,'promotion_stock':variation['promotion_stock']+item.quantity}))
                     flash_sale.variations=variations_update
                     flash_sale.save()
                         
@@ -1667,9 +1667,9 @@ class PurchaseAPIView(APIView):
                     variations_update=[]
                     for variation in variations:
                         if variation['variation_id']==products.id:
-                            variation_update.append(variation)
+                            variations_update.append(variation)
                         else:
-                            variation_update.append(variation.update({'inventory':variation['inventory']+item.quantity,'promotion_stock':variation['promotion_stock']+item.quantity}))
+                            variations_update.append(variation.update({'inventory':variation['inventory']+item.quantity,'promotion_stock':variation['promotion_stock']+item.quantity}))
                     program.variations=variations_update
                     program.save()
                     
