@@ -1239,12 +1239,17 @@ class CheckoutAPIView(APIView):
                     products.inventory -= item.quantity
                     item.amount_main_products=item.total_discount_main() 
                     item.amount_byproducts=item.total_discount_deal()
-                    if item.item.get_flash_sale_current():
-                        item.flash_sale_id=item.item.get_flash_sale_current()
-                    if item.item.get_combo_current():
-                        item.promotion_combo_id=item.item.get_combo_current()
-                    if item.item.get_program_current() and item.item.get_flash_sale_current() is None:
-                        item.program_id=item.item.get_program_current()
+                    if not item.get_flash_sale_current():
+                        item.flash_sale=None
+                    if not item.get_combo_current():
+                        item.promotion_combo=None
+                    if not item.get_program_current():
+                        item.program=None
+                    if item.get_deal_shock_current():
+                        for byproduct in item.byproduct_cart.all():
+                            product=Variation.objects.get(id=byproduct.product_id)
+                            product.inventory -= byproduct.quantity
+                            product.save()
                     item.save()
                     products.save()
                     if products.get_discount_flash_sale():
@@ -1270,12 +1275,7 @@ class CheckoutAPIView(APIView):
                                 variations_update.append(variation.update({'inventory':variation['inventory']-item.quantity,'promotion_stock':variation['promotion_stock']-item.quantity}))
                         program.variations=variations_update
                         program.save()
-                    if item.get_deal_shock_current():
-                        for byproduct in item.byproduct_cart.all():
-                            product=Variation.objects.get(id=byproduct.product_id)
-                            product.inventory -= byproduct.quantity
-                            product.save()
-                
+                    
                 list_orders.append(order)
                 email_body = f"Hello {user.username}, \n {order.shop.user.username} cảm ơn bạn đã đặt hàng"
                 data = {'email_body': email_body, 'to_email': user.email,
@@ -1335,16 +1335,20 @@ class PaymentAPIView(APIView):
             order.items.remove(*id_remove)
             for item in items_checkout:
                 products=item.product
-                
                 products.inventory -= item.quantity
                 item.amount_main_products=item.total_discount_main() 
                 item.amount_byproducts=item.total_discount_deal()
-                if item.item.get_flash_sale_current():
-                    item.flash_sale_id=item.item.get_flash_sale_current()
-                if item.item.get_combo_current():
-                    item.promotion_combo_id=item.item.get_combo_current()
-                if item.item.get_program_current() and item.item.get_flash_sale_current() is None:
-                    item.program_id=item.item.get_program_current()
+                if not item.get_flash_sale_current():
+                    item.flash_sale=None
+                if not item.get_combo_current():
+                    item.promotion_combo=None
+                if not item.get_program_current():
+                    item.program=None
+                if item.get_deal_shock_current():
+                    for byproduct in item.byproduct_cart.all():
+                        product=Variation.objects.get(id=byproduct.product_id)
+                        product.inventory -= byproduct.quantity
+                        product.save()
                 item.save()
                 products.save()
                 if products.get_discount_flash_sale():
@@ -1359,7 +1363,7 @@ class PaymentAPIView(APIView):
                     flash_sale.variations=variations_update
                     flash_sale.save()
                         
-                if products.get_discount_program() and products.get_discount_flash_sale() is None:
+                if products.get_discount_program() and not products.get_discount_flash_sale():
                     program=products.item.get_program_current()
                     variations=program.variations
                     variations_update=[]
@@ -1371,11 +1375,6 @@ class PaymentAPIView(APIView):
                     program.variations=variations_update
                     program.save()
                     
-                if item.get_deal_shock_current():
-                    for byproduct in item.byproduct_cart.all():
-                        product=Variation.objects.get(id=byproduct.product_id)
-                        product.inventory -= byproduct.quantity
-                        product.save()
                 
             email_body = f"Hello {user.username}, \n {order.shop.user.username} cảm ơn bạn đã đặt hàng"
             data = {'email_body': email_body, 'to_email': user.email,
@@ -1645,6 +1644,12 @@ class PurchaseAPIView(APIView):
             cart_items = order.items.all()
             cart_items.update(ordered=False,flash_sale=None,program=None,promotion_combo=None)
             for item in cart_items:
+                if item.item.get_flash_sale_current():
+                    item.flash_sale=item.item.get_flash_sale_current()
+                if item.item.get_combo_current():
+                    item.promotion_combo=item.item.get_combo_current()
+                if  item.item.get_program_current():
+                    item.program=item.item.get_program_current()
                 item.save()
                 products=Variation.objects.get(id=item.product_id)
                 products.inventory += item.quantity
@@ -1672,8 +1677,6 @@ class PurchaseAPIView(APIView):
                             variations_update.append(variation.update({'inventory':variation['inventory']+item.quantity,'promotion_stock':variation['promotion_stock']+item.quantity}))
                     program.variations=variations_update
                     program.save()
-                    
-                
                 if item.get_deal_shock_current():
                     for byproduct in item.byproduct_cart.all():
                         product=Variation.objects.get(id=byproduct.product_id)
