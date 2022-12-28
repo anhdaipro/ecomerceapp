@@ -415,6 +415,8 @@ class Variation(models.Model):
     
     def total_discount(self):
         discount=self.price
+        if self.get_discount_flash_sale():
+            discount=self.get_discount_flash_sale()
         if self.get_discount_program() and self.get_discount_deal():
             return discount-(self.price-self.get_discount_program())-(self.price-self.get_discount_deal())
         if self.get_discount_program():
