@@ -134,7 +134,7 @@ class CartItem(models.Model):
         discount=0
         if self.get_discount_flash_sale_product_main():
             discount=self.get_discount_flash_sale_product_main()
-        else:
+        if self.get_discount_program_product_main():
             discount=self.get_discount_program_product_main()
         return discount
     def save_main(self):
