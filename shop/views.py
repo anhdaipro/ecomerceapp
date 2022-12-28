@@ -90,7 +90,7 @@ class ListvoucherAPI(APIView):
         name=request.GET.get('name')
         name=request.GET.get('name')
         shop=Shop.objects.get(user=request.user)
-        vouchers=Voucher.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('products').prefetch_related('order_voucher')
+        vouchers=Voucher.objects.filter(shop=shop,valid_from__gte=(now-timedelta(days=200))).prefetch_related('products').prefetch_related('order_voucher')
         if start_day:
             vouchers=vocuhers.filter(valid_from__gte=start_day)
         if end_day:
@@ -119,7 +119,7 @@ class ListcomboAPI(APIView):
         choice=request.GET.get('choice')
         offset=request.GET.get('offset')
         shop=Shop.objects.get(user=request.user)
-        promotions=Promotion_combo.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('products__media_upload')
+        promotions=Promotion_combo.objects.filter(shop=shop,valid_from__gte=(now-timedelta(days=200))).prefetch_related('products__media_upload')
         option=request.GET.get('option')
         keyword=request.GET.get('keyword')
         if option and keyword:
@@ -157,7 +157,7 @@ class ListdealshockAPI(APIView):
     serializer_class = BuywithsockdealSerializer
     def get(self,request):
         shop=Shop.objects.get(user=request.user)
-        deal_shocks=Buy_with_shock_deal.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('main_products__media_upload').prefetch_related('byproducts__media_upload')
+        deal_shocks=Buy_with_shock_deal.objects.filter(shop=shop,valid_from__gte=(now-timedelta(days=200))).prefetch_related('main_products__media_upload').prefetch_related('byproducts__media_upload')
         choice=request.GET.get('choice')
         offset=request.GET.get('offset')
         start_day=request.GET.get('start_day')
@@ -201,7 +201,7 @@ class ListFollowOfferAPI(APIView):
         choice=request.GET.get('choice')
         offset=request.GET.get('offset')
         shop=Shop.objects.get(user=request.user)
-        follow_offers=Follower_offer.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('follower_offder').order_by('-id')
+        follow_offers=Follower_offer.objects.filter(shop=shop,valid_from__gte=(now-timedelta(days=200))).prefetch_related('follower_offder').order_by('-id')
         if choice:
             if choice=='current':
                 follow_offers=follow_offers.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
@@ -231,7 +231,7 @@ class ListShopAwardAPI(APIView):
         choice=request.GET.get('choice')
         offset=request.GET.get('offset')
         shop=Shop.objects.get(user=request.user)
-        shop_awards=Shop_award.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('award_shop_award').order_by('-id')
+        shop_awards=Shop_award.objects.filter(shop=shop,valid_from__gte=(now-timedelta(days=200))).prefetch_related('award_shop_award').order_by('-id')
         if choice:
             if choice=='current':
                 shop_awards=shop_awards.filter(valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
@@ -262,7 +262,7 @@ class ListprogramAPI(APIView):
         shop=Shop.objects.get(user=request.user)
         choice=request.GET.get('choice')
         offset=request.GET.get('offset')
-        programs=Shop_program.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('products__media_upload').order_by('-id')
+        programs=Shop_program.objects.filter(shop=shop,valid_from__gte=(now-timedelta(days=200))).prefetch_related('products__media_upload').order_by('-id')
         option=request.GET.get('option')
         keyword=request.GET.get('keyword')
         if option and keyword:
@@ -302,7 +302,7 @@ class ListflashsaleAPI(APIView):
         choice=request.GET.get('choice')
         offset=request.GET.get('offset')
         shop=Shop.objects.get(user=request.user)
-        flash_sales=Flash_sale.objects.filter(shop=shop,valid_from__date__gte=(now-timedelta(days=200))).prefetch_related('products__media_upload').order_by('-id')
+        flash_sales=Flash_sale.objects.filter(shop=shop,valid_from__gte=(now-timedelta(days=200))).prefetch_related('products__media_upload').order_by('-id')
         
         if choice:
             if choice=='current':
@@ -380,8 +380,8 @@ def homeseller(request):
     count_order_canceled=Order.objects.filter(shop=shop,ordered=True,canceled=True).count()
     count_order_processed=Order.objects.filter(shop=shop,ordered=True,canceled=False,accepted=True,received=False,being_delivered=False).count()
     count_order_waiting_processed=Order.objects.filter(shop=shop,ordered=True,being_delivered=False,accepted=False,accepted_date__lt=timezone.now()).count()
-    total_order_day=Order.objects.filter(shop=shop,ordered=True,ordered_date__date__gte=current_date).annotate(day=TruncHour('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
-    total_amount_day=Order.objects.filter(shop=shop,ordered=True,ordered_date__date__gte=current_date).annotate(day=TruncHour('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
+    total_order_day=Order.objects.filter(shop=shop,ordered=True,ordered_date__gte=current_date).annotate(day=TruncHour('ordered_date')).values('day').annotate(count=Count('id')).values('day','count')
+    total_amount_day=Order.objects.filter(shop=shop,ordered=True,ordered_date__gte=current_date).annotate(day=TruncHour('ordered_date')).values('day').annotate(sum=Sum('amount')).values('day','sum')
 
     data={
     'count_order_waiting_comfirmed':count_order_waiting_comfirmed,
