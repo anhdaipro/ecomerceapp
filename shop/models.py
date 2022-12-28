@@ -185,7 +185,7 @@ class Item(models.Model):
         if self.get_flash_sale_current():
             variations=[variation['promotion_stock'] for variation in self.get_flash_sale_current().variations if variation['enable'] and variation['item_id']==self.id]
             stocks=reduce(lambda x, y: x+y,variations)
-            return stocks/len(variations)
+            return int(stocks/len(variations))
     def get_combo_current(self):
         promotion_combo=Promotion_combo.objects.filter(products=self,valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
         if promotion_combo.exists():

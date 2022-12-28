@@ -21,7 +21,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
-
+from functools import reduce
 class UserCreateSerializer(UserCreateSerializer):
     class Meta:
         model = User
@@ -205,17 +205,22 @@ class ItemflasaleSerializer(ItemSerializer):
         fields=ItemSerializer.Meta.fields+['number_order','discount_price','promotion_stock']
     def get_percent_discount(self,obj):
         promotionId=self.context.get("promotionId")
-        variations=Variationflashsale.objects.filter(enable=True,item=obj,flash_sale=promotionId).aggregate(avg=Avg('promotion_price'))
-        avg_discount=variations['avg']
-        percent= (float(obj.avg_price())-float(avg_discount))*100/float(obj.avg_price()) if variations['avg'] else 0
+        flash_sale=Flash_sale.objects.get(id=promotionId)
+        variations=[variation['promotion_price'] for variation in flash_sale.variations if variation['enable'] and variation['item_id']==obj.id]
+        discount=reduce(lambda x, y: x+y,variations)
+        avg_discount=discount/len(variations)
+        percent= (float(obj.avg_price())-float(avg_discount))*100/float(obj.avg_price())
         return percent
     def get_number_order(self,obj):
         return obj.number_order_flash_sale()
    
     def get_discount_price(self,obj):
         promotionId=self.context.get("promotionId")
-        variations=Variationflashsale.objects.filter(enable=True,item=obj,flash_sale=promotionId).aggregate(avg=Avg('promotion_price'))
-        return variations['avg']
+        flash_sale=Flash_sale.objects.get(id=promotionId)
+        variations=[variation['promotion_price'] for variation in flash_sale.variations if variation['enable'] and variation['item_id']==obj.id]
+        discount=reduce(lambda x, y: x+y,variations)
+        avg_discount=discount/len(variations)
+        return avg_discount
     def get_promotion_stock(self,obj):
         return obj.get_promotion_stock()
 

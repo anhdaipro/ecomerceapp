@@ -1300,8 +1300,7 @@ class DetailFlashsale(APIView):
                         discount_model_list=request.data.get('discount_model_list')
                         item_flash_sale=flash_sale.products.all()
                         item_remove=item_flash_sale.exclude(id__in=list_items)
-                        Variationflashsale.objects.filter(flash_sale_id=id).exclude(item_id__in=list_items).delete()
-                        flash_sale.valid_from=request.data.get('valid_from')
+                        flash_sale.valid_from=valid_from
                         flash_sale.valid_to=valid_to
                         flash_sale.variations=discount_model_list
                         flash_sale.save()
