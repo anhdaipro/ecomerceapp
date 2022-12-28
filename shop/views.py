@@ -745,7 +745,7 @@ class NewShopAwardAPI(APIView):
         valid_from=request.data.get("valid_from")
         valid_to=request.data.get("valid_to")
         action=request.data.get("action")
-        shop_awards=Shop_award.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
+        shop_awards=Shop_award.objects.filter((Q(valid_from__gt=valid_from)&Q(valid_from__lt=valid_to)) |(Q(valid_to__gt=valid_from)&Q(valid_to__lt=valid_to)))
         data={}
         if shop_awards.exists():
             data.update({'error':True})
@@ -835,7 +835,7 @@ class NewFollowOffer(APIView):
         valid_from=request.data.get("valid_from")
         valid_to=request.data.get("valid_to")
         action=request.data.get("action")
-        follower_offers=Follower_offer.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
+        follower_offers=Follower_offer.objects.filter((Q(valid_from__gt=valid_from)&Q(valid_from__lt=valid_to)) |(Q(valid_to__gt=valid_from)&Q(valid_to__lt=valid_to)))
         data={}
         if follower_offers.exists():
             data.update({'error':True})
@@ -898,8 +898,8 @@ class NewcomboAPI(APIView):
         valid_to=request.GET.get('valid_to')
         combo_id=request.GET.get('combo_id')
         valid_from=request.GET.get('valid_from')
-        shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
-        promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
+        shockdeals=Buy_with_shock_deal.objects.filter((Q(valid_from__gt=valid_from)&Q(valid_from__lt=valid_to)) |(Q(valid_to__gt=valid_from)&Q(valid_to__lt=valid_to)))
+        promotions=Promotion_combo.objects.filter((Q(valid_from__gt=valid_from)&Q(valid_from__lt=valid_to)) |(Q(valid_to__gt=valid_from)&Q(valid_to__lt=valid_to)))
         if combo_id:
             promotions= promotions.exclude(id=combo_id)
         items=Item.objects.filter(shop=shop).exclude(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions)).order_by('-id')
@@ -920,8 +920,8 @@ class NewcomboAPI(APIView):
         action=request.data.get('action')
         valid_to=request.data.get('valid_to')
         list_items=request.data.get('list_items')
-        shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
-        promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
+        shockdeals=Buy_with_shock_deal.objects.filter((Q(valid_from__gt=valid_from)&Q(valid_from__lt=valid_to)) |(Q(valid_to__gt=valid_from)&Q(valid_to__lt=valid_to)))
+        promotions=Promotion_combo.objects.filter((Q(valid_from__gt=valid_from)&Q(valid_from__lt=valid_to)) |(Q(valid_to__gt=valid_from)&Q(valid_to__lt=valid_to)))
         items=Item.objects.filter(shop=shop).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
         listitemdeal=[item.id for item in items]
         data={}
@@ -1003,8 +1003,8 @@ class NewDeal(APIView):
         if mainproducts:
             item_deal=deal_shock.byproducts.all()
             list_id=[item.id for item in item_deal]
-            shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=deal_id)
-            promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
+            shockdeals=Buy_with_shock_deal.objects.filter((Q(valid_from__gt=valid_from)&Q(valid_from__lt=valid_to)) |(Q(valid_to__gt=valid_from)&Q(valid_to__lt=valid_to))).exclude(id=deal_id)
+            promotions=Promotion_combo.objects.filter((Q(valid_from__gt=valid_from)&Q(valid_from__lt=valid_to)) |(Q(valid_to__gt=valid_from)&Q(valid_to__lt=valid_to)))
             items=items.exclude(Q(id__in=list_id) |Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
         order=request.GET.get('order')
         price=request.GET.get('price')
@@ -1109,7 +1109,7 @@ class NewprogramAPI(APIView):
         program_id=request.GET.get('program_id')
         valid_to=request.GET.get('valid_to')
         valid_from=request.GET.get('valid_from')
-        shop_programs=Shop_program.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
+        shop_programs=Shop_program.objects.filter((Q(valid_from__gt=valid_from)&Q(valid_from__lt=valid_to)) |(Q(valid_to__gt=valid_from)&Q(valid_to__lt=valid_to)))
         if program_id:
             shop_programs=shop_programs.exclude(id=program_id)
         items=Item.objects.filter(shop=shop).exclude(shop_program__in=shop_programs).order_by('-id')
