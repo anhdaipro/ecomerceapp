@@ -22,8 +22,8 @@ class Migration(migrations.Migration):
             name='Color',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50)),
-                ('value', models.CharField(max_length=50)),
+                ('name', models.CharField(max_length=20)),
+                ('value', models.CharField(max_length=20)),
                 ('image', models.ImageField(blank=True, null=True, upload_to='color/')),
             ],
         ),
@@ -81,8 +81,8 @@ class Migration(migrations.Migration):
             name='Size',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50)),
-                ('value', models.CharField(max_length=50)),
+                ('name', models.CharField(max_length=20)),
+                ('value', models.CharField(max_length=20)),
             ],
         ),
         migrations.CreateModel(

@@ -346,8 +346,8 @@ class ItemViews(models.Model):
     create_at=models.DateTimeField(auto_now=True)
 
 class Color(models.Model):
-    name=models.CharField(max_length=50)
-    value=models.CharField(max_length=50)
+    name=models.CharField(max_length=20)
+    value=models.CharField(max_length=20)
     image=models.ImageField(upload_to='color/',blank=True,null=True)
     def __str__(self):
         return str(self.value)
@@ -357,8 +357,8 @@ class Color(models.Model):
             return self.image.url
 
 class Size(models.Model):
-    name=models.CharField(max_length=50)
-    value=models.CharField(max_length=50)
+    name=models.CharField(max_length=20)
+    value=models.CharField(max_length=20)
     def __str__(self):
         return str(self.value)
     
