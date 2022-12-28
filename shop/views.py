@@ -1300,11 +1300,11 @@ class DetailFlashsale(APIView):
                 data=ByproductSellerSerializer(list_products,many=True).data
             elif action=='turn_on':
                 variations = map(turn_on,list(flash_sale.variations))
-                flash_sale.variations=variations
+                flash_sale.variations=list(variations)
                 flash_sale.save()
             elif action=='turn_off':
                 variations = map(turn_off,list(flash_sale.variations))
-                flash_sale.variations=variations
+                flash_sale.variations=list(variations)
                 flash_sale.save()
             else:
                 flash_sales=Flash_sale.objects.filter(shop_id=flash_sale.shop_id).filter((Q(valid_from=valid_from)&Q(valid_to=valid_to))  & Q(valid_to__gt=now)).exclude(id=id)
