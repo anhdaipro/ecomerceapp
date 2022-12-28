@@ -616,7 +616,7 @@ class FlashSaleSerializer(FlashSaleinfoSerializer):
     number_product=serializers.SerializerMethodField()
     class Meta(FlashSaleinfoSerializer.Meta):
         fields=FlashSaleinfoSerializer.Meta.fields+['number_product_on','number_product']
-    def get_number_products(self,obj):
+    def get_number_product(self,obj):
         return obj.products.all().count()
     def get_number_product_on(self,obj):
         variations =[variation['item_id'] for variation in obj.variations if variation['enable']]

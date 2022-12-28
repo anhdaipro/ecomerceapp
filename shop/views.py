@@ -1269,7 +1269,15 @@ class Newflashsale(APIView):
                     
             
         return Response(data)
-   
+
+def turn_on(item):
+    variation=item
+    variation['enable']=True
+    return variation
+def turn_off(item):
+    variation=item
+    variation['enable']=False
+    return variation
 class DetailFlashsale(APIView):
     def get(self,request,id):
         flash_sale=Flash_sale.objects.get(id=id)
@@ -1290,6 +1298,14 @@ class DetailFlashsale(APIView):
                 preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(list_items)])
                 list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
                 data=ByproductSellerSerializer(list_products,many=True).data
+            elif action=='turn_on':
+                variations = map(turn_on,flash_sale.variations)
+                flash_sale.variations=variations
+                flash_sale.save()
+            elif action=='turn_off':
+                variations = map(turn_off,flash_sale.variations)
+                flash_sale.variations=variations
+                flash_sale.save()
             else:
                 flash_sales=Flash_sale.objects.filter(shop_id=flash_sale.shop_id).filter((Q(valid_from=valid_from)&Q(valid_to=valid_to))  & Q(valid_to__gt=now)).exclude(id=id)
                 if flash_sales.exists():
