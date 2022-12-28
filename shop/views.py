@@ -1299,11 +1299,11 @@ class DetailFlashsale(APIView):
                 list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
                 data=ByproductSellerSerializer(list_products,many=True).data
             elif action=='turn_on':
-                variations = map(turn_on,flash_sale.variations)
+                variations = map(turn_on,list(flash_sale.variations))
                 flash_sale.variations=variations
                 flash_sale.save()
             elif action=='turn_off':
-                variations = map(turn_off,flash_sale.variations)
+                variations = map(turn_off,list(flash_sale.variations))
                 flash_sale.variations=variations
                 flash_sale.save()
             else:
