@@ -612,10 +612,13 @@ class FlashSaleinfoSerializer(serializers.ModelSerializer):
         fields=['id','valid_to','valid_from']
 
 class FlashSaleSerializer(FlashSaleinfoSerializer):
+    products=serializers.SerializerMethodField()
     number_product_on=serializers.SerializerMethodField()
     number_product=serializers.SerializerMethodField()
     class Meta(FlashSaleinfoSerializer.Meta):
-        fields=FlashSaleinfoSerializer.Meta.fields+['number_product_on','number_product']
+        fields=FlashSaleinfoSerializer.Meta.fields+['products','number_product_on','number_product']
+    def get_products(self,obj):
+        return [{'image':item.get_image_cover()} for item in obj.products.all()]
     def get_number_product(self,obj):
         return obj.products.all().count()
     def get_number_product_on(self,obj):
