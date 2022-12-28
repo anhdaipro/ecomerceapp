@@ -779,7 +779,7 @@ class DetailShopAwardAPI(APIView):
         valid_from=request.data.get("valid_from")
         valid_to=request.data.get("valid_to")
         action=request.data.get("action")
-        shop_awards=Shop_award.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
+        shop_awards=Shop_award.objects.filter((Q(valid_from__gte=valid_from)&Q(valid_from__lte=valid_to)) |(Q(valid_to__gte=valid_from)&Q(valid_to__lte=valid_to))).exclude(id=id)
         data={}
         if action=='delete':
             shop_award.delete()
@@ -868,7 +868,7 @@ class DetailFollowOffer(APIView):
         valid_from=request.data.get("valid_from")
         valid_to=request.data.get("valid_to")
         action=request.data.get("action")
-        follower_offers=Follower_offer.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
+        follower_offers=Follower_offer.objects.filter((Q(valid_from__gte=valid_from)&Q(valid_from__lte=valid_to)) |(Q(valid_to__gte=valid_from)&Q(valid_to__lte=valid_to))).exclude(id=id)
         data={}
         if action=='delete':
             offer_follow.delete()
@@ -958,8 +958,8 @@ class DetailComboAPI(APIView):
         action=request.data.get('action')
         promotion_combo=Promotion_combo.objects.get(id=id)
         data={}
-        shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
-        promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
+        shockdeals=Buy_with_shock_deal.objects.filter((Q(valid_from__gte=valid_from)&Q(valid_from__lte=valid_to)) |(Q(valid_to__gte=valid_from)&Q(valid_to__lte=valid_to)))
+        promotions=Promotion_combo.objects.filter((Q(valid_from__gte=valid_from)&Q(valid_from__lte=valid_to)) |(Q(valid_to__gte=valid_from)&Q(valid_to__lte=valid_to))).exclude(id=id)
         items=Item.objects.filter(shop_id=promotion_combo.shop_id).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
         listitemdeal=[item.id for item in items]
         sameitem=list(set(listitemdeal).intersection(list_items))
@@ -1091,8 +1091,8 @@ class DetailDeal(APIView):
                 deal_shock.save()
                 data.update({'suscess':True})
             else:
-                shockdeals=Buy_with_shock_deal.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
-                promotions=Promotion_combo.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
+                shockdeals=Buy_with_shock_deal.objects.filter((Q(valid_from__gte=valid_from)&Q(valid_from__lte=valid_to)) |(Q(valid_to__gte=valid_from)&Q(valid_to__lte=valid_to))).exclude(id=id)
+                promotions=Promotion_combo.objects.filter((Q(valid_from__gte=valid_from)&Q(valid_from__lte=valid_to)) |(Q(valid_to__gte=valid_from)&Q(valid_to__lte=valid_to)))
                 items=Item.objects.filter(shop_id=deal_shock.shop_id).filter(Q(main_product__in=shockdeals) |Q(promotion_combo__in=promotions))
                 listitemdeal=[item.id for item in items]
                 sameitem=list(set(listitemdeal).intersection(list_items))
@@ -1140,7 +1140,7 @@ class NewprogramAPI(APIView):
             list_products=Item.objects.filter(id__in=list_items).order_by(preserved)
             data=ByproductSellerSerializer(list_products,many=True).data
         else:
-            shop_programs=Shop_program.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now))
+            shop_programs=Shop_program.objects.filter((Q(valid_from__gte=valid_from)&Q(valid_from__lte=valid_to)) |(Q(valid_to__gte=valid_from)&Q(valid_to__lte=valid_to)))
             items=Item.objects.filter(shop=shop,shop_program__in=shop_programs)
             listitemprogram=[item.id for item in items]
             sameitem=list(set(listitemprogram).intersection(list_items))
@@ -1196,7 +1196,7 @@ class Detailprogram(APIView):
                 data=ByproductSellerSerializer(list_products,many=True).data
             
             else:
-                shop_programs=Shop_program.objects.filter(((Q(valid_from__lt=valid_from)&Q(valid_to__gt=valid_to)) | (Q(valid_from__gte=valid_from)&Q(valid_to__lte=valid_to)) | (Q(valid_from__lte=valid_from) & Q(valid_to__gt=valid_from)) | (Q(valid_from__gte=valid_from) & Q(valid_to__gte=valid_from)))  & Q(valid_to__gt=now)).exclude(id=id)
+                shop_programs=Shop_program.objects.filter((Q(valid_from__gte=valid_from)&Q(valid_from__lte=valid_to)) |(Q(valid_to__gte=valid_from)&Q(valid_to__lte=valid_to))).exclude(id=id)
                 items=Item.objects.filter(shop_id=shop_program.shop_id,shop_program__in=shop_programs)
                 listitemprogram=[item.id for item in items]
                 sameitem=list(set(listitemprogram).intersection(list_items))
