@@ -80,7 +80,7 @@ class CartItem(models.Model):
             return self.deal_shock.id
     
     def get_program_current(self):
-        if self.program and (self.ordered or (self.deal_shock.valid_to>timezone.now() and self.program.valid_from<timezone.now())):
+        if self.program and (self.ordered or (self.program.valid_to>timezone.now() and self.program.valid_from<timezone.now())):
             return self.program.id
     
     def get_promotion_combo_current(self):
