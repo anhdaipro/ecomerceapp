@@ -897,20 +897,23 @@ class AddToCartAPIView(APIView):
                 return Response(serializer.data, status=status.HTTP_200_OK)
                 
         except Exception:
-            cart_item=CartItem.objects.create(
-                product=product,
-                item_id=item_id,
-                user=user,
-                ordered=False,
-                quantity=int(quantity),
-                shop=item.shop,
-                deal_shock=item.get_deal_shock_current(),
-                promotion_combo=item.get_combo_current(),
-                flash_sale=item.get_flash_sale_current(),
-                program=item.get_program_current(),
-                )
-            serializer = CartviewSerializer(cart_item,context={"request": request})
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            if int(quantity)>product.inventory:
+                return Response({'errorr':True,'message':"over stock"})
+            else:
+                cart_item=CartItem.objects.create(
+                    product=product,
+                    item_id=item_id,
+                    user=user,
+                    ordered=False,
+                    quantity=int(quantity),
+                    shop=item.shop,
+                    deal_shock=item.get_deal_shock_current(),
+                    promotion_combo=item.get_combo_current(),
+                    flash_sale=item.get_flash_sale_current(),
+                    program=item.get_program_current(),
+                    )
+                serializer = CartviewSerializer(cart_item,context={"request": request})
+                return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ShoporderAPI(APIView):
     def get(self,request):
