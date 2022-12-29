@@ -189,7 +189,7 @@ class Item(models.Model):
     def get_combo_current(self):
         promotion_combo=Promotion_combo.objects.filter(products=self,valid_from__lt=timezone.now(),valid_to__gt=timezone.now())
         if promotion_combo.exists():
-            return promotion_combo.first().id
+            return promotion_combo.first()
     def number_order_flash_sale(self):
         quantity=0
         if self.get_flash_sale_current():
