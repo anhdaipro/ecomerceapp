@@ -282,17 +282,18 @@ class FlashsaleAPI(APIView):
             if list_flash_sales.exists():
                 flash_sale=list_flash_sales.first()
                 data.update(FlashSaleinfoSerializer(flash_sale).data)
-        list_items=Item.objects.filter(flash_sale__in=list_flash_sales).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem')[:15]
+        list_items=Item.objects.filter(flash_sale__in=list_flash_sales).prefetch_related('flash_sale').prefetch_related('media_upload').prefetch_related('variation_item__color').prefetch_related('variation_item__size').prefetch_related('cart_item__order_cartitem')
         count=list_items.count()
-        offset=request.GET.get('offset')
+        offset=16
+        from_to=request.GET.get('from_to')
         from_item=0
-        if offset:
-            from_item=int(offset)
-        to_item=from_item+20
-        if from_item+20>=count:
+        if from_to:
+            from_item=int(from_to)
+        to_item=from_item+offset
+        if from_item+offset>=count:
             to_item=count
         list_items=list_items[from_item:to_item]
-        data.update({'items_flash_sale':ItemflasaleSerializer(list_items,many=True,context={'promotionId':promotionId}).data})
+        data.update({'count':count,'items_flash_sale':ItemflasaleSerializer(list_items,many=True,context={'promotionId':promotionId}).data})
         return Response(data)
 
 class CategoryListView(ListAPIView):
