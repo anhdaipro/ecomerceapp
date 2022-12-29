@@ -1202,9 +1202,9 @@ class CheckoutAPIView(APIView):
         payment_option=request.data.get('payment_choice')
         orders=request.data.get('orders')
         total=0
+        data={'success':True}
         list_orders=[]
         if payment_option == 'Paypal':
-
             for item in orders:
                 order=Order.objects.get(id=item['id'])
                 order.shipping_address_id = address_id
@@ -1222,11 +1222,6 @@ class CheckoutAPIView(APIView):
             for item in orders:
                 order=Order.objects.get(id=item['id'])
                 order.shipping_address_id = address_id
-                order.ordered=True
-                order.amount=order.total_final_order()+item['fee_shipping']
-                order.ref_code = create_ref_code()
-                order.ordered_date=timezone.now()
-                order.shipping_id=item['shipping']['id']
                 if order.get_discount_voucher()>0:
                     order.discount_voucher=order.get_discount_voucher()
                 else:
@@ -1235,10 +1230,18 @@ class CheckoutAPIView(APIView):
                 order.payment_choice=payment_option
                 items = order.items.all()
                 id_remove=[item.id for item in items if item.quantity>item.product.inventory]
+                id_delete=[item.id for item in items if item.product.inventory==0]
                 id_checkout=[item.id for item in items if item.quantity<=item.product.inventory]
                 items_checkout=items.filter(id__in=id_checkout)
-                items_checkout.update(ordered=True)
+                items.filter(id__in=id_delete).delete()
                 order.items.remove(*id_remove)
+                order.ordered=True
+                order.amount=order.total_final_order()+item['fee_shipping']
+                order.ref_code = create_ref_code()
+                order.ordered_date=timezone.now()
+                order.shipping_id=item['shipping']['id']
+                if len(id_remove)>0:
+                    data.update({'message':"Some product had removed from order because it out of stock",waring:True})
                 for item in items_checkout:
                     products=Variation.objects.get(id=item.product_id)
                     products.inventory -= item.quantity
@@ -1250,29 +1253,25 @@ class CheckoutAPIView(APIView):
                         item.promotion_combo=None
                     if not item.get_program_current():
                         item.program=None
+                    item.ordered=True
+                    item.save()
+                    products.save()
                     if item.get_deal_shock_current():
                         for byproduct in item.byproduct_cart.all():
                             product=Variation.objects.get(id=byproduct.product_id)
                             product.inventory -= byproduct.quantity
                             product.save()
-                    item.save()
-                    products.save()
                     if products.get_discount_flash_sale():
                         flash_sale=products.item.get_flash_sale_current()
                         variations=flash_sale.variations
-                        
                         for variation in variations:
                             if variation['variation_id']==products.id:
-                                variation=variation.update({'inventory':variation['inventory']-item.quantity,'promotion_stock':variation['promotion_stock']-item.quantity})
-                            
-                                
+                                variation=variation.update({'inventory':variation['inventory']-item.quantity,'promotion_stock':variation['promotion_stock']-item.quantity})     
                         flash_sale.variations=variations
                         flash_sale.save()
-                        
-                    if products.get_discount_program() and products.get_discount_flash_sale() is None:
+                    if products.get_discount_program():
                         program=products.item.get_program_current()
                         variations=program.variations
-                        
                         for variation in variations:
                             if variation['variation_id']==products.id:
                                 variation=variation.update({'inventory':variation['inventory']-item.quantity,'promotion_stock':variation['promotion_stock']-item.quantity})
@@ -1287,7 +1286,6 @@ class CheckoutAPIView(APIView):
                 subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
                 email.send() 
             bulk_update(list_orders)
-            data={'success':True}
             return Response(data)
             
 class OrderinfoAPIView(APIView):
@@ -1319,10 +1317,8 @@ class PaymentAPIView(APIView):
         payment.paid=True
         payment.save()
         list_orders = Order.objects.filter(user=user, ordered=False)
+        data={}
         for order in list_orders:
-            order.ordered=True
-            order.amount=order.total_final_order()
-            order.ref_code = create_ref_code()
             order.ordered_date=timezone.now()
             if order.get_discount_voucher()>0:
                 order.discount_voucher=order.get_discount_voucher()
@@ -1334,26 +1330,33 @@ class PaymentAPIView(APIView):
             id_remove=[item.id for item in items if item.quantity>item.product.inventory]
             id_checkout=[item.id for item in items if item.quantity<=item.product.inventory]
             items_checkout=items.filter(id__in=id_checkout)
-            items_checkout.update(ordered=True)
             order.items.remove(*id_remove)
+            id_delete=[item.id for item in items if item.product.inventory==0]
+            items.filter(id__in=id_delete).delete()
+            order.ordered=True
+            order.amount=order.total_final_order()
+            order.ref_code = create_ref_code()
+            if len(id_remove)>0:
+                data.update({'message':"Some product had removed from order because it out of stock",waring:True})
             for item in items_checkout:
                 products=item.product
                 products.inventory -= item.quantity
                 item.amount_main_products=item.total_discount_main() 
                 item.amount_byproducts=item.total_discount_deal()
+                item.ordered=True
                 if not item.get_flash_sale_current():
                     item.flash_sale=None
                 if not item.get_combo_current():
                     item.promotion_combo=None
                 if not item.get_program_current():
                     item.program=None
+                item.save()
+                products.save()
                 if item.get_deal_shock_current():
                     for byproduct in item.byproduct_cart.all():
                         product=Variation.objects.get(id=byproduct.product_id)
                         product.inventory -= byproduct.quantity
                         product.save()
-                item.save()
-                products.save()
                 if products.get_discount_flash_sale():
                     flash_sale=products.item.get_flash_sale_current()
                     variations=flash_sale.variations
@@ -1365,7 +1368,7 @@ class PaymentAPIView(APIView):
                     flash_sale.variations=variations
                     flash_sale.save()
                         
-                if products.get_discount_program() and not products.get_discount_flash_sale():
+                if products.get_discount_program():
                     program=products.item.get_program_current()
                     variations=program.variations
                     for variation in variations:
@@ -1382,9 +1385,10 @@ class PaymentAPIView(APIView):
             email = EmailMessage(
             subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
             email.send() 
+        data.update({'sucess':True})
         bulk_update(list_orders)
         Payment.objects.filter(paid=False,user=user).delete()
-        return Response({'success':True})
+        return Response(data)
      
 class Byproductdeal(APIView):
     permission_classes = (IsAuthenticated,)
@@ -1665,7 +1669,7 @@ class PurchaseAPIView(APIView):
                     flash_sale.variations=variations
                     flash_sale.save()
                         
-                if products.get_discount_program() and products.get_discount_flash_sale() is None:
+                if products.get_discount_program():
                     program=products.item.get_program_current()
                     variations=program.variations
                     for variation in variations:
