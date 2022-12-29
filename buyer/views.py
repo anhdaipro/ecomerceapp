@@ -1205,6 +1205,7 @@ class CheckoutAPIView(APIView):
                 order=Order.objects.get(id=item['id'])
                 order.shipping_address_id = address_id
                 order.shipping_id=item['shipping']['id']
+                order.amount=order.total_final_order()+item['fee_shipping']
                 list_orders.append(order)
             bulk_update(list_orders)
             payment=Payment.objects.create(user=user,payment_method="P",
@@ -1218,7 +1219,7 @@ class CheckoutAPIView(APIView):
                 order=Order.objects.get(id=item['id'])
                 order.shipping_address_id = address_id
                 order.ordered=True
-                order.amount=order.total_final_order()
+                order.amount=order.total_final_order()+item['fee_shipping']
                 order.ref_code = create_ref_code()
                 order.ordered_date=timezone.now()
                 order.shipping_id=item['shipping']['id']
