@@ -140,7 +140,7 @@ class Shop_award(models.Model):
 class Follower(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='follower')
     shop=models.ForeignKey(to='shop.Shop',on_delete=models.CASCADE)
-    follow_offer=models.ForeignKey(Follower_offer,on_delete=models.CASCADE,related_name='follower_offder')
+    follow_offer=models.ForeignKey(Follower_offer,on_delete=models.CASCADE,related_name='follower_offder',null=True)
     created=models.DateTimeField(auto_now=True)
 class Award(models.Model):
     shop_award=models.ForeignKey(Shop_award,on_delete=models.CASCADE,related_name='award_shop_award')
