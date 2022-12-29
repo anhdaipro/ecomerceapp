@@ -327,7 +327,7 @@ def get_count(category):
 class Topsearch(APIView):
     permission_classes = (AllowAny,)
     def get(self,request):
-        keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__gte=timezone.now()-timedelta(days=7)))
+        keyword=list(SearchKey.objects.all().order_by('-total_searches').values('keyword').filter(updated_on__gte=timezone.now()-timedelta(days=30)))
         list_keys=[i['keyword'] for i in keyword]
         items=search_matching(list_keys)
         list_title_item=[i['name'] for i in items]
