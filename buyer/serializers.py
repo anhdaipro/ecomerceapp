@@ -208,8 +208,8 @@ class ItemflasaleSerializer(ItemSerializer):
         if promotionID:
             flash_sale=Flash_sale.objects.get(id=promotionID)
             variations=[variation['promotion_price'] for variation in flash_sale.variations if variation['enable'] and variation['item_id']==obj.id]
-            avg= reduce(lambda x,y:x+y,variations)/len(variations)
-            return avg
+            avg_discount= reduce(lambda x,y:x+y,variations)/len(variations)
+            return 100-(avg_discount*100/self.avg_price())
         else:
             return obj.percent_discount_flash_sale()
     def get_number_order(self,obj):
