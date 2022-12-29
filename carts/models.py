@@ -61,27 +61,27 @@ class CartItem(models.Model):
     def get_discount_program_product_main(self):
         discount=0
         if self.get_program_current():
-            program=Shop_program.objects.get(id=self.get_program_current())
-            variations=[variation for variation in program.variations if variation['enable'] and variation['promotion_stock']  and variation['variation_id']==self.product_id]
+            program=self.get_program_current()
+            variations=[variation['promotion_price'] for variation in program.variations if variation['enable'] and variation['promotion_stock']  and variation['variation_id']==self.product_id]
             if len(variations)>0:
-                discount=self.price_product_main()-int(variations[0]['promotion_price'])
+                discount=self.price_product_main()-int(variations[0])
         return discount
     def get_discount_flash_sale_product_main(self):
         discount=0
         if self.get_flash_sale_current():
-            flash_sale=Flash_sale.objects.get(id=self.get_flash_sale_current())
-            variations=[variation for variation in flash_sale.variations if variation['enable'] and variation['promotion_stock']  and variation['variation_id']==self.product_id]
+            flash_sale=self.get_flash_sale_current()
+            variations=[variation['promotion_price'] for variation in flash_sale.variations if variation['enable'] and variation['promotion_stock']  and variation['variation_id']==self.product_id]
             if len(variations)>0:
-                discount=self.price_product_main()- int(variations[0]['promotion_price'])
+                discount=self.price_product_main()- int(variations[0])
         return discount
 
     def get_deal_shock_current(self):
         if  self.deal_shock and (self.ordered or ( self.deal_shock.valid_to>timezone.now() and self.deal_shock.valid_from<timezone.now())):
-            return self.deal_shock.id
+            return self.deal_shock
     
     def get_program_current(self):
         if self.program and (self.ordered or (self.program.valid_to>timezone.now() and self.program.valid_from<timezone.now())):
-            return self.program.id
+            return self.program
     
     def get_combo_current(self):
         if self.promotion_combo and (self.ordered or ( self.promotion_combo.valid_to>timezone.now() and self.promotion_combo.valid_from<timezone.now())):
@@ -89,7 +89,7 @@ class CartItem(models.Model):
     
     def get_flash_sale_current(self):
         if self.flash_sale and (self.ordered or ( self.flash_sale.valid_to>timezone.now() and self.flash_sale.valid_from<timezone.now())):
-            return self.flash_sale.id
+            return self.flash_sale
     
     def total_discount_deal(self):
         total=0
