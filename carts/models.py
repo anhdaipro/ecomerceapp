@@ -83,9 +83,9 @@ class CartItem(models.Model):
         if self.program and (self.ordered or (self.program.valid_to>timezone.now() and self.program.valid_from<timezone.now())):
             return self.program.id
     
-    def get_promotion_combo_current(self):
+    def get_combo_current(self):
         if self.promotion_combo and (self.ordered or ( self.promotion_combo.valid_to>timezone.now() and self.promotion_combo.valid_from<timezone.now())):
-            return self.promotion_combo.id
+            return self.promotion_combo
     
     def get_flash_sale_current(self):
         if self.flash_sale and (self.ordered or ( self.flash_sale.valid_to>timezone.now() and self.flash_sale.valid_from<timezone.now())):
@@ -116,8 +116,8 @@ class CartItem(models.Model):
     def discount_promotion(self):
         discount_promotion=0
         discount_price=self.price_product_main()-self.get_discount_product_main()
-        if self.get_promotion_combo_current():
-            promotion_combo=Promotion_combo.objects.get(id=self.get_promotion_combo_current())
+        if self.get_combo_current():
+            promotion_combo=self.get_combo_current()
             quantity_in=self.quantity//promotion_combo.quantity_to_reduced
             quantity_valid=quantity_in*promotion_combo.quantity_to_reduced
             if promotion_combo.combo_type=='1':
