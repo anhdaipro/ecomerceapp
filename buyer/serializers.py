@@ -204,14 +204,43 @@ class ItemflasaleSerializer(ItemSerializer):
     class Meta(ItemSerializer.Meta):
         fields=ItemSerializer.Meta.fields+['number_order','discount_price','promotion_stock']
     def get_percent_discount(self,obj):
-        return obj.percent_discount_flash_sale()
+        promotionID=self.context.get('promotionID')
+        if promotionID:
+            flash_sale=Flash_sale.objects.get(id=promotionID)
+            variations=[variation['promotion_price'] for variation in flash_sale.variations if variation['enable'] and variation['item_id']==obj.id]
+            avg= reduce(lambda x,y:x+y,variations)/len(variations)
+            return avg
+        else:
+            return obj.percent_discount_flash_sale()
     def get_number_order(self,obj):
-        return obj.number_order_flash_sale()
-   
+        promotionID=self.context.get('promotionID')
+        if promotionID:
+            flash_sale=Flash_sale.objects.get(id=promotionID)
+            if flash_sale.valid_from<timezone.now() and flash_sale.valid_to>timezone.now():
+                return obj.number_order_flash_sale()
+            else:
+                return 0
+        else:
+            return obj.number_order_flash_sale()
     def get_discount_price(self,obj):
-        return obj.avg_discount_price_flash_sale()
+        promotionID=self.context.get('promotionID')
+        if promotionID:
+            flash_sale=Flash_sale.objects.get(id=promotionID)
+            variations=[variation['promotion_price'] for variation in variation if variation['enable'] and variation['item_id']==obj.id]
+            avg= reduce(lambda x,y:x+y,variations)/len(variations)
+            return avg
+        else:
+            return obj.avg_discount_price_flash_sale()
     def get_promotion_stock(self,obj):
-        return obj.get_promotion_stock()
+        promotionID=self.context.get('promotionID')
+        if promotionID:
+            flash_sale=Flash_sale.objects.get(id=promotionID)
+            if flash_sale.valid_from<timezone.now() and flash_sale.valid_to>timezone.now():
+                return obj.get_promotion_stock()
+            else:
+                return 0
+        else:
+            return obj.get_promotion_stock()
 
 class ItemproductSerializer(IteminfoSerializer):
     num_like=serializers.SerializerMethodField()
