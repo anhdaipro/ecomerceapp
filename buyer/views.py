@@ -899,6 +899,8 @@ class AddToCartAPIView(APIView):
         except Exception:
             if int(quantity)>product.inventory:
                 return Response({'errorr':True,'message':"over stock"})
+            elif user==item.shop.user:
+                return Response({'error':True})
             else:
                 cart_item=CartItem.objects.create(
                     product=product,

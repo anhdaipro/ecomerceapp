@@ -848,11 +848,13 @@ class OrderSerializer(OrderInfoSerializer):
     
 class CombodetailseSerializer(ComboinfoSerializer):
     products=serializers.SerializerMethodField()
+    user_id=serializers.SerializerMethodField()
     class Meta(ComboinfoSerializer.Meta):
-        fields=ComboinfoSerializer.Meta.fields + ['products']
+        fields=ComboinfoSerializer.Meta.fields + ['products','user_id']
     def get_products(self,obj):
         return ItemcomboSerializer(obj.products.all(),many=True).data
-
+    def get_user_id(self,obj):
+        return obj.shop.user_id
 class OrderpurchaseSerializer(OrderInfoSerializer):
     shop_url=serializers.SerializerMethodField()
     review=serializers.SerializerMethodField()
