@@ -1062,6 +1062,7 @@ class AddressAPIView(APIView):
         town=request.data.get('town')
         phone_number=request.data.get('phone_number')
         name=request.data.get('name')
+        default=request.data.get('default')
         address_choice=request.data.get('address_choice')
         address_detail=request.data.get('address')
         address_type=request.data.get('address_type')
@@ -1100,7 +1101,7 @@ class AddressAPIView(APIView):
             address,created=Address.objects.get_or_create(
                 user=user,
                 address_choice=address_choice,
-                default=default_address,
+                default=default,
                 name=name,
                 phone_number=phone_number,
                 city=city,
@@ -1109,8 +1110,7 @@ class AddressAPIView(APIView):
                 address_type=address_type,
                 address=address_detail
             )
-            if address.default==True:
-                Address.objects.exclude(id=address.id).update(default=False)
+            
             data={
                 'id':address.id,'default':address.default,'district':address.district,'town':address.town,
                 'name':address.name,'phone_number':address.phone_number,'city':address.city,'address':address.address
